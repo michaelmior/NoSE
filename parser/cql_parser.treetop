@@ -1,0 +1,63 @@
+grammar CQL
+
+  rule statement
+    'SELECT' space field_list space 'FROM' space identifier
+        where_clause? limit_clause? <Statement>
+  end
+
+  rule where_clause
+    space 'WHERE' space expression <WhereClause>
+  end
+
+  rule limit_clause
+    space 'LIMIT' space integer <LimitClause>
+  end
+
+  rule expression
+    condition space 'AND' space expression <Expression> / condition
+  end
+
+  #rule field_list
+  #  field space? ',' space? field_list <FieldList> / field
+  #end
+
+  rule operator
+    '=' / '!=' / '<' / '>' / '<=' / '<=' <Operator>
+  end
+
+  rule condition
+    field space? operator space? (field / literal) <Condition>
+  end
+
+  rule literal
+    float / integer / string
+  end
+
+  rule integer
+    ('+' / '-')? [0-9]+ <IntegerLiteral>
+  end
+
+  rule float
+    ('+' / '-')? [0-9]+ (('.' [0-9]+) / ('e' [0-9]+)) <FloatLiteral>
+  end
+
+  rule string
+    '"' ([^"\\] / "\\" . )* '"' <StringLiteral>
+  end
+
+  rule identifier
+    [A-z]+ <Identifier>
+  end
+
+  rule field
+    identifier '.' identifier <Field>
+  end
+
+  rule field_list
+    field space? ',' space? field_list <FieldList> / field
+  end
+
+  rule space
+    [\s]+
+  end
+end
