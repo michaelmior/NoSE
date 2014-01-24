@@ -12,14 +12,13 @@ module CQL
   class Statement < CQLNode
     def fields
       fields = self.elements.detect {
-          |n| ["CQL::Field", "CQL::FieldList"].include? n.class.name }
-      return fields.class.name == "CQL::Field" ? [fields] : fields.elements
+          |n| ["CQL::Identifier", "CQL::IdentifierList"].include? n.class.name }
+      return fields.class.name == "CQL::Identifier" ? [fields] : fields.elements
     end
 
     def where
-      where =  self.elements.detect { |n| n.class.name == "CQL::WhereClause" }
-      return where.class.name == "CQL::Condition" ?
-          [where] : where.elements[0].elements
+      where = self.elements.detect { |n| n.class.name == "CQL::WhereClause" }
+      return where.elements
     end
 
     def limit
@@ -42,7 +41,7 @@ module CQL
 
   class StringLiteral < CQLNode
     def value
-      return self.text_value
+      return self.text_value[1..-2]
     end
   end
 
@@ -72,7 +71,7 @@ module CQL
     end
   end
 
-  class FieldList < CQLNode
+  class IdentifierList < CQLNode
     def value
       return self.elements.map{ |n| n.value }.sort
     end
@@ -85,6 +84,13 @@ module CQL
   end
 
   class Condition < CQLNode
+    def field
+      return self.elements[0]
+    end
+
+    def value
+      return self.elements[-1].value
+    end
   end
 
   class Operator < CQLNode

@@ -1,7 +1,7 @@
 grammar CQL
 
   rule statement
-    'SELECT' space field_list space 'FROM' space identifier
+    'SELECT' space identifier_list space 'FROM' space identifier
         where_clause? limit_clause? <Statement>
   end
 
@@ -16,10 +16,6 @@ grammar CQL
   rule expression
     condition space 'AND' space expression <Expression> / condition
   end
-
-  #rule field_list
-  #  field space? ',' space? field_list <FieldList> / field
-  #end
 
   rule operator
     '=' / '!=' / '<' / '>' / '<=' / '<=' <Operator>
@@ -53,8 +49,8 @@ grammar CQL
     identifier '.' identifier <Field>
   end
 
-  rule field_list
-    field space? ',' space? field_list <FieldList> / field
+  rule identifier_list
+    identifier space? ',' space? identifier_list <IdentifierList> / identifier
   end
 
   rule space
