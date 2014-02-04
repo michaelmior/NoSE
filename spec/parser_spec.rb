@@ -1,4 +1,4 @@
-require_relative '../parser/parser'
+require_relative '../lib/parser'
 
 describe Parser do
   it 'can parse a simple select' do
