@@ -18,12 +18,19 @@ module CQL
 
     def where
       where = self.elements.detect { |n| n.class.name == "CQL::WhereClause" }
-      return where.elements
+      return [] if where.nil? or where.elements.length == 0
+      where.elements.first.class.name == "CQL::Expression" ?
+          where.elements.first.elements : where.elements
     end
 
     def limit
       limit = self.elements.detect { |n| n.class.name == "CQL::LimitClause" }
       return limit ? limit.value : nil
+    end
+
+    def from
+      return self.elements.detect {
+          |n| ["CQL::Table"].include? n.class.name }
     end
   end
 
@@ -49,6 +56,9 @@ module CQL
     def value
       return self.text_value.to_s
     end
+  end
+
+  class Table < Identifier
   end
 
   class Field < CQLNode
@@ -90,6 +100,10 @@ module CQL
 
     def value
       return self.elements[-1].value
+    end
+
+    def logical_operator
+      return self.elements.detect { |n| n.class.name == "CQL::Operator" }
     end
   end
 

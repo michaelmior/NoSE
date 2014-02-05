@@ -1,8 +1,12 @@
 grammar CQL
 
   rule statement
-    'SELECT' space identifier_list space 'FROM' space identifier
+    'SELECT' space identifier_list space 'FROM' space table
         where_clause? limit_clause? <Statement>
+  end
+
+  rule table
+    [A-z]+ <Table>
   end
 
   rule where_clause
@@ -18,7 +22,12 @@ grammar CQL
   end
 
   rule operator
-    '=' / '!=' / '<' / '>' / '<=' / '<=' <Operator>
+    '=' <Operator> /
+    '!=' <Operator> /
+    '<=' <Operator> /
+    '>=' <Operator> /
+    '<' <Operator> /
+    '>' <Operator>
   end
 
   rule condition
