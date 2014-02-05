@@ -2,9 +2,9 @@ module CQL
   class CQLNode < Treetop::Runtime::SyntaxNode
     def ==(other)
       if self.respond_to? :value and other.respond_to? :value
-        return self.value == other.value
+        self.value == other.value
       else
-        return super
+        super
       end
     end
   end
@@ -13,7 +13,7 @@ module CQL
     def fields
       fields = self.elements.detect {
           |n| ["CQL::Identifier", "CQL::IdentifierList"].include? n.class.name }
-      return fields.class.name == "CQL::Identifier" ? [fields] : fields.elements
+      fields.class.name == "CQL::Identifier" ? [fields] : fields.elements
     end
 
     def where
@@ -25,36 +25,35 @@ module CQL
 
     def limit
       limit = self.elements.detect { |n| n.class.name == "CQL::LimitClause" }
-      return limit ? limit.value : nil
+      limit ? limit.value : nil
     end
 
     def from
-      return self.elements.detect {
-          |n| ["CQL::Table"].include? n.class.name }
+      self.elements.detect { |n| ["CQL::Table"].include? n.class.name }
     end
   end
 
   class IntegerLiteral < CQLNode
     def value
-      return self.text_value.to_i
+      self.text_value.to_i
     end
   end
 
   class FloatLiteral < CQLNode
     def value
-      return self.text_value.to_f
+      self.text_value.to_f
     end
   end
 
   class StringLiteral < CQLNode
     def value
-      return self.text_value[1..-2]
+      self.text_value[1..-2]
     end
   end
 
   class Identifier < CQLNode
     def value
-      return self.text_value.to_s
+      self.text_value.to_s
     end
   end
 
@@ -63,7 +62,7 @@ module CQL
 
   class Field < CQLNode
     def value
-      return self.elements.map { |n|
+      self.elements.map { |n|
           n.class.name == "CQL::Field" ?
               n.elements.map { |m| m.value } : n.value
       }.flatten
@@ -72,13 +71,13 @@ module CQL
 
   class LimitClause < CQLNode
     def value
-      return self.elements[0].text_value.to_i
+      self.elements[0].text_value.to_i
     end
   end
 
   class IdentifierList < CQLNode
     def value
-      return self.elements.map{ |n| n.value }.sort
+      self.elements.map{ |n| n.value }.sort
     end
   end
 
@@ -90,21 +89,21 @@ module CQL
 
   class Condition < CQLNode
     def field
-      return self.elements[0]
+      self.elements[0]
     end
 
     def value
-      return self.elements[-1].value
+      self.elements[-1].value
     end
 
     def logical_operator
-      return self.elements.detect { |n| n.class.name == "CQL::Operator" }
+      self.elements.detect { |n| n.class.name == "CQL::Operator" }
     end
   end
 
   class Operator < CQLNode
     def value
-      return self.text_value.to_sym
+      self.text_value.to_sym
     end
   end
 end
