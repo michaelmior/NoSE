@@ -45,4 +45,12 @@ describe Workload do
     workload.add_query(query)
     expect(workload.valid?).to be_false
   end
+
+  it 'rejects queries with unknown fields in where clauses' do
+    workload = Workload.new
+    workload.add_entity(@entity)
+    query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Bar = 1')
+    workload.add_query(query)
+    expect(workload.valid?).to be_false
+  end
 end

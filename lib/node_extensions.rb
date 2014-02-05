@@ -62,16 +62,11 @@ module CQL
   end
 
   class Field < CQLNode
-    def entity
-      return self.elements[0].value
-    end
-
-    def attribute
-      return self.elements[1].value
-    end
-
     def value
-      return self.text_value
+      return self.elements.map { |n|
+          n.class.name == "CQL::Field" ?
+              n.elements.map { |m| m.value } : n.value
+      }.flatten
     end
   end
 

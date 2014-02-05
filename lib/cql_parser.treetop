@@ -55,6 +55,7 @@ grammar CQL
   end
 
   rule field
+    identifier '.' field <Field> /
     identifier '.' identifier <Field>
   end
 

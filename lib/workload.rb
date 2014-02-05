@@ -33,6 +33,13 @@ class Workload
       # No more than one range query
       return false if query.where.count { |condition|
           [:>, :>=, :<, :<=].include?(condition.logical_operator.value) } > 1
+
+      # Fields in the where clause exist
+      query.where.map { |condition| condition.field }.each do |field|
+        parts = field.value
+        return false if not @entities.has_key?(parts.first)
+        return false if parts.length == 2 and not entity.fields.has_key?(parts.last)
+      end
     end
 
     true
