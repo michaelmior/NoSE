@@ -9,6 +9,7 @@ class Entity
 
  def <<(field)
    @fields[field.name] = field
+   field.instance_variable_set(:@parent, self)
    self
  end
 end
@@ -17,6 +18,7 @@ class Field
   attr_reader :name
   attr_reader :type
   attr_reader :size
+  attr_reader :parent
 end
 
 class IntegerField < Field

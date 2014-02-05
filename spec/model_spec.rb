@@ -28,4 +28,15 @@ describe Entity do
     expect(entity.fields['others'].type).to eq(:key)
     expect(entity.fields['others'].cardinality).to eq(:many)
   end
+
+  it 'can tell fields when they are added' do
+    entity = Entity.new('Foo')
+    field = IntegerField.new('Bar')
+
+    expect(field.parent).to be_nil
+
+    entity << field
+
+    expect(field.parent).to be(entity)
+  end
 end
