@@ -5,11 +5,17 @@ class Entity
  def initialize(name)
    @name = name
    @fields = {}
+   @count = 1
  end
 
  def <<(field)
    @fields[field.name] = field
    field.instance_variable_set(:@parent, self)
+   self
+ end
+
+ def *(count)
+   @count = count
    self
  end
 end
@@ -19,38 +25,43 @@ class Field
   attr_reader :type
   attr_reader :size
   attr_reader :parent
+  attr_reader :cardinality
+
+  def initialize(name, type, size)
+    @name = name
+    @type = type
+    @size = size
+    @cardinality = 1
+  end
+
+  def *(cardinality)
+    @cardinality = cardinality
+    self
+  end
 end
 
 class IntegerField < Field
   def initialize(name)
-    @name = name
-    @type = :integer
-    @size = 8
+    super(name, :integer, 8)
   end
 end
 
 class FloatField < Field
   def initialize(name)
-    @name = name
-    @type = :float
-    @size = 8
+    super(name, :float, 8)
   end
 end
 
 class StringField < Field
   def initialize(name, length)
-    @name = name
-    @type = :string
-    @size = length
+    super(name, :string, length)
   end
 end
 
 
 class IDField < Field
   def initialize(name)
-    @name = name
-    @type = :key
-    @size = 16
+    super(name, :key, 16)
   end
 end
 
