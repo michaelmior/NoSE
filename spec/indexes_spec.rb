@@ -6,13 +6,22 @@ require_relative '../lib/workload'
 describe Index do
   before(:each) do
     @entity = Entity.new('Foo')
-    @field = IDField.new('Id')
+    @id_field = IDField.new('Id')
+    @field = IntegerField.new('Bar')
+    @entity << @id_field
     @entity << @field
+
     @simple_query = Parser.parse('SELECT Id FROM Foo')
     @equality_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id=3')
+    @range_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id > 3')
+    @combo_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id > 3 AND Foo.Bar = 1')
+
     @workload = Workload.new
     @workload.add_query @simple_query
     @workload.add_query @equality_query
+    @workload.add_query @range_query
+    @workload.add_query @range_query
+    @workload.add_query @combo_query
     @workload.add_entity @entity
   end
 
@@ -23,20 +32,20 @@ describe Index do
   end
 
   it 'contains fields' do
-    index = Index.new([@field], [])
-    expect(index.has_field? @field).to be_true
+    index = Index.new([@id_field], [])
+    expect(index.has_field? @id_field).to be_true
   end
 
   it 'can store additional fields' do
-    index = Index.new([], [@field])
-    expect(index.has_field? @field).to be_true
+    index = Index.new([], [@id_field])
+    expect(index.has_field? @id_field).to be_true
   end
 
   it 'can calculate its size' do
-    index = Index.new([@field], [])
-    @field *= 10
-    expect(index.entry_size).to eq(@field.size)
-    expect(index.size).to eq(@field.size * 10)
+    index = Index.new([@id_field], [])
+    @id_field *= 10
+    expect(index.entry_size).to eq(@id_field.size)
+    expect(index.size).to eq(@id_field.size * 10)
   end
 
   it 'does not support queries when empty' do
@@ -45,12 +54,27 @@ describe Index do
   end
 
   it 'supports equality queries on indexed fields' do
-    index = Index.new([@field], [])
+    index = Index.new([@id_field], [])
     expect(index.supports_query?(@equality_query, @workload)).to be_true
   end
 
   it 'does not support equality queries on unindexed fields' do
-    index = Index.new([], [@field])
+    index = Index.new([], [@id_field])
     expect(index.supports_query?(@equality_query, @workload)).to be_false
+  end
+
+  it 'supports range queries on indexed fields' do
+    index = Index.new([@id_field], [])
+    expect(index.supports_query?(@range_query, @workload)).to be_true
+  end
+
+  it 'supports range and equality predicates together in the correct order' do
+    index = Index.new([@field, @id_field], [])
+    expect(index.supports_query?(@combo_query, @workload)).to be_true
+  end
+
+  it 'does not support range and equality predicates in the wrong order' do
+    index = Index.new([@id_field, @field], [])
+    expect(index.supports_query?(@combo_query, @workload)).to be_false
   end
 end

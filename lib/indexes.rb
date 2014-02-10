@@ -27,12 +27,13 @@ class Index
     range = query.where.detect { |condition| condition.is_range? }
 
     if range
-      # TODO Support range queries
-      return false
+      eq_fields = @fields[0..(@fields.index(workload.find_field range.field.value))]
     else
-      return false if not query.where.map { |condition|
-          @fields.include?(workload.find_field condition.field.value) }.all?
+      eq_fields = @fields
     end
+
+    return false if not query.where.map { |condition|
+         eq_fields.include?(workload.find_field condition.field.value) }.all?
 
     true
   end
