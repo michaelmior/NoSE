@@ -1,10 +1,17 @@
 require_relative '../lib/indexes'
+require_relative '../lib/parser'
+require_relative '../lib/model'
+require_relative '../lib/workload'
 
 describe Index do
   before(:each) do
     @entity = Entity.new('Foo')
     @field = IDField.new('Id')
     @entity << @field
+    @simple_query = Parser.parse('SELECT Id FROM Foo')
+    @workload = Workload.new
+    @workload.add_query @simple_query
+    @workload.add_entity @entity
   end
 
   it 'has zero size when empty' do
@@ -28,5 +35,10 @@ describe Index do
     @field *= 10
     expect(index.entry_size).to eq(@field.size)
     expect(index.size).to eq(@field.size * 10)
+  end
+
+  it 'does not support queries when empty' do
+    index = Index.new([], [])
+    expect(index.supports_query?(@simple_query, @workload)).to be_false
   end
 end
