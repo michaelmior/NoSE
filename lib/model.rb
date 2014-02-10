@@ -71,12 +71,16 @@ end
 
 class ForeignKey < IDField
   attr_reader :entity
-  attr_reader :cardinality
+  attr_reader :relationship
 
   def initialize(name, entity)
     super(name)
-    @cardinality = :one
+    @relationship = :one
     @entity = entity
+  end
+
+  def cardinality
+    @entity.count or super
   end
 end
 
@@ -85,6 +89,6 @@ ToOneKey = ForeignKey
 class ToManyKey < ForeignKey
   def initialize(name, entity)
     super(name, entity)
-    @cardinality = :many
+    @relationship = :many
   end
 end

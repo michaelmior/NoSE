@@ -11,22 +11,26 @@ describe Entity do
 
   it 'can have foreign keys' do
     entity = Entity.new('Foo')
-    other = Entity.new('Bar')
-    entity << ToOneKey.new('other', other)
+    other = Entity.new('Bar') * 100
+    field = ToOneKey.new('other', other)
+    entity << field
 
-    expect(entity.fields['other'].entity).to be(other)
-    expect(entity.fields['other'].type).to eq(:key)
-    expect(entity.fields['other'].cardinality).to eq(:one)
+    expect(field.entity).to be(other)
+    expect(field.type).to eq(:key)
+    expect(field.relationship).to eq(:one)
+    expect(field.cardinality).to eq(100)
   end
 
   it 'can have foreign keys with cardinality > 1' do
     entity = Entity.new('Foo')
-    others = Entity.new('Bar')
-    entity << ToManyKey.new('others', others)
+    others = Entity.new('Bar') * 100
+    field = ToManyKey.new('others', others)
+    entity << field
 
-    expect(entity.fields['others'].entity).to be(others)
-    expect(entity.fields['others'].type).to eq(:key)
-    expect(entity.fields['others'].cardinality).to eq(:many)
+    expect(field.entity).to be(others)
+    expect(field.type).to eq(:key)
+    expect(field.relationship).to eq(:many)
+    expect(field.cardinality).to eq(100)
   end
 
   it 'can tell fields when they are added' do
