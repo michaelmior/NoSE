@@ -11,11 +11,11 @@ class Index
   end
 
   def entry_size
-    (@fields + @extra).map(&:size).inject(:+) or 0
+    (@fields + @extra).map(&:size).inject(0, :+)
   end
 
   def size
-    fields.map(&:cardinality).inject(1, :*) * self.entry_size or 0
+    fields.map(&:cardinality).inject(1, :*) * self.entry_size
   end
 
   def supports_query?(query, workload)
