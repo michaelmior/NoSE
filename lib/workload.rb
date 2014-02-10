@@ -19,6 +19,10 @@ class Workload
     @entities[entity.name] = entity
   end
 
+  def find_field(field)
+    @entities[field[0]].fields[field[1]]
+  end
+
   def valid?
     @queries.each do |query|
       # Entity must exist

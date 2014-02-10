@@ -3,7 +3,8 @@ require_relative '../lib/workload'
 describe Workload do
   before(:each) do
     @entity = Entity.new('Foo')
-    @entity << IDField.new('Id')
+    @field = IDField.new('Id')
+    @entity << @field
 
     @valid_query = Parser.parse('SELECT Id FROM Foo')
   end
@@ -52,5 +53,11 @@ describe Workload do
     query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Bar = 1')
     workload.add_query(query)
     expect(workload.valid?).to be_false
+  end
+
+  it 'can find fields on entities from queries' do
+    workload = Workload.new
+    workload.add_entity(@entity)
+    expect(workload.find_field ['Foo', 'Id']).to be(@field)
   end
 end
