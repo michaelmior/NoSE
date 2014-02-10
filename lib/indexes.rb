@@ -37,4 +37,24 @@ class Index
 
     true
   end
+
+  def query_cost(query, workload)
+    # XXX This basically just calculates the size of the data fetched
+
+    cost = 0
+
+    # Get all fields corresponding to equality predicates
+    eq_fields = query.where.select { |condition|
+        not condition.is_range? }.map { |condition|
+            workload.find_field condition.field.value }
+
+    # Estimate the number of results retrieved based on a uniform distribution
+    cost += eq_fields.map { |field|
+        field.parent.count * 1.0 / field.cardinality } \
+            .inject(workload.get_entity(query.from.value).count * self.entry_size * 1.0, :*)
+
+    # TODO Add range queries (need selectivity estimate)
+
+    cost
+  end
 end

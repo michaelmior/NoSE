@@ -5,7 +5,7 @@ require_relative '../lib/workload'
 
 describe Index do
   before(:each) do
-    @entity = Entity.new('Foo')
+    @entity = Entity.new('Foo') * 100
     @id_field = IDField.new('Id')
     @field = IntegerField.new('Bar')
     @entity << @id_field
@@ -76,5 +76,10 @@ describe Index do
   it 'does not support range and equality predicates in the wrong order' do
     index = Index.new([@id_field, @field], [])
     expect(index.supports_query?(@combo_query, @workload)).to be_false
+  end
+
+  it 'can estimate the cost of evaluating a query' do
+    index = Index.new([@id_field], [])
+    expect(index.query_cost(@equality_query, @workload)).to eq(1600)
   end
 end

@@ -1,6 +1,7 @@
 class Entity
  attr_reader :fields
  attr_reader :name
+ attr_reader :count
 
  def initialize(name)
    @name = name
@@ -25,18 +26,21 @@ class Field
   attr_reader :type
   attr_reader :size
   attr_reader :parent
-  attr_reader :cardinality
 
   def initialize(name, type, size)
     @name = name
     @type = type
     @size = size
-    @cardinality = 1
+    @cardinality = nil
   end
 
   def *(cardinality)
     @cardinality = cardinality
     self
+  end
+
+  def cardinality
+    @cardinality or @parent.count or 1
   end
 end
 
