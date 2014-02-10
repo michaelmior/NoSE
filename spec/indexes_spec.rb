@@ -26,7 +26,7 @@ describe Index do
   it 'can calculate its size' do
     index = Index.new([@field], [])
     @field *= 10
-    expect(index.entry_size).to eq(16)
-    expect(index.size).to eq(160)
+    expect(index.entry_size).to eq(@field.size)
+    expect(index.size).to eq(@field.size * 10)
   end
 end
