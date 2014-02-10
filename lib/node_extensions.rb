@@ -99,6 +99,10 @@ module CQL
     def logical_operator
       self.elements.detect { |n| n.class.name == "CQL::Operator" }
     end
+
+    def is_range?
+      [:>, :>=, :<, :<=].include?(self.logical_operator.value)
+    end
   end
 
   class Operator < CQLNode

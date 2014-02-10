@@ -35,8 +35,7 @@ class Workload
       end
 
       # No more than one range query
-      return false if query.where.count { |condition|
-          [:>, :>=, :<, :<=].include?(condition.logical_operator.value) } > 1
+      return false if query.where.count { |condition| condition.is_range? } > 1
 
       # Fields in the where clause exist
       query.where.map { |condition| condition.field }.each do |field|
