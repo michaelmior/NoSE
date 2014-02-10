@@ -9,8 +9,10 @@ describe Index do
     @field = IDField.new('Id')
     @entity << @field
     @simple_query = Parser.parse('SELECT Id FROM Foo')
+    @equality_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id=3')
     @workload = Workload.new
     @workload.add_query @simple_query
+    @workload.add_query @equality_query
     @workload.add_entity @entity
   end
 
@@ -40,5 +42,15 @@ describe Index do
   it 'does not support queries when empty' do
     index = Index.new([], [])
     expect(index.supports_query?(@simple_query, @workload)).to be_false
+  end
+
+  it 'supports equality queries on indexed fields' do
+    index = Index.new([@field], [])
+    expect(index.supports_query?(@equality_query, @workload)).to be_true
+  end
+
+  it 'does not support equality queries on unindexed fields' do
+    index = Index.new([], [@field])
+    expect(index.supports_query?(@equality_query, @workload)).to be_false
   end
 end

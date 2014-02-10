@@ -23,7 +23,16 @@ class Index
     return false if not query.fields.map { |field|
         self.has_field?(workload.find_field [query.from.value, field.value]) }.all?
 
-    # TODO Check where clause
+    # Check if the query contains a range predicate
+    range = query.where.detect { |condition| condition.is_range? }
+
+    if range
+      # TODO Support range queries
+      return false
+    else
+      return false if not query.where.map { |condition|
+          @fields.include?(workload.find_field condition.field.value) }.all?
+    end
 
     true
   end
