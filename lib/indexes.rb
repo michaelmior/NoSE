@@ -50,8 +50,8 @@ class Index
 
     # Estimate the number of results retrieved based on a uniform distribution
     cost += eq_fields.map { |field|
-        field.parent.count * 1.0 / field.cardinality } \
-            .inject(workload.get_entity(query.from.value).count * self.entry_size * 1.0, :*)
+        field.cardinality * 1.0 / field.parent.count } \
+            .inject(workload.get_entity(query.from.value).count * 1.0, :*) * self.entry_size
 
     # TODO Add range queries (need selectivity estimate)
 
