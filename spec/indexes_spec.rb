@@ -82,4 +82,9 @@ describe Index do
     index = Index.new([@id_field], [])
     expect(index.query_cost(@equality_query, @workload)).to eq(1600)
   end
+
+  it 'can estimate the cost of evaluating a range query' do
+    index = Index.new([@id_field], [])
+    expect(index.query_cost(@range_query, @workload)).to be_within(0.001).of(1600.0/3)
+  end
 end
