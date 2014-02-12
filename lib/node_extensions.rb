@@ -38,7 +38,7 @@ module CQL
 
     def order_by
       order_by = self.elements.detect { |n| n.class.name == "CQL::OrderByClause" }
-      order_by ? order_by.value : nil
+      order_by ? order_by.value : []
     end
 
     def from

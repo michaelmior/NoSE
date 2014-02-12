@@ -26,12 +26,18 @@ class Index
     # Check if the query contains a range predicate
     range = query.range_field
 
+    # Range predicates must occur last
     if range
       return false if @fields.last != workload.find_field(range.field.value)
     end
 
+    # All fields in the where clause must be indexes
     return false if not query.where.map { |condition|
          @fields.include?(workload.find_field condition.field.value) }.all?
+
+    # Fields for ordering must appear last
+    order_by = query.order_by.map { |field| workload.find_field field }
+    return false if order_by.length != 0 and not order_by == @fields[-order_by.length..-1]
 
     true
   end

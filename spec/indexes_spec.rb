@@ -15,6 +15,7 @@ describe Index do
     @equality_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id=3')
     @range_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id > 3')
     @combo_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id > 3 AND Foo.Bar = 1')
+    @order_query = Parser.parse('SELECT Id FROM Foo ORDER BY Foo.Id')
 
     @workload = Workload.new
     @workload.add_query @simple_query
@@ -22,6 +23,7 @@ describe Index do
     @workload.add_query @range_query
     @workload.add_query @range_query
     @workload.add_query @combo_query
+    @workload.add_query @order_query
     @workload.add_entity @entity
   end
 
@@ -81,6 +83,16 @@ describe Index do
   it 'does not support range queries if the range field is not last' do
     index = Index.new([@id_field, @field], [])
     expect(index.supports_query?(@range_query, @workload)).to be_false
+  end
+
+  it 'supports ordering' do
+    index = Index.new([@id_field], [])
+    expect(index.supports_query?(@order_query, @workload)).to be_true
+  end
+
+  it 'does not support ordering if the ordered field does not appear last' do
+    index = Index.new([@id_field, @field], [])
+    expect(index.supports_query?(@order_query, @workload)).to be_false
   end
 
   it 'can estimate the cost of evaluating a query' do
