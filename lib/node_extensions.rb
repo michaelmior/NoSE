@@ -23,6 +23,14 @@ module CQL
           where.elements.first.elements : where.elements
     end
 
+    def eq_fields
+      self.where.select { |condition| not condition.is_range? }
+    end
+
+    def range_field
+      self.where.detect { |condition| condition.is_range? }
+    end
+
     def limit
       limit = self.elements.detect { |n| n.class.name == "CQL::LimitClause" }
       limit ? limit.value : nil

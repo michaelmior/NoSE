@@ -24,7 +24,7 @@ class Index
         self.has_field?(workload.find_field [query.from.value, field.value]) }.all?
 
     # Check if the query contains a range predicate
-    range = query.where.detect { |condition| condition.is_range? }
+    range = query.range_field
 
     if range
       return false if @fields.last != workload.find_field(range.field.value)
@@ -40,8 +40,7 @@ class Index
     # XXX This basically just calculates the size of the data fetched
 
     # Get all fields corresponding to equality predicates
-    eq_fields = query.where.select { |condition|
-        not condition.is_range? }.map { |condition|
+    eq_fields = query.eq_fields.map { |condition|
             workload.find_field condition.field.value }
 
     # Estimate the number of results retrieved based on a uniform distribution
@@ -51,8 +50,7 @@ class Index
 
     # XXX Make a dumb guess that the selectivity of a range predicate is 1/3
     # see Query Optimization With One Parameter, Anjali V. Betawadkar, 1999
-    range = query.where.detect { |condition| condition.is_range? }
-    if range
+    if query.range_field
       cost *= 1.0/3
     end
 
