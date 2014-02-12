@@ -78,6 +78,11 @@ describe Index do
     expect(index.supports_query?(@combo_query, @workload)).to be_false
   end
 
+  it 'does not support range queries if the range field is not last' do
+    index = Index.new([@id_field, @field], [])
+    expect(index.supports_query?(@range_query, @workload)).to be_false
+  end
+
   it 'can estimate the cost of evaluating a query' do
     index = Index.new([@id_field], [])
     expect(index.query_cost(@equality_query, @workload)).to eq(1600)
