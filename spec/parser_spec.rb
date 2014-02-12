@@ -33,6 +33,14 @@ describe Parser do
       |field| field.value }).to match_array(['foo', 'bar'])
   end
 
+  it 'correctly parses an order by clause with a single field' do
+    expect(Parser.parse('SELECT foo FROM baz ORDER BY baz.foo').order_by).to match_array([['baz', 'foo']])
+  end
+
+  it 'correctly parses an order by clause with multiple fields' do
+    expect(Parser.parse('SELECT foo FROM baz ORDER BY baz.foo, baz.bar').order_by).to eq([['baz', 'foo'], ['baz', 'bar']])
+  end
+
   it 'should throw an error on an invalid parse' do
     expect{Parser.parse('This is not the CQL you are looking for')}.to raise_error(Exception)
   end

@@ -28,6 +28,11 @@ module CQL
       limit ? limit.value : nil
     end
 
+    def order_by
+      order_by = self.elements.detect { |n| n.class.name == "CQL::OrderByClause" }
+      order_by ? order_by.value : nil
+    end
+
     def from
       self.elements.detect { |n| ["CQL::Table"].include? n.class.name }
     end
@@ -75,9 +80,22 @@ module CQL
     end
   end
 
+  class FieldList < CQLNode
+    def value
+      self.elements.map{ |n| n.value }
+    end
+  end
+
+  class OrderByClause < CQLNode
+    def value
+      fields = self.elements[0]
+      fields.class.name == "CQL::Field" ? [fields.value] : fields.value
+    end
+  end
+
   class IdentifierList < CQLNode
     def value
-      self.elements.map{ |n| n.value }.sort
+      self.elements.map{ |n| n.value }
     end
   end
 

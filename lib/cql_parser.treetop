@@ -2,7 +2,7 @@ grammar CQL
 
   rule statement
     'SELECT' space identifier_list space 'FROM' space table
-        where_clause? limit_clause? <Statement>
+        where_clause? limit_clause? order_clause? <Statement>
   end
 
   rule table
@@ -15,6 +15,10 @@ grammar CQL
 
   rule limit_clause
     space 'LIMIT' space integer <LimitClause>
+  end
+
+  rule order_clause
+    space 'ORDER BY' space field_list <OrderByClause>
   end
 
   rule expression
@@ -57,6 +61,10 @@ grammar CQL
   rule field
     identifier '.' field <Field> /
     identifier '.' identifier <Field>
+  end
+
+  rule field_list
+    field space? ',' space? field_list <FieldList> / field
   end
 
   rule identifier_list
