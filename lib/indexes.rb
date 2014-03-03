@@ -1,5 +1,9 @@
+require_relative 'node_extensions'
+
+
 class Index
   attr_reader :fields
+  attr_reader :extra
 
   def initialize(fields, extra)
     @fields = fields
@@ -61,5 +65,22 @@ class Index
     end
 
     cost
+  end
+end
+
+module CQL
+  class Statement
+    def materialize_view(workload)
+      fields = self.eq_fields
+      if self.range_field
+        fields.push self.range_field
+      end
+      fields = fields.map { |field| workload.find_field field.field.value }
+      fields += self.order_by.map { |field| workload.find_field field }
+
+      extra = self.fields.map { |field| workload.find_field [self.from.value, field.value] }
+      extra -= fields
+      Index.new(fields, extra)
+    end
   end
 end

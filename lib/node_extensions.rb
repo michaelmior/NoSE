@@ -1,3 +1,6 @@
+require 'treetop'
+
+
 module CQL
   class CQLNode < Treetop::Runtime::SyntaxNode
     def ==(other)

@@ -1,5 +1,3 @@
-require 'treetop'
-
 # Load our custom syntax node classes so the parser can use them
 require_relative 'node_extensions'
 

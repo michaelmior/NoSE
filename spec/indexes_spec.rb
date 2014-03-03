@@ -104,4 +104,21 @@ describe Index do
     index = Index.new([@id_field], [])
     expect(index.query_cost(@range_query, @workload)).to be_within(0.001).of(1600.0/3)
   end
+
+  it 'can serve as a materialized view' do
+    index = @simple_query.materialize_view(@workload)
+    expect(index.extra).to eq([@id_field])
+
+    index = @equality_query.materialize_view(@workload)
+    expect(index.fields).to eq([@id_field])
+
+    index = @range_query.materialize_view(@workload)
+    expect(index.fields).to eq([@id_field])
+
+    index = @combo_query.materialize_view(@workload)
+    expect(index.fields).to eq([@field, @id_field])
+
+    index = @order_query.materialize_view(@workload)
+    expect(index.fields).to eq([@id_field])
+  end
 end
