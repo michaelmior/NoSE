@@ -10,6 +10,10 @@ class Index
     @extra = extra
   end
 
+  def identity_for?(entity)
+    @fields == entity.fields.values.select { |field| field.is_a? IDField }
+  end
+
   def has_field?(field)
     !!(@fields + @extra).detect { |index_field| field == index_field }
   end

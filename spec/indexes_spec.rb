@@ -121,4 +121,9 @@ describe Index do
     index = @order_query.materialize_view(@workload)
     expect(index.fields).to eq([@id_field])
   end
+
+  it 'can tell if it maps identities for a field' do
+    index = Index.new([@id_field], [])
+    expect(index.identity_for? @entity).to be_true
+  end
 end
