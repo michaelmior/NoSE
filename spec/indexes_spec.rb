@@ -126,4 +126,10 @@ describe Index do
     index = Index.new([@id_field], [])
     expect(index.identity_for? @entity).to be_true
   end
+
+  it 'can be created to map entity fields by id' do
+    index = @entity.simple_index
+    expect(index.fields).to eq([@id_field])
+    expect(index.extra).to eq([@field])
+  end
 end

@@ -11,7 +11,7 @@ class Index
   end
 
   def identity_for?(entity)
-    @fields == entity.fields.values.select { |field| field.is_a? IDField }
+    @fields == entity.id_fields
   end
 
   def has_field?(field)
@@ -86,5 +86,11 @@ module CQL
       extra -= fields
       Index.new(fields, extra)
     end
+  end
+end
+
+class Entity
+  def simple_index
+    Index.new(self.id_fields, self.fields.values - self.id_fields)
   end
 end

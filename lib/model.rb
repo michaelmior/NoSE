@@ -9,6 +9,10 @@ class Entity
    @count = 1
  end
 
+ def id_fields
+   self.fields.values.select { |field| field.is_a? IDField }
+ end
+
  def <<(field)
    @fields[field.name] = field
    field.instance_variable_set(:@parent, self)
