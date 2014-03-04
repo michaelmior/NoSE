@@ -42,16 +42,13 @@ class Index
     fields.map(&:cardinality).inject(1, :*) * self.entry_size
   end
 
-  def supports_query?(query, workload)
+  def supports_predicates?(from, fields, eq, range, order_by, workload)
     # Ensure all the fields the query needs are indexed
-    return false if not query.fields.map { |field|
-        self.has_field?(workload.find_field [query.from.value, field.value]) }.all?
+    return false if not fields.map { |field|
+        self.has_field?(workload.find_field [from, field.value]) }.all?
 
     # Track fields used in predicates
     predicate_fields = []
-
-    # Check if the query contains a range predicate
-    range = query.range_field
 
     # Range predicates must occur last
     if range
@@ -61,22 +58,26 @@ class Index
     end
 
     # All fields in the where clause must be indexes
-    return false if not query.where.map { |condition|
-         @fields.include?(workload.find_field condition.field.value) }.all?
-    predicate_fields += query.where.map { |field| field.field.value }
+    return false if not eq.map { |condition|
+        @fields.include?(workload.find_field condition.field.value) }.all?
+    predicate_fields += eq.map { |field| field.field.value }
 
     # Fields for ordering must appear last
-    order_by = query.order_by.map { |field| workload.find_field field }
-    return false if order_by.length != 0 and not order_by == @fields[-order_by.length..-1]
-    predicate_fields += query.order_by
+    order_fields = order_by.map { |field| workload.find_field field }
+    return false if order_fields.length != 0 and not order_fields == @fields[-order_fields.length..-1]
+    predicate_fields += order_by
 
-    from_entity = workload.entities[query.from.value]
+    from_entity = workload.entities[from]
     return false if not predicate_fields.map do |field|
       field_keys = self.keys_for_field workload.find_field(field)
       field_keys == from_entity.key_fields(field)
     end.all?
 
     true
+  end
+
+  def supports_query?(query, workload)
+    self.supports_predicates? query.from.value, query.fields, query.eq_fields, query.range_field, query.order_by, workload
   end
 
   def query_cost(query, workload)
