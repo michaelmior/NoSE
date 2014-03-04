@@ -41,6 +41,10 @@ describe Parser do
     expect(Parser.parse('SELECT foo FROM baz ORDER BY baz.foo, baz.bar').order_by).to eq([['baz', 'foo'], ['baz', 'bar']])
   end
 
+  it 'correctly parses a foreign key traversal' do
+    expect(Parser.parse('SELECT foo FROM baz WHERE baz.bar.quux = 3').eq_fields[0].field.value).to eq(['baz', 'bar', 'quux'])
+  end
+
   it 'should throw an error on an invalid parse' do
     expect{Parser.parse('This is not the CQL you are looking for')}.to raise_error(Exception)
   end

@@ -10,7 +10,7 @@ class Entity
  end
 
  def id_fields
-   self.fields.values.select { |field| field.is_a? IDField }
+   self.fields.values.select { |field| field.instance_of? IDField }
  end
 
  def <<(field)

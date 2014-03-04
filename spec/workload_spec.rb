@@ -60,4 +60,18 @@ describe Workload do
     workload.add_entity(@entity)
     expect(workload.find_field ['Foo', 'Id']).to be(@field)
   end
+
+  it 'can find fields which traverse foreign keys' do
+    workload = Workload.new
+    workload.add_entity @entity
+
+    other_entity = Entity.new 'Bar'
+    other_field = IDField.new 'Quux'
+    other_entity << other_field
+    workload.add_entity other_entity
+
+    @entity << ForeignKey.new('Baz', other_entity)
+
+    expect(workload.find_field ['Foo', 'Baz', 'Quux']).to be(other_field)
+  end
 end

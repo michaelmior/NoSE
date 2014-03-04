@@ -20,7 +20,14 @@ class Workload
   end
 
   def find_field(field)
-    @entities[field[0]].fields[field[1]]
+    if field.count > 2
+      # Do a foreign key lookup
+      field = field.dup
+      field[0..1] = @entities[field[0]].fields[field[1]].entity.name
+      self.find_field field
+    else
+      @entities[field[0]].fields[field[1]]
+    end
   end
 
   def get_entity(name)
