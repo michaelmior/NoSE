@@ -7,7 +7,23 @@ class Index
 
   def initialize(fields, extra)
     @fields = fields
+
+    # Track which key this field is mapped over
+    @field_keys = {}
+    @fields.each do |field|
+      id_fields = field.parent.id_fields
+      @field_keys[field] = id_fields ? id_fields[0..0] : []
+    end
+
     @extra = extra
+  end
+
+  def set_field_keys(field, keys)
+    @field_keys[field] = keys
+  end
+
+  def keys_for_field(field)
+    @field_keys[field]
   end
 
   def identity_for?(entity)
@@ -31,21 +47,34 @@ class Index
     return false if not query.fields.map { |field|
         self.has_field?(workload.find_field [query.from.value, field.value]) }.all?
 
+    # Track fields used in predicates
+    predicate_fields = []
+
     # Check if the query contains a range predicate
     range = query.range_field
 
     # Range predicates must occur last
     if range
-      return false if @fields.last != workload.find_field(range.field.value)
+      range_field = workload.find_field range.field.value
+      return false if @fields.last != range_field
+      predicate_fields.push range.field.value
     end
 
     # All fields in the where clause must be indexes
     return false if not query.where.map { |condition|
          @fields.include?(workload.find_field condition.field.value) }.all?
+    predicate_fields += query.where.map { |field| field.field.value }
 
     # Fields for ordering must appear last
     order_by = query.order_by.map { |field| workload.find_field field }
     return false if order_by.length != 0 and not order_by == @fields[-order_by.length..-1]
+    predicate_fields += query.order_by
+
+    from_entity = workload.entities[query.from.value]
+    return false if not predicate_fields.map do |field|
+      field_keys = self.keys_for_field workload.find_field(field)
+      field_keys == from_entity.key_fields(field)
+    end.all?
 
     true
   end

@@ -3,6 +3,7 @@ require_relative '../lib/parser'
 require_relative '../lib/model'
 require_relative '../lib/workload'
 
+
 describe Index do
   before(:each) do
     @entity = Entity.new('Foo') * 100
@@ -11,11 +12,19 @@ describe Index do
     @entity << @id_field
     @entity << @field
 
+    @other_entity = Entity.new('Baz')
+    @other_field = IntegerField.new('Quux')
+    @other_entity << @other_field
+
+    @foreign_key = ForeignKey.new('Corge', @other_entity)
+    @entity << @foreign_key
+
     @simple_query = Parser.parse('SELECT Id FROM Foo')
     @equality_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id=3')
     @range_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id > 3')
     @combo_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id > 3 AND Foo.Bar = 1')
     @order_query = Parser.parse('SELECT Id FROM Foo ORDER BY Foo.Id')
+    @foreign_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Corge.Quux = 3')
 
     @workload = Workload.new
     @workload.add_query @simple_query
@@ -25,6 +34,7 @@ describe Index do
     @workload.add_query @combo_query
     @workload.add_query @order_query
     @workload.add_entity @entity
+    @workload.add_entity @other_entity
   end
 
   it 'has zero size when empty' do
@@ -95,6 +105,17 @@ describe Index do
     expect(index.supports_query?(@order_query, @workload)).to be_false
   end
 
+  it 'supports queries with foreign keys' do
+    index = Index.new([@other_field], [@id_field])
+    index.set_field_keys @other_field, [@foreign_key]
+    expect(index.supports_query?(@foreign_query, @workload)).to be_true
+  end
+
+  it 'does not support queries with foreign keys if the field is not keyed' do
+    index = Index.new([@other_field], [@id_field])
+    expect(index.supports_query?(@foreign_query, @workload)).to be_false
+  end
+
   it 'can estimate the cost of evaluating a query' do
     index = Index.new([@id_field], [])
     expect(index.query_cost(@equality_query, @workload)).to eq(1600)
@@ -130,6 +151,6 @@ describe Index do
   it 'can be created to map entity fields by id' do
     index = @entity.simple_index
     expect(index.fields).to eq([@id_field])
-    expect(index.extra).to eq([@field])
+    expect(index.extra).to eq([@field, @foreign_key])
   end
 end

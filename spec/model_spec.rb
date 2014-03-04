@@ -43,4 +43,26 @@ describe Entity do
 
     expect(field.parent).to be(entity)
   end
+
+  it 'can identify a list of key traversals for a field' do
+    entity = Entity.new('Foo')
+    field = IDField.new('Id')
+    entity << field
+
+    expect(entity.key_fields ['Foo', 'Id']).to eq([field])
+  end
+
+  it 'can identify a list of key traversals for foreign keys' do
+      entity = Entity.new('Foo')
+      field = IDField.new('Id')
+      entity << field
+
+      other_entity = Entity.new('Bar')
+      other_entity << IntegerField.new('Baz')
+
+      foreign_key = ForeignKey.new('Quux', other_entity)
+      entity << foreign_key
+
+      expect(entity.key_fields ['Foo', 'Quux', 'Baz']).to eq([foreign_key])
+  end
 end

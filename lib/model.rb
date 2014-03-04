@@ -23,6 +23,21 @@ class Entity
    @count = count
    self
  end
+
+ def key_fields(field)
+   if field[0] == name
+     field = field[1..-1]
+   end
+
+   key_field = @fields[field[0]]
+   if key_field.instance_of? IDField
+     [key_field]
+   elsif key_field.is_a? ForeignKey
+     [key_field] + key_field.entity.key_fields(field[1..-1])
+   else
+     self.id_fields
+   end
+ end
 end
 
 class Field
