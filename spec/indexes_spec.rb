@@ -3,7 +3,6 @@ require_relative '../lib/parser'
 require_relative '../lib/model'
 require_relative '../lib/workload'
 
-
 describe Index do
   before(:each) do
     @entity = Entity.new('Foo') * 100
@@ -22,9 +21,11 @@ describe Index do
     @simple_query = Parser.parse('SELECT Id FROM Foo')
     @equality_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id=3')
     @range_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id > 3')
-    @combo_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id > 3 AND Foo.Bar = 1')
+    @combo_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id > 3 ' \
+                                'AND Foo.Bar = 1')
     @order_query = Parser.parse('SELECT Id FROM Foo ORDER BY Foo.Id')
-    @foreign_query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Corge.Quux = 3')
+    @foreign_query = Parser.parse('SELECT Id FROM Foo WHERE ' \
+                                  'Foo.Corge.Quux = 3')
 
     @workload = Workload.new
     @workload.add_query @simple_query
@@ -45,12 +46,12 @@ describe Index do
 
   it 'contains fields' do
     index = Index.new([@id_field], [])
-    expect(index.has_field? @id_field).to be_true
+    expect(index.contains_field? @id_field).to be_true
   end
 
   it 'can store additional fields' do
     index = Index.new([], [@id_field])
-    expect(index.has_field? @id_field).to be_true
+    expect(index.contains_field? @id_field).to be_true
   end
 
   it 'can calculate its size' do
@@ -118,12 +119,13 @@ describe Index do
 
   it 'can estimate the cost of evaluating a query' do
     index = Index.new([@id_field], [])
-    expect(index.query_cost(@equality_query, @workload)).to eq(1600)
+    expect(index.query_cost(@equality_query, @workload)).to eq 1600
   end
 
   it 'can estimate the cost of evaluating a range query' do
     index = Index.new([@id_field], [])
-    expect(index.query_cost(@range_query, @workload)).to be_within(0.001).of(1600.0/3)
+    expect(index.query_cost(@range_query, @workload)).to \
+        be_within(0.001).of(1600.0 / 3)
   end
 
   it 'can serve as a materialized view' do

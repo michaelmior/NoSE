@@ -29,23 +29,29 @@ describe Parser do
   end
 
   it 'correctly parses a list of fields' do
-    expect(Parser.parse('SELECT foo, bar FROM baz').fields.map {
-      |field| field.value }).to match_array(['foo', 'bar'])
+    expect(Parser.parse('SELECT foo, bar FROM baz').fields.map do |field|
+      field.value
+    end).to match_array(%w{foo bar})
   end
 
   it 'correctly parses an order by clause with a single field' do
-    expect(Parser.parse('SELECT foo FROM baz ORDER BY baz.foo').order_by).to match_array([['baz', 'foo']])
+    expect(Parser.parse('SELECT foo FROM baz ORDER BY baz.foo').order_by).to \
+        match_array([%w{baz foo}])
   end
 
   it 'correctly parses an order by clause with multiple fields' do
-    expect(Parser.parse('SELECT foo FROM baz ORDER BY baz.foo, baz.bar').order_by).to eq([['baz', 'foo'], ['baz', 'bar']])
+    expect(Parser.parse('SELECT foo FROM baz ' \
+                        'ORDER BY baz.foo, baz.bar').order_by).to \
+                        eq([%w{baz foo}, %w{baz bar}])
   end
 
   it 'correctly parses a foreign key traversal' do
-    expect(Parser.parse('SELECT foo FROM baz WHERE baz.bar.quux = 3').eq_fields[0].field.value).to eq(['baz', 'bar', 'quux'])
+    query = Parser.parse('SELECT foo FROM baz WHERE baz.bar.quux = 3')
+    expect(query.eq_fields[0].field.value).to eq(%w{baz bar quux})
   end
 
   it 'should throw an error on an invalid parse' do
-    expect{Parser.parse('This is not the CQL you are looking for')}.to raise_error(Exception)
+    expect { Parser.parse('This is not the CQL you are looking for') }.to \
+        raise_error(Exception)
   end
 end

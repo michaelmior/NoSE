@@ -1,7 +1,6 @@
 require_relative './model'
 require_relative './parser'
 
-
 class Workload
   attr_reader :queries
   attr_reader :entities
@@ -24,7 +23,7 @@ class Workload
       # Do a foreign key lookup
       field = field.dup
       field[0..1] = @entities[field[0]].fields[field[1]].entity.name
-      self.find_field field
+      find_field field
     else
       @entities[field[0]].fields[field[1]]
     end
@@ -34,28 +33,35 @@ class Workload
     @entities[name]
   end
 
-  def valid?
+  def fields_exist?
     @queries.each do |query|
-      # Entity must exist
-      return false if not @entities.has_key?(query.from.value)
       entity = @entities[query.from.value]
 
       # All fields must exist
       query.fields.each do |field|
-        return false if not entity.fields.has_key?(field.value)
+        return false unless entity.fields.key?(field.value)
       end
-
-      # No more than one range query
-      return false if query.range_field
 
       # Fields in the where clause exist
       query.where.map { |condition| condition.field }.each do |field|
         parts = field.value
-        return false if not @entities.has_key?(parts.first)
-        return false if parts.length == 2 and not entity.fields.has_key?(parts.last)
+        return false unless @entities.key?(parts.first)
+        return false if parts.length == 2 && \
+          !entity.fields.key?(parts.last)
       end
     end
+  end
 
-    true
+  def valid?
+    @queries.each do |query|
+      # Entity must exist
+      return false unless @entities.key?(query.from.value)
+
+      # No more than one range query
+      return false if query.range_field
+
+    end
+
+    fields_exist?
   end
 end

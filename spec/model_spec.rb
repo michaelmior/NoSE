@@ -6,7 +6,7 @@ describe Entity do
     entity << IntegerField.new('Bar')
     entity << IntegerField.new('Baz')
 
-    expect(entity.fields.keys).to match_array(['Bar', 'Baz'])
+    expect(entity.fields.keys).to match_array %w{Bar Baz}
   end
 
   it 'can have foreign keys' do
@@ -49,20 +49,20 @@ describe Entity do
     field = IDField.new('Id')
     entity << field
 
-    expect(entity.key_fields ['Foo', 'Id']).to eq([field])
+    expect(entity.key_fields %w{Foo Id}).to eq [field]
   end
 
   it 'can identify a list of key traversals for foreign keys' do
-      entity = Entity.new('Foo')
-      field = IDField.new('Id')
-      entity << field
+    entity = Entity.new('Foo')
+    field = IDField.new('Id')
+    entity << field
 
-      other_entity = Entity.new('Bar')
-      other_entity << IntegerField.new('Baz')
+    other_entity = Entity.new('Bar')
+    other_entity << IntegerField.new('Baz')
 
-      foreign_key = ForeignKey.new('Quux', other_entity)
-      entity << foreign_key
+    foreign_key = ForeignKey.new('Quux', other_entity)
+    entity << foreign_key
 
-      expect(entity.key_fields ['Foo', 'Quux', 'Baz']).to eq([foreign_key])
+    expect(entity.key_fields %w{Foo Quux Baz}).to eq [foreign_key]
   end
 end

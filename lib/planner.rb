@@ -9,7 +9,7 @@ class IndexLookupStep < PlanStep
   end
 
   def ==(other)
-    other.instance_of? self.class and @index == other.index
+    other.instance_of?(self.class) && @index == other.index
   end
 end
 
@@ -21,7 +21,7 @@ class SortStep < PlanStep
   end
 
   def ==(other)
-    other.instance_of? self.class and @fields == other.fields
+    other.instance_of?(self.class) && @fields == other.fields
   end
 
   def cost
@@ -48,7 +48,7 @@ class QueryState
   end
 
   def answered?
-    @fields.empty? and @eq.empty? and @range.nil? and @order_by.empty?
+    @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
   end
 end
 
@@ -71,7 +71,7 @@ class Planner
       if step
         steps.push step
       else
-        raise NoPlanException
+        fail NoPlanException
       end
     end
 
@@ -79,14 +79,16 @@ class Planner
   end
 
   def find_step_for_state(state, workload)
-    for index in @indexes
-      if state.fields.empty? and state.eq.empty? and state.range.nil? and not state.order_by.empty?
+    @indexes.each do |index|
+      if state.fields.empty? && state.eq.empty? && state.range.nil? && \
+          !state.order_by.empty?
         order_fields = state.order_by.map { |field| workload.find_field field }
         state.order_by = []
         return SortStep.new(order_fields)
       end
 
-      if index.supports_predicates?(state.from, state.fields, state.eq, state.range, state.order_by, workload)
+      if index.supports_predicates?(state.from, state.fields, state.eq, \
+                                    state.range, state.order_by, workload)
         state.fields = []
         state.eq = []
         state.range = nil
@@ -94,7 +96,8 @@ class Planner
         return IndexLookupStep.new(index)
       end
 
-      if index.supports_predicates?(state.from, state.fields, state.eq, state.range, [], workload)
+      if index.supports_predicates?(state.from, state.fields, state.eq, \
+                                    state.range, [], workload)
         state.fields = []
         state.eq = []
         state.range = nil

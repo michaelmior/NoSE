@@ -3,9 +3,8 @@ require_relative '../lib/model'
 require_relative '../lib/workload'
 require_relative '../lib/indexes'
 
-
 describe Planner do
-  before (:each) do
+  before(:each) do
     @entity = Entity.new('Tweet')
     @id_field = IDField.new('TweetId')
     @entity << @id_field
@@ -33,12 +32,14 @@ describe Planner do
     query = Parser.parse 'SELECT Body FROM Tweet ORDER BY Tweet.Timestamp'
 
     plan = planner.find_plan_for_query query, @workload
-    expect(plan).to eq([IndexLookupStep.new(index), SortStep.new([@time_field])])
+    steps = [IndexLookupStep.new(index), SortStep.new([@time_field])]
+    expect(plan).to eq steps
   end
 
   it 'raises an exception if there is no plan' do
     planner = Planner.new(@workload, [])
     query = Parser.parse 'SELECT Body FROM Tweet'
-    expect { planner.find_plan_for_query query, @workload }.to raise_error NoPlanException
+    expect { planner.find_plan_for_query query, @workload }.to \
+        raise_error NoPlanException
   end
 end

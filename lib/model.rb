@@ -1,43 +1,46 @@
 class Entity
- attr_reader :fields
- attr_reader :name
- attr_reader :count
+  attr_reader :fields
+  attr_reader :name
+  attr_reader :count
 
- def initialize(name)
-   @name = name
-   @fields = {}
-   @count = 1
- end
+  def initialize(name)
+    @name = name
+    @fields = {}
+    @count = 1
+  end
 
- def id_fields
-   self.fields.values.select { |field| field.instance_of? IDField }
- end
+  def id_fields
+    fields.values.select { |field| field.instance_of? IDField }
+  end
 
- def <<(field)
-   @fields[field.name] = field
-   field.instance_variable_set(:@parent, self)
-   self
- end
+  def <<(field)
+    @fields[field.name] = field
+    field.instance_variable_set(:@parent, self)
+    self
+  end
 
- def *(count)
-   @count = count
-   self
- end
+  def *(other)
+    if other.is_a? Integer
+      @count = other
+    else
+      fail TypeError
+    end
 
- def key_fields(field)
-   if field[0] == name
-     field = field[1..-1]
-   end
+    self
+  end
 
-   key_field = @fields[field[0]]
-   if key_field.instance_of? IDField
-     [key_field]
-   elsif key_field.is_a? ForeignKey
-     [key_field] + key_field.entity.key_fields(field[1..-1])
-   else
-     self.id_fields
-   end
- end
+  def key_fields(field)
+    field = field[1..-1] if field[0] == name
+
+    key_field = @fields[field[0]]
+    if key_field.instance_of? IDField
+      [key_field]
+    elsif key_field.is_a? ForeignKey
+      [key_field] + key_field.entity.key_fields(field[1..-1])
+    else
+      id_fields
+    end
+  end
 end
 
 class Field
@@ -53,13 +56,18 @@ class Field
     @cardinality = nil
   end
 
-  def *(cardinality)
-    @cardinality = cardinality
+  def *(other)
+    if other.is_a? Integer
+      @cardinality = other
+    else
+      fail TypeError
+    end
+
     self
   end
 
   def cardinality
-    @cardinality or @parent.count or 1
+    @cardinality || @parent.count || 1
   end
 end
 
@@ -81,7 +89,6 @@ class StringField < Field
   end
 end
 
-
 class IDField < Field
   def initialize(name)
     super(name, :key, 16)
@@ -99,7 +106,7 @@ class ForeignKey < IDField
   end
 
   def cardinality
-    @entity.count or super
+    @entity.count || super
   end
 end
 

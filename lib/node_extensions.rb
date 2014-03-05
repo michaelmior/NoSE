@@ -1,11 +1,10 @@
 require 'treetop'
 
-
 module CQL
   class CQLNode < Treetop::Runtime::SyntaxNode
     def ==(other)
-      if self.respond_to? :value and other.respond_to? :value
-        self.value == other.value
+      if self.respond_to?(:value) && other.respond_to?(:value)
+        value == other.value
       else
         super
       end
@@ -14,62 +13,67 @@ module CQL
 
   class Statement < CQLNode
     def fields
-      fields = self.elements.detect {
-          |n| ["CQL::Identifier", "CQL::IdentifierList"].include? n.class.name }
-      fields.class.name == "CQL::Identifier" ? [fields] : fields.elements
+      fields = elements.find do |n|
+        ['CQL::Identifier', 'CQL::IdentifierList'].include? n.class.name
+      end
+      fields.class.name == 'CQL::Identifier' ? [fields] : fields.elements
     end
 
     def where
-      where = self.elements.detect { |n| n.class.name == "CQL::WhereClause" }
-      return [] if where.nil? or where.elements.length == 0
-      where.elements.first.class.name == "CQL::Expression" ?
-          where.elements.first.elements : where.elements
+      where = elements.find { |n| n.class.name == 'CQL::WhereClause' }
+      return [] if where.nil? || where.elements.length == 0
+
+      if where.elements.first.class.name == 'CQL::Expression'
+        where.elements.first.elements
+      else
+        where.elements
+      end
     end
 
     def eq_fields
-      self.where.select { |condition| not condition.is_range? }
+      where.select { |condition| !condition.range? }
     end
 
     def range_field
-      self.where.detect { |condition| condition.is_range? }
+      where.find { |condition| condition.range? }
     end
 
     def limit
-      limit = self.elements.detect { |n| n.class.name == "CQL::LimitClause" }
+      limit = elements.find { |n| n.class.name == 'CQL::LimitClause' }
       limit ? limit.value : nil
     end
 
     def order_by
-      order_by = self.elements.detect { |n| n.class.name == "CQL::OrderByClause" }
+      order_by = elements.find { |n| n.class.name == 'CQL::OrderByClause' }
       order_by ? order_by.value : []
     end
 
     def from
-      self.elements.detect { |n| ["CQL::Table"].include? n.class.name }
+      elements.find { |n| ['CQL::Table'].include? n.class.name }
     end
   end
 
   class IntegerLiteral < CQLNode
     def value
-      self.text_value.to_i
+      text_value.to_i
     end
   end
 
   class FloatLiteral < CQLNode
     def value
-      self.text_value.to_f
+      text_value.to_f
     end
   end
 
   class StringLiteral < CQLNode
     def value
-      self.text_value[1..-2]
+      text_value[1..-2]
     end
   end
 
   class Identifier < CQLNode
     def value
-      self.text_value.to_s
+      text_value.to_s
     end
   end
 
@@ -78,35 +82,34 @@ module CQL
 
   class Field < CQLNode
     def value
-      self.elements.map { |n|
-          n.class.name == "CQL::Field" ?
-              n.elements.map { |m| m.value } : n.value
-      }.flatten
+      elements.map do |n|
+        n.class.name == 'CQL::Field' ? n.elements.map { |m| m.value } : n.value
+      end.flatten
     end
   end
 
   class LimitClause < CQLNode
     def value
-      self.elements[0].text_value.to_i
+      elements[0].text_value.to_i
     end
   end
 
   class FieldList < CQLNode
     def value
-      self.elements.map{ |n| n.value }
+      elements.map { |n| n.value }
     end
   end
 
   class OrderByClause < CQLNode
     def value
-      fields = self.elements[0]
-      fields.class.name == "CQL::Field" ? [fields.value] : fields.value
+      fields = elements[0]
+      fields.class.name == 'CQL::Field' ? [fields.value] : fields.value
     end
   end
 
   class IdentifierList < CQLNode
     def value
-      self.elements.map{ |n| n.value }
+      elements.map { |n| n.value }
     end
   end
 
@@ -118,25 +121,25 @@ module CQL
 
   class Condition < CQLNode
     def field
-      self.elements[0]
+      elements[0]
     end
 
     def value
-      self.elements[-1].value
+      elements[-1].value
     end
 
     def logical_operator
-      self.elements.detect { |n| n.class.name == "CQL::Operator" }
+      elements.find { |n| n.class.name == 'CQL::Operator' }
     end
 
-    def is_range?
-      [:>, :>=, :<, :<=].include?(self.logical_operator.value)
+    def range?
+      [:>, :>=, :<, :<=].include?(logical_operator.value)
     end
   end
 
   class Operator < CQLNode
     def value
-      self.text_value.to_sym
+      text_value.to_sym
     end
   end
 end
