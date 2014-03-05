@@ -18,6 +18,10 @@ class Index
     @extra = extra
   end
 
+  def ==(other)
+    @fields == other.fields and @field_keys == other.instance_variable_get(:@field_keys) and @extra == other.extra
+  end
+
   def set_field_keys(field, keys)
     @field_keys[field] = keys
   end
