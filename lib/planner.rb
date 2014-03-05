@@ -32,6 +32,26 @@ class SortStep < PlanStep
   end
 end
 
+class QueryState
+  attr_accessor :from
+  attr_accessor :fields
+  attr_accessor :eq
+  attr_accessor :range
+  attr_accessor :order_by
+
+  def initialize(query)
+    @from = query.from.value
+    @fields = query.fields
+    @eq = query.eq_fields
+    @range = query.range_field
+    @order_by = query.order_by
+  end
+
+  def answered?
+    @fields.empty? and @eq.empty? and @range.nil? and @order_by.empty?
+  end
+end
+
 class NoPlanException < StandardError
 end
 
@@ -44,14 +64,10 @@ class Planner
   def find_plan_for_query(query, workload)
     steps = []
 
-    from = query.from.value
-    fields = query.fields
-    eq = query.eq_fields
-    range = query.range_field ? [query.range_field] : []
-    order_by = query.order_by
+    state = QueryState.new query
 
-    until fields.empty? and eq.empty? and range.empty? and order_by.empty?
-      step = find_step_for_predicates(from, fields, eq, range, order_by, workload)
+    until state.answered?
+      step = find_step_for_state(state, workload)
       if step
         steps.push step
       else
@@ -62,21 +78,26 @@ class Planner
     steps
   end
 
-  def find_step_for_predicates(from, fields, eq, range, order_by, workload)
+  def find_step_for_state(state, workload)
     for index in @indexes
-      if fields.empty? and eq.empty? and range.empty? and not order_by.empty?
-        order_fields = order_by.map { |field| workload.find_field field }
-        order_by.collect!{ nil }.compact!
+      if state.fields.empty? and state.eq.empty? and state.range.nil? and not state.order_by.empty?
+        order_fields = state.order_by.map { |field| workload.find_field field }
+        state.order_by = []
         return SortStep.new(order_fields)
       end
 
-      if index.supports_predicates?(from, fields, eq, range[0], order_by, workload)
-        [fields, eq, range, order_by].each { |ary| ary.collect!{ nil }.compact! }
+      if index.supports_predicates?(state.from, state.fields, state.eq, state.range, state.order_by, workload)
+        state.fields = []
+        state.eq = []
+        state.range = nil
+        state.order_by = []
         return IndexLookupStep.new(index)
       end
 
-      if index.supports_predicates?(from, fields, eq, range[0], [], workload)
-        [fields, eq, range].each { |ary| ary.collect!{ nil }.compact! }
+      if index.supports_predicates?(state.from, state.fields, state.eq, state.range, [], workload)
+        state.fields = []
+        state.eq = []
+        state.range = nil
         return IndexLookupStep.new(index)
       end
     end
