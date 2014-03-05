@@ -23,4 +23,10 @@ describe Planner do
     plan = planner.find_plan_for_query query, @workload
     expect(plan).to eq([IndexLookupStep.new(index)])
   end
+
+  it 'raises an exception if there is no plan' do
+    planner = Planner.new(@workload, [])
+    query = Parser.parse 'SELECT Body FROM Tweet'
+    expect { planner.find_plan_for_query query, @workload }.to raise_error NoPlanException
+  end
 end
