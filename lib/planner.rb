@@ -4,11 +4,21 @@ class PlanStep
 
   def initialize
     @children = []
+    @parent = nil
   end
 
   def inspect
     self.class.name.split(/(?=[A-Z])/)[0..-2] \
         .map(&:downcase).join(' ').capitalize
+  end
+
+  def children=(children)
+    @children = children
+    children.each { |child| child.instance_variable_set(:@parent, self) }
+  end
+
+  def parent_steps
+    @parent.nil? ? [] : @parent.parent_steps + [self]
   end
 end
 
@@ -36,35 +46,38 @@ class IndexLookupStep < PlanStep
   end
 
   def self.apply(index, state, workload)
+    new_steps = []
+
     if index.supports_predicates?(state.from, state.fields, state.eq, \
                                   state.range, state.order_by, workload)
 
-      state = state.dup
-      state.fields = []
-      state.eq = []
-      state.range = nil
-      state.order_by = []
+      new_state = state.dup
+      new_state.fields = []
+      new_state.eq = []
+      new_state.range = nil
+      new_state.order_by = []
       new_step = IndexLookupStep.new(index)
-      new_step.state = state
-      return new_step
+      new_step.state = new_state
+      new_steps.push new_step
     end
 
-    return nil if state.fields.empty? && state.eq.empty? && state.range.nil?
+    return new_steps if state.fields.empty? && \
+        state.eq.empty? && state.range.nil?
 
     if index.supports_predicates?(state.from, state.fields, state.eq, \
                                   state.range, [], workload)
 
-      state = state.dup
-      state.fields = []
-      state.eq = []
-      state.range = nil
+      new_state = state.dup
+      new_state.fields = []
+      new_state.eq = []
+      new_state.range = nil
       new_step = IndexLookupStep.new(index)
-      new_step.state = state
+      new_step.state = new_state
 
-      return new_step
+      new_steps.push new_step
     end
 
-    nil
+    new_steps.length > 0 ? new_steps : nil
   end
 end
 
@@ -126,24 +139,32 @@ class QueryState
   def answered?
     @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
   end
+
+  def dup
+    Marshal.load(Marshal.dump(self))
+  end
 end
 
 class QueryPlan
+  include Enumerable
+
   attr_reader :root
 
   def initialize(state)
     @root = RootStep.new(state)
   end
 
-  def first
-    plan = []
-    step = @root
-    while step.children.length > 0
-      step = step.children[0]
-      plan.push step
-    end
+  def each
+    nodes = [@root]
 
-    plan
+    while nodes.length > 0
+      node = nodes.pop
+      if node.children.length > 0
+        nodes.concat node.children
+      else
+        yield node.parent_steps
+      end
+    end
   end
 
   def inspect(step = nil, indent = 0)
@@ -177,7 +198,10 @@ class Planner
 
   def find_plans_for_step(step, workload)
     unless step.state.answered?
-      steps = find_steps_for_state(step.state, workload)
+      steps = find_steps_for_state(step.state, workload).select do |new_step|
+        new_step != step
+      end
+
       if steps.length > 0
         step.children = steps
         steps.each { |child_step| find_plans_for_step child_step, workload }
@@ -211,6 +235,6 @@ class Planner
       end
     end
 
-    steps
+    steps.flatten
   end
 end
