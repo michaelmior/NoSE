@@ -17,6 +17,12 @@ class Index
     @extra = extra
   end
 
+  def inspect
+    field_names = @fields.map(&:inspect)
+    extra_names = @extra.map(&:inspect)
+    (field_names.to_s + ', ' + extra_names.to_s).gsub '"', ''
+  end
+
   def ==(other)
     @fields == other.fields && \
         @field_keys == other.instance_variable_get(:@field_keys) \

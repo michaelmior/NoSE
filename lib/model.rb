@@ -56,6 +56,10 @@ class Field
     @cardinality = nil
   end
 
+  def inspect
+    name + '.' + parent.name
+  end
+
   def *(other)
     if other.is_a? Integer
       @cardinality = other

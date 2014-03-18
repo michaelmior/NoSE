@@ -5,6 +5,11 @@ class PlanStep
   def initialize
     @children = []
   end
+
+  def inspect
+    self.class.name.split(/(?=[A-Z])/)[0..-2] \
+        .map(&:downcase).join(' ').capitalize
+  end
 end
 
 class RootStep < PlanStep
@@ -20,6 +25,10 @@ class IndexLookupStep < PlanStep
   def initialize(index)
     super()
     @index = index
+  end
+
+  def inspect
+    super + ' ' + index.inspect
   end
 
   def ==(other)
@@ -65,6 +74,10 @@ class SortStep < PlanStep
   def initialize(fields)
     super()
     @fields = fields
+  end
+
+  def inspect
+    super + ' ' + @fields.map { |field| field.inspect }.to_s.gsub('"', '')
   end
 
   def ==(other)
@@ -131,6 +144,13 @@ class QueryPlan
     end
 
     plan
+  end
+
+  def inspect(step = nil, indent = 0)
+    step = @root if step.nil?
+    "  " * indent + step.inspect + "\n" + step.children.map do |child_step|
+      inspect child_step, indent + 1
+    end.reduce('', &:+)
   end
 end
 
