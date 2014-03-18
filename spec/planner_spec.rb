@@ -23,7 +23,7 @@ describe Planner do
     query = Parser.parse 'SELECT Body FROM Tweet'
 
     plan = planner.find_plan_for_query query, @workload
-    expect(plan).to eq([IndexLookupStep.new(index)])
+    expect(plan.first).to eq([IndexLookupStep.new(index)])
   end
 
   it 'can perform an external sort if an index does not exist' do
@@ -33,7 +33,7 @@ describe Planner do
 
     plan = planner.find_plan_for_query query, @workload
     steps = [IndexLookupStep.new(index), SortStep.new([@time_field])]
-    expect(plan).to eq steps
+    expect(plan.first).to eq steps
   end
 
   it 'raises an exception if there is no plan' do

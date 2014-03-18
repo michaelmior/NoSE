@@ -1,10 +1,24 @@
 class PlanStep
+  attr_accessor :children
+  attr_accessor :state
+
+  def initialize
+    @children = []
+  end
+end
+
+class RootStep < PlanStep
+  def initialize(state)
+    super()
+    @state = state
+  end
 end
 
 class IndexLookupStep < PlanStep
   attr_reader :index
 
   def initialize(index)
+    super()
     @index = index
   end
 
@@ -15,19 +29,30 @@ class IndexLookupStep < PlanStep
   def self.apply(index, state, workload)
     if index.supports_predicates?(state.from, state.fields, state.eq, \
                                   state.range, state.order_by, workload)
+
+      state = state.dup
       state.fields = []
       state.eq = []
       state.range = nil
       state.order_by = []
-      return IndexLookupStep.new(index)
+      new_step = IndexLookupStep.new(index)
+      new_step.state = state
+      return new_step
     end
+
+    return nil if state.fields.empty? && state.eq.empty? && state.range.nil?
 
     if index.supports_predicates?(state.from, state.fields, state.eq, \
                                   state.range, [], workload)
+
+      state = state.dup
       state.fields = []
       state.eq = []
       state.range = nil
-      return IndexLookupStep.new(index)
+      new_step = IndexLookupStep.new(index)
+      new_step.state = state
+
+      return new_step
     end
 
     nil
@@ -38,6 +63,7 @@ class SortStep < PlanStep
   attr_reader :fields
 
   def initialize(fields)
+    super()
     @fields = fields
   end
 
@@ -53,14 +79,19 @@ class SortStep < PlanStep
   end
 
   def self.apply(state, workload)
+    new_step = nil
+
     if state.fields.empty? && state.eq.empty? && state.range.nil? && \
       !state.order_by.empty?
       order_fields = state.order_by.map { |field| workload.find_field field }
+
+      state = state.dup
       state.order_by = []
-      return SortStep.new(order_fields)
+      new_step = SortStep.new(order_fields)
+      new_step.state = state
     end
 
-    nil
+    new_step
   end
 end
 
@@ -84,6 +115,25 @@ class QueryState
   end
 end
 
+class QueryPlan
+  attr_reader :root
+
+  def initialize(state)
+    @root = RootStep.new(state)
+  end
+
+  def first
+    plan = []
+    step = @root
+    while step.children.length > 0
+      step = step.children[0]
+      plan.push step
+    end
+
+    plan
+  end
+end
+
 class NoPlanException < StandardError
 end
 
@@ -102,34 +152,45 @@ class Planner
   end
 
   def find_plan_for_query(query, workload)
-    steps = []
-    state = QueryState.new query
+    find_plans_for_query(query, workload)
+  end
 
-    until state.answered?
-      step = find_step_for_state(state, workload)
-      if step
-        steps.push step
+  def find_plans_for_step(step, workload)
+    unless step.state.answered?
+      steps = find_steps_for_state(step.state, workload)
+      if steps.length > 0
+        step.children = steps
+        steps.each { |child_step| find_plans_for_step child_step, workload }
       else
         fail NoPlanException
       end
     end
-
-    steps
   end
 
-  def find_step_for_state(state, workload)
+  def find_plans_for_query(query, workload)
+    state = QueryState.new query
+    plan = QueryPlan.new(state)
+
+    find_plans_for_step(plan.root, workload)
+
+    plan
+  end
+
+  def find_steps_for_state(state, workload)
+    steps = []
+
     @@index_free_steps.each do |step|
       new_step = step.apply(state, workload)
-      return new_step if new_step
+      steps.push new_step if new_step
     end
 
     @indexes.each do |index|
       @@index_steps.each do |step|
         new_step = step.apply(index, state, workload)
-        return new_step if new_step
+        steps.push new_step if new_step
       end
     end
 
-    nil
+    steps
   end
 end
