@@ -1,4 +1,30 @@
+require 'forwardable'
+
+class QueryPlan
+  include Comparable
+  include Enumerable
+
+  # Most of the work is delegated to the array
+  extend Forwardable
+  def_delegators :@steps, :each, :<<, :[], :==, :===, :eql?,
+                 :inspect, :to_a, :to_ary
+
+  def initialize
+    @steps = []
+  end
+
+  def <=>(other)
+    cost <=> other.cost
+  end
+
+  def cost
+    @steps.map(&:cost).inject(0, &:+)
+  end
+end
+
 class PlanStep
+  include Enumerable
+
   attr_accessor :children
   attr_accessor :state
 
@@ -18,7 +44,20 @@ class PlanStep
   end
 
   def parent_steps
-    @parent.nil? ? [] : @parent.parent_steps + [self]
+    steps = nil
+
+    if @parent.nil?
+      steps = QueryPlan.new
+    else
+      steps = @parent.parent_steps
+      steps << self
+    end
+
+    steps
+  end
+
+  def cost
+    0
   end
 end
 
@@ -154,7 +193,7 @@ class QueryState
   end
 end
 
-class QueryPlan
+class QueryPlanTree
   include Enumerable
 
   attr_reader :root
@@ -222,7 +261,7 @@ class Planner
 
   def find_plans_for_query(query, workload)
     state = QueryState.new query
-    plan = QueryPlan.new(state)
+    plan = QueryPlanTree.new(state)
 
     find_plans_for_step(plan.root, workload)
 
