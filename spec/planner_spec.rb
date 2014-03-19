@@ -1,7 +1,7 @@
-require_relative '../lib/planner'
-require_relative '../lib/model'
-require_relative '../lib/workload'
-require_relative '../lib/indexes'
+require 'planner'
+require 'model'
+require 'workload'
+require 'indexes'
 
 describe Planner do
   before(:each) do

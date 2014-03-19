@@ -1,4 +1,4 @@
-require_relative '../lib/model'
+require 'model'
 
 describe Entity do
   it 'can store fields' do

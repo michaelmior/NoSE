@@ -1,7 +1,7 @@
-require_relative '../lib/indexes'
-require_relative '../lib/parser'
-require_relative '../lib/model'
-require_relative '../lib/workload'
+require 'indexes'
+require 'parser'
+require 'model'
+require 'workload'
 
 describe Index do
   before(:each) do

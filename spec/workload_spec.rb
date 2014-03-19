@@ -1,4 +1,4 @@
-require_relative '../lib/workload'
+require 'workload'
 
 describe Workload do
   before(:each) do
