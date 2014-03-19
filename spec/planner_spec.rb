@@ -3,8 +3,6 @@ require_relative '../lib/model'
 require_relative '../lib/workload'
 require_relative '../lib/indexes'
 
-require 'pry'
-
 describe Planner do
   before(:each) do
     @entity = Entity.new('Tweet')
@@ -55,8 +53,8 @@ describe Planner do
 
     tree = planner.find_plan_for_query query, @workload
     expect(tree.to_a).to match_array [
-        [IndexLookupStep.new(index)],
-        [IndexLookupStep.new(index), SortStep.new([@time_field])]
+      [IndexLookupStep.new(index)],
+      [IndexLookupStep.new(index), SortStep.new([@time_field])]
     ]
   end
 end
