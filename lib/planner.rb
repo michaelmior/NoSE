@@ -61,8 +61,8 @@ class IndexLookupStep < PlanStep
       new_steps.push new_step
     end
 
-    return new_steps if state.fields.empty? && \
-        state.eq.empty? && state.range.nil?
+    return new_steps if (state.fields.empty? && \
+        state.eq.empty? && state.range.nil?) || state.order_by.length == 0
 
     if index.supports_predicates?(state.from, state.fields, state.eq, \
                                   state.range, [], workload)
@@ -129,11 +129,20 @@ class QueryState
   attr_accessor :order_by
 
   def initialize(query)
+    @query = query
     @from = query.from.value
     @fields = query.fields
     @eq = query.eq_fields
     @range = query.range_field
     @order_by = query.order_by
+  end
+
+  def inspect
+    @query.text_value +
+        "\n  fields: " + @fields.map { |field| field.inspect }.to_a.to_s +
+        "\n      eq: " + @eq.map { |field| field.inspect }.to_a.to_s +
+        "\n   range: " + (@range.nil? ? '(nil)' : @range.name) +
+        "\n   order: " + @order_by.map { |field| field.inspect }.to_a.to_s
   end
 
   def answered?
