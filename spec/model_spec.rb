@@ -1,19 +1,19 @@
 require 'model'
 
 describe Entity do
-  it 'can store fields' do
-    entity = Entity.new('Foo')
-    entity << IntegerField.new('Bar')
-    entity << IntegerField.new('Baz')
+  subject { Entity.new('Foo') }
 
-    expect(entity.fields.keys).to match_array %w{Bar Baz}
+  it 'can store fields' do
+    subject << IntegerField.new('Bar')
+    subject << IntegerField.new('Baz')
+
+    expect(subject.fields.keys).to match_array %w{Bar Baz}
   end
 
   it 'can have foreign keys' do
-    entity = Entity.new('Foo')
     other = Entity.new('Bar') * 100
     field = ToOneKey.new('other', other)
-    entity << field
+    subject << field
 
     expect(field.entity).to be(other)
     expect(field.type).to eq(:key)
@@ -22,10 +22,9 @@ describe Entity do
   end
 
   it 'can have foreign keys with cardinality > 1' do
-    entity = Entity.new('Foo')
     others = Entity.new('Bar') * 100
     field = ToManyKey.new('others', others)
-    entity << field
+    subject << field
 
     expect(field.entity).to be(others)
     expect(field.type).to eq(:key)
@@ -34,35 +33,32 @@ describe Entity do
   end
 
   it 'can tell fields when they are added' do
-    entity = Entity.new('Foo')
     field = IntegerField.new('Bar')
 
     expect(field.parent).to be_nil
 
-    entity << field
+    subject << field
 
-    expect(field.parent).to be(entity)
+    expect(field.parent).to be(subject)
   end
 
   it 'can identify a list of key traversals for a field' do
-    entity = Entity.new('Foo')
     field = IDField.new('Id')
-    entity << field
+    subject << field
 
-    expect(entity.key_fields %w{Foo Id}).to eq [field]
+    expect(subject.key_fields %w{Foo Id}).to eq [field]
   end
 
   it 'can identify a list of key traversals for foreign keys' do
-    entity = Entity.new('Foo')
     field = IDField.new('Id')
-    entity << field
+    subject << field
 
     other_entity = Entity.new('Bar')
     other_entity << IntegerField.new('Baz')
 
     foreign_key = ForeignKey.new('Quux', other_entity)
-    entity << foreign_key
+    subject << foreign_key
 
-    expect(entity.key_fields %w{Foo Quux Baz}).to eq [foreign_key]
+    expect(subject.key_fields %w{Foo Quux Baz}).to eq [foreign_key]
   end
 end

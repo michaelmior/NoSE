@@ -240,45 +240,45 @@ class Planner
     @indexes = indexes
   end
 
-  def find_plan_for_query(query, workload)
-    find_plans_for_query(query, workload)
+  def find_plan_for_query(query)
+    find_plans_for_query query
   end
 
-  def find_plans_for_step(step, workload)
+  def find_plans_for_step(step)
     unless step.state.answered?
-      steps = find_steps_for_state(step.state, workload).select do |new_step|
+      steps = find_steps_for_state(step.state).select do |new_step|
         new_step != step
       end
 
       if steps.length > 0
         step.children = steps
-        steps.each { |child_step| find_plans_for_step child_step, workload }
+        steps.each { |child_step| find_plans_for_step child_step }
       else
         fail NoPlanException
       end
     end
   end
 
-  def find_plans_for_query(query, workload)
+  def find_plans_for_query(query)
     state = QueryState.new query
     plan = QueryPlanTree.new(state)
 
-    find_plans_for_step(plan.root, workload)
+    find_plans_for_step plan.root
 
     plan
   end
 
-  def find_steps_for_state(state, workload)
+  def find_steps_for_state(state)
     steps = []
 
     @@index_free_steps.each do |step|
-      new_step = step.apply(state, workload)
+      new_step = step.apply(state, @workload)
       steps.push new_step if new_step
     end
 
     @indexes.each do |index|
       @@index_steps.each do |step|
-        new_step = step.apply(index, state, workload)
+        new_step = step.apply(index, state, @workload)
         steps.push new_step if new_step
       end
     end
