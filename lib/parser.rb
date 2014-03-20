@@ -28,6 +28,7 @@ class Parser
 
   private
 
+  # Remove unnecessary nodes
   def self.clean_tree(root_node)
     return if root_node.elements.nil?
     root_node.elements.delete_if do |node|

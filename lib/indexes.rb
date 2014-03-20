@@ -1,5 +1,6 @@
 require_relative 'node_extensions'
 
+# A representation of materialized views over fields in an entity
 class Index
   attr_reader :fields
   attr_reader :extra
@@ -29,14 +30,19 @@ class Index
         && @extra == other.extra
   end
 
+  # Set the keys which a field in the index is derived from
+  # This is useful when a given entity may be reached via multiple foreign keys
   def set_field_keys(field, keys)
     @field_keys[field] = keys
   end
 
+  # Get the keys which correspond to an entity for a given field
   def keys_for_field(field)
     @field_keys[field]
   end
 
+  # Check if this index is a mapping from the key of the given entity
+  # @see Entity#id_fields
   def identity_for?(entity)
     @fields == entity.id_fields
   end
@@ -45,14 +51,17 @@ class Index
     !!(@fields + @extra).find { |index_field| field == index_field }
   end
 
+  # The size of a single entry in the index
   def entry_size
     (@fields + @extra).map(&:size).inject(0, :+)
   end
 
+  # The total size of this index
   def size
     fields.map(&:cardinality).inject(1, :*) * entry_size
   end
 
+  # Check if the given predicates can be supported by this index
   def supports_predicates?(from, fields, eq, range, order_by, workload)
     # Ensure all the fields the query needs are indexed
     return false unless fields.map do |field|
@@ -90,11 +99,14 @@ class Index
     true
   end
 
+  # Check if an index can support a given query
+  # @see #supports_predicates?
   def supports_query?(query, workload)
     supports_predicates? query.from.value, query.fields, query.eq_fields, \
                          query.range_field, query.order_by, workload
   end
 
+  # The cost of evaluating a query for this index
   def query_cost(query, workload)
     # XXX This basically just calculates the size of the data fetched
 
@@ -119,13 +131,16 @@ end
 
 module CQL
   class Statement
+    # Construct an index which acts as a materialized view for a query
     def materialize_view(workload)
+      # Start with fields used for equality and range predicates, then order
       fields = eq_fields
       fields.push range_field if range_field
 
       fields = fields.map { |field| workload.find_field field.field.value }
       fields += order_by.map { |field| workload.find_field field }
 
+      # Add all other fields used in the query, minus those already added
       extra = self.fields.map do |field|
         workload.find_field [from.value, field.value]
       end
@@ -137,6 +152,7 @@ module CQL
 end
 
 class Entity
+  # Create a simple index which maps entity keys to other fields
   def simple_index
     Index.new(id_fields, fields.values - id_fields)
   end

@@ -1,5 +1,6 @@
 require 'forwardable'
 
+# Asingle plan for a query
 class QueryPlan
   include Comparable
   include Enumerable
@@ -17,11 +18,13 @@ class QueryPlan
     cost <=> other.cost
   end
 
+  # The estimated cost of executing the query using this plan
   def cost
     @steps.map(&:cost).inject(0, &:+)
   end
 end
 
+# A single step in a query plan
 class PlanStep
   include Enumerable
 
@@ -40,9 +43,12 @@ class PlanStep
 
   def children=(children)
     @children = children
+
+    # Track the parent step of each step
     children.each { |child| child.instance_variable_set(:@parent, self) }
   end
 
+  # Get the list of steps which led us here as a QueryPlan
   def parent_steps
     steps = nil
 
@@ -61,6 +67,7 @@ class PlanStep
   end
 end
 
+# The root of a tree of query plans used as a placeholder
 class RootStep < PlanStep
   def initialize(state)
     super()
@@ -68,6 +75,7 @@ class RootStep < PlanStep
   end
 end
 
+# A query plan step performing an index lookup
 class IndexLookupStep < PlanStep
   attr_reader :index
 
@@ -84,6 +92,8 @@ class IndexLookupStep < PlanStep
     other.instance_of?(self.class) && @index == other.index
   end
 
+  # Check if this step can be applied for the given index, returning an array
+  # of possible applications of the step
   def self.apply(index, state, workload)
     new_steps = []
 
@@ -103,6 +113,7 @@ class IndexLookupStep < PlanStep
     return new_steps if (state.fields.empty? && \
         state.eq.empty? && state.range.nil?) || state.order_by.length == 0
 
+    # Can do everything but ordering (results in an external sort later)
     if index.supports_predicates?(state.from, state.fields, state.eq, \
                                   state.range, [], workload)
 
@@ -120,6 +131,7 @@ class IndexLookupStep < PlanStep
   end
 end
 
+# A query plan step performing external sort
 class SortStep < PlanStep
   attr_reader :fields
 
@@ -143,6 +155,7 @@ class SortStep < PlanStep
     0
   end
 
+  # Check if an external sort can used (if a sort is the last step)
   def self.apply(state, workload)
     new_step = nil
 
@@ -160,6 +173,7 @@ class SortStep < PlanStep
   end
 end
 
+# Ongoing state of a query throughout the execution plan
 class QueryState
   attr_accessor :from
   attr_accessor :fields
@@ -184,15 +198,18 @@ class QueryState
         "\n   order: " + @order_by.map { |field| field.inspect }.to_a.to_s
   end
 
+  # Check if the query has been fully answered
   def answered?
     @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
   end
 
   def dup
+    # Ensure a deep copy
     Marshal.load(Marshal.dump(self))
   end
 end
 
+# A tree of possible query plans
 class QueryPlanTree
   include Enumerable
 
@@ -223,14 +240,18 @@ class QueryPlanTree
   end
 end
 
+# Thrown when it is not possible to construct a plan for a query
 class NoPlanException < StandardError
 end
 
+# A query planner which can construct a tree of query plans
 class Planner
+  # Possible steps which require indices
   @@index_steps = [
     IndexLookupStep
   ]
 
+  # Possible steps which do not require indices
   @@index_free_steps = [
     SortStep
   ]
@@ -240,10 +261,7 @@ class Planner
     @indexes = indexes
   end
 
-  def find_plan_for_query(query)
-    find_plans_for_query query
-  end
-
+  # Find possible query plans for a query strating at the given step
   def find_plans_for_step(step)
     unless step.state.answered?
       steps = find_steps_for_state(step.state).select do |new_step|
@@ -259,15 +277,17 @@ class Planner
     end
   end
 
+  # Find a tree of plans for the given query
   def find_plans_for_query(query)
     state = QueryState.new query
-    plan = QueryPlanTree.new(state)
+    tree = QueryPlanTree.new(state)
 
-    find_plans_for_step plan.root
+    find_plans_for_step tree.root
 
-    plan
+    tree
   end
 
+  # Get a list of possible next steps for a query in the given state
   def find_steps_for_state(state)
     steps = []
 
@@ -283,6 +303,7 @@ class Planner
       end
     end
 
+    # Some steps may be applicable in multiple ways
     steps.flatten
   end
 end

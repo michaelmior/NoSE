@@ -1,7 +1,8 @@
+# A representation of an object in the conceptual data model
 class Entity
   attr_reader :fields
   attr_reader :name
-  attr_reader :count
+  attr_accessor :count
 
   def initialize(name)
     @name = name
@@ -9,26 +10,30 @@ class Entity
     @count = 1
   end
 
+  # Get the key fields for the entity
   def id_fields
     fields.values.select { |field| field.instance_of? IDField }
   end
 
+  # Adds a {Field} to the entity
   def <<(field)
     @fields[field.name] = field
     field.instance_variable_set(:@parent, self)
     self
   end
 
+  # Shortcut for {#count=}
   def *(other)
     if other.is_a? Integer
       @count = other
     else
-      fail TypeError
+      fail TypeError 'count must be an integer'
     end
 
     self
   end
 
+  # All the keys found when traversing foreign keys
   def key_fields(field)
     field = field[1..-1] if field[0] == name
 
@@ -43,6 +48,7 @@ class Entity
   end
 end
 
+# A single field on an {Entity}
 class Field
   attr_reader :name
   attr_reader :type
@@ -60,16 +66,19 @@ class Field
     name + '.' + parent.name
   end
 
+  # Set the estimated cardinality of the field
   def *(other)
     if other.is_a? Integer
       @cardinality = other
     else
-      fail TypeError
+      fail TypeError 'cardinality must be an integer'
     end
 
     self
   end
 
+  # Return the previously set cardinality, falling back to the number of
+  # entities for the field if set, or just 1
   def cardinality
     @cardinality || @parent.count || 1
   end

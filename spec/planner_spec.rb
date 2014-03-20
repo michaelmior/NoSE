@@ -23,7 +23,7 @@ describe Planner do
     planner = Planner.new(@workload, [index])
     query = Parser.parse 'SELECT Body FROM Tweet'
 
-    tree = planner.find_plan_for_query query
+    tree = planner.find_plans_for_query query
     expect(tree.first).to eq([IndexLookupStep.new(index)])
     expect(tree.count).to eq 1
   end
@@ -33,7 +33,7 @@ describe Planner do
     planner = Planner.new(@workload, [index])
     query = Parser.parse 'SELECT Body FROM Tweet ORDER BY Tweet.Timestamp'
 
-    tree = planner.find_plan_for_query query
+    tree = planner.find_plans_for_query query
     steps = [IndexLookupStep.new(index), SortStep.new([@time_field])]
     expect(tree.first).to eq steps
     expect(tree.count).to eq 1
@@ -42,7 +42,7 @@ describe Planner do
   it 'raises an exception if there is no plan' do
     planner = Planner.new(@workload, [])
     query = Parser.parse 'SELECT Body FROM Tweet'
-    expect { planner.find_plan_for_query query }.to \
+    expect { planner.find_plans_for_query query }.to \
         raise_error NoPlanException
   end
 
@@ -51,7 +51,7 @@ describe Planner do
     planner = Planner.new(@workload, [index])
     query = Parser.parse 'SELECT Body FROM Tweet ORDER BY Tweet.Timestamp'
 
-    tree = planner.find_plan_for_query query
+    tree = planner.find_plans_for_query query
     expect(tree.to_a).to match_array [
       [IndexLookupStep.new(index)],
       [IndexLookupStep.new(index), SortStep.new([@time_field])]

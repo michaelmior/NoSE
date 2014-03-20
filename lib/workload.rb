@@ -1,6 +1,7 @@
 require_relative './model'
 require_relative './parser'
 
+# A representation of a query workload over a given set of entities
 class Workload
   attr_reader :queries
   attr_reader :entities
@@ -10,14 +11,17 @@ class Workload
     @entities = {}
   end
 
+  # Add a new {CQL::Statement} to the workload
   def add_query(query)
     @queries << query
   end
 
+  # Add an {Entity} to the workload
   def add_entity(entity)
     @entities[entity.name] = entity
   end
 
+  # Find a field given an +Enumerable+ of identifiers
   def find_field(field)
     if field.count > 2
       # Do a foreign key lookup
@@ -29,10 +33,12 @@ class Workload
     end
   end
 
+  # Retrieve an entity by name
   def get_entity(name)
     @entities[name]
   end
 
+  # Check if all the fields used by queries in the workload exist
   def fields_exist?
     @queries.each do |query|
       entity = @entities[query.from.value]
@@ -52,6 +58,7 @@ class Workload
     end
   end
 
+  # Check if the queries are valid for the loaded entities
   def valid?
     @queries.each do |query|
       # Entity must exist
