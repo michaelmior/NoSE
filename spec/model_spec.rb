@@ -61,4 +61,15 @@ describe Entity do
 
     expect(subject.key_fields %w{Foo Quux Baz}).to eq [foreign_key]
   end
+
+  it 'can create entities using a DSL' do
+    entity = Entity.new 'Foo' do
+      ID      'Bar'
+      Integer 'Baz'
+      String  'Quux', 20
+    end
+
+    expect(entity.fields.count).to eq 3
+    expect(entity.fields['Quux'].size).to eq 20
+  end
 end

@@ -4,10 +4,13 @@ class Entity
   attr_reader :name
   attr_accessor :count
 
-  def initialize(name)
+  def initialize(name, &block)
     @name = name
     @fields = {}
     @count = 1
+
+    # Apply the DSL
+    EntityDSL.new(self).instance_eval(&block) if block_given?
   end
 
   # Get the key fields for the entity
@@ -48,6 +51,13 @@ class Entity
   end
 end
 
+# A helper class for DSL creation to avoid messing with {Entity}
+class EntityDSL
+  def initialize(entity)
+    @entity = entity
+  end
+end
+
 # A single field on an {Entity}
 class Field
   attr_reader :name
@@ -81,6 +91,15 @@ class Field
   # entities for the field if set, or just 1
   def cardinality
     @cardinality || @parent.count || 1
+  end
+
+  def self.inherited(child_class)
+    # Add convenience methods for all field types for an entity DSL
+    EntityDSL.send :define_method, child_class.name.sub('Field', ''),
+                   (proc do |*args|
+                     send(:instance_variable_get, :@entity).send \
+                         :<<, child_class.new(*args)
+                   end)
   end
 end
 
