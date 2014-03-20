@@ -24,6 +24,7 @@ class Index
     (field_names.to_s + ', ' + extra_names.to_s).gsub '"', ''
   end
 
+  # Two indices are equal if they contain the same fields
   def ==(other)
     @fields == other.fields && \
         @field_keys == other.instance_variable_get(:@field_keys) \
@@ -47,6 +48,7 @@ class Index
     @fields == entity.id_fields
   end
 
+  # Check if the index contains a given field
   def contains_field?(field)
     !!(@fields + @extra).find { |index_field| field == index_field }
   end
@@ -130,6 +132,7 @@ class Index
 end
 
 module CQL
+  # Allow statements to materialize views
   class Statement
     # Construct an index which acts as a materialized view for a query
     def materialize_view(workload)
@@ -151,6 +154,7 @@ module CQL
   end
 end
 
+# Allow entities to create their own indices
 class Entity
   # Create a simple index which maps entity keys to other fields
   def simple_index

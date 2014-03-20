@@ -14,6 +14,7 @@ class QueryPlan
     @steps = []
   end
 
+  # Two plans are compared by their execution cost
   def <=>(other)
     cost <=> other.cost
   end
@@ -62,6 +63,7 @@ class PlanStep
     steps
   end
 
+  # The cost of executing this step in the plan
   def cost
     0
   end
@@ -88,6 +90,7 @@ class IndexLookupStep < PlanStep
     super + ' ' + index.inspect
   end
 
+  # Two index lookups are equal if they use the same index
   def ==(other)
     other.instance_of?(self.class) && @index == other.index
   end
@@ -144,6 +147,7 @@ class SortStep < PlanStep
     super + ' ' + @fields.map { |field| field.inspect }.to_s.gsub('"', '')
   end
 
+  # Two sorting steps are equal if they sort on the same fields
   def ==(other)
     other.instance_of?(self.class) && @fields == other.fields
   end
@@ -203,6 +207,7 @@ class QueryState
     @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
   end
 
+  # Create a deep copy of the query state
   def dup
     # Ensure a deep copy
     Marshal.load(Marshal.dump(self))
@@ -219,6 +224,7 @@ class QueryPlanTree
     @root = RootStep.new(state)
   end
 
+  # Enumerate all steps in the given plan
   def each
     nodes = [@root]
 
@@ -234,7 +240,7 @@ class QueryPlanTree
 
   def inspect(step = nil, indent = 0)
     step = @root if step.nil?
-    "  " * indent + step.inspect + "\n" + step.children.map do |child_step|
+    '  ' * indent + step.inspect + "\n" + step.children.map do |child_step|
       inspect child_step, indent + 1
     end.reduce('', &:+)
   end
@@ -246,6 +252,8 @@ end
 
 # A query planner which can construct a tree of query plans
 class Planner
+  # rubocop:disable ClassVars
+
   # Possible steps which require indices
   @@index_steps = [
     IndexLookupStep
@@ -255,6 +263,8 @@ class Planner
   @@index_free_steps = [
     SortStep
   ]
+
+  # rubocop:enable all
 
   def initialize(workload, indexes)
     @workload = workload
@@ -271,8 +281,7 @@ class Planner
       if steps.length > 0
         step.children = steps
         steps.each { |child_step| find_plans_for_step child_step }
-      else
-        fail NoPlanException
+      else fail NoPlanException
       end
     end
   end
@@ -292,18 +301,16 @@ class Planner
     steps = []
 
     @@index_free_steps.each do |step|
-      new_step = step.apply(state, @workload)
-      steps.push new_step if new_step
+      steps.push step.apply(state, @workload)
     end
 
     @indexes.each do |index|
       @@index_steps.each do |step|
-        new_step = step.apply(index, state, @workload)
-        steps.push new_step if new_step
+        steps.push step.apply(index, state, @workload)
       end
     end
 
     # Some steps may be applicable in multiple ways
-    steps.flatten
+    steps.flatten.compact
   end
 end

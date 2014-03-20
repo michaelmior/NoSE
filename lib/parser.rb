@@ -1,6 +1,7 @@
 # Load our custom syntax node classes so the parser can use them
 require_relative 'node_extensions'
 
+# A parser for a generic query language for NoSQL databases
 class Parser
   # Load the Treetop grammar from the 'cql_parser' file, and create a new
   # instance of that parser as a class variable so we don't have to re-create

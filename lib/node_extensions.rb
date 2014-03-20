@@ -1,8 +1,10 @@
 require 'treetop'
 
+# Elements of a query parse tree
 module CQL
   # Abstract class used for nodes in the query parse tree
   class CQLNode < Treetop::Runtime::SyntaxNode
+    # Two nodes in the parse tree are equal if they have the same value
     def ==(other)
       if self.respond_to?(:value) && other.respond_to?(:value)
         value == other.value
@@ -64,6 +66,7 @@ module CQL
 
   # A literal integer used in where clauses
   class IntegerLiteral < CQLNode
+    # The integer value of the literal
     def value
       text_value.to_i
     end
@@ -71,6 +74,7 @@ module CQL
 
   # A literal float used in where clauses
   class FloatLiteral < CQLNode
+    # The float value of the literal
     def value
       text_value.to_f
     end
@@ -78,6 +82,7 @@ module CQL
 
   # A literal string used in where clauses
   class StringLiteral < CQLNode
+    # The string value of the literal with quotes removed
     def value
       text_value[1..-2]
     end
@@ -85,6 +90,7 @@ module CQL
 
   # A simple alphabetic identifier used in queries
   class Identifier < CQLNode
+    # The string value of the identifier
     def value
       text_value.to_s
     end
@@ -96,6 +102,7 @@ module CQL
 
   # A field in a query
   class Field < CQLNode
+    # A list of identifiers comprising the field name
     def value
       elements.map do |n|
         n.class.name == 'CQL::Field' ? n.elements.map { |m| m.value } : n.value
@@ -105,6 +112,7 @@ module CQL
 
   # The limit clause of a query
   class LimitClause < CQLNode
+    # The integer value of the limit
     def value
       elements[0].text_value.to_i
     end
@@ -112,6 +120,7 @@ module CQL
 
   # A list of fields used for ordering clauses
   class FieldList < CQLNode
+    # A list of names of each field
     def value
       elements.map { |n| n.value }
     end
@@ -119,6 +128,7 @@ module CQL
 
   # The ordering clause of a query
   class OrderByClause < CQLNode
+    # The list fields being ordered on
     def value
       fields = elements[0]
       fields.class.name == 'CQL::Field' ? [fields.value] : fields.value
@@ -127,6 +137,7 @@ module CQL
 
   # A list of fields a query projects
   class IdentifierList < CQLNode
+    # An array of fields
     def value
       elements.map { |n| n.value }
     end
@@ -164,6 +175,7 @@ module CQL
 
   # An operator used for predicates in a where clause
   class Operator < CQLNode
+    # A symbol representing the operator
     def value
       text_value.to_sym
     end

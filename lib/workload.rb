@@ -49,11 +49,9 @@ class Workload
       end
 
       # Fields in the where clause exist
-      query.where.map { |condition| condition.field }.each do |field|
-        parts = field.value
+      query.where.map { |condition| condition.field.value }.each do |parts|
         return false unless @entities.key?(parts.first)
-        return false if parts.length == 2 && \
-          !entity.fields.key?(parts.last)
+        return false if parts.length == 2 && !entity.fields.key?(parts.last)
       end
     end
   end

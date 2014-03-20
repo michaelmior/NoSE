@@ -93,6 +93,7 @@ class Field
     @cardinality || @parent.count || 1
   end
 
+  # Populate a helper DSL object with all subclasses of Field
   def self.inherited(child_class)
     # Add convenience methods for all field types for an entity DSL
     EntityDSL.send :define_method, child_class.name.sub('Field', ''),
@@ -103,30 +104,35 @@ class Field
   end
 end
 
+# Field holding an integer
 class IntegerField < Field
   def initialize(name)
     super(name, :integer, 8)
   end
 end
 
+# Field holding a float
 class FloatField < Field
   def initialize(name)
     super(name, :float, 8)
   end
 end
 
+# Field holding a string of some average length
 class StringField < Field
   def initialize(name, length)
     super(name, :string, length)
   end
 end
 
+# Field holding a unique identifier
 class IDField < Field
   def initialize(name)
     super(name, :key, 16)
   end
 end
 
+# Field holding a foreign key to another entity
 class ForeignKey < IDField
   attr_reader :entity
   attr_reader :relationship
@@ -142,8 +148,10 @@ class ForeignKey < IDField
   end
 end
 
+# Alias of {ForeignKey}
 ToOneKey = ForeignKey
 
+# Field holding a foreign key to many other entities
 class ToManyKey < ForeignKey
   def initialize(name, entity)
     super(name, entity)
