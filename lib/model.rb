@@ -96,7 +96,7 @@ class Field
   # Populate a helper DSL object with all subclasses of Field
   def self.inherited(child_class)
     # Add convenience methods for all field types for an entity DSL
-    EntityDSL.send :define_method, child_class.name.sub('Field', ''),
+    EntityDSL.send :define_method, child_class.name.sub(/Field$/, ''),
                    (proc do |*args|
                      send(:instance_variable_get, :@entity).send \
                          :<<, child_class.new(*args)
