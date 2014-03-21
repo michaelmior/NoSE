@@ -57,4 +57,13 @@ describe Planner do
       [IndexLookupStep.new(index), SortStep.new([@time_field])]
     ]
   end
+
+  it 'knows which fields are available at a given step' do
+    index = Index.new([@id_field], [@body_field, @time_field])
+    planner = Planner.new(@workload, [index])
+    query = Parser.parse 'SELECT Body FROM Tweet'
+
+    plan = planner.find_plans_for_query(query).first
+    expect(plan.last.fields).to include(@id_field, @body_field, @time_field)
+  end
 end

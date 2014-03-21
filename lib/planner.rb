@@ -8,7 +8,7 @@ class QueryPlan
   # Most of the work is delegated to the array
   extend Forwardable
   def_delegators :@steps, :each, :<<, :[], :==, :===, :eql?,
-                 :inspect, :to_a, :to_ary
+                 :inspect, :to_a, :to_ary, :last
 
   def initialize
     @steps = []
@@ -31,10 +31,12 @@ class PlanStep
 
   attr_accessor :children
   attr_accessor :state
+  attr_reader :fields
 
   def initialize
     @children = []
     @parent = nil
+    @fields = Set.new
   end
 
   def inspect
@@ -46,7 +48,15 @@ class PlanStep
     @children = children
 
     # Track the parent step of each step
-    children.each { |child| child.instance_variable_set(:@parent, self) }
+    children.each do |child|
+      child.instance_variable_set(:@parent, self)
+      fields = child.instance_variable_get(:@fields) + self.fields
+      child.instance_variable_set(:@fields, fields)
+    end
+  end
+
+  def add_fields_from_index(index)
+    @fields += index.fields + index.extra
   end
 
   # Get the list of steps which led us here as a QueryPlan
@@ -300,13 +310,12 @@ class Planner
   def find_steps_for_state(state)
     steps = []
 
-    @@index_free_steps.each do |step|
-      steps.push step.apply(state, @workload)
-    end
+    @@index_free_steps.each { |step| steps.push step.apply(state, @workload) }
 
     @indexes.each do |index|
       @@index_steps.each do |step|
-        steps.push step.apply(index, state, @workload)
+        steps.push step.apply(index, state, @workload).each \
+            { |new_step| new_step.add_fields_from_index index }
       end
     end
 
