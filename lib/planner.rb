@@ -136,20 +136,20 @@ end
 
 # A query plan step performing external sort
 class SortStep < PlanStep
-  attr_reader :fields
+  attr_reader :sort_fields
 
-  def initialize(fields)
+  def initialize(sort_fields)
     super()
-    @fields = fields
+    @sort_fields = sort_fields
   end
 
   def inspect
-    super + ' ' + @fields.map { |field| field.inspect }.to_s.gsub('"', '')
+    super + ' ' + @sort_fields.map { |field| field.inspect }.to_s.gsub('"', '')
   end
 
   # Two sorting steps are equal if they sort on the same fields
   def ==(other)
-    other.instance_of?(self.class) && @fields == other.fields
+    other.instance_of?(self.class) && @sort_fields == other.sort_fields
   end
 
   def cost
