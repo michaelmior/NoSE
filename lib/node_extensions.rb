@@ -92,12 +92,22 @@ module CQL
   class Identifier < CQLNode
     # The string value of the identifier
     def value
-      text_value.to_s
+      if parent.class == Statement || parent.class == IdentifierList
+        statement = parent
+        statement = statement.parent while statement.class != Statement
+        table = statement.elements.find { |child| child.class == Table }.value
+        [table, text_value.to_s]
+      else
+        text_value.to_s
+      end
     end
   end
 
   # A table name
   class Table < Identifier
+    def value
+      text_value.to_s
+    end
   end
 
   # A field in a query

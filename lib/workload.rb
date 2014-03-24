@@ -43,15 +43,13 @@ class Workload
     @queries.each do |query|
       entity = @entities[query.from.value]
 
-      # All fields must exist
-      query.fields.each do |field|
-        return false unless entity.fields.key?(field.value)
-      end
-
-      # Fields in the where clause exist
-      query.where.map { |condition| condition.field.value }.each do |parts|
+      # Projected fields and fields in the where clause exist
+      fields = query.where.map { |condition| condition.field } + query.fields
+      fields.each do |field|
+        parts = field.value
         return false unless @entities.key?(parts.first)
-        return false if parts.length == 2 && !entity.fields.key?(parts.last)
+        return false if parts.length == 2 && \
+          !entity.fields.key?(parts.last)
       end
     end
   end

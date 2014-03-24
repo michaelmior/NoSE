@@ -54,9 +54,9 @@ class Index
   end
 
   # Check if all the fields the query needs are indexed
-  def contains_fields?(fields, from, workload)
+  def contains_fields?(fields, workload)
     fields.map do |field|
-      contains_field?(workload.find_field [from, field.value])
+      contains_field?(workload.find_field field.value)
     end.all?
   end
 
@@ -90,7 +90,7 @@ class Index
   # Check if the given predicates can be supported by this index
   def supports_predicates?(from, fields, eq, range, order_by, workload)
     # Ensure all the fields the query needs are indexed
-    return false unless contains_fields? fields, from, workload
+    return false unless contains_fields? fields, workload
 
     # Track fields used in predicates
     predicate_fields = []
@@ -162,7 +162,7 @@ module CQL
 
       # Add all other fields used in the query, minus those already added
       extra = self.fields.map do |field|
-        workload.find_field [from.value, field.value]
+        workload.find_field field.value
       end
       extra -= fields
 

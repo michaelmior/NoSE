@@ -25,13 +25,14 @@ describe Parser do
   end
 
   it 'correctly parses a single field' do
-    expect(Parser.parse('SELECT foo FROM bar').fields[0].value).to eq('foo')
+    expect(Parser.parse('SELECT foo FROM bar').fields[0].value).to \
+        eq %w{bar foo}
   end
 
   it 'correctly parses a list of fields' do
     expect(Parser.parse('SELECT foo, bar FROM baz').fields.map do |field|
       field.value
-    end).to match_array(%w{foo bar})
+    end).to match_array [%w{baz foo}, %w{baz bar}]
   end
 
   it 'correctly parses an order by clause with a single field' do
