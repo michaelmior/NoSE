@@ -1,7 +1,4 @@
-require 'planner'
-require 'model'
-require 'workload'
-require 'indexes'
+require 'sadvisor'
 
 describe Planner do
   before(:each) do

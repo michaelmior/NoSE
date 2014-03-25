@@ -1,4 +1,4 @@
-require 'workload'
+require 'sadvisor'
 
 describe Workload do
   let(:entity)      { Entity.new('Foo') << field }

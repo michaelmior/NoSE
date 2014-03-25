@@ -1,4 +1,4 @@
-require 'parser'
+require 'sadvisor'
 
 describe Parser do
   it 'can parse a simple select' do

@@ -1,4 +1,4 @@
-require 'model'
+require 'sadvisor'
 
 describe Entity do
   subject { Entity.new('Foo') }

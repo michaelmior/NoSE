@@ -1,7 +1,4 @@
-require 'indexes'
-require 'parser'
-require 'model'
-require 'workload'
+require 'sadvisor'
 
 describe Index do
   let(:simple_query)   { Parser.parse('SELECT Id FROM Foo') }
