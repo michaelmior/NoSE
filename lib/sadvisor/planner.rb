@@ -108,13 +108,8 @@ class IndexLookupStep < PlanStep
   # Check if this step can be applied for the given index, returning an array
   # of possible applications of the step
   def self.apply(parent, index, state, workload)
-    eq_fields = state.eq.map \
-        { |condition| workload.find_field condition.field.value }
-    order_fields = state.order_by.map \
-        { |field| workload.find_field field }
-
     # Try all possible combinations of equality predicates and ordering
-    field_combos = eq_fields.prefixes.product(order_fields.prefixes)
+    field_combos = state.eq.prefixes.product(state.order_by.prefixes)
     field_combos = field_combos.select do |eq, order|
       # TODO: Check that keys are the same
       eq + order == index.fields
@@ -188,12 +183,11 @@ class SortStep < PlanStep
 
     if state.fields.empty? && state.eq.empty? && state.range.nil? && \
       !state.order_by.empty?
-      order_fields = state.order_by.map { |field| workload.find_field field }
 
-      state = state.dup
-      state.order_by = []
-      new_step = SortStep.new(order_fields)
-      new_step.state = state
+      new_state = state.dup
+      new_state.order_by = []
+      new_step = SortStep.new(state.order_by)
+      new_step.state = new_state
     end
 
     new_step
@@ -220,17 +214,15 @@ class FilterStep < PlanStep
   def self.contains_all_fields?(parent, state, range_field)
     filter_fields = state.eq.dup
     filter_fields << range_field unless range_field.nil?
-    filter_fields.map { |field| parent.fields.member? field }.all?
+    fields = parent.fields.to_a # XXX This doesn't work as a set, weird
+    filter_fields.map { |field| fields.member? field }.all?
   end
 
   # Check if filtering can be done (we have all the necessary fields)
   def self.apply(parent, state, workload)
-    range_field = state.range.nil? ? nil : \
-        workload.find_field(state.range.field.value)
-
     if state.fields.empty? && !(state.eq.empty? && state.range.nil?) &&
-        contains_all_fields?(parent, state, range_field)
-      new_step = FilterStep.new(state.eq, range_field)
+        contains_all_fields?(parent, state, state.range)
+      new_step = FilterStep.new(state.eq, state.range)
 
       new_state = state.dup
       new_state.eq = []
@@ -262,9 +254,11 @@ class QueryState
     @query = query
     @from = workload[query.from.value]
     @fields = query.fields.map { |field| workload.find_field field.value }
-    @eq = query.eq_fields
-    @range = query.range_field
-    @order_by = query.order_by
+    @eq = query.eq_fields.map \
+        { |condition| workload.find_field condition.field.value }
+    @range = workload.find_field query.range_field.field.value \
+        unless query.range_field.nil?
+    @order_by = query.order_by.map { |field| workload.find_field field }
   end
 
   def inspect
