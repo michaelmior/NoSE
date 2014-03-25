@@ -46,17 +46,18 @@ describe Planner do
         raise_error NoPlanException
   end
 
-  #it 'can find multiple plans' do
-  #  index = Index.new([@time_field], [@body_field])
-  #  planner = Planner.new(@workload, [index])
-  #  query = Parser.parse 'SELECT Body FROM Tweet ORDER BY Tweet.Timestamp'
+  it 'can find multiple plans' do
+    index1 = Index.new([@time_field], [@body_field])
+    index2 = Index.new([@id_field], [@time_field, @body_field])
+    planner = Planner.new(@workload, [index1, index2])
+    query = Parser.parse 'SELECT Body FROM Tweet ORDER BY Tweet.Timestamp'
 
-  #  tree = planner.find_plans_for_query query
-  #  expect(tree.to_a).to match_array [
-  #    [IndexLookupStep.new(index)],
-  #    [IndexLookupStep.new(index), SortStep.new([@time_field])]
-  #  ]
-  #end
+    tree = planner.find_plans_for_query query
+    expect(tree.to_a).to match_array [
+      [IndexLookupStep.new(index1)],
+      [IndexLookupStep.new(index2), SortStep.new([@time_field])]
+    ]
+  end
 
   it 'knows which fields are available at a given step' do
     index = Index.new([@id_field], [@body_field, @time_field])

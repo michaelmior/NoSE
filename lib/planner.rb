@@ -123,13 +123,26 @@ class IndexLookupStep < PlanStep
 
     # TODO: Add range predicates
 
-    if max_eq.length > 0 || max_order.length > 0
+    if (max_eq.length > 0 || max_order.length > 0) && parent.fields.length == 0
       new_step = IndexLookupStep.new(index)
       new_state = state.dup
-      new_state.fields -= index.fields + index.extra
+
+      new_state.eq = new_state.eq[max_eq.length..-1] \
+          if max_eq.length > 0
+      new_state.order_by = new_state.order_by[max_order.length..-1] \
+          if max_order.length > 0
+      (index.fields + index.extra).each \
+          { |field| new_state.fields.delete field }
+
       new_step.state = new_state
       return [new_step]
-    elsif index.identity_for? state.from
+
+    # Check if the index is an identity map, gives us new fields, and that
+    # we either have the index to look up, or this is our first lookup
+    elsif index.identity_for?(state.from) && \
+        (Set.new(index.fields + index.extra) - parent.fields).length > 0 && \
+        ((Set.new(state.from.id_fields) - parent.fields).length == 0 || \
+         parent.fields.length == 0)
       new_step = IndexLookupStep.new(index)
       new_state = state.dup
       (index.fields + index.extra).each \
