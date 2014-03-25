@@ -12,6 +12,11 @@ module CQL
         super
       end
     end
+
+    def inspect
+      return value.to_s if self.respond_to? :value
+      super()
+    end
   end
 
   # A parsed query

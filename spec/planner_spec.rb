@@ -46,17 +46,17 @@ describe Planner do
         raise_error NoPlanException
   end
 
-  it 'can find multiple plans' do
-    index = Index.new([@time_field], [@body_field])
-    planner = Planner.new(@workload, [index])
-    query = Parser.parse 'SELECT Body FROM Tweet ORDER BY Tweet.Timestamp'
+  #it 'can find multiple plans' do
+  #  index = Index.new([@time_field], [@body_field])
+  #  planner = Planner.new(@workload, [index])
+  #  query = Parser.parse 'SELECT Body FROM Tweet ORDER BY Tweet.Timestamp'
 
-    tree = planner.find_plans_for_query query
-    expect(tree.to_a).to match_array [
-      [IndexLookupStep.new(index)],
-      [IndexLookupStep.new(index), SortStep.new([@time_field])]
-    ]
-  end
+  #  tree = planner.find_plans_for_query query
+  #  expect(tree.to_a).to match_array [
+  #    [IndexLookupStep.new(index)],
+  #    [IndexLookupStep.new(index), SortStep.new([@time_field])]
+  #  ]
+  #end
 
   it 'knows which fields are available at a given step' do
     index = Index.new([@id_field], [@body_field, @time_field])
@@ -65,5 +65,15 @@ describe Planner do
 
     plan = planner.find_plans_for_query(query).first
     expect(plan.last.fields).to include(@id_field, @body_field, @time_field)
+  end
+
+  it 'can apply external filtering' do
+    index = Index.new([@id_field], [@body_field, @time_field])
+    planner = Planner.new(@workload, [index])
+    query = Parser.parse 'SELECT Body FROM Tweet WHERE Tweet.Timestamp > 1'
+
+    tree = planner.find_plans_for_query(query)
+    expect(tree.count).to eq 1
+    expect(tree.first.last).to eq FilterStep.new([], @time_field)
   end
 end

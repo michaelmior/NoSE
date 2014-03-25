@@ -82,6 +82,7 @@ class Index
 
   # Check if the index supports ordering by the given list of fields
   def supports_order?(order_by, workload)
+    # XXX Need to consider when these fields are not the last
     order_fields = order_by.map { |field| workload.find_field field }
     order_fields.length == 0 || \
         order_fields == @fields[-order_fields.length..-1]

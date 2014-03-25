@@ -13,6 +13,11 @@ class Entity
     EntityDSL.new(self).instance_eval(&block) if block_given?
   end
 
+  # Compare by name, fields, and count
+  def ==(other)
+    @name == other.name && @fields == other.fields && @count == other.count
+  end
+
   # Get the key fields for the entity
   def id_fields
     fields.values.select { |field| field.instance_of? IDField }
@@ -70,6 +75,11 @@ class Field
     @type = type
     @size = size
     @cardinality = nil
+  end
+
+  # Compare by parent entity and name
+  def ==(other)
+    @parent == other.parent && @name == other.name
   end
 
   def inspect

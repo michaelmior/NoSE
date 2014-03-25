@@ -107,40 +107,38 @@ class IndexLookupStep < PlanStep
 
   # Check if this step can be applied for the given index, returning an array
   # of possible applications of the step
-  def self.apply(index, state, workload)
-    new_steps = []
+  def self.apply(parent, index, state, workload)
+    eq_fields = state.eq.map \
+        { |condition| workload.find_field condition.field.value }
+    order_fields = state.order_by.map \
+        { |field| workload.find_field field }
 
-    if index.supports_predicates?(state.from, state.fields, state.eq, \
-                                  state.range, state.order_by, workload)
+    # Try all possible combinations of equality predicates and ordering
+    field_combos = eq_fields.prefixes.product(order_fields.prefixes)
+    field_combos = field_combos.select do |eq, order|
+      eq + order == index.fields
+    end
+    max_eq, max_order = field_combos.max_by \
+        { |eq, order| eq.length + order.length } || [[], []]
 
-      new_state = state.dup
-      new_state.fields = []
-      new_state.eq = []
-      new_state.range = nil
-      new_state.order_by = []
+    # TODO: Add range predicates
+
+    if max_eq.length > 0 || max_order.length > 0
       new_step = IndexLookupStep.new(index)
+      new_state = state.dup
+      new_state.fields -= index.fields + index.extra
       new_step.state = new_state
-      new_steps.push new_step
+      return [new_step]
+    elsif index.identity_for? state.from
+      new_step = IndexLookupStep.new(index)
+      new_state = state.dup
+      (index.fields + index.extra).each \
+          { |field| new_state.fields.delete field }
+      new_step.state = new_state
+      return [new_step]
     end
 
-    return new_steps if (state.fields.empty? && \
-        state.eq.empty? && state.range.nil?) || state.order_by.length == 0
-
-    # Can do everything but ordering (results in an external sort later)
-    if index.supports_predicates?(state.from, state.fields, state.eq, \
-                                  state.range, [], workload)
-
-      new_state = state.dup
-      new_state.fields = []
-      new_state.eq = []
-      new_state.range = nil
-      new_step = IndexLookupStep.new(index)
-      new_step.state = new_state
-
-      new_steps.push new_step
-    end
-
-    new_steps.length > 0 ? new_steps : nil
+    []
   end
 end
 
@@ -170,7 +168,7 @@ class SortStep < PlanStep
   end
 
   # Check if an external sort can used (if a sort is the last step)
-  def self.apply(state, workload)
+  def self.apply(parent, state, workload)
     new_step = nil
 
     if state.fields.empty? && state.eq.empty? && state.range.nil? && \
@@ -187,6 +185,56 @@ class SortStep < PlanStep
   end
 end
 
+# A query plan performing a filter without an index
+class FilterStep < PlanStep
+  attr_reader :eq
+  attr_reader :range
+
+  def initialize(eq, range)
+    @eq = eq
+    @range = range
+    super()
+  end
+
+  # Two filtering steps are equal if they filter on the same fields
+  def ==(other)
+    other.instance_of?(self.class) && @eq == other.eq && @range == other.range
+  end
+
+  # Check if the plan has all the necessary fields to filter
+  def self.contains_all_fields?(parent, state, range_field)
+    filter_fields = state.eq.dup
+    filter_fields << range_field unless range_field.nil?
+    filter_fields.map { |field| parent.fields.member? field }.all?
+  end
+
+  # Check if filtering can be done (we have all the necessary fields)
+  def self.apply(parent, state, workload)
+    range_field = state.range.nil? ? nil : \
+        workload.find_field(state.range.field.value)
+
+    if state.fields.empty? && !(state.eq.empty? && state.range.nil?) &&
+        contains_all_fields?(parent, state, range_field)
+      new_step = FilterStep.new(state.eq, range_field)
+
+      new_state = state.dup
+      new_state.eq = []
+      new_state.range = nil
+      new_step.state = new_state
+
+      return new_step
+    end
+
+    nil
+  end
+
+  def cost
+    # Assume this has no cost and the cost is captured in the fact that we have
+    # to retrieve more data earlier. All this does is skip records.
+    0
+  end
+end
+
 # Ongoing state of a query throughout the execution plan
 class QueryState
   attr_accessor :from
@@ -195,10 +243,10 @@ class QueryState
   attr_accessor :range
   attr_accessor :order_by
 
-  def initialize(query)
+  def initialize(query, workload)
     @query = query
-    @from = query.from.value
-    @fields = query.fields
+    @from = workload.get_entity query.from.value
+    @fields = query.fields.map { |field| workload.find_field field.value }
     @eq = query.eq_fields
     @range = query.range_field
     @order_by = query.order_by
@@ -271,7 +319,8 @@ class Planner
 
   # Possible steps which do not require indices
   @@index_free_steps = [
-    SortStep
+    SortStep,
+    FilterStep
   ]
 
   # rubocop:enable all
@@ -282,15 +331,15 @@ class Planner
   end
 
   # Find possible query plans for a query strating at the given step
-  def find_plans_for_step(step)
+  def find_plans_for_step(root, step)
     unless step.state.answered?
-      steps = find_steps_for_state(step.state).select do |new_step|
+      steps = find_steps_for_state(step, step.state).select do |new_step|
         new_step != step
       end
 
       if steps.length > 0
         step.children = steps
-        steps.each { |child_step| find_plans_for_step child_step }
+        steps.each { |child_step| find_plans_for_step root, child_step }
       else fail NoPlanException
       end
     end
@@ -298,28 +347,52 @@ class Planner
 
   # Find a tree of plans for the given query
   def find_plans_for_query(query)
-    state = QueryState.new query
+    state = QueryState.new query, @workload
     tree = QueryPlanTree.new(state)
 
-    find_plans_for_step tree.root
+    find_plans_for_step tree.root, tree.root
 
     tree
   end
 
   # Get a list of possible next steps for a query in the given state
-  def find_steps_for_state(state)
+  def find_steps_for_state(parent, state)
     steps = []
 
-    @@index_free_steps.each { |step| steps.push step.apply(state, @workload) }
+    @@index_free_steps.each \
+        { |step| steps.push step.apply(parent, state, @workload) }
 
     @indexes.each do |index|
       @@index_steps.each do |step|
-        steps.push step.apply(index, state, @workload).each \
+        steps.push step.apply(parent, index, state, @workload).each \
             { |new_step| new_step.add_fields_from_index index }
       end
     end
 
     # Some steps may be applicable in multiple ways
     steps.flatten.compact
+  end
+end
+
+module Enumerable
+  def prefixes
+    Enumerator.new do |enum|
+      prefix = []
+      each do |elem|
+        prefix = prefix.dup << elem
+        enum.yield prefix
+      end
+    end
+  end
+
+  def product(other)
+    Enumerator.new do |enum|
+      other.each { |b| enum.yield [[], b] }
+      each do |a|
+        enum.yield [a, []]
+
+        other.each { |b| enum.yield [a, b] }
+      end
+    end
   end
 end
