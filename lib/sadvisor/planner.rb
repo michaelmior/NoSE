@@ -116,6 +116,7 @@ class IndexLookupStep < PlanStep
     # Try all possible combinations of equality predicates and ordering
     field_combos = eq_fields.prefixes.product(order_fields.prefixes)
     field_combos = field_combos.select do |eq, order|
+      # TODO: Check that keys are the same
       eq + order == index.fields
     end
     max_eq, max_order = field_combos.max_by \
@@ -149,6 +150,7 @@ class IndexLookupStep < PlanStep
           { |field| new_state.fields.delete field }
       new_step.state = new_state
       return [new_step]
+    elsif true
     end
 
     []
@@ -258,7 +260,7 @@ class QueryState
 
   def initialize(query, workload)
     @query = query
-    @from = workload.get_entity query.from.value
+    @from = workload[query.from.value]
     @fields = query.fields.map { |field| workload.find_field field.value }
     @eq = query.eq_fields
     @range = query.range_field

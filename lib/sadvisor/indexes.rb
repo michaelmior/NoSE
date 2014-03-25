@@ -7,15 +7,14 @@ class Index
 
   def initialize(fields, extra)
     @fields = fields
+    @extra = extra
 
     # Track which key this field is mapped over
     @field_keys = {}
-    @fields.each do |field|
+    (@fields + @extra).each do |field|
       id_fields = field.parent.id_fields
       @field_keys[field] = id_fields ? id_fields[0..0] : []
     end
-
-    @extra = extra
   end
 
   def inspect
@@ -138,7 +137,7 @@ class Index
     # Estimate the number of results retrieved based on a uniform distribution
     cost = eq_fields.map do |field|
       field.cardinality * 1.0 / field.parent.count
-    end.inject(workload.get_entity(query.from.value).count * 1.0, :*) \
+    end.inject(workload[query.from.value].count * 1.0, :*) \
         * entry_size
 
     # XXX Make a dumb guess that the selectivity of a range predicate is 1/3

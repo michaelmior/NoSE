@@ -11,8 +11,24 @@ class Workload
     @entities = {}
   end
 
-  # Add a new {CQL::Statement} to the workload
+  def <<(other)
+    if other.is_a? Entity
+      add_entity other
+    elsif other.is_a? CQL::Statement
+      add_query other
+    else
+      fail TypeError, 'can only add queries and entities to a workload'
+    end
+  end
+
+  # Retrieve an entity by name
+  def [](name)
+    @entities[name]
+  end
+
   def add_query(query)
+    query = Parser.parse query if query.is_a? String
+
     @queries << query
   end
 
@@ -26,16 +42,12 @@ class Workload
     if field.count > 2
       # Do a foreign key lookup
       field = field.dup
-      field[0..1] = @entities[field[0]].fields[field[1]].entity.name
+      key_field = @entities[field[0]].fields[field[1]]
+      field[0..1] = key_field ? key_field.entity.name : field[1]
       find_field field
     else
       @entities[field[0]].fields[field[1]]
     end
-  end
-
-  # Retrieve an entity by name
-  def get_entity(name)
-    @entities[name]
   end
 
   # Check if all the fields used by queries in the workload exist

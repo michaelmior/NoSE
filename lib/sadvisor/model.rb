@@ -41,6 +41,10 @@ class Entity
     self
   end
 
+  def [](field)
+    @fields[field]
+  end
+
   # All the keys found when traversing foreign keys
   def key_fields(field)
     field = field[1..-1] if field[0] == name
@@ -132,6 +136,13 @@ end
 class StringField < Field
   def initialize(name, length)
     super(name, :string, length)
+  end
+end
+
+# Field holding a date
+class DateField < Field
+  def initialize(name)
+    super(name, :date, 8)
   end
 end
 
