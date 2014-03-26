@@ -107,7 +107,7 @@ class IndexLookupStep < PlanStep
 
   # Check if this step can be applied for the given index, returning an array
   # of possible applications of the step
-  def self.apply(parent, index, state, workload)
+  def self.apply(parent, index, state)
     # Try all possible combinations of equality predicates and ordering
     field_combos = state.eq.prefixes.product(state.order_by.prefixes)
     field_combos = field_combos.select do |eq, order|
@@ -178,7 +178,7 @@ class SortStep < PlanStep
   end
 
   # Check if an external sort can used (if a sort is the last step)
-  def self.apply(parent, state, workload)
+  def self.apply(parent, state)
     new_step = nil
 
     if state.fields.empty? && state.eq.empty? && state.range.nil? && \
@@ -219,7 +219,7 @@ class FilterStep < PlanStep
   end
 
   # Check if filtering can be done (we have all the necessary fields)
-  def self.apply(parent, state, workload)
+  def self.apply(parent, state)
     if state.fields.empty? && !(state.eq.empty? && state.range.nil?) &&
         contains_all_fields?(parent, state, state.range)
       new_step = FilterStep.new(state.eq, state.range)
@@ -369,11 +369,11 @@ class Planner
     steps = []
 
     @@index_free_steps.each \
-        { |step| steps.push step.apply(parent, state, @workload) }
+        { |step| steps.push step.apply(parent, state) }
 
     @indexes.each do |index|
       @@index_steps.each do |step|
-        steps.push step.apply(parent, index, state, @workload).each \
+        steps.push step.apply(parent, index, state).each \
             { |new_step| new_step.add_fields_from_index index }
       end
     end
