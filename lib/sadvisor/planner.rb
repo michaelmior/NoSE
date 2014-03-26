@@ -105,21 +105,31 @@ class IndexLookupStep < PlanStep
     other.instance_of?(self.class) && @index == other.index
   end
 
-  # Check if the index is an identity map, gives us new fields, and that
-  # we either have the index to look up, or this is our first lookup
-  def self.apply_identity(parent, index, state)
-    if index.identity_for?(state.from) && \
-       (Set.new(index.fields + index.extra) - parent.fields).length > 0 && \
-       ((Set.new(state.from.id_fields) - parent.fields).length == 0 || \
-       parent.fields.length == 0)
-      new_step = IndexLookupStep.new(index)
-      new_state = state.dup
-      (index.fields + index.extra).each \
-          { |field| new_state.fields.delete field }
-      new_step.state = new_state
+  # Check if the index is an identity map for a table we need
+  # XXX This doesn't currently work correctly for tables other than the primary
+  #     table of the query
+  def self.apply_identity_table(parent, index, state, table)
+    return nil unless index.identity_for? table
 
-      new_step
-    end
+    new_fields = (Set.new(index.fields + index.extra) - parent.fields).length
+    return nil unless new_fields > 0
+
+    has_ids = (parent.fields & Set.new(table.id_fields)).length > 0
+    return nil if has_ids
+
+    new_step = IndexLookupStep.new(index)
+    new_state = state.dup
+    (index.fields + index.extra).each { |field| new_state.fields.delete field }
+    new_step.state = new_state
+
+    new_step
+  end
+
+  # Check if we can look up using an identity map for some table
+  def self.apply_identity(parent, index, state)
+    state.tables.map do |table|
+      apply_identity_table(parent, index, state, table)
+    end.compact
   end
 
   def self.apply_filter(parent, index, state)
@@ -147,7 +157,7 @@ class IndexLookupStep < PlanStep
 
       new_step.state = new_state
 
-      new_step
+      [new_step]
     end
   end
 
@@ -155,8 +165,8 @@ class IndexLookupStep < PlanStep
   # of possible applications of the step
   def self.apply(parent, index, state)
     [:apply_filter, :apply_identity].each do |strategy|
-      new_step = send(strategy, parent, index, state)
-      return [new_step] unless new_step.nil?
+      new_steps = send(strategy, parent, index, state)
+      return new_steps unless new_steps.nil? || new_steps.empty?
     end
 
     []
@@ -260,6 +270,7 @@ class QueryState
   attr_accessor :eq
   attr_accessor :range
   attr_accessor :order_by
+  attr_reader :tables
 
   def initialize(query, workload)
     @query = query
@@ -270,6 +281,10 @@ class QueryState
     @range = workload.find_field query.range_field.field.value \
         unless query.range_field.nil?
     @order_by = query.order_by.map { |field| workload.find_field field }
+
+    # Track all tables accessed in this query
+    @tables = Set.new((@eq + @order_by).map { |field| field.parent }) << @from
+    @tables << @range.parent unless @range.nil?
   end
 
   def inspect
