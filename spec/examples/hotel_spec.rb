@@ -27,6 +27,7 @@ describe 'Hotel example' do
     end
 
     @w << Entity.new('Reservation') do
+      ID 'ReservationID'
       ForeignKey 'GuestID', w['Guest']
       Date 'StartDate'
       Date 'EndDate'
@@ -67,5 +68,14 @@ describe 'Hotel example' do
     tree = planner.find_plans_for_query query
     expect(tree.count).to eq 1
     expect(tree.first).to match_array [IndexLookupStep.new(index)]
+  end
+
+  it 'uses the workload to find foreign key traversals' do
+    fields = @w.find_field_keys %w{Hotel Room Reservation Guest GuestID}
+    expect(fields).to eq \
+        [[@w['Guest']['GuestID']],
+         [@w['Reservation']['ReservationID']],
+         [@w['Room']['RoomID']],
+         [@w['Hotel']['HotelID']]]
   end
 end
