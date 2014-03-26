@@ -105,9 +105,24 @@ class IndexLookupStep < PlanStep
     other.instance_of?(self.class) && @index == other.index
   end
 
-  # Check if this step can be applied for the given index, returning an array
-  # of possible applications of the step
-  def self.apply(parent, index, state)
+  # Check if the index is an identity map, gives us new fields, and that
+  # we either have the index to look up, or this is our first lookup
+  def self.apply_identity(parent, index, state)
+    if index.identity_for?(state.from) && \
+       (Set.new(index.fields + index.extra) - parent.fields).length > 0 && \
+       ((Set.new(state.from.id_fields) - parent.fields).length == 0 || \
+       parent.fields.length == 0)
+      new_step = IndexLookupStep.new(index)
+      new_state = state.dup
+      (index.fields + index.extra).each \
+          { |field| new_state.fields.delete field }
+      new_step.state = new_state
+
+      new_step
+    end
+  end
+
+  def self.apply_filter(parent, index, state)
     # Try all possible combinations of equality predicates and ordering
     field_combos = state.eq.prefixes.product(state.order_by.prefixes)
     field_combos = field_combos.select do |eq, order|
@@ -131,21 +146,17 @@ class IndexLookupStep < PlanStep
           { |field| new_state.fields.delete field }
 
       new_step.state = new_state
-      return [new_step]
 
-    # Check if the index is an identity map, gives us new fields, and that
-    # we either have the index to look up, or this is our first lookup
-    elsif index.identity_for?(state.from) && \
-        (Set.new(index.fields + index.extra) - parent.fields).length > 0 && \
-        ((Set.new(state.from.id_fields) - parent.fields).length == 0 || \
-         parent.fields.length == 0)
-      new_step = IndexLookupStep.new(index)
-      new_state = state.dup
-      (index.fields + index.extra).each \
-          { |field| new_state.fields.delete field }
-      new_step.state = new_state
-      return [new_step]
-    elsif true
+      new_step
+    end
+  end
+
+  # Check if this step can be applied for the given index, returning an array
+  # of possible applications of the step
+  def self.apply(parent, index, state)
+    [:apply_filter, :apply_identity].each do |strategy|
+      new_step = send(strategy, parent, index, state)
+      return [new_step] unless new_step.nil?
     end
 
     []
