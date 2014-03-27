@@ -53,6 +53,8 @@ describe 'Hotel example' do
       ForeignKey 'RoomID', w['Room']
       ForeignKey 'AmenityID', w['Amenity']
     end
+    @query = Parser.parse 'SELECT Name FROM POI WHERE ' \
+                          'Hotel.Room.Reservation.Guest.GuestID = 3'
   end
 
   it 'can look up entities via multiple foreign keys' do
@@ -62,10 +64,8 @@ describe 'Hotel example' do
                          [@w['Hotel']['Room'],
                           @w['Room']['Reservation'],
                           guest_id]
-    query = Parser.parse 'SELECT Name FROM POI WHERE ' \
-                         'Hotel.Room.Reservation.Guest.GuestID = 3'
     planner = Planner.new @w, [index]
-    tree = planner.find_plans_for_query query
+    tree = planner.find_plans_for_query @query
     expect(tree.count).to eq 1
     expect(tree.first).to match_array [IndexLookupStep.new(index)]
   end
@@ -77,5 +77,21 @@ describe 'Hotel example' do
          [@w['Reservation']['ReservationID']],
          [@w['Room']['RoomID']],
          [@w['Hotel']['HotelID']]]
+  end
+
+  it 'uses the workload to populate all relevant tables' do
+    tables = QueryState.new(@query, @w).tables
+    expect(tables).to include(
+      @w['POI'] => [[@w['POI']['POIID']]],
+      @w['Guest'] => [[@w['Guest']['GuestID']],
+                      [@w['Reservation']['ReservationID']],
+                      [@w['Room']['RoomID']],
+                      [@w['Hotel']['HotelID']]],
+      @w['Reservation'] => [[@w['Guest']['GuestID']]],
+      @w['Room'] => [[@w['Guest']['GuestID']],
+                     [@w['Reservation']['ReservationID']]],
+      @w['Hotel'] => [[@w['Guest']['GuestID']],
+                      [@w['Reservation']['ReservationID']],
+                      [@w['Room']['RoomID']]])
   end
 end

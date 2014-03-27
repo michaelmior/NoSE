@@ -127,7 +127,7 @@ class IndexLookupStep < PlanStep
 
   # Check if we can look up using an identity map for some table
   def self.apply_identity(parent, index, state)
-    state.tables.map do |table|
+    state.tables.keys.map do |table|
       apply_identity_table(parent, index, state, table)
     end.compact
   end
@@ -282,9 +282,35 @@ class QueryState
         unless query.range_field.nil?
     @order_by = query.order_by.map { |field| workload.find_field field }
 
-    # Track all tables accessed in this query
-    @tables = Set.new((@eq + @order_by).map { |field| field.parent }) << @from
-    @tables << @range.parent unless @range.nil?
+    populate_tables query, workload
+  end
+
+  # Track all tables accessed in this query
+  def populate_tables(query, workload)
+    @tables = { @from => [@from.id_fields] }
+    fields = query.order_by + query.eq_fields.map do |condition|
+      condition.field.value
+    end
+    fields << query.range_field.field.value unless query.range_field.nil?
+    fields.each do |field|
+      table = workload.find_field(field).parent
+      @tables[table] = workload.find_field_keys field
+    end
+
+    expand_tables
+  end
+
+  # Expand the list of tables to those tracked by foreign keys
+  def expand_tables
+    new_tables = {}
+    @tables.each do |table, keys|
+      keys.prefixes.each do |key_fields|
+        next if key_fields.empty?
+        next if @tables.include? key_fields.last.first.parent
+        new_tables[key_fields.last.first.parent] = key_fields[0..-2]
+      end
+    end
+    @tables.merge! new_tables
   end
 
   def inspect
