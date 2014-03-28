@@ -87,7 +87,7 @@ class Field
   end
 
   def inspect
-    name + '.' + parent.name
+    parent.name + '.' + name
   end
 
   # Set the estimated cardinality of the field
