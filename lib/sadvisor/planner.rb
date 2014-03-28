@@ -160,6 +160,13 @@ class IndexLookupStep < PlanStep
         (parent.fields.length == 0 ||
          # Or we're doing a lookup on the set of fields we know from predicates
          (parent.fields == max_eq.to_set && parent.instance_of?(RootStep)))
+
+      # Ensure we actually get new fields we need
+      new_fields = (index.fields + index.extra).to_set - parent.fields
+      required_fields = state.tables.values.flatten.to_set + \
+                        state.order_by.to_set + state.fields.to_set
+      return nil unless (new_fields & required_fields).length > 0
+
       new_step = IndexLookupStep.new(index)
       new_state = state.dup
 
