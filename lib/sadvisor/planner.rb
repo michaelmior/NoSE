@@ -155,7 +155,11 @@ class IndexLookupStep < PlanStep
 
     # TODO: Add range predicates
 
-    if (max_eq.length > 0 || max_order.length > 0) && parent.fields.length == 0
+    if (max_eq.length > 0 || max_order.length > 0) &&
+        # Either we have no fields
+        (parent.fields.length == 0 ||
+         # Or we're doing a lookup on the set of fields we know from predicates
+         (parent.fields == max_eq.to_set && parent.instance_of?(RootStep)))
       new_step = IndexLookupStep.new(index)
       new_state = state.dup
 
