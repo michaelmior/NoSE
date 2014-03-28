@@ -87,7 +87,7 @@ class RootStep < PlanStep
 
     # We start with these fields because they were given in the query
     @fields |= state.eq
-    @fields += state.range unless state.range.nil?
+    @fields << state.range unless state.range.nil?
   end
 end
 
