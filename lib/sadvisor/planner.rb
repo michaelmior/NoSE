@@ -235,8 +235,7 @@ class FilterStep < PlanStep
   def self.contains_all_fields?(parent, state, range_field)
     filter_fields = state.eq.dup
     filter_fields << range_field unless range_field.nil?
-    fields = parent.fields.to_a # XXX This doesn't work as a set, weird
-    filter_fields.map { |field| fields.member? field }.all?
+    filter_fields.map { |field| parent.fields.member? field }.all?
   end
 
   # Check if filtering can be done (we have all the necessary fields)

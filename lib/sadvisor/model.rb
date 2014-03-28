@@ -15,7 +15,15 @@ class Entity
 
   # Compare by name, fields, and count
   def ==(other)
-    @name == other.name && @fields == other.fields && @count == other.count
+    @name == other.name && @fields == other.fields
+  end
+
+  def eql?(other)
+    self == other
+  end
+
+  def hash
+    [@name, @fields].hash
   end
 
   # Get the key fields for the entity
@@ -84,6 +92,14 @@ class Field
   # Compare by parent entity and name
   def ==(other)
     @parent == other.parent && @name == other.name
+  end
+
+  def eql?(other)
+    self == other
+  end
+
+  def hash
+    [@parent, @name].hash
   end
 
   def inspect
