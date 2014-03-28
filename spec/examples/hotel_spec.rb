@@ -29,6 +29,7 @@ describe 'Hotel example' do
     @w << Entity.new('Reservation') do
       ID 'ReservationID'
       ForeignKey 'GuestID', w['Guest']
+      ForeignKey 'RoomID', w['Room']
       Date 'StartDate'
       Date 'EndDate'
     end
@@ -54,7 +55,7 @@ describe 'Hotel example' do
       ForeignKey 'AmenityID', w['Amenity']
     end
     @query = Parser.parse 'SELECT Name FROM POI WHERE ' \
-                          'Hotel.Room.Reservation.Guest.GuestID = 3'
+                          'POI.Hotel.Room.Reservation.Guest.GuestID = 3'
   end
 
   it 'can look up entities via multiple foreign keys' do
@@ -93,5 +94,18 @@ describe 'Hotel example' do
       @w['Hotel'] => [[@w['Guest']['GuestID']],
                       [@w['Reservation']['ReservationID']],
                       [@w['Room']['RoomID']]])
+  end
+
+  it 'can look up entities using multiple indices' do
+    simple_indexes = @w.entities.values.map(&:simple_index)
+    planner = Planner.new @w, simple_indexes
+    tree = planner.find_plans_for_query @query
+    expect(tree.count).to eq 1
+    expect(tree.first).to match_array [
+        IndexLookupStep.new(@w['Reservation'].simple_index),
+        IndexLookupStep.new(@w['Room'].simple_index),
+        IndexLookupStep.new(@w['Hotel'].simple_index),
+        IndexLookupStep.new(@w['POI'].simple_index),
+        FilterStep.new([@w['Guest']['GuestID']], nil)]
   end
 end

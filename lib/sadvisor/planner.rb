@@ -84,6 +84,10 @@ class RootStep < PlanStep
   def initialize(state)
     super()
     @state = state
+
+    # We start with these fields because they were given in the query
+    @fields |= state.eq
+    @fields += state.range unless state.range.nil?
   end
 end
 
@@ -127,7 +131,14 @@ class IndexLookupStep < PlanStep
 
   # Check if we can look up using an identity map for some table
   def self.apply_identity(parent, index, state)
-    state.tables.keys.map do |table|
+    state.tables.map do |table, key_fields|
+      # If the table is referenced by one field, it must be the key, so we can
+      # proceed, otherwise we must have all the necessary keys
+      next unless key_fields.length == 1 || \
+                  key_fields.map do |fields|
+                    fields.to_set.subset? parent.fields.to_set
+                  end.all?
+
       apply_identity_table(parent, index, state, table)
     end.compact
   end
@@ -231,6 +242,10 @@ class FilterStep < PlanStep
     other.instance_of?(self.class) && @eq == other.eq && @range == other.range
   end
 
+  def inspect
+    super + ' ' + @eq.inspect + ' ' + @range.inspect
+  end
+
   # Check if the plan has all the necessary fields to filter
   def self.contains_all_fields?(parent, state, range_field)
     filter_fields = state.eq.dup
@@ -305,7 +320,6 @@ class QueryState
     @tables.each do |table, keys|
       keys.prefixes.each do |key_fields|
         next if key_fields.empty?
-        next if @tables.include? key_fields.last.first.parent
         new_tables[key_fields.last.first.parent] = key_fields[0..-2]
       end
     end
