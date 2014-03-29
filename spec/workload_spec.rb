@@ -1,5 +1,3 @@
-require 'sadvisor'
-
 describe Workload do
   let(:entity)      { Entity.new('Foo') << field }
   let(:field)       { IDField.new('Id') }

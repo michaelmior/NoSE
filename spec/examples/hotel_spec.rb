@@ -1,5 +1,3 @@
-require 'sadvisor'
-
 describe 'Hotel example' do
   before(:each) do
     @w = w = Workload.new

@@ -1,5 +1,3 @@
-require 'sadvisor'
-
 describe Parser do
   it 'can parse a simple select' do
     expect(Parser.parse('SELECT foo FROM bar')).to be_true

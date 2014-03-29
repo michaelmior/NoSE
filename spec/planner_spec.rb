@@ -1,5 +1,3 @@
-require 'sadvisor'
-
 describe Planner do
   before(:each) do
     @entity = Entity.new('Tweet')

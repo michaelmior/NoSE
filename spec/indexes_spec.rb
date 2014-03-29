@@ -1,5 +1,3 @@
-require 'sadvisor'
-
 describe Index do
   let(:simple_query)   { Parser.parse('SELECT Id FROM Foo') }
   let(:equality_query) { Parser.parse('SELECT Id FROM Foo WHERE Foo.Id=3') }
