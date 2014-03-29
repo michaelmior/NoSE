@@ -1,7 +1,6 @@
 # A representation of an object in the conceptual data model
 class Entity
-  attr_reader :fields
-  attr_reader :name
+  attr_reader :fields, :name
   attr_accessor :count
 
   def initialize(name, &block)
@@ -77,10 +76,7 @@ end
 
 # A single field on an {Entity}
 class Field
-  attr_reader :name
-  attr_reader :type
-  attr_reader :size
-  attr_reader :parent
+  attr_reader :name, :type, :size, :parent
 
   def initialize(name, type, size)
     @name = name
@@ -171,8 +167,7 @@ end
 
 # Field holding a foreign key to another entity
 class ForeignKey < IDField
-  attr_reader :entity
-  attr_reader :relationship
+  attr_reader :entity, :relationship
 
   def initialize(name, entity)
     super(name)

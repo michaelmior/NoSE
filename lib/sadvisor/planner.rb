@@ -29,8 +29,7 @@ end
 class PlanStep
   include Enumerable
 
-  attr_accessor :children
-  attr_accessor :state
+  attr_accessor :children, :state
   attr_reader :fields
 
   def initialize
@@ -239,8 +238,7 @@ end
 
 # A query plan performing a filter without an index
 class FilterStep < PlanStep
-  attr_reader :eq
-  attr_reader :range
+  attr_reader :eq, :range
 
   def initialize(eq, range)
     @eq = eq
@@ -290,11 +288,7 @@ end
 
 # Ongoing state of a query throughout the execution plan
 class QueryState
-  attr_accessor :from
-  attr_accessor :fields
-  attr_accessor :eq
-  attr_accessor :range
-  attr_accessor :order_by
+  attr_accessor :from, :fields, :eq, :range, :order_by
   attr_reader :tables
 
   def initialize(query, workload)

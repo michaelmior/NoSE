@@ -2,8 +2,7 @@ require_relative 'node_extensions'
 
 # A representation of materialized views over fields in an entity
 class Index
-  attr_reader :fields
-  attr_reader :extra
+  attr_reader :fields, :extra
 
   def initialize(fields, extra)
     @fields = fields

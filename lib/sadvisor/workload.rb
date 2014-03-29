@@ -3,8 +3,7 @@ require_relative './parser'
 
 # A representation of a query workload over a given set of entities
 class Workload
-  attr_reader :queries
-  attr_reader :entities
+  attr_reader :queries, :entities
 
   def initialize
     @queries = []
