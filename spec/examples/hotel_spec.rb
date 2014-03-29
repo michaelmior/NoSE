@@ -83,11 +83,11 @@ describe 'Hotel example' do
   it 'uses the workload to populate all relevant tables' do
     tables = QueryState.new(@query, @w).tables
     expect(tables).to include(
-      @w['POI'] => [[@w['POI']['POIID']]],
-      @w['Guest'] => [[@w['Guest']['GuestID']],
-                      [@w['Reservation']['ReservationID']],
-                      [@w['Room']['RoomID']],
-                      [@w['Hotel']['HotelID']]],
+      @w['Guest'] => [],
+      @w['POI'] => [[@w['Guest']['GuestID']],
+                    [@w['Reservation']['ReservationID']],
+                    [@w['Room']['RoomID']],
+                    [@w['Hotel']['HotelID']]],
       @w['Reservation'] => [[@w['Guest']['GuestID']]],
       @w['Room'] => [[@w['Guest']['GuestID']],
                      [@w['Reservation']['ReservationID']]],
