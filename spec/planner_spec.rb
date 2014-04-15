@@ -21,6 +21,7 @@ describe Planner do
     tree = planner.find_plans_for_query query
     expect(tree.first).to eq([IndexLookupStep.new(index)])
     expect(tree.count).to eq 1
+    expect(tree.first.cost).to be > 0
   end
 
   it 'can perform an external sort if an index does not exist' do

@@ -192,6 +192,10 @@ class IndexLookupStep < PlanStep
 
     []
   end
+
+  def cost
+    index.query_cost state.query, state.workload
+  end
 end
 
 # A query plan step performing external sort
@@ -289,10 +293,11 @@ end
 # Ongoing state of a query throughout the execution plan
 class QueryState
   attr_accessor :from, :fields, :eq, :range, :order_by
-  attr_reader :tables
+  attr_reader :query, :tables, :workload
 
   def initialize(query, workload)
     @query = query
+    @workload = workload
     @from = workload[query.from.value]
     @fields = query.fields.map { |field| workload.find_field field.value }
     @eq = query.eq_fields.map \
@@ -301,19 +306,19 @@ class QueryState
         unless query.range_field.nil?
     @order_by = query.order_by.map { |field| workload.find_field field }
 
-    populate_tables query, workload
+    populate_tables
   end
 
   # Track all tables accessed in this query
-  def populate_tables(query, workload)
+  def populate_tables
     @tables = { @from => [@from.id_fields] }
-    fields = query.order_by + query.eq_fields.map do |condition|
+    fields = @query.order_by + @query.eq_fields.map do |condition|
       condition.field.value
     end
-    fields << query.range_field.field.value unless query.range_field.nil?
+    fields << @query.range_field.field.value unless @query.range_field.nil?
     fields.each do |field|
-      table = workload.find_field(field).parent
-      @tables[table] = workload.find_field_keys field
+      table = @workload.find_field(field).parent
+      @tables[table] = @workload.find_field_keys field
     end
 
     expand_tables
