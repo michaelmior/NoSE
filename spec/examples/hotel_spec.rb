@@ -52,8 +52,10 @@ describe 'Hotel example' do
       ForeignKey 'RoomID', w['Room']
       ForeignKey 'AmenityID', w['Amenity']
     end
+
     @query = Parser.parse 'SELECT Name FROM POI WHERE ' \
                           'POI.Hotel.Room.Reservation.Guest.GuestID = 3'
+    @w.add_query @query
   end
 
   it 'can look up entities via multiple foreign keys' do
@@ -105,5 +107,19 @@ describe 'Hotel example' do
         IndexLookupStep.new(@w['Hotel'].simple_index),
         IndexLookupStep.new(@w['POI'].simple_index),
         FilterStep.new([@w['Guest']['GuestID']], nil)]
+  end
+
+  it 'can enumerate all simple indices' do
+    @w.entities.values.each do |entity|
+      simple_index = entity.simple_index
+      indexes = IndexEnumerator.indexes_for_entity entity
+      expect(indexes).to include simple_index
+    end
+  end
+
+  it 'can enumerate a materialized view' do
+    view = @query.materialize_view(@w)
+    indexes = IndexEnumerator.indexes_for_workload @w
+    expect(indexes).to include view
   end
 end

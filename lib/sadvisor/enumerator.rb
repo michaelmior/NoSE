@@ -32,4 +32,10 @@ class IndexEnumerator
 
     indexes_for_fields fields
   end
+
+  def self.indexes_for_workload(workload)
+    workload.queries.map do |query|
+      indexes_for_query(query, workload).to_a
+    end.inject([], &:+)
+  end
 end
