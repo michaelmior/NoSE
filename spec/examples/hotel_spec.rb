@@ -122,4 +122,14 @@ describe 'Hotel example' do
     indexes = IndexEnumerator.indexes_for_workload @w
     expect(indexes).to include view
   end
+
+  it 'can select from multiple plans' do
+    indexes = @w.entities.values.map(&:simple_index)
+    view = @query.materialize_view(@w)
+    indexes << view
+
+    planner = Planner.new @w, indexes
+    tree = planner.find_plans_for_query @query
+    expect(tree.min).to match_array [IndexLookupStep.new(view)]
+  end
 end
