@@ -19,14 +19,14 @@ class Index
   def inspect
     field_names = @fields.map(&:inspect)
     extra_names = @extra.map(&:inspect)
-    (field_names.to_s + ', ' + extra_names.to_s).gsub '"', ''
+    '[' + (field_names.to_s + ', ' + extra_names.to_s).gsub('"', '') + ']'
   end
 
   # Two indices are equal if they contain the same fields
   def ==(other)
     @fields == other.fields && \
         @field_keys == other.instance_variable_get(:@field_keys) \
-        && @extra == other.extra
+        && @extra.to_set == other.extra.to_set
   end
 
   # Set the keys which a field in the index is derived from
