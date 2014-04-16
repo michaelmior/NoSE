@@ -185,12 +185,13 @@ class IndexLookupStep < PlanStep
   # Check if this step can be applied for the given index, returning an array
   # of possible applications of the step
   def self.apply(parent, index, state)
+    all_new_steps = []
     [:apply_filter, :apply_identity].each do |strategy|
       new_steps = send(strategy, parent, index, state)
-      return new_steps unless new_steps.nil? || new_steps.empty?
+      all_new_steps += new_steps unless new_steps.nil? || new_steps.empty?
     end
 
-    []
+    all_new_steps
   end
 
   def cost
