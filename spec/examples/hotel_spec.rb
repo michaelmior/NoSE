@@ -2,6 +2,12 @@ describe 'Hotel example' do
   before(:each) do
     @w = w = Workload.new
 
+    @w << Entity.new('POI') do
+      ID 'POIID'
+      String 'Name', 20
+      String 'Description', 200
+    end
+
     @w << Entity.new('Hotel') do
       ID 'HotelID'
       String 'Name', 20
@@ -9,6 +15,12 @@ describe 'Hotel example' do
       String 'Address', 50
       String 'City', 20
       String 'Zip', 5
+      ToManyKey 'POIs', w['POI']
+    end
+
+    @w << Entity.new('Amenity') do
+      ID 'AmenityID'
+      String 'Name', 20
     end
 
     @w << Entity.new('Room') do
@@ -16,6 +28,7 @@ describe 'Hotel example' do
       ForeignKey 'HotelID', w['Hotel']
       String 'RoomNumber', 4
       Float 'Rate'
+      ToManyKey 'Amenities', w['Amenity']
     end
 
     @w << Entity.new('Guest') do
@@ -30,29 +43,6 @@ describe 'Hotel example' do
       ForeignKey 'RoomID', w['Room']
       Date 'StartDate'
       Date 'EndDate'
-    end
-
-    @w << Entity.new('POI') do
-      ID 'POIID'
-      String 'Name', 20
-      String 'Description', 200
-    end
-
-    @w << Entity.new('HotelToPOI') do
-      ID 'HotelToPOIID'
-      ForeignKey 'HotelID', w['Hotel']
-      ForeignKey 'POIID', w['POI']
-    end
-
-    @w << Entity.new('Amenity') do
-      ID 'AmenityID'
-      String 'Name', 20
-    end
-
-    @w << Entity.new('RoomToAmenity') do
-      ID 'RoomToAmenityID'
-      ForeignKey 'RoomID', w['Room']
-      ForeignKey 'AmenityID', w['Amenity']
     end
 
     @query = Parser.parse 'SELECT Name FROM POI WHERE ' \
