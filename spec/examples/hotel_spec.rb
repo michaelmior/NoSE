@@ -39,6 +39,7 @@ describe 'Hotel example' do
     end
 
     @w << Entity.new('HotelToPOI') do
+      ID 'HotelToPOIID'
       ForeignKey 'HotelID', w['Hotel']
       ForeignKey 'POIID', w['POI']
     end
@@ -49,6 +50,7 @@ describe 'Hotel example' do
     end
 
     @w << Entity.new('RoomToAmenity') do
+      ID 'RoomToAmenityID'
       ForeignKey 'RoomID', w['Room']
       ForeignKey 'AmenityID', w['Amenity']
     end

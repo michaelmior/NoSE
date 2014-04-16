@@ -8,7 +8,7 @@ class IndexEnumerator
           0.upto(fields.count - num_fields) do |num_extra|
             (fields - index_fields).combination(num_extra) do |extra|
               enum.yield Index.new index_fields, extra \
-                  if index_fields.count > 0 || extra.count > 0
+                  if index_fields.count > 0
             end
           end
         end

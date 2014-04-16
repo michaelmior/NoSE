@@ -17,9 +17,6 @@ describe IndexEnumerator do
       Index.new([@w['Foo']['Baz']], []),
       Index.new([@w['Foo']['Bar'], @w['Foo']['Baz']], []),
       Index.new([@w['Foo']['Baz'], @w['Foo']['Bar']], []),
-      Index.new([], [@w['Foo']['Baz'], @w['Foo']['Bar']]),
-      Index.new([], [@w['Foo']['Bar']]),
-      Index.new([], [@w['Foo']['Baz']]),
       Index.new([@w['Foo']['Bar']], [@w['Foo']['Baz']]),
       Index.new([@w['Foo']['Baz']], [@w['Foo']['Bar']])
     ]
@@ -29,7 +26,6 @@ describe IndexEnumerator do
     indexes = IndexEnumerator.indexes_for_query(@query, @w).to_a
     expect(indexes).to match_array [
       Index.new([@w['Foo']['Bar']], []),
-      Index.new([], [@w['Foo']['Bar']])
     ]
   end
 end
