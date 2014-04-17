@@ -440,6 +440,10 @@ class Planner
     tree
   end
 
+  def min_query_cost(query)
+    find_plans_for_query(query).min.cost
+  end
+
   # Get a list of possible next steps for a query in the given state
   def find_steps_for_state(parent, state)
     steps = []

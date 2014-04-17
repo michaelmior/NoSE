@@ -124,4 +124,11 @@ describe 'Hotel example' do
     tree = planner.find_plans_for_query @query
     expect(tree.min).to match_array [IndexLookupStep.new(view)]
   end
+
+  it 'can search for an optimal index' do
+    indexes = Search.new(@w).search 625
+    expect(indexes).to match_array [
+      Index.new([@w['Guest']['GuestID']], [@w['POI']['Name']])
+    ]
+  end
 end

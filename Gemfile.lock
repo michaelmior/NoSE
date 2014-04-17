@@ -30,6 +30,7 @@ GEM
       binding_of_caller (>= 0.7)
       pry (>= 0.9.11)
     rake (10.1.0)
+    rglpk (0.3.1)
     rspec (2.14.1)
       rspec-core (~> 2.14.0)
       rspec-expectations (~> 2.14.0)
@@ -58,6 +59,7 @@ DEPENDENCIES
   pry-rescue
   pry-stack_explorer
   rake
+  rglpk (~> 0.3.1)
   rspec
   simplecov
   treetop

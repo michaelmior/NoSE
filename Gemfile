@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'rake'
 gem 'treetop'
+gem 'rglpk', '~>0.3.1'
 
 group :test do
   gem 'rspec'
