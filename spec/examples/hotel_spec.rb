@@ -60,8 +60,9 @@ describe 'Hotel example' do
                           guest_id]
     planner = Sadvisor::Planner.new @w, [index]
     tree = planner.find_plans_for_query @query
-    expect(tree.count).to eq 1
-    expect(tree.first).to match_array [Sadvisor::IndexLookupStep.new(index)]
+    expect(tree.count).to eq 2
+    expect(tree).to include [Sadvisor::IndexLookupStep.new(index)]
+    expect(tree).to include [Sadvisor::IDLookupStep.new(index)]
   end
 
   it 'uses the workload to find foreign key traversals' do
@@ -93,8 +94,7 @@ describe 'Hotel example' do
     simple_indexes = @w.entities.values.map(&:simple_index)
     planner = Sadvisor::Planner.new @w, simple_indexes
     tree = planner.find_plans_for_query @query
-    expect(tree.count).to eq 1
-    expect(tree.first).to match_array [
+    expect(tree).to include [
         Sadvisor::IndexLookupStep.new(@w['Reservation'].simple_index),
         Sadvisor::IndexLookupStep.new(@w['Room'].simple_index),
         Sadvisor::IndexLookupStep.new(@w['Hotel'].simple_index),

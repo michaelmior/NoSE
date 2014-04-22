@@ -91,8 +91,8 @@ module Sadvisor
     end
   end
 
-  # A query plan step performing an index lookup
-  class IndexLookupStep < PlanStep
+  # Superclass for steps using indices
+  class IndexStep < PlanStep
     attr_reader :index
 
     def initialize(index)
@@ -104,11 +104,40 @@ module Sadvisor
       super + ' ' + index.inspect
     end
 
-    # Two index lookups are equal if they use the same index
+    # Two index steps are equal if they use the same index
     def ==(other)
       other.instance_of?(self.class) && @index == other.index
     end
 
+    def cost
+      index.query_cost state.query, state.workload
+    end
+  end
+
+  # A query plan step looking up fields based on IDs
+  class IDLookupStep < IndexStep
+    def self.apply(parent, index, state)
+      table = index.fields[0].parent
+      return [] unless index.identity_for? table
+
+      new_fields = (Set.new(index.fields + index.extra) - parent.fields).length
+      return [] unless new_fields > 0
+
+      id_fields = parent.fields & Set.new(table.id_fields)
+      return [] unless id_fields.length > 0
+
+      new_step = IDLookupStep.new(index)
+      new_state = state.dup
+      new_state.eq -= id_fields.to_a
+      (index.fields + index.extra).each { |field| new_state.fields.delete field }
+      new_step.state = new_state
+
+      [new_step]
+    end
+  end
+
+  # A query plan step performing an index lookup
+  class IndexLookupStep < IndexStep
     # Check if the index is an identity map for a table we need
     # XXX This doesn't currently work correctly for tables other than the primary
     #     table of the query
@@ -164,7 +193,9 @@ module Sadvisor
         # Ensure we actually get new fields we need
         new_fields = (index.fields + index.extra).to_set - parent.fields
         required_fields = state.tables.values.flatten.to_set + \
-                          state.order_by.to_set + state.fields.to_set
+                          state.order_by.to_set + state.fields.to_set + \
+                          state.tables.keys.map(&:id_fields).flatten.to_set
+
         return nil unless (new_fields & required_fields).length > 0
 
         new_step = IndexLookupStep.new(index)
@@ -193,10 +224,6 @@ module Sadvisor
       end
 
       all_new_steps
-    end
-
-    def cost
-      index.query_cost state.query, state.workload
     end
   end
 
@@ -400,6 +427,7 @@ module Sadvisor
 
     # Possible steps which require indices
     @@index_steps = [
+      IDLookupStep,
       IndexLookupStep
     ]
 

@@ -78,4 +78,19 @@ describe Sadvisor::Planner do
     expect(tree.count).to eq 1
     expect(tree.first.last).to eq Sadvisor::FilterStep.new([], @time_field)
   end
+
+  it 'can perform a separate lookup by ID' do
+    query = Sadvisor::Parser.parse 'SELECT Body FROM Tweet WHERE ' \
+                                   'Tweet.Timestamp = 1'
+    time_index = Sadvisor::Index.new [@time_field], [@id_field]
+    id_index = Sadvisor::Index.new [@id_field], [@body_field]
+
+    planner = Sadvisor::Planner.new(@workload, [time_index, id_index])
+    tree = planner.find_plans_for_query(query)
+
+    expect(tree).to include [
+      Sadvisor::IndexLookupStep.new(time_index),
+      Sadvisor::IDLookupStep.new(id_index)
+    ]
+  end
 end
