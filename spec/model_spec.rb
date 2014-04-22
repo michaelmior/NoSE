@@ -1,16 +1,16 @@
-describe Entity do
-  subject { Entity.new('Foo') }
+describe Sadvisor::Entity do
+  subject { Sadvisor::Entity.new('Foo') }
 
   it 'can store fields' do
-    subject << IntegerField.new('Bar')
-    subject << IntegerField.new('Baz')
+    subject << Sadvisor::IntegerField.new('Bar')
+    subject << Sadvisor::IntegerField.new('Baz')
 
     expect(subject.fields.keys).to match_array %w{Bar Baz}
   end
 
   it 'can have foreign keys' do
-    other = Entity.new('Bar') * 100
-    field = ToOneKey.new('other', other)
+    other = subject * 100
+    field = Sadvisor::ToOneKey.new('other', other)
     subject << field
 
     expect(field.entity).to be(other)
@@ -20,8 +20,8 @@ describe Entity do
   end
 
   it 'can have foreign keys with cardinality > 1' do
-    others = Entity.new('Bar') * 100
-    field = ToManyKey.new('others', others)
+    others = subject * 100
+    field = Sadvisor::ToManyKey.new('others', others)
     subject << field
 
     expect(field.entity).to be(others)
@@ -31,7 +31,7 @@ describe Entity do
   end
 
   it 'can tell fields when they are added' do
-    field = IntegerField.new('Bar')
+    field = Sadvisor::IntegerField.new('Bar')
 
     expect(field.parent).to be_nil
 
@@ -41,27 +41,27 @@ describe Entity do
   end
 
   it 'can identify a list of key traversals for a field' do
-    field = IDField.new('Id')
+    field = Sadvisor::IDField.new('Id')
     subject << field
 
     expect(subject.key_fields %w{Foo Id}).to eq [field]
   end
 
   it 'can identify a list of key traversals for foreign keys' do
-    field = IDField.new('Id')
+    field = Sadvisor::IDField.new('Id')
     subject << field
 
-    other_entity = Entity.new('Bar')
-    other_entity << IntegerField.new('Baz')
+    other_entity = Sadvisor::Entity.new('Bar')
+    other_entity << Sadvisor::IntegerField.new('Baz')
 
-    foreign_key = ForeignKey.new('Quux', other_entity)
+    foreign_key = Sadvisor::ForeignKey.new('Quux', other_entity)
     subject << foreign_key
 
     expect(subject.key_fields %w{Foo Quux Baz}).to eq [foreign_key]
   end
 
   it 'can create entities using a DSL' do
-    entity = Entity.new 'Foo' do
+    entity = Sadvisor::Entity.new 'Foo' do
       ID      'Bar'
       Integer 'Baz'
       String  'Quux', 20

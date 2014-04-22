@@ -1,14 +1,14 @@
 describe 'Hotel example' do
   before(:each) do
-    @w = w = Workload.new
+    @w = w = Sadvisor::Workload.new
 
-    @w << Entity.new('POI') do
+    @w << Sadvisor::Entity.new('POI') do
       ID 'POIID'
       String 'Name', 20
       String 'Description', 200
     end
 
-    @w << Entity.new('Hotel') do
+    @w << Sadvisor::Entity.new('Hotel') do
       ID 'HotelID'
       String 'Name', 20
       String 'Phone', 10
@@ -18,12 +18,12 @@ describe 'Hotel example' do
       ToManyKey 'POIs', w['POI']
     end
 
-    @w << Entity.new('Amenity') do
+    @w << Sadvisor::Entity.new('Amenity') do
       ID 'AmenityID'
       String 'Name', 20
     end
 
-    @w << Entity.new('Room') do
+    @w << Sadvisor::Entity.new('Room') do
       ID 'RoomID'
       ForeignKey 'HotelID', w['Hotel']
       String 'RoomNumber', 4
@@ -31,13 +31,13 @@ describe 'Hotel example' do
       ToManyKey 'Amenities', w['Amenity']
     end
 
-    @w << Entity.new('Guest') do
+    @w << Sadvisor::Entity.new('Guest') do
       ID 'GuestID'
       String 'Name', 20
       String 'Email', 20
     end
 
-    @w << Entity.new('Reservation') do
+    @w << Sadvisor::Entity.new('Reservation') do
       ID 'ReservationID'
       ForeignKey 'GuestID', w['Guest']
       ForeignKey 'RoomID', w['Room']
@@ -45,22 +45,23 @@ describe 'Hotel example' do
       Date 'EndDate'
     end
 
-    @query = Parser.parse 'SELECT Name FROM POI WHERE ' \
-                          'POI.Hotel.Room.Reservation.Guest.GuestID = 3'
+    @query = Sadvisor::Parser.parse 'SELECT Name FROM POI WHERE ' \
+                                    'POI.Hotel.Room.Reservation.' \
+                                    'Guest.GuestID = 3'
     @w.add_query @query
   end
 
   it 'can look up entities via multiple foreign keys' do
     guest_id = @w['Guest']['GuestID']
-    index = Index.new([guest_id], [@w['POI']['Name']])
+    index = Sadvisor::Index.new([guest_id], [@w['POI']['Name']])
     index.set_field_keys guest_id, \
                          [@w['Hotel']['Room'],
                           @w['Room']['Reservation'],
                           guest_id]
-    planner = Planner.new @w, [index]
+    planner = Sadvisor::Planner.new @w, [index]
     tree = planner.find_plans_for_query @query
     expect(tree.count).to eq 1
-    expect(tree.first).to match_array [IndexLookupStep.new(index)]
+    expect(tree.first).to match_array [Sadvisor::IndexLookupStep.new(index)]
   end
 
   it 'uses the workload to find foreign key traversals' do
@@ -73,7 +74,7 @@ describe 'Hotel example' do
   end
 
   it 'uses the workload to populate all relevant tables' do
-    tables = QueryState.new(@query, @w).tables
+    tables = Sadvisor::QueryState.new(@query, @w).tables
     expect(tables).to include(
       @w['Guest'] => [],
       @w['POI'] => [[@w['Guest']['GuestID']],
@@ -90,28 +91,28 @@ describe 'Hotel example' do
 
   it 'can look up entities using multiple indices' do
     simple_indexes = @w.entities.values.map(&:simple_index)
-    planner = Planner.new @w, simple_indexes
+    planner = Sadvisor::Planner.new @w, simple_indexes
     tree = planner.find_plans_for_query @query
     expect(tree.count).to eq 1
     expect(tree.first).to match_array [
-        IndexLookupStep.new(@w['Reservation'].simple_index),
-        IndexLookupStep.new(@w['Room'].simple_index),
-        IndexLookupStep.new(@w['Hotel'].simple_index),
-        IndexLookupStep.new(@w['POI'].simple_index),
-        FilterStep.new([@w['Guest']['GuestID']], nil)]
+        Sadvisor::IndexLookupStep.new(@w['Reservation'].simple_index),
+        Sadvisor::IndexLookupStep.new(@w['Room'].simple_index),
+        Sadvisor::IndexLookupStep.new(@w['Hotel'].simple_index),
+        Sadvisor::IndexLookupStep.new(@w['POI'].simple_index),
+        Sadvisor::FilterStep.new([@w['Guest']['GuestID']], nil)]
   end
 
   it 'can enumerate all simple indices' do
     @w.entities.values.each do |entity|
       simple_index = entity.simple_index
-      indexes = IndexEnumerator.indexes_for_entity entity
+      indexes = Sadvisor::IndexEnumerator.indexes_for_entity entity
       expect(indexes).to include simple_index
     end
   end
 
   it 'can enumerate a materialized view' do
     view = @query.materialize_view(@w)
-    indexes = IndexEnumerator.indexes_for_workload @w
+    indexes = Sadvisor::IndexEnumerator.indexes_for_workload @w
     expect(indexes).to include view
   end
 
@@ -120,15 +121,15 @@ describe 'Hotel example' do
     view = @query.materialize_view(@w)
     indexes << view
 
-    planner = Planner.new @w, indexes
+    planner = Sadvisor::Planner.new @w, indexes
     tree = planner.find_plans_for_query @query
-    expect(tree.min).to match_array [IndexLookupStep.new(view)]
+    expect(tree.min).to match_array [Sadvisor::IndexLookupStep.new(view)]
   end
 
   it 'can search for an optimal index' do
-    indexes = Search.new(@w).search 625
+    indexes = Sadvisor::Search.new(@w).search 625
     expect(indexes).to match_array [
-      Index.new([@w['Guest']['GuestID']], [@w['POI']['Name']])
+      Sadvisor::Index.new([@w['Guest']['GuestID']], [@w['POI']['Name']])
     ]
   end
 end

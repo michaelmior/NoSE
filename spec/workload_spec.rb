@@ -1,7 +1,7 @@
-describe Workload do
-  let(:entity)      { Entity.new('Foo') << field }
-  let(:field)       { IDField.new('Id') }
-  let(:valid_query) { Parser.parse('SELECT Id FROM Foo') }
+describe Sadvisor::Workload do
+  let(:entity)      { Sadvisor::Entity.new('Foo') << field }
+  let(:field)       { Sadvisor::IDField.new('Id') }
+  let(:valid_query) { Sadvisor::Parser.parse('SELECT Id FROM Foo') }
 
   it 'holds queries and entities' do
     subject.add_entity(entity)
@@ -16,7 +16,7 @@ describe Workload do
   it 'rejects queries with unknown entities' do
     subject.add_entity(entity)
 
-    query = Parser.parse('SELECT Id FROM Bar')
+    query = Sadvisor::Parser.parse('SELECT Id FROM Bar')
     subject.add_query(query)
     expect(subject.valid?).to be_false
   end
@@ -24,21 +24,21 @@ describe Workload do
   it 'rejects queries which select unknown fields' do
     subject.add_entity(entity)
 
-    query = Parser.parse('SELECT Bar FROM Foo')
+    query = Sadvisor::Parser.parse('SELECT Bar FROM Foo')
     subject.add_query(query)
     expect(subject.valid?).to be_false
   end
 
   it 'rejects queries with multiple range predicates' do
     subject.add_entity(entity)
-    query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Id > 1 AND Foo.Id < 3')
+    query = Sadvisor::Parser.parse('SELECT Id FROM Foo WHERE Foo.Id > 1 AND Foo.Id < 3')
     subject.add_query(query)
     expect(subject.valid?).to be_false
   end
 
   it 'rejects queries with unknown fields in where clauses' do
     subject.add_entity(entity)
-    query = Parser.parse('SELECT Id FROM Foo WHERE Foo.Bar = 1')
+    query = Sadvisor::Parser.parse('SELECT Id FROM Foo WHERE Foo.Bar = 1')
     subject.add_query(query)
     expect(subject.valid?).to be_false
   end
@@ -51,12 +51,12 @@ describe Workload do
   it 'can find fields which traverse foreign keys' do
     subject.add_entity entity
 
-    other_entity = Entity.new 'Bar'
-    other_field = IDField.new 'Quux'
+    other_entity = Sadvisor::Entity.new 'Bar'
+    other_field = Sadvisor::IDField.new 'Quux'
     other_entity << other_field
     subject.add_entity other_entity
 
-    entity << ForeignKey.new('Baz', other_entity)
+    entity << Sadvisor::ForeignKey.new('Baz', other_entity)
 
     expect(subject.find_field %w{Foo Baz Quux}).to be other_field
   end
