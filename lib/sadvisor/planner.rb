@@ -117,13 +117,13 @@ module Sadvisor
   # A query plan step looking up fields based on IDs
   class IDLookupStep < IndexStep
     def self.apply(parent, index, state)
-      table = index.fields[0].parent
-      return [] unless index.identity_for? table
+      entity = index.fields[0].parent
+      return [] unless index.identity_for? entity
 
       new_fields = (Set.new(index.fields + index.extra) - parent.fields).length
       return [] unless new_fields > 0
 
-      id_fields = parent.fields & Set.new(table.id_fields)
+      id_fields = parent.fields & Set.new(entity.id_fields)
       return [] unless id_fields.length > 0
 
       new_step = IDLookupStep.new(index)
@@ -138,16 +138,16 @@ module Sadvisor
 
   # A query plan step performing an index lookup
   class IndexLookupStep < IndexStep
-    # Check if the index is an identity map for a table we need
-    # XXX This doesn't currently work correctly for tables other than the primary
-    #     table of the query
-    def self.apply_identity_table(parent, index, state, table)
-      return nil unless index.identity_for? table
+    # Check if the index is an identity map for a entity we need
+    # XXX This doesn't currently work for entities other than the primary
+    #     entity of the query
+    def self.apply_identity_entity(parent, index, state, entity)
+      return nil unless index.identity_for? entity
 
       new_fields = (Set.new(index.fields + index.extra) - parent.fields).length
       return nil unless new_fields > 0
 
-      has_ids = (parent.fields & Set.new(table.id_fields)).length > 0
+      has_ids = (parent.fields & Set.new(entity.id_fields)).length > 0
       return nil if has_ids
 
       new_step = IndexLookupStep.new(index)
@@ -158,17 +158,17 @@ module Sadvisor
       new_step
     end
 
-    # Check if we can look up using an identity map for some table
+    # Check if we can look up using an identity map for some entity
     def self.apply_identity(parent, index, state)
-      state.tables.map do |table, key_fields|
-        # If the table is referenced by one field, it must be the key, so we can
+      state.entities.map do |entity, key_fields|
+        # If the entity is referenced by one field, it is the key, so we can
         # proceed, otherwise we must have all the necessary keys
         next unless key_fields.length == 1 || \
                     key_fields.map do |fields|
                       fields.to_set.subset? parent.fields.to_set
                     end.all?
 
-        apply_identity_table(parent, index, state, table)
+        apply_identity_entity(parent, index, state, entity)
       end.compact
     end
 
@@ -192,9 +192,9 @@ module Sadvisor
 
         # Ensure we actually get new fields we need
         new_fields = (index.fields + index.extra).to_set - parent.fields
-        required_fields = state.tables.values.flatten.to_set + \
+        required_fields = state.entities.values.flatten.to_set + \
                           state.order_by.to_set + state.fields.to_set + \
-                          state.tables.keys.map(&:id_fields).flatten.to_set
+                          state.entities.keys.map(&:id_fields).flatten.to_set
 
         return nil unless (new_fields & required_fields).length > 0
 
@@ -322,7 +322,7 @@ module Sadvisor
   # Ongoing state of a query throughout the execution plan
   class QueryState
     attr_accessor :from, :fields, :eq, :range, :order_by
-    attr_reader :query, :tables, :workload
+    attr_reader :query, :entities, :workload
 
     def initialize(query, workload)
       @query = query
@@ -335,34 +335,34 @@ module Sadvisor
           unless query.range_field.nil?
       @order_by = query.order_by.map { |field| workload.find_field field }
 
-      populate_tables
+      populate_entities
     end
 
-    # Track all tables accessed in this query
-    def populate_tables
-      @tables = { @from => [@from.id_fields] }
+    # Track all entities accessed in this query
+    def populate_entities
+      @entities = { @from => [@from.id_fields] }
       fields = @query.order_by + @query.eq_fields.map do |condition|
         condition.field.value
       end
       fields << @query.range_field.field.value unless @query.range_field.nil?
       fields.each do |field|
-        table = @workload.find_field(field).parent
-        @tables[table] = @workload.find_field_keys field
+        entity = @workload.find_field(field).parent
+        @entities[entity] = @workload.find_field_keys field
       end
 
-      expand_tables
+      expand_entities
     end
 
-    # Expand the list of tables to those tracked by foreign keys
-    def expand_tables
-      new_tables = {}
-      @tables.each do |table, keys|
+    # Expand the list of entities to those tracked by foreign keys
+    def expand_entities
+      new_entities = {}
+      @entities.each do |entity, keys|
         keys.prefixes.each do |key_fields|
           next if key_fields.empty?
-          new_tables[key_fields.last.first.parent] = key_fields[0..-2]
+          new_entities[key_fields.last.first.parent] = key_fields[0..-2]
         end
       end
-      @tables.merge! new_tables
+      @entities.merge! new_entities
     end
 
     def inspect

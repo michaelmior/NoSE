@@ -74,9 +74,9 @@ describe 'Hotel example' do
          [@w['Hotel']['HotelID']]]
   end
 
-  it 'uses the workload to populate all relevant tables' do
-    tables = Sadvisor::QueryState.new(@query, @w).tables
-    expect(tables).to include(
+  it 'uses the workload to populate all relevant entities' do
+    entities = Sadvisor::QueryState.new(@query, @w).entities
+    expect(entities).to include(
       @w['Guest'] => [],
       @w['POI'] => [[@w['Guest']['GuestID']],
                     [@w['Reservation']['ReservationID']],

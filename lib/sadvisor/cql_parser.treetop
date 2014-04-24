@@ -1,12 +1,12 @@
 grammar CQL
 
   rule statement
-    'SELECT' space identifier_list space 'FROM' space table
+    'SELECT' space identifier_list space 'FROM' space entity
         where_clause? limit_clause? order_clause? <Statement>
   end
 
-  rule table
-    [A-z]+ <Table>
+  rule entity
+    [A-z]+ <Entity>
   end
 
   rule where_clause

@@ -63,9 +63,9 @@ module CQL
       order_by ? order_by.value : []
     end
 
-    # The table this query selects from
+    # The entity this query selects from
     def from
-      elements.find { |n| ['CQL::Table'].include? n.class.name }
+      elements.find { |n| ['CQL::Entity'].include? n.class.name }
     end
   end
 
@@ -100,16 +100,17 @@ module CQL
       if parent.class == Statement || parent.class == IdentifierList
         statement = parent
         statement = statement.parent while statement.class != Statement
-        table = statement.elements.find { |child| child.class == Table }.value
-        [table, text_value.to_s]
+        entity = statement.elements.find \
+            { |child| child.class == Entity }.value
+        [entity, text_value.to_s]
       else
         text_value.to_s
       end
     end
   end
 
-  # A table name
-  class Table < Identifier
+  # An entity name
+  class Entity < Identifier
     def value
       text_value.to_s
     end
