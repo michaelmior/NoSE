@@ -71,15 +71,10 @@ module Sadvisor
     # Check if all the fields used by queries in the workload exist
     def fields_exist?
       @queries.each do |query|
-        entity = @entities[query.from.value]
-
         # Projected fields and fields in the where clause exist
         fields = query.where.map { |condition| condition.field } + query.fields
         fields.each do |field|
-          parts = field.value
-          return false unless @entities.key?(parts.first)
-          return false if parts.length == 2 && \
-            !entity.fields.key?(parts.last)
+          return false unless find_field field.value
         end
       end
     end
@@ -92,7 +87,6 @@ module Sadvisor
 
         # No more than one range query
         return false if query.range_field
-
       end
 
       fields_exist?
