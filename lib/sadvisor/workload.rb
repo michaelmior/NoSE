@@ -79,6 +79,19 @@ module Sadvisor
       end
     end
 
+    # Check if fields referenced by queries in the workload consist of valid
+    # paths through the entity graph
+    def valid_paths?(query)
+      fields = query.where.map { |condition| condition.field }
+      fields += query.order_by
+      fields.map!(&:value)
+
+      return true if fields.empty?
+
+      longest = fields.max_by(&:count)
+      fields.map { |field| longest[0..field.count - 1] == field }.all?
+    end
+
     # Check if the queries are valid for the loaded entities
     def valid?
       @queries.each do |query|
@@ -87,6 +100,8 @@ module Sadvisor
 
         # No more than one range query
         return false if query.range_field
+
+        return false unless valid_paths? query
       end
 
       fields_exist?
