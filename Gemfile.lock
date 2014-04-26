@@ -1,5 +1,6 @@
 GEM
   remote: https://rubygems.org/
+  remote: https://EosBFRxCzpVTvE36qhx5@gem.fury.io/michaelmior/
   specs:
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)

@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+source 'https://EosBFRxCzpVTvE36qhx5@gem.fury.io/michaelmior/'
 
 gem 'rake'
 gem 'treetop'
