@@ -71,3 +71,35 @@ describe Sadvisor::Entity do
     expect(entity.fields['Quux'].size).to eq 20
   end
 end
+
+describe Sadvisor::KeyPath do
+  subject { Sadvisor::KeyPath }
+
+  before(:each) do
+    a = @entity_a = Sadvisor::Entity.new 'A' do
+      ID 'Foo'
+    end
+    b = @entity_b = Sadvisor::Entity.new 'B' do
+      ID 'Foo'
+      ForeignKey 'Bar', a
+    end
+    @entity_c = Sadvisor::Entity.new 'C' do
+      ID 'Foo'
+      ForeignKey 'Baz', b
+    end
+  end
+
+  it 'can find a common prefix of fields' do
+    path1 = subject.new %w(C Baz Bar), @entity_c
+    path2 = subject.new %w(C Baz), @entity_c
+    expect(path1 & path2).to match_array [@entity_c['Baz'], @entity_b['Bar']]
+  end
+
+  it 'finds fields along the path' do
+    path = subject.new %w(C Baz Bar), @entity_c
+    expect(path).to match_array [
+      @entity_c['Baz'],
+      @entity_b['Bar'],
+      @entity_a['Foo']]
+  end
+end

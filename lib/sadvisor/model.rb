@@ -213,5 +213,13 @@ module Sadvisor
         entity.id_fields
       end
     end
+
+    # Get the common prefix of two paths
+    def &(other)
+      fail TypeError unless other.is_a? KeyPath
+      each_with_index do |field, i|
+        return self[0..i] if field != other[i]
+      end
+    end
   end
 end
