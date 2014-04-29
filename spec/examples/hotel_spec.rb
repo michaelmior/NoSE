@@ -15,7 +15,12 @@ describe 'Hotel example' do
       String 'Address', 50
       String 'City', 20
       String 'Zip', 5
-      ToManyKey 'POIs', w['POI']
+    end
+
+    @w << Sadvisor::Entity.new('HotelToPOI') do
+      ID 'ID'
+      ForeignKey 'HotelID', w['Hotel']
+      ForeignKey 'POIID', w['POI']
     end
 
     @w << Sadvisor::Entity.new('Amenity') do
@@ -127,7 +132,7 @@ describe 'Hotel example' do
   end
 
   it 'can search for an optimal index' do
-    indexes = Sadvisor::Search.new(@w).search 625
+    indexes = Sadvisor::Search.new(@w).search 675
     expect(indexes).to match_array [
       Sadvisor::Index.new([@w['Guest']['GuestID']], [@w['POI']['Name']])
     ]
