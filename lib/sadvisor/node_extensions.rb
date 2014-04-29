@@ -29,6 +29,13 @@ module CQL
       fields.class.name == 'CQL::Identifier' ? [fields] : fields.elements
     end
 
+    # Get the longest path through entities traversed in the query
+    def longest_entity_path
+      fields = where.map { |condition| condition.field.value }
+      fields += order_by.map(&:value)
+      fields.max_by(&:count)[0..-2]  # last item is a field name
+    end
+
     # All conditions in the where clause of the query
     def where
       where = elements.find { |n| n.class.name == 'CQL::WhereClause' }

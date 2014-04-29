@@ -55,4 +55,10 @@ describe Sadvisor::Parser do
     expect { subject.parse('This is not the CQL you are looking for') }.to \
         raise_error(Exception)
   end
+
+  it 'can find the longest path of entities traversed' do
+    query =  subject.parse('SELECT foo FROM bar WHERE bar.foo=7 AND ' \
+                           'bar.foo.baz.quux=3')
+    expect(query.longest_entity_path).to match_array %w(bar foo baz)
+  end
 end
