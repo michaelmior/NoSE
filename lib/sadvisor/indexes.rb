@@ -30,6 +30,11 @@ module Sadvisor
           && @extra.to_set == other.extra.to_set
     end
 
+    # Get all the entities referenced in this index
+    def entities
+      (@fields + @extra).map(&:parent)
+    end
+
     # Set the keys which a field in the index is derived from
     # This is useful when a given entity may be reached via multiple foreign keys
     def set_field_keys(field, keys)

@@ -131,8 +131,15 @@ describe 'Hotel example' do
     expect(tree.min).to match_array [Sadvisor::IndexLookupStep.new(view)]
   end
 
-  it 'can search for an optimal index' do
+  it 'can search for an optimal index by checking all indexes' do
     indexes = Sadvisor::Search.new(@w).search_all 675
+    expect(indexes).to match_array [
+      Sadvisor::Index.new([@w['Guest']['GuestID']], [@w['POI']['Name']])
+    ]
+  end
+
+  it 'can search for an optimal index by checking non-overlapping indexes' do
+    indexes = Sadvisor::Search.new(@w).search_overlap 1000
     expect(indexes).to match_array [
       Sadvisor::Index.new([@w['Guest']['GuestID']], [@w['POI']['Name']])
     ]

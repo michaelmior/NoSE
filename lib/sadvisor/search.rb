@@ -35,6 +35,34 @@ module Sadvisor
       end
     end
 
+    # Solve the given MathProg program and return the output of the post-solver
+    def solve_mpl(template_name, indexes, data)
+      namespace = Namespace.new(data)
+      template_file = File.dirname(__FILE__) + "/#{template_name}.mod.erb"
+      template = File.read(template_file)
+      mpl = ERB.new(template, 0, '>').result(namespace.get_binding)
+
+      # Solve the problem, which prints the solution
+      file = Tempfile.new 'schema.mod'
+      begin
+        file.write mpl
+        file.close
+
+        Rglpk.disable_output
+        tran = Rglpk::Workspace.new
+        prob = tran.read_model file.path
+        prob.simplex msg_lev: Rglpk::GLP_MSG_OFF
+        prob.mip presolve: Rglpk::GLP_ON, msg_lev: Rglpk::GLP_MSG_OFF
+
+        output = tran.postsolve prob
+      ensure
+        file.close
+        file.unlink
+      end
+
+      output.split.map(&:to_i).map { |i| indexes[i - 1] }
+    end
+
     # Search for the best configuration of indices for a given space constraint
     def search_all(max_space)
       # Construct the simple indices for all entities and
@@ -46,7 +74,7 @@ module Sadvisor
       # Get the cost of all queries with the simple indices
       simple_planner = Planner.new @workload, simple_indexes
       simple_costs = {}
-      @workload.queries.map do |query|
+      @workload.queries.each do |query|
         simple_costs[query] = simple_planner.min_query_cost query
       end
 
@@ -69,37 +97,67 @@ module Sadvisor
         combo.map { |index| indexes.index(index) + 1 }
       end
 
-      # Generate the MathProg file from the template
-      namespace = Namespace.new(
-        max_space: max_space,
-        benefits: benefits,
-        configurations: configurations,
-        index_sizes: index_sizes,
-        configuration_sizes: configuration_sizes
-      )
-      template_file = File.dirname(__FILE__) + '/schema_all.mod.erb'
-      template = File.read(template_file)
-      mpl = ERB.new(template, 0, '>').result(namespace.get_binding)
-      file = Tempfile.new 'schema.mod'
+      # Generate the MathProg file and solve the program
+      solve_mpl 'schema_all', indexes,
+                max_space: max_space,
+                benefits: benefits,
+                configurations: configurations,
+                index_sizes: index_sizes,
+                configuration_sizes: configuration_sizes
+    end
 
-      # Solve the problem, which prints the solution
-      begin
-        file.write mpl
-        file.close
+    def self.index_range(entities, index)
+      Range.new(*(index.entities.map do |entity|
+        entities.index entity.name
+      end).minmax)
+    end
 
-        Rglpk.disable_output
-        tran = Rglpk::Workspace.new
-        prob = tran.read_model file.path
-        prob.simplex msg_lev: Rglpk::GLP_MSG_OFF
-        prob.mip presolve: Rglpk::GLP_ON, msg_lev: Rglpk::GLP_MSG_OFF
+    # Search for optimal indices using an ILP which searches for
+    # non-overlapping indices
+    def search_overlap(max_space)
+      # Construct the simple indices for all entities and
+      # remove this from the total size
+      simple_indexes = @workload.entities.values.map(&:simple_index)
+      simple_size = simple_indexes.map(&:size).inject(0, &:+)
+      max_space -= simple_size  # XXX need to check if max_space < simple_size
 
-        index_choices = tran.postsolve prob
-      ensure
-        file.close
-        file.unlink
+      # Generate all possible combinations of indices
+      indexes = IndexEnumerator.indexes_for_workload @workload
+      index_sizes = indexes.map(&:size)
+
+      # Get the cost of all queries with the simple indices
+      simple_planner = Planner.new @workload, simple_indexes
+      simple_costs = {}
+      @workload.queries.each do |query|
+        simple_costs[query] = simple_planner.min_query_cost query
       end
 
-      index_choices.split.map(&:to_i).map { |i| indexes[i - 1] }
+      benefits = benefits indexes.map { |index| [index] }, simple_costs
+
+      query_overlap = Hash.new(Hash.new [])
+      @workload.queries.each_with_index do |query, i|
+        entities = query.longest_entity_path
+        query_indices = benefits[i].each_with_index.map do |benefit, j|
+          benefit > 0 ? indexes[j] : nil
+        end.compact
+        query_indices.each_with_index do |index1, j|
+          range1 = Search.index_range entities, index1
+
+          query_indices[j + 1..-1].each do |index2|
+            range2 = Search.index_range entities, index2
+            unless (range1.to_a & range2.to_a).empty?
+              query_overlap[query][index1] << index2
+            end
+          end
+        end
+      end
+
+      # Generate the MathProg file and solve the program
+      solve_mpl 'schema_overlap', indexes,
+                max_space: max_space,
+                index_sizes: index_sizes,
+                query_overlap: query_overlap,
+                benefits: benefits
     end
   end
 end
