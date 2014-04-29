@@ -58,17 +58,8 @@ module Sadvisor
     end
 
     # All the keys found when traversing foreign keys
-    def key_fields(field)
-      field = field[1..-1] if field[0] == name
-
-      key_field = @fields[field[0]]
-      if key_field.instance_of? IDField
-        [key_field]
-      elsif key_field.is_a? ForeignKey
-        [key_field] + key_field.entity.key_fields(field[1..-1])
-      else
-        id_fields
-      end
+    def key_fields(path)
+      KeyPath.new path, self
     end
   end
 
@@ -194,6 +185,33 @@ module Sadvisor
     def initialize(name, entity)
       super(name, entity)
       @relationship = :many
+    end
+  end
+
+  # All the keys found when traversing foreign keys
+  class KeyPath
+    include Enumerable
+
+    # Most of the work is delegated to the array
+    extend Forwardable
+    def_delegators :@key_fields, :each, :<<, :[], :==, :===, :eql?,
+                   :inspect, :to_a, :to_ary, :last
+
+    def initialize(path, entity)
+      @key_fields = fields_for_path path, entity
+    end
+
+    def fields_for_path(path, entity)
+      path = path[1..-1] if path[0] == entity.name
+
+      key_field = entity.fields[path[0]]
+      if key_field.instance_of? IDField
+        [key_field]
+      elsif key_field.is_a? ForeignKey
+        [key_field] + key_field.entity.key_fields(path[1..-1])
+      else
+        entity.id_fields
+      end
     end
   end
 end
