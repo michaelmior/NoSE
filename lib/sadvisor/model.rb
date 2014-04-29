@@ -152,7 +152,7 @@ module Sadvisor
 
   # Field holding a string of some average length
   class StringField < Field
-    def initialize(name, length)
+    def initialize(name, length = 10)
       super(name, :string, length)
     end
   end
