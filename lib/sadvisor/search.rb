@@ -36,7 +36,7 @@ module Sadvisor
     end
 
     # Search for the best configuration of indices for a given space constraint
-    def search(max_space)
+    def search_all(max_space)
       # Construct the simple indices for all entities and
       # remove this from the total size
       simple_indexes = @workload.entities.values.map(&:simple_index)
@@ -77,7 +77,7 @@ module Sadvisor
         index_sizes: index_sizes,
         configuration_sizes: configuration_sizes
       )
-      template_file = File.dirname(__FILE__) + '/schema.mod.erb'
+      template_file = File.dirname(__FILE__) + '/schema_all.mod.erb'
       template = File.read(template_file)
       mpl = ERB.new(template, 0, '>').result(namespace.get_binding)
       file = Tempfile.new 'schema.mod'

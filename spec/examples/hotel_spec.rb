@@ -132,7 +132,7 @@ describe 'Hotel example' do
   end
 
   it 'can search for an optimal index' do
-    indexes = Sadvisor::Search.new(@w).search 675
+    indexes = Sadvisor::Search.new(@w).search_all 675
     expect(indexes).to match_array [
       Sadvisor::Index.new([@w['Guest']['GuestID']], [@w['POI']['Name']])
     ]

@@ -2,28 +2,28 @@
 param max_space;
 
 # Benefit of queries for configuration and configuration storage
-set b, dimen 3;
-set C, dimen 2;
-set S, dimen 2;
+set benefits, dimen 3;
+set Sizes, dimen 2;
+set Configurations, dimen 2;
 
 # Indices
-set Q := setof{(i,j,c) in b : j == 1} i;
-set I := setof{(i,s) in S} i;
-set E := setof{(i,j) in Q cross I} (i, j);
+set Queries := setof{(i,j,c) in benefits : j == 1} i;
+set Indexes := setof{(i,s) in Configurations} i;
+set E := setof{(i,j) in Queries cross Indexes} (i, j);
 
 # Assignment
 var x{(i,j) in E}, >=0, <=1, binary;
-var y{I}, >=0, <=1, binary;
+var y{Indexes}, >=0, <=1, binary;
 
 maximize obj :
-  sum{(i,j,c) in b} x[i,j] * c;
+  sum{(i,j,c) in benefits} x[i,j] * c;
 
 s.t. size :
-  sum{(i,c) in C} c * y[i] <= max_space;
+  sum{(i,c) in Sizes} c * y[i] <= max_space;
 
 <% 1.upto(benefits.count) do |i| %>
 s.t. q<%= i %>config :
-  sum{(i,s) in S} x[<%= i %>,i] <= 1;
+  sum{(i,s) in Configurations} x[<%= i %>,i] <= 1;
 
 <% end %>
 
@@ -43,26 +43,26 @@ end %>
 solve;
 
 # Output the configuration
-printf {(i,s) in S: y[i] == 1} "%i ", i;
+printf {(i,s) in Configurations: y[i] == 1} "%i ", i;
 
 data;
 
 # Total storage capacity
 param max_space := <%= max_space %>;
 
-set C :=
+set Sizes :=
 <% index_sizes.each_with_index do |size, i| %>
   <%= i + 1 %> <%= size %>
 
 <% end %>;
 
-set S :=
+set Configurations :=
 <% configuration_sizes.each_with_index do |size, i| %>
   <%= i + 1 %> <%= size %>
 
 <% end %>;
 
-set b :=
+set benefits :=
 <%
 benefits.each_with_index do |qb, i|
   qb.each_with_index do |b, j| %>
