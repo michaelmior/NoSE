@@ -13,6 +13,10 @@ module Sadvisor
       EntityDSL.new(self).instance_eval(&block) if block_given?
     end
 
+    def inspect
+      @name + ' ' + fields.keys.inspect.gsub('"', '')
+    end
+
     # Compare by name, fields, and count
     def ==(other)
       @name == other.name && @fields == other.fields
