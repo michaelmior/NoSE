@@ -24,9 +24,9 @@ module CQL
     # All fields projected by this query
     def fields
       fields = elements.find do |n|
-        ['CQL::Identifier', 'CQL::IdentifierList'].include? n.class.name
+        [CQL::Identifier, CQL::IdentifierList].include? n.class
       end
-      fields.class.name == 'CQL::Identifier' ? [fields] : fields.elements
+      fields.class == CQL::Identifier ? [fields] : fields.elements
     end
 
     # Get the longest path through entities traversed in the query
@@ -38,10 +38,10 @@ module CQL
 
     # All conditions in the where clause of the query
     def where
-      where = elements.find { |n| n.class.name == 'CQL::WhereClause' }
+      where = elements.find { |n| n.class == CQL::WhereClause }
       return [] if where.nil? || where.elements.length == 0
 
-      if where.elements.first.class.name == 'CQL::Expression'
+      if where.elements.first.class == CQL::Expression
         where.elements.first.elements
       else
         where.elements
@@ -60,19 +60,19 @@ module CQL
 
     # The integer limit for the query, or +nil+ if no limit is given
     def limit
-      limit = elements.find { |n| n.class.name == 'CQL::LimitClause' }
+      limit = elements.find { |n| n.class == CQL::LimitClause }
       limit ? limit.value : nil
     end
 
     # The fields used in the order by clause for the query
     def order_by
-      order_by = elements.find { |n| n.class.name == 'CQL::OrderByClause' }
+      order_by = elements.find { |n| n.class == CQL::OrderByClause }
       order_by ? order_by.value : []
     end
 
     # The entity this query selects from
     def from
-      elements.find { |n| ['CQL::Entity'].include? n.class.name }
+      elements.find { |n| [CQL::Entity].include? n.class }
     end
   end
 
@@ -128,7 +128,7 @@ module CQL
     # A list of identifiers comprising the field name
     def value
       elements.map do |n|
-        n.class.name == 'CQL::Field' ? n.elements.map { |m| m.value } : n.value
+        n.class == CQL::Field ? n.elements.map { |m| m.value } : n.value
       end.flatten
     end
   end
@@ -154,7 +154,7 @@ module CQL
     # The list fields being ordered on
     def value
       fields = elements[0]
-      fields.class.name == 'CQL::Field' ? [fields.value] : fields.value
+      fields.class == CQL::Field ? [fields.value] : fields.value
     end
   end
 
@@ -187,7 +187,7 @@ module CQL
 
     # The operator this condition applies to
     def logical_operator
-      elements.find { |n| n.class.name == 'CQL::Operator' }
+      elements.find { |n| n.class == CQL::Operator }
     end
 
     # Check if this is a range predicate
