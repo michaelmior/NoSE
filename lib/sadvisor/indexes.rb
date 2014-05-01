@@ -30,6 +30,14 @@ module Sadvisor
           && @extra.to_set == other.extra.to_set
     end
 
+    def eql?(other)
+      self == other
+    end
+
+    def hash
+      [@fields, @field_keys, @extra.to_set].hash
+    end
+
     # Get all the entities referenced in this index
     def entities
       (@fields + @extra).map(&:parent)
