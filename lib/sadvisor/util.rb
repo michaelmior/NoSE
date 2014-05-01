@@ -8,15 +8,4 @@ module Enumerable
       end
     end
   end
-
-  def product(other)
-    Enumerator.new do |enum|
-      other.each { |b| enum.yield [[], b] }
-      each do |a|
-        enum.yield [a, []]
-
-        other.each { |b| enum.yield [a, b] }
-      end
-    end
-  end
 end

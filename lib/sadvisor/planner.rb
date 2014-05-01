@@ -174,7 +174,8 @@ module Sadvisor
 
     def self.apply_filter(parent, index, state)
       # Try all possible combinations of equality predicates and ordering
-      field_combos = state.eq.prefixes.product(state.order_by.prefixes)
+      field_combos = (state.eq.prefixes.to_a << [])\
+             .product(state.order_by.prefixes.to_a << [])
       field_combos = field_combos.select do |eq, order|
         # TODO: Check that keys are the same
         eq + order == index.fields
