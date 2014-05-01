@@ -26,11 +26,12 @@ query_overlap.each do |query, overlaps|
     overlap.each do |j|
 %>
 s.t. q_<%= query + 1 %>_I_<%= i + 1 %>_<%= j + 1 %>_overlap :
-  x[<%= query + 1 %>,<%= i + 1 %>] + x[<%= query + 1 %>,<%= j + 1 %>] < 2;
+  x[<%= query + 1 %>,<%= i + 1 %>] + x[<%= query + 1 %>,<%= j + 1 %>] <= 1;
 <%
     end
   end
 end %>
+
 <%
 benefits.each_with_index do |qb, query|
   qb.each_with_index do |b, index|

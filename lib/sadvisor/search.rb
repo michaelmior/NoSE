@@ -134,7 +134,7 @@ module Sadvisor
 
       benefits = benefits indexes.map { |index| [index] }, simple_costs
 
-      query_overlap = Hash.new(Hash.new [])
+      query_overlap = {}
       @workload.queries.each_with_index do |query, i|
         entities = query.longest_entity_path
         query_indices = benefits[i].each_with_index.map do |benefit, j|
@@ -146,7 +146,14 @@ module Sadvisor
           query_indices[j + 1..-1].each do |index2|
             range2 = Search.index_range entities, index2
             unless (range1.to_a & range2.to_a).empty?
-              query_overlap[query][index1] << index2
+              overlap1 = indexes.index(index1)
+              overlap2 = indexes.index(index2)
+              query_overlap[i] = {} unless query_overlap.key?(i)
+              if query_overlap[i].key? overlap1
+                query_overlap[i][overlap1] << overlap2
+              else
+                query_overlap[i][overlap1] = [overlap2]
+              end
             end
           end
         end
