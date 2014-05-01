@@ -45,11 +45,17 @@ module CQL
       where = elements.find { |n| n.class == CQL::WhereClause }
       return [] if where.nil? || where.elements.length == 0
 
-      if where.elements.first.class == CQL::Expression
-        where.elements.first.elements
-      else
-        where.elements
+      conditions = []
+      flatten_conditions = lambda do |node|
+        if node.class.name == 'CQL::Condition'
+          conditions.push node
+        else
+          node.elements.each(&flatten_conditions)
+        end
       end
+      flatten_conditions.call where
+
+      conditions
     end
 
     # All fields with equality predicates in the where clause
