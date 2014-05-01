@@ -58,7 +58,7 @@ describe 'Hotel example' do
 
   it 'can look up entities via multiple foreign keys' do
     guest_id = @w['Guest']['GuestID']
-    index = Sadvisor::Index.new([guest_id], [@w['POI']['Name']])
+    index = Sadvisor::Index.new([guest_id], [@w['POI']['Name']], [])
     index.set_field_keys guest_id, \
                          [@w['Hotel']['Room'],
                           @w['Room']['Reservation'],
@@ -120,7 +120,7 @@ describe 'Hotel example' do
   it 'can search for an optimal index by checking non-overlapping indexes' do
     indexes = Sadvisor::Search.new(@w).search_overlap 1000
     expect(indexes).to match_array [
-      Sadvisor::Index.new([@w['Guest']['GuestID']], [@w['POI']['Name']])
+      Sadvisor::Index.new([@w['Guest']['GuestID']], [@w['POI']['Name']], [])
     ]
   end
 end

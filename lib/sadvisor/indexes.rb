@@ -3,11 +3,12 @@ require_relative 'node_extensions'
 module Sadvisor
   # A representation of materialized views over fields in an entity
   class Index
-    attr_reader :fields, :extra
+    attr_reader :fields, :extra, :path
 
-    def initialize(fields, extra)
+    def initialize(fields, extra, path)
       @fields = fields
       @extra = extra
+      @path = path
 
       # Track which key this field is mapped over
       @field_keys = {}
@@ -165,7 +166,7 @@ module Sadvisor
   class Entity
     # Create a simple index which maps entity keys to other fields
     def simple_index
-      Index.new(id_fields, fields.values - id_fields)
+      Index.new(id_fields, fields.values - id_fields, [self])
     end
   end
 end
@@ -184,11 +185,12 @@ module CQL
 
       # Add all other fields used in the query, minus those already added
       extra = self.fields.map do |field|
-          workload.find_field field.value
+        workload.find_field field.value
       end
       extra -= fields
 
-      Sadvisor::Index.new(fields, extra)
+      Sadvisor::Index.new(fields, extra,
+                          longest_entity_path.map(&workload.method(:[])))
     end
   end
 end

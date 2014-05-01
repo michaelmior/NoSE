@@ -27,7 +27,7 @@ describe Sadvisor::IndexEnumerator do
     indexes = enum.indexes_for_query query
     expect(indexes).to have(1).item
     expect(indexes.to_a).to include \
-      Sadvisor::Index.new([@w['Foo']['Baz']], [@w['Foo']['Bar']])
+      Sadvisor::Index.new([@w['Foo']['Baz']], [@w['Foo']['Bar']], [])
   end
 
   it 'produces a simple index for a foreign key join' do
@@ -36,6 +36,6 @@ describe Sadvisor::IndexEnumerator do
     indexes = enum.indexes_for_query query
     expect(indexes).to have(1).items
     expect(indexes.to_a).to include \
-      Sadvisor::Index.new([@w['Foo']['Baz']], [@w['Bar']['Baz']])
+      Sadvisor::Index.new([@w['Foo']['Baz']], [@w['Bar']['Baz']], [])
   end
 end
