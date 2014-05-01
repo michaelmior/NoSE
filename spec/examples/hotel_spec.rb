@@ -65,7 +65,7 @@ describe 'Hotel example' do
                           guest_id]
     planner = Sadvisor::Planner.new @w, [index]
     tree = planner.find_plans_for_query @query
-    expect(tree.count).to eq 2
+    expect(tree).to have(2).items
     expect(tree).to include [Sadvisor::IndexLookupStep.new(index)]
     expect(tree).to include [Sadvisor::IDLookupStep.new(index)]
   end

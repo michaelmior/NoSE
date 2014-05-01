@@ -20,7 +20,7 @@ describe Sadvisor::Planner do
 
     tree = planner.find_plans_for_query query
     expect(tree.first).to eq([Sadvisor::IndexLookupStep.new(index)])
-    expect(tree.count).to eq 1
+    expect(tree).to have(1).item
     expect(tree.first.cost).to be > 0
   end
 
@@ -34,7 +34,7 @@ describe Sadvisor::Planner do
     steps = [Sadvisor::IndexLookupStep.new(index),
              Sadvisor::SortStep.new([@time_field])]
     expect(tree.first).to eq steps
-    expect(tree.count).to eq 1
+    expect(tree).to have(1).item
   end
 
   it 'raises an exception if there is no plan' do
@@ -75,7 +75,7 @@ describe Sadvisor::Planner do
                                    'Tweet.Timestamp > 1'
 
     tree = planner.find_plans_for_query(query)
-    expect(tree.count).to eq 1
+    expect(tree).to have(1).item
     expect(tree.first.last).to eq Sadvisor::FilterStep.new([], @time_field)
   end
 

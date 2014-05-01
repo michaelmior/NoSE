@@ -8,7 +8,7 @@ describe Sadvisor::Workload do
   end
 
   it 'holds queries and entities' do
-    expect(subject.entities.length).to eq 1
+    expect(subject.entities).to have(1).item
     expect(subject.entities['Foo']).to be entity
 
     subject.add_query(valid_query)

@@ -67,7 +67,7 @@ describe Sadvisor::Entity do
       String  'Quux', 20
     end
 
-    expect(entity.fields.count).to eq 3
+    expect(entity.fields).to have(3).items
     expect(entity.fields['Quux'].size).to eq 20
   end
 end

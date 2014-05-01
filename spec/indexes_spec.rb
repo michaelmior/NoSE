@@ -42,9 +42,9 @@ describe Sadvisor::Index do
   end
 
   it 'has zero size when empty' do
-    expect(Sadvisor::Index.new([], []).fields.length).to eq(0)
-    expect(Sadvisor::Index.new([], []).entry_size).to eq(0)
-    expect(Sadvisor::Index.new([], []).size).to eq(0)
+    expect(Sadvisor::Index.new([], []).fields).to be_empty
+    expect(Sadvisor::Index.new([], []).entry_size).to eq 0
+    expect(Sadvisor::Index.new([], []).size).to eq 0
   end
 
   it 'contains fields' do
