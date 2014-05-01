@@ -79,7 +79,7 @@ module Sadvisor
       end
 
       # Generate all possible combinations of indices
-      indexes = IndexEnumerator.indexes_for_workload @workload
+      indexes = IndexEnumerator.new(@workload).indexes_for_workload.to_a
       index_sizes = indexes.map(&:size)
 
       combos = 1.upto(indexes.count).map do |n|
@@ -122,7 +122,7 @@ module Sadvisor
       max_space -= simple_size  # XXX need to check if max_space < simple_size
 
       # Generate all possible combinations of indices
-      indexes = IndexEnumerator.indexes_for_workload @workload
+      indexes = IndexEnumerator.new(@workload).indexes_for_workload.to_a
       index_sizes = indexes.map(&:size)
 
       # Get the cost of all queries with the simple indices
