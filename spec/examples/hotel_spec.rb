@@ -107,20 +107,6 @@ describe 'Hotel example' do
         Sadvisor::FilterStep.new([@w['Guest']['GuestID']], nil)]
   end
 
-  it 'can enumerate all simple indices' do
-    @w.entities.values.each do |entity|
-      simple_index = entity.simple_index
-      indexes = Sadvisor::IndexEnumerator.indexes_for_entity entity
-      expect(indexes).to include simple_index
-    end
-  end
-
-  it 'can enumerate a materialized view' do
-    view = @query.materialize_view(@w)
-    indexes = Sadvisor::IndexEnumerator.indexes_for_workload @w
-    expect(indexes).to include view
-  end
-
   it 'can select from multiple plans' do
     indexes = @w.entities.values.map(&:simple_index)
     view = @query.materialize_view(@w)
@@ -129,13 +115,6 @@ describe 'Hotel example' do
     planner = Sadvisor::Planner.new @w, indexes
     tree = planner.find_plans_for_query @query
     expect(tree.min).to match_array [Sadvisor::IndexLookupStep.new(view)]
-  end
-
-  it 'can search for an optimal index by checking all indexes' do
-    indexes = Sadvisor::Search.new(@w).search_all 675
-    expect(indexes).to match_array [
-      Sadvisor::Index.new([@w['Guest']['GuestID']], [@w['POI']['Name']])
-    ]
   end
 
   it 'can search for an optimal index by checking non-overlapping indexes' do

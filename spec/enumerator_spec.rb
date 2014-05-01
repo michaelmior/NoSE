@@ -1,33 +1,41 @@
 describe Sadvisor::IndexEnumerator do
-  subject { Sadvisor::IndexEnumerator }
-
   before(:each) do
-    @w = Sadvisor::Workload.new
+    @w = w = Sadvisor::Workload.new
 
     @w << Sadvisor::Entity.new('Foo') do
       ID 'Bar'
       String 'Baz', 10
     end
 
-    @query = Sadvisor::Parser.parse 'SELECT Bar FROM Foo'
+    @w << Sadvisor::Entity.new('Bar') do
+      ID 'Baz'
+      ForeignKey 'Quux', w['Foo']
+    end
+
   end
 
-  it 'can produce all possible indices for an entity' do
-    indexes = subject.indexes_for_entity(@w['Foo']).to_a
-    expect(indexes).to match_array [
-      Sadvisor::Index.new([@w['Foo']['Bar']], []),
-      Sadvisor::Index.new([@w['Foo']['Baz']], []),
-      Sadvisor::Index.new([@w['Foo']['Bar'], @w['Foo']['Baz']], []),
-      Sadvisor::Index.new([@w['Foo']['Baz'], @w['Foo']['Bar']], []),
-      Sadvisor::Index.new([@w['Foo']['Bar']], [@w['Foo']['Baz']]),
+  it 'produces no indices for a simple select' do
+    enum = Sadvisor::IndexEnumerator.new @w
+    query = Sadvisor::Parser.parse 'SELECT Bar FROM Foo'
+    indexes = enum.indexes_for_query query
+    expect(indexes).to be_empty
+  end
+
+  it 'produces a simple index for a filter' do
+    enum = Sadvisor::IndexEnumerator.new @w
+    query = Sadvisor::Parser.parse 'SELECT Bar FROM Foo WHERE Foo.Baz=""'
+    indexes = enum.indexes_for_query query
+    expect(indexes).to have(1).item
+    expect(indexes.to_a).to include \
       Sadvisor::Index.new([@w['Foo']['Baz']], [@w['Foo']['Bar']])
-    ]
   end
 
-  it 'can produce all possible indices for a query' do
-    indexes = subject.indexes_for_query(@query, @w).to_a
-    expect(indexes).to match_array [
-      Sadvisor::Index.new([@w['Foo']['Bar']], [])
-    ]
+  it 'produces a simple index for a foreign key join' do
+    enum = Sadvisor::IndexEnumerator.new @w
+    query = Sadvisor::Parser.parse 'SELECT Baz FROM Bar WHERE Bar.Foo.Baz=""'
+    indexes = enum.indexes_for_query query
+    expect(indexes).to have(1).items
+    expect(indexes.to_a).to include \
+      Sadvisor::Index.new([@w['Foo']['Baz']], [@w['Bar']['Baz']])
   end
 end
