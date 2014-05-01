@@ -31,9 +31,13 @@ module CQL
 
     # Get the longest path through entities traversed in the query
     def longest_entity_path
-      fields = where.map { |condition| condition.field.value }
-      fields += order_by.map(&:value)
-      fields.max_by(&:count)[0..-2]  # last item is a field name
+      if where.length > 0
+        fields = where.map { |condition| condition.field.value }
+        fields += order_by.map(&:value)
+        fields.max_by(&:count)[0..-2]  # last item is a field name
+      else
+        [from.value]
+      end
     end
 
     # All conditions in the where clause of the query
