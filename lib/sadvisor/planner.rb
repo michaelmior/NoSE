@@ -87,7 +87,6 @@ module Sadvisor
 
       # We start with these fields because they were given in the query
       @fields |= state.eq
-      @fields << state.range unless state.range.nil?
     end
   end
 
@@ -116,25 +115,32 @@ module Sadvisor
     # Check if this step can be applied for the given index, returning an array
     # of possible applications of the step
     def self.apply(parent, index, state)
+      # If we have the IDs for the first step, we can skip that in the index
+      index_path = index.path
+      if (index_path.first.id_fields.to_set - parent.fields).empty? && \
+          index.path.length > 1
+        index_path = index.path[1..-1]
+      end
+
       # Check that this index is a valid jump in the path
-      if index.path.length <= state.path.length &&
-         state.path[0..index.path.length - 1] == index.path
+      if index_path.length <= state.path.length &&
+         state.path[0..index_path.length - 1] == index_path
         # Check that all required fields are included in the index
         path_fields = state.eq + state.order_by
         path_fields << state.range unless state.range.nil?
         last_fields = path_fields.select do |field|
-          field.parent == index.path.last
+          field.parent == index_path.last
         end
         path_fields = path_fields.select do |field|
-          next if field.parent == index.path.last
-          index.path.include? field.parent
+          next if field.parent == index_path.last
+          index_path.include? field.parent
         end
 
         index_fields = (index.fields + index.extra).to_set
         return [] if (index_fields - parent.fields).empty?
         if path_fields.all?(&index_fields.method(:include?)) &&
            (last_fields.all?(&index_fields.method(:include?)) ||
-            index.path.last.id_fields.all?(&index_fields.method(:include?)))
+            index_path.last.id_fields.all?(&index_fields.method(:include?)))
           new_state = state.dup
           new_state.fields -= index_fields.to_a
 
@@ -143,7 +149,17 @@ module Sadvisor
           new_state.range = nil if index.fields.include?(state.range)
           new_state.order_by -= index.fields
 
-          new_state.path =  state.path[index.path.length - 1..-1]
+          if index_path.length == 1
+            new_state.path = state.path[1..-1]
+          elsif state.path.length > 0
+            new_state.path = state.path[index_path.length - 1..-1]
+          end
+
+          # If we still have fields left to fetch, we need to allow
+          # another lookup
+          if new_state.path.length == 0 && new_state.fields.count > 0
+            new_state.path = [state.path.last]
+          end
 
           new_step = IndexLookupStep.new index
           new_step.state = new_state
@@ -262,7 +278,14 @@ module Sadvisor
       @range = workload.find_field query.range_field.field.value \
           unless query.range_field.nil?
       @order_by = query.order_by.map { |field| workload.find_field field }
-      @path = query.longest_entity_path.map(&workload.method(:[]))
+      @path = query.longest_entity_path.map(&workload.method(:[])).reverse
+
+      # Remove the first element from the path if we only have the ID
+      first_fields = @eq + (@range ? [@range] : [])
+      first_fields = first_fields.select do |field|
+        field.parent == @path.first
+      end
+      @path.shift if first_fields == @path.first.id_fields
     end
 
     def inspect
@@ -308,6 +331,10 @@ module Sadvisor
           yield node.parent_steps
         end
       end
+    end
+
+    def size
+      self.to_a.count
     end
 
     def inspect(step = nil, indent = 0)

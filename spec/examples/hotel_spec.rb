@@ -58,20 +58,21 @@ describe 'Hotel example' do
 
   it 'can look up entities via multiple foreign keys' do
     guest_id = @w['Guest']['GuestID']
-    index = Sadvisor::Index.new([guest_id], [@w['POI']['Name']], [])
+    index = Sadvisor::Index.new([guest_id], [@w['POI']['Name']], [
+      @w['Guest'], @w['Reservation'], @w['Room'], @w['Hotel'], @w['POI']
+    ])
     index.set_field_keys guest_id, \
                          [@w['Hotel']['Room'],
                           @w['Room']['Reservation'],
                           guest_id]
     planner = Sadvisor::Planner.new @w, [index]
     tree = planner.find_plans_for_query @query
-    expect(tree).to have(2).items
+    expect(tree).to have(1).plan
     expect(tree).to include [Sadvisor::IndexLookupStep.new(index)]
-    expect(tree).to include [Sadvisor::IDLookupStep.new(index)]
   end
 
   it 'uses the workload to find foreign key traversals' do
-    fields = @w.find_field_keys %w{Hotel Room Reservation Guest GuestID}
+    fields = @w.find_field_keys %w(Hotel Room Reservation Guest GuestID)
     expect(fields).to eq \
         [[@w['Guest']['GuestID']],
          [@w['Reservation']['ReservationID']],
@@ -84,11 +85,11 @@ describe 'Hotel example' do
     planner = Sadvisor::Planner.new @w, simple_indexes
     tree = planner.find_plans_for_query @query
     expect(tree).to include [
-        Sadvisor::IndexLookupStep.new(@w['Reservation'].simple_index),
-        Sadvisor::IndexLookupStep.new(@w['Room'].simple_index),
-        Sadvisor::IndexLookupStep.new(@w['Hotel'].simple_index),
-        Sadvisor::IndexLookupStep.new(@w['POI'].simple_index),
-        Sadvisor::FilterStep.new([@w['Guest']['GuestID']], nil)]
+      Sadvisor::IndexLookupStep.new(@w['Reservation'].simple_index),
+      Sadvisor::IndexLookupStep.new(@w['Room'].simple_index),
+      Sadvisor::IndexLookupStep.new(@w['Hotel'].simple_index),
+      Sadvisor::IndexLookupStep.new(@w['POI'].simple_index),
+      Sadvisor::FilterStep.new([@w['Guest']['GuestID']], nil)]
   end
 
   it 'can select from multiple plans' do
@@ -98,6 +99,7 @@ describe 'Hotel example' do
 
     planner = Sadvisor::Planner.new @w, indexes
     tree = planner.find_plans_for_query @query
+    expect(tree.size).to be > 1
     expect(tree.min).to match_array [Sadvisor::IndexLookupStep.new(view)]
   end
 

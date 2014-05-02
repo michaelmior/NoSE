@@ -190,7 +190,8 @@ module CQL
       extra -= fields
 
       Sadvisor::Index.new(fields, extra,
-                          longest_entity_path.map(&workload.method(:[])))
+                          longest_entity_path.reverse \
+                            .map(&workload.method(:[])))
     end
   end
 end
