@@ -19,7 +19,7 @@ module Sadvisor
 
     # Compare by name, fields, and count
     def ==(other)
-      @name == other.name && @fields == other.fields
+      other.is_a?(Entity) && @name == other.name && @fields == other.fields
     end
 
     def eql?(other)
@@ -83,7 +83,8 @@ module Sadvisor
 
     # Compare by parent entity and name
     def ==(other)
-      @parent == other.parent && @name == other.name
+      other.kind_of?(Field) && @type == other.type &&
+        @parent == other.parent && @name == other.name
     end
 
     def eql?(other)

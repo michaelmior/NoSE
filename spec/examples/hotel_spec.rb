@@ -79,22 +79,6 @@ describe 'Hotel example' do
          [@w['Hotel']['HotelID']]]
   end
 
-  it 'uses the workload to populate all relevant entities' do
-    entities = Sadvisor::QueryState.new(@query, @w).entities
-    expect(entities).to include(
-      @w['Guest'] => [],
-      @w['POI'] => [[@w['Guest']['GuestID']],
-                    [@w['Reservation']['ReservationID']],
-                    [@w['Room']['RoomID']],
-                    [@w['Hotel']['HotelID']]],
-      @w['Reservation'] => [[@w['Guest']['GuestID']]],
-      @w['Room'] => [[@w['Guest']['GuestID']],
-                     [@w['Reservation']['ReservationID']]],
-      @w['Hotel'] => [[@w['Guest']['GuestID']],
-                      [@w['Reservation']['ReservationID']],
-                      [@w['Room']['RoomID']]])
-  end
-
   it 'can look up entities using multiple indices' do
     simple_indexes = @w.entities.values.map(&:simple_index)
     planner = Sadvisor::Planner.new @w, simple_indexes

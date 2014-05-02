@@ -92,7 +92,7 @@ module Sadvisor
   end
 
   # Superclass for steps using indices
-  class IndexStep < PlanStep
+  class IndexLookupStep < PlanStep
     attr_reader :index
 
     def initialize(index)
@@ -112,119 +112,46 @@ module Sadvisor
     def cost
       index.query_cost state.query, state.workload
     end
-  end
-
-  # A query plan step looking up fields based on IDs
-  class IDLookupStep < IndexStep
-    def self.apply(parent, index, state)
-      entity = index.fields[0].parent
-      return [] unless index.identity_for? entity
-
-      new_fields = (Set.new(index.fields + index.extra) - parent.fields).length
-      return [] unless new_fields > 0
-
-      id_fields = parent.fields & Set.new(entity.id_fields)
-      return [] unless id_fields.length > 0
-
-      new_step = IDLookupStep.new(index)
-      new_state = state.dup
-      new_state.eq -= id_fields.to_a
-      (index.fields + index.extra).each { |field| new_state.fields.delete field }
-      new_step.state = new_state
-
-      [new_step]
-    end
-  end
-
-  # A query plan step performing an index lookup
-  class IndexLookupStep < IndexStep
-    # Check if the index is an identity map for a entity we need
-    # XXX This doesn't currently work for entities other than the primary
-    #     entity of the query
-    def self.apply_identity_entity(parent, index, state, entity)
-      return nil unless index.identity_for? entity
-
-      new_fields = (Set.new(index.fields + index.extra) - parent.fields).length
-      return nil unless new_fields > 0
-
-      has_ids = (parent.fields & Set.new(entity.id_fields)).length > 0
-      return nil if has_ids
-
-      new_step = IndexLookupStep.new(index)
-      new_state = state.dup
-      (index.fields + index.extra).each { |field| new_state.fields.delete field }
-      new_step.state = new_state
-
-      new_step
-    end
-
-    # Check if we can look up using an identity map for some entity
-    def self.apply_identity(parent, index, state)
-      state.entities.map do |entity, key_fields|
-        # If the entity is referenced by one field, it is the key, so we can
-        # proceed, otherwise we must have all the necessary keys
-        next unless key_fields.length == 1 || \
-                    key_fields.map do |fields|
-                      fields.to_set.subset? parent.fields.to_set
-                    end.all?
-
-        apply_identity_entity(parent, index, state, entity)
-      end.compact
-    end
-
-    def self.apply_filter(parent, index, state)
-      # Try all possible combinations of equality predicates and ordering
-      field_combos = (state.eq.prefixes.to_a << [])\
-             .product(state.order_by.prefixes.to_a << [])
-      field_combos = field_combos.select do |eq, order|
-        # TODO: Check that keys are the same
-        eq + order == index.fields
-      end
-      max_eq, max_order = field_combos.max_by \
-          { |eq, order| eq.length + order.length } || [[], []]
-
-      # TODO: Add range predicates
-
-      if (max_eq.length > 0 || max_order.length > 0) &&
-          # Either we have no fields
-          (parent.fields.length == 0 ||
-           # Or we're doing a lookup on the set of fields we know from predicates
-           (parent.fields == max_eq.to_set && parent.instance_of?(RootStep)))
-
-        # Ensure we actually get new fields we need
-        new_fields = (index.fields + index.extra).to_set - parent.fields
-        required_fields = state.entities.values.flatten.to_set + \
-                          state.order_by.to_set + state.fields.to_set + \
-                          state.entities.keys.map(&:id_fields).flatten.to_set
-
-        return nil unless (new_fields & required_fields).length > 0
-
-        new_step = IndexLookupStep.new(index)
-        new_state = state.dup
-
-        new_state.eq = new_state.eq[max_eq.length..-1] \
-            if max_eq.length > 0
-        new_state.order_by = new_state.order_by[max_order.length..-1] \
-            if max_order.length > 0
-        (index.fields + index.extra).each \
-            { |field| new_state.fields.delete field }
-
-        new_step.state = new_state
-
-        [new_step]
-      end
-    end
 
     # Check if this step can be applied for the given index, returning an array
     # of possible applications of the step
     def self.apply(parent, index, state)
-      all_new_steps = []
-      [:apply_filter, :apply_identity].each do |strategy|
-        new_steps = send(strategy, parent, index, state)
-        all_new_steps += new_steps unless new_steps.nil? || new_steps.empty?
+      # Check that this index is a valid jump in the path
+      if index.path.length <= state.path.length &&
+         state.path[0..index.path.length - 1] == index.path
+        # Check that all required fields are included in the index
+        path_fields = state.eq + state.order_by
+        path_fields << state.range unless state.range.nil?
+        last_fields = path_fields.select do |field|
+          field.parent == index.path.last
+        end
+        path_fields = path_fields.select do |field|
+          next if field.parent == index.path.last
+          index.path.include? field.parent
+        end
+
+        index_fields = (index.fields + index.extra).to_set
+        return [] if (index_fields - parent.fields).empty?
+        if path_fields.all?(&index_fields.method(:include?)) &&
+           (last_fields.all?(&index_fields.method(:include?)) ||
+            index.path.last.id_fields.all?(&index_fields.method(:include?)))
+          new_state = state.dup
+          new_state.fields -= index_fields.to_a
+
+          # TODO: Check that fields are usable for predicates
+          new_state.eq -= index.fields
+          new_state.range = nil if index.fields.include?(state.range)
+          new_state.order_by -= index.fields
+
+          new_state.path =  state.path[index.path.length - 1..-1]
+
+          new_step = IndexLookupStep.new index
+          new_step.state = new_state
+          return [new_step]
+        end
       end
 
-      all_new_steps
+      []
     end
   end
 
@@ -254,7 +181,7 @@ module Sadvisor
     end
 
     # Check if an external sort can used (if a sort is the last step)
-    def self.apply(parent, state)
+    def self.apply(_parent, state)
       new_step = nil
 
       if state.fields.empty? && state.eq.empty? && state.range.nil? && \
@@ -322,7 +249,7 @@ module Sadvisor
 
   # Ongoing state of a query throughout the execution plan
   class QueryState
-    attr_accessor :from, :fields, :eq, :range, :order_by
+    attr_accessor :from, :fields, :eq, :range, :order_by, :path
     attr_reader :query, :entities, :workload
 
     def initialize(query, workload)
@@ -335,35 +262,7 @@ module Sadvisor
       @range = workload.find_field query.range_field.field.value \
           unless query.range_field.nil?
       @order_by = query.order_by.map { |field| workload.find_field field }
-
-      populate_entities
-    end
-
-    # Track all entities accessed in this query
-    def populate_entities
-      @entities = { @from => [@from.id_fields] }
-      fields = @query.order_by + @query.eq_fields.map do |condition|
-        condition.field.value
-      end
-      fields << @query.range_field.field.value unless @query.range_field.nil?
-      fields.each do |field|
-        entity = @workload.find_field(field).parent
-        @entities[entity] = @workload.find_field_keys field
-      end
-
-      expand_entities
-    end
-
-    # Expand the list of entities to those tracked by foreign keys
-    def expand_entities
-      new_entities = {}
-      @entities.each do |entity, keys|
-        keys.prefixes.each do |key_fields|
-          next if key_fields.empty?
-          new_entities[key_fields.last.first.parent] = key_fields[0..-2]
-        end
-      end
-      @entities.merge! new_entities
+      @path = query.longest_entity_path.map(&workload.method(:[]))
     end
 
     def inspect
@@ -371,7 +270,8 @@ module Sadvisor
           "\n  fields: " + @fields.map { |field| field.inspect }.to_a.to_s +
           "\n      eq: " + @eq.map { |field| field.inspect }.to_a.to_s +
           "\n   range: " + (@range.nil? ? '(nil)' : @range.name) +
-          "\n   order: " + @order_by.map { |field| field.inspect }.to_a.to_s
+          "\n   order: " + @order_by.map { |field| field.inspect }.to_a.to_s +
+          "\n    path: " + @path.to_a.inspect
     end
 
     # Check if the query has been fully answered
@@ -428,7 +328,6 @@ module Sadvisor
 
     # Possible steps which require indices
     @@index_steps = [
-      IDLookupStep,
       IndexLookupStep
     ]
 

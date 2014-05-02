@@ -45,8 +45,9 @@ describe Sadvisor::Planner do
   end
 
   it 'can find multiple plans' do
-    index1 = Sadvisor::Index.new([@time_field], [@body_field], [])
-    index2 = Sadvisor::Index.new([@id_field], [@time_field, @body_field], [])
+    index1 = Sadvisor::Index.new [@time_field], [@body_field], [@entity]
+    index2 = Sadvisor::Index.new [@id_field], [@time_field, @body_field],
+                                 [@entity]
     planner = Sadvisor::Planner.new(@workload, [index1, index2])
     query = Sadvisor::Parser.parse 'SELECT Body FROM Tweet ORDER BY ' \
                                    'Tweet.Timestamp'
@@ -60,7 +61,8 @@ describe Sadvisor::Planner do
   end
 
   it 'knows which fields are available at a given step' do
-    index = Sadvisor::Index.new([@id_field], [@body_field, @time_field], [])
+    index = Sadvisor::Index.new [@id_field], [@body_field, @time_field],
+                                [@entity]
     planner = Sadvisor::Planner.new(@workload, [index])
     query = Sadvisor::Parser.parse 'SELECT Body FROM Tweet'
 
@@ -69,7 +71,8 @@ describe Sadvisor::Planner do
   end
 
   it 'can apply external filtering' do
-    index = Sadvisor::Index.new([@id_field], [@body_field, @time_field], [])
+    index = Sadvisor::Index.new [@id_field], [@body_field, @time_field],
+                                [@entity]
     planner = Sadvisor::Planner.new(@workload, [index])
     query = Sadvisor::Parser.parse 'SELECT Body FROM Tweet WHERE ' \
                                    'Tweet.Timestamp > 1'
@@ -82,15 +85,15 @@ describe Sadvisor::Planner do
   it 'can perform a separate lookup by ID' do
     query = Sadvisor::Parser.parse 'SELECT Body FROM Tweet WHERE ' \
                                    'Tweet.Timestamp = 1'
-    time_index = Sadvisor::Index.new [@time_field], [@id_field], []
-    id_index = Sadvisor::Index.new [@id_field], [@body_field], []
+    time_index = Sadvisor::Index.new [@time_field], [@id_field], [@entity]
+    id_index = Sadvisor::Index.new [@id_field], [@body_field], [@entity]
 
     planner = Sadvisor::Planner.new(@workload, [time_index, id_index])
     tree = planner.find_plans_for_query(query)
 
     expect(tree).to include [
       Sadvisor::IndexLookupStep.new(time_index),
-      Sadvisor::IDLookupStep.new(id_index)
+      Sadvisor::IndexLookupStep.new(id_index)
     ]
   end
 end
