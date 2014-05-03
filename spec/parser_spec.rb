@@ -26,29 +26,29 @@ describe Sadvisor::Parser do
 
   it 'correctly parses a single field' do
     expect(subject.parse('SELECT foo FROM bar').fields[0].value).to \
-        eq %w{bar foo}
+        eq %w(bar foo)
   end
 
   it 'correctly parses a list of fields' do
     expect(subject.parse('SELECT foo, bar FROM baz').fields.map do |field|
       field.value
-    end).to match_array [%w{baz foo}, %w{baz bar}]
+    end).to match_array [%w(baz foo), %w(baz bar)]
   end
 
   it 'correctly parses an order by clause with a single field' do
     expect(subject.parse('SELECT foo FROM baz ORDER BY baz.foo').order_by).to \
-        match_array([%w{baz foo}])
+        match_array([%w(baz foo)])
   end
 
   it 'correctly parses an order by clause with multiple fields' do
     expect(subject.parse('SELECT foo FROM baz ' \
                         'ORDER BY baz.foo, baz.bar').order_by).to \
-                        eq([%w{baz foo}, %w{baz bar}])
+                        eq([%w(baz foo), %w(baz bar)])
   end
 
   it 'correctly parses a foreign key traversal' do
     query = subject.parse('SELECT foo FROM baz WHERE baz.bar.quux = 3')
-    expect(query.eq_fields[0].field.value).to eq(%w{baz bar quux})
+    expect(query.eq_fields[0].field.value).to eq(%w(baz bar quux))
   end
 
   it 'should throw an error on an invalid parse' do

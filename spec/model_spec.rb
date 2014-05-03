@@ -5,7 +5,7 @@ describe Sadvisor::Entity do
     subject << Sadvisor::IntegerField.new('Bar')
     subject << Sadvisor::IntegerField.new('Baz')
 
-    expect(subject.fields.keys).to match_array %w{Bar Baz}
+    expect(subject.fields.keys).to match_array %w(Bar Baz)
   end
 
   it 'can have foreign keys' do
@@ -44,7 +44,7 @@ describe Sadvisor::Entity do
     field = Sadvisor::IDField.new('Id')
     subject << field
 
-    expect(subject.key_fields %w{Foo Id}).to eq [field]
+    expect(subject.key_fields %w(Foo Id)).to eq [field]
   end
 
   it 'can identify a list of key traversals for foreign keys' do
@@ -57,7 +57,7 @@ describe Sadvisor::Entity do
     foreign_key = Sadvisor::ForeignKey.new('Quux', other_entity)
     subject << foreign_key
 
-    expect(subject.key_fields %w{Foo Quux Baz}).to eq [foreign_key]
+    expect(subject.key_fields %w(Foo Quux Baz)).to eq [foreign_key]
   end
 
   it 'can create entities using a DSL' do

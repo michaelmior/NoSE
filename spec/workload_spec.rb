@@ -41,7 +41,7 @@ describe Sadvisor::Workload do
   end
 
   it 'can find fields on entities from queries' do
-    expect(subject.find_field %w{Foo Id}).to be field
+    expect(subject.find_field %w(Foo Id)).to be field
   end
 
   it 'can find fields which traverse foreign keys' do
@@ -52,7 +52,7 @@ describe Sadvisor::Workload do
 
     entity << Sadvisor::ForeignKey.new('Baz', other_entity)
 
-    expect(subject.find_field %w{Foo Baz Quux}).to be other_field
+    expect(subject.find_field %w(Foo Baz Quux)).to be other_field
   end
 
   context 'when checking for valid paths' do
