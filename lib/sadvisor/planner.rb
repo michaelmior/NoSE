@@ -232,22 +232,36 @@ module Sadvisor
       super + ' ' + @eq.inspect + ' ' + @range.inspect
     end
 
-    # Check if the plan has all the necessary fields to filter
-    def self.contains_all_fields?(parent, state, range_field)
-      filter_fields = state.eq.dup
-      filter_fields << range_field unless range_field.nil?
-      filter_fields.map { |field| parent.fields.member? field }.all?
-    end
-
     # Check if filtering can be done (we have all the necessary fields)
     def self.apply(parent, state)
-      if state.fields.empty? && !(state.eq.empty? && state.range.nil?) &&
-          contains_all_fields?(parent, state, state.range)
-        new_step = FilterStep.new(state.eq, state.range)
+      # In case we try to filter at the first step in the chain
+      # before fetching any data
+      return nil if parent.is_a? RootStep
+
+      # Get the fields we can possibly filter on
+      eq_filter = state.eq.select { |field| !state.path.member? field.parent }
+      filter_fields = eq_filter.dup
+      if state.range && !state.path.member?(state.range.parent)
+        range_filter = state.range
+        filter_fields << range_filter
+      else
+        range_filter = nil
+      end
+
+      # No filtering happening here
+      return nil if filter_fields.empty?
+
+      # Check that we have all the fields we are filtering
+      has_fields = filter_fields.map do |field|
+        parent.fields.member? field
+      end.all?
+
+      if has_fields
+        new_step = FilterStep.new(eq_filter, range_filter)
 
         new_state = state.dup
-        new_state.eq = []
-        new_state.range = nil
+        new_state.eq -= eq_filter
+        new_state.range = nil if range_filter
         new_step.state = new_state
 
         return new_step
