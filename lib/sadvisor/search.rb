@@ -132,7 +132,8 @@ module Sadvisor
         simple_costs[query] = simple_planner.min_query_cost query
       end
 
-      benefits = benefits indexes.map { |index| [index] }, simple_costs
+      benefits = benefits indexes.map { |index| simple_indexes + [index] },
+                          simple_costs
 
       query_overlap = {}
       @workload.queries.each_with_index do |query, i|
