@@ -35,6 +35,13 @@ module Sadvisor
       fields.values.select { |field| field.instance_of? IDField }
     end
 
+    # Find the foreign key to a particular entity
+    def foreign_key_for(entity)
+      fields.values.find do |field|
+        field.kind_of?(ForeignKey) && field.entity == entity
+      end
+    end
+
     # Adds a {Field} to the entity
     def <<(field)
       @fields[field.name] = field

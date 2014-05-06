@@ -7,7 +7,7 @@ module Sadvisor
         ID 'POIID'
         String 'Name', 20
         String 'Description', 200
-      end
+      end * 3_000
 
       @w << Entity.new('Hotel') do
         ID 'HotelID'
@@ -16,18 +16,18 @@ module Sadvisor
         String 'Address', 50
         String 'City', 20
         String 'Zip', 5
-      end
+      end * 1_000
 
       @w << Entity.new('HotelToPOI') do
         ID 'ID'
         ForeignKey 'HotelID', w['Hotel']
         ForeignKey 'POIID', w['POI']
-      end
+      end * 5_000
 
       @w << Entity.new('Amenity') do
         ID 'AmenityID'
         String 'Name', 20
-      end
+      end * 50
 
       @w << Entity.new('Room') do
         ID 'RoomID'
@@ -35,13 +35,13 @@ module Sadvisor
         String 'RoomNumber', 4
         Float 'Rate'
         ToManyKey 'Amenities', w['Amenity']
-      end
+      end * 100_000
 
       @w << Entity.new('Guest') do
         ID 'GuestID'
         String 'Name', 20
         String 'Email', 20
-      end
+      end * 50_000
 
       @w << Entity.new('Reservation') do
         ID 'ReservationID'
@@ -49,7 +49,7 @@ module Sadvisor
         ForeignKey 'RoomID', w['Room']
         Date 'StartDate'
         Date 'EndDate'
-      end
+      end * 250_000
 
       @query = Parser.parse 'SELECT Name FROM POI WHERE ' \
                             'POI.Hotel.Room.Reservation.' \
@@ -87,10 +87,10 @@ module Sadvisor
       tree = planner.find_plans_for_query @query
       expect(tree).to include [
         IndexLookupStep.new(@w['Reservation'].simple_index),
+        FilterStep.new([@w['Guest']['GuestID']], nil),
         IndexLookupStep.new(@w['Room'].simple_index),
         IndexLookupStep.new(@w['Hotel'].simple_index),
-        IndexLookupStep.new(@w['POI'].simple_index),
-        FilterStep.new([@w['Guest']['GuestID']], nil)]
+        IndexLookupStep.new(@w['POI'].simple_index)]
     end
 
     it 'can select from multiple plans' do

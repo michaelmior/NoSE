@@ -138,28 +138,6 @@ module Sadvisor
       supports_predicates? query.from.value, query.fields, query.eq_fields, \
                            query.range_field, query.order_by, workload
     end
-
-    # The cost of evaluating a query for this index
-    def query_cost(query, workload)
-      # XXX This basically just calculates the size of the data fetched
-
-      # Get all fields corresponding to equality predicates
-      eq_fields = query.eq_fields.map do |condition|
-        workload.find_field condition.field.value
-      end
-
-      # Estimate the number of results retrieved based on a uniform distribution
-      cost = eq_fields.map do |field|
-        field.cardinality * 1.0 / field.parent.count
-      end.inject(workload[query.from.value].count * 1.0, :*) \
-          * entry_size
-
-      # XXX Make a dumb guess that the selectivity of a range predicate is 1/3
-      # see Query Optimization With One Parameter, Anjali V. Betawadkar, 1999
-      cost *= 1.0 / 3 if query.range_field
-
-      cost
-    end
   end
 
   # Allow entities to create their own indices

@@ -100,7 +100,7 @@ module Sadvisor
     end
 
     def inspect
-      super + ' ' + index.inspect
+      "#{super} #{index.inspect} * #{state.cardinality}"
     end
 
     # Two index steps are equal if they use the same index
@@ -108,8 +108,9 @@ module Sadvisor
       other.instance_of?(self.class) && @index == other.index
     end
 
+    # Rough cost estimate as the size of data returned
     def cost
-      index.query_cost state.query, state.workload
+      state.cardinality * index.entry_size
     end
 
     # Check if this step can be applied for the given index, returning an array
@@ -128,6 +129,12 @@ module Sadvisor
         # Check that all required fields are included in the index
         path_fields = state.eq + state.order_by
         path_fields << state.range unless state.range.nil?
+
+        # We should filter instead if we have the necessary fields
+        return [] if path_fields.map do |field|
+          parent.fields.include? field
+        end.any? && !parent.is_a?(RootStep)
+
         last_fields = path_fields.select do |field|
           field.parent == index_path.last
         end
@@ -136,8 +143,10 @@ module Sadvisor
           index_path.include? field.parent
         end
 
+        # We need to get some new fields for this lookup to be useful
         index_fields = (index.fields + index.extra).to_set
         return [] if (index_fields - parent.fields).empty?
+
         if path_fields.all?(&index_fields.method(:include?)) &&
            (last_fields.all?(&index_fields.method(:include?)) ||
             index_path.last.id_fields.all?(&index_fields.method(:include?)))
@@ -148,6 +157,8 @@ module Sadvisor
           new_state.eq -= index.fields
           new_state.range = nil if index.fields.include?(state.range)
           new_state.order_by -= index.fields
+          new_state.cardinality = new_cardinality parent.is_a?(RootStep),
+                                                  index, state
 
           if index_path.length == 1
             new_state.path = state.path[1..-1]
@@ -168,6 +179,30 @@ module Sadvisor
       end
 
       []
+    end
+
+    def self.new_cardinality(first, index, state)
+      cardinality = state.cardinality
+
+      path = first ? index.path[1..-1] : index.path
+      path.each do |entity|
+        cardinality = sample(cardinality, entity.count)
+        # TODO: Update cardinality via predicates
+      end
+
+      cardinality.ceil
+    end
+
+    # Get the estimated cardinality of the set of samples of m items with
+    # replacement from a set of cardinality n
+    def self.sample(m, n)
+      samples = [1.0]
+
+      1.upto(m - 1).each do
+        samples << ((n - 1) * samples[-1] + n) / n
+      end
+
+      samples[-1]
     end
   end
 
@@ -229,7 +264,9 @@ module Sadvisor
     end
 
     def inspect
-      super + ' ' + @eq.inspect + ' ' + @range.inspect
+      "#{super} #{@eq.inspect} #{@range.inspect} " \
+        "#{instance_variable_get(:@parent).state.cardinality} " \
+        "-> #{state.cardinality}"
     end
 
     # Check if filtering can be done (we have all the necessary fields)
@@ -260,8 +297,18 @@ module Sadvisor
         new_step = FilterStep.new(eq_filter, range_filter)
 
         new_state = state.dup
+
+        # Apply the filters and perform a uniform estimate on the cardinality
         new_state.eq -= eq_filter
-        new_state.range = nil if range_filter
+        new_state.cardinality *= eq_filter.map do |field|
+          1.0 / field.cardinality
+        end.inject(1.0, &:*)
+
+        if range_filter
+          new_state.range = nil
+          new_state.cardinality *= 0.1
+        end
+        new_state.cardinality = new_state.cardinality.ceil
         new_step.state = new_state
 
         return new_step
@@ -279,7 +326,7 @@ module Sadvisor
 
   # Ongoing state of a query throughout the execution plan
   class QueryState
-    attr_accessor :from, :fields, :eq, :range, :order_by, :path
+    attr_accessor :from, :fields, :eq, :range, :order_by, :path, :cardinality
     attr_reader :query, :entities, :workload
 
     def initialize(query, workload)
@@ -293,13 +340,17 @@ module Sadvisor
           unless query.range_field.nil?
       @order_by = query.order_by.map { |field| workload.find_field field }
       @path = query.longest_entity_path.map(&workload.method(:[])).reverse
+      @cardinality = @path.first.count
 
       # Remove the first element from the path if we only have the ID
       first_fields = @eq + (@range ? [@range] : [])
       first_fields = first_fields.select do |field|
         field.parent == @path.first
       end
-      @path.shift if first_fields == @path.first.id_fields
+      if first_fields == @path.first.id_fields
+        @path.shift
+        @cardinality = @path.first.count
+      end
     end
 
     def inspect

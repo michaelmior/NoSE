@@ -119,17 +119,6 @@ module Sadvisor
       expect(index.supports_query?(foreign_query, @workload)).to be_false
     end
 
-    it 'can estimate the cost of evaluating a query' do
-      index = Index.new([@id_field], [], [])
-      expect(index.query_cost(equality_query, @workload)).to eq 1600
-    end
-
-    it 'can estimate the cost of evaluating a range query' do
-      index = Index.new([@id_field], [], [])
-      expect(index.query_cost(range_query, @workload)).to \
-          be_within(0.001).of(1600.0 / 3)
-    end
-
     context 'when materializing views' do
       it 'supports simple lookups' do
         index = simple_query.materialize_view(@workload)
