@@ -47,7 +47,7 @@ module CQL
 
       conditions = []
       flatten_conditions = lambda do |node|
-        if node.class.name == 'CQL::Condition'
+        if node.class == CQL::Condition
           conditions.push node
         else
           node.elements.each(&flatten_conditions)

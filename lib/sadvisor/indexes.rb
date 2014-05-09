@@ -45,7 +45,7 @@ module Sadvisor
     end
 
     # Set the keys which a field in the index is derived from
-    # This is useful when a given entity may be reached via multiple foreign keys
+    # This is useful when an entity may be reached via multiple foreign keys
     def set_field_keys(field, keys)
       @field_keys[field] = keys
     end
@@ -63,7 +63,7 @@ module Sadvisor
 
     # Check if the index contains a given field
     def contains_field?(field)
-      !!(@fields + @extra).find { |index_field| field == index_field }
+      !(@fields + @extra).find { |index_field| field == index_field }.nil?
     end
 
     # Check if all the fields the query needs are indexed

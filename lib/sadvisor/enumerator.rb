@@ -26,10 +26,6 @@ module Sadvisor
     # Produce all possible indices for a given path through the entity graph
     # which select the given fields and possibly allow equality/range filtering
     def indexes_for_path(path, select, eq, range)
-      # Ind
-      # return indexes_for_step(path, select, eq, range).to_set \
-      #   if path.length == 1
-
       indexes = Set.new
 
       path.each_with_index do |_, i|

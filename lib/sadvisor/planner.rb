@@ -216,7 +216,7 @@ module Sadvisor
     end
 
     def inspect
-      super + ' ' + @sort_fields.map { |field| field.inspect }.to_s.gsub('"', '')
+      super + ' ' + @sort_fields.map(&:inspect).to_s.gsub('"', '')
     end
 
     # Two sorting steps are equal if they sort on the same fields
@@ -252,15 +252,33 @@ module Sadvisor
   class FilterStep < PlanStep
     attr_reader :eq, :range
 
-    def initialize(eq, range)
+    def initialize(eq, range, state = nil)
       @eq = eq
       @range = range
       super()
+
+      return if state.nil?
+      @state = state.dup
+      update_state
+    end
+
+    # Apply the filters and perform a uniform estimate on the cardinality
+    def update_state
+      @state.eq -= @eq
+      @state.cardinality *= @eq.map { |field| 1.0 / field.cardinality } \
+        .inject(1.0, &:*)
+
+      if @range
+        @state.range = nil
+        @state.cardinality *= 0.1
+      end
+      @state.cardinality = @state.cardinality.ceil
     end
 
     # Two filtering steps are equal if they filter on the same fields
     def ==(other)
-      other.instance_of?(self.class) && @eq == other.eq && @range == other.range
+      other.instance_of?(self.class) && \
+        @eq == other.eq && @range == other.range
     end
 
     def inspect
@@ -269,13 +287,8 @@ module Sadvisor
         "-> #{state.cardinality}"
     end
 
-    # Check if filtering can be done (we have all the necessary fields)
-    def self.apply(parent, state)
-      # In case we try to filter at the first step in the chain
-      # before fetching any data
-      return nil if parent.is_a? RootStep
-
-      # Get the fields we can possibly filter on
+    # Get the fields we can possibly filter on
+    def self.filter_fields(state)
       eq_filter = state.eq.select { |field| !state.path.member? field.parent }
       filter_fields = eq_filter.dup
       if state.range && !state.path.member?(state.range.parent)
@@ -285,7 +298,17 @@ module Sadvisor
         range_filter = nil
       end
 
-      # No filtering happening here
+      [filter_fields, eq_filter, range_filter]
+    end
+
+    # Check if filtering can be done (we have all the necessary fields)
+    def self.apply(parent, state)
+      # In case we try to filter at the first step in the chain
+      # before fetching any data
+      return nil if parent.is_a? RootStep
+
+      # Get fields and check for possible filtering
+      filter_fields, eq_filter, range_filter = self.filter_fields state
       return nil if filter_fields.empty?
 
       # Check that we have all the fields we are filtering
@@ -293,33 +316,14 @@ module Sadvisor
         parent.fields.member? field
       end.all?
 
-      if has_fields
-        new_step = FilterStep.new(eq_filter, range_filter)
-
-        new_state = state.dup
-
-        # Apply the filters and perform a uniform estimate on the cardinality
-        new_state.eq -= eq_filter
-        new_state.cardinality *= eq_filter.map do |field|
-          1.0 / field.cardinality
-        end.inject(1.0, &:*)
-
-        if range_filter
-          new_state.range = nil
-          new_state.cardinality *= 0.1
-        end
-        new_state.cardinality = new_state.cardinality.ceil
-        new_step.state = new_state
-
-        return new_step
-      end
+      return FilterStep.new eq_filter, range_filter, state if has_fields
 
       nil
     end
 
     def cost
-      # Assume this has no cost and the cost is captured in the fact that we have
-      # to retrieve more data earlier. All this does is skip records.
+      # Assume this has no cost and the cost is captured in the fact that we
+      # have to retrieve more data earlier. All this does is skip records.
       0
     end
   end
@@ -342,7 +346,11 @@ module Sadvisor
       @path = query.longest_entity_path.map(&workload.method(:[])).reverse
       @cardinality = @path.first.count
 
-      # Remove the first element from the path if we only have the ID
+      check_first_path
+    end
+
+    # Remove the first element from the path if we only have the ID
+    def check_first_path
       first_fields = @eq + (@range ? [@range] : [])
       first_fields = first_fields.select do |field|
         field.parent == @path.first
@@ -399,7 +407,7 @@ module Sadvisor
     end
 
     def size
-      self.to_a.count
+      to_a.count
     end
 
     def inspect(step = nil, indent = 0)

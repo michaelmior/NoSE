@@ -28,8 +28,6 @@ module Sadvisor
       tree
     end
 
-    private
-
     # Remove unnecessary nodes
     def self.clean_tree(root_node)
       return if root_node.elements.nil?

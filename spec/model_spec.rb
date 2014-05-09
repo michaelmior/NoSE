@@ -63,9 +63,9 @@ module Sadvisor
 
     it 'can create entities using a DSL' do
       entity = Entity.new 'Foo' do
-        ID      'Bar'
+        ID 'Bar'
         Integer 'Baz'
-        String  'Quux', 20
+        String 'Quux', 20
       end
 
       expect(entity.fields).to have(3).items
