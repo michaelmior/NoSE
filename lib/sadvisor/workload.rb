@@ -4,10 +4,10 @@ require_relative './parser'
 module Sadvisor
   # A representation of a query workload over a given set of entities
   class Workload
-    attr_reader :queries, :entities
+    attr_reader :entities
 
     def initialize
-      @queries = []
+      @query_weights = {}
       @entities = {}
     end
 
@@ -26,10 +26,14 @@ module Sadvisor
       @entities[name]
     end
 
-    def add_query(query)
+    def add_query(query, weight = 1)
       query = Parser.parse query if query.is_a? String
 
-      @queries << query
+      @query_weights[query] = weight
+    end
+
+    def queries
+      @query_weights.keys
     end
 
     # Add an {Entity} to the workload
@@ -70,7 +74,7 @@ module Sadvisor
 
     # Check if all the fields used by queries in the workload exist
     def fields_exist?
-      @queries.each do |query|
+      @query_weights.keys.each do |query|
         # Projected fields and fields in the where clause exist
         fields = query.where.map { |condition| condition.field } + query.fields
         fields.each do |field|
@@ -94,7 +98,7 @@ module Sadvisor
 
     # Check if the queries are valid for the loaded entities
     def valid?
-      @queries.each do |query|
+      @query_weights.keys.each do |query|
         # Entity must exist
         return false unless @entities.key?(query.from.value)
 
