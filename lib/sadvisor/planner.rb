@@ -355,7 +355,7 @@ module Sadvisor
       first_fields = first_fields.select do |field|
         field.parent == @path.first
       end
-      if first_fields == @path.first.id_fields
+      if first_fields == @path.first.id_fields && @path.length > 1
         @path.shift
         @cardinality = @path.first.count
       end
