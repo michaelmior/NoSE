@@ -39,7 +39,7 @@ grammar CQL
   end
 
   rule literal
-    float / integer / string
+    float / integer / string / '?'
   end
 
   rule integer
