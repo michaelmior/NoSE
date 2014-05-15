@@ -55,6 +55,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  binding_of_caller
   pry
   pry-byebug
   pry-rescue

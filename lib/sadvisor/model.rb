@@ -1,3 +1,5 @@
+require 'binding_of_caller'
+
 module Sadvisor
   # A representation of an object in the conceptual data model
   class Entity
@@ -177,6 +179,16 @@ module Sadvisor
     def initialize(name, entity)
       super(name)
       @relationship = :one
+
+      # XXX: This is a hack which allows us to look up the stack to find an
+      #      enclosing workload and the entity being referenced by the key
+      if entity.is_a? String
+        workload = binding.callers.each do |binding|
+          obj = binding.eval 'self'
+          break obj if obj.class == Workload
+        end
+        entity = workload[entity] unless workload.nil?
+      end
       @entity = entity
     end
 

@@ -6,9 +6,12 @@ module Sadvisor
   class Workload
     attr_reader :entities
 
-    def initialize
+    def initialize(&block)
       @query_weights = {}
       @entities = {}
+
+      # Apply the DSL
+      WorkloadDSL.new(self).instance_eval(&block) if block_given?
     end
 
     def <<(other)
@@ -110,5 +113,24 @@ module Sadvisor
 
       fields_exist?
     end
+  end
+
+  # A helper class for DSL creation to avoid messing with {Workload}
+  class WorkloadDSL
+    def initialize(workload)
+      @workload = workload
+    end
+
+    # rubocop:disable MethodName
+
+    def Entity(*args, &block)
+      @workload.add_entity Entity.new(*args, &block)
+    end
+
+    def Q(query, weight)
+      @workload.add_query query, weight
+    end
+
+    # rubocop:enable MethodName
   end
 end
