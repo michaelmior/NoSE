@@ -33,7 +33,7 @@ module CQL
     def longest_entity_path
       if where.length > 0
         fields = where.map { |condition| condition.field.value }
-        fields += order_by.map(&:value)
+        fields += order_by
         fields.max_by(&:count)[0..-2]  # last item is a field name
       else
         [from.value]
