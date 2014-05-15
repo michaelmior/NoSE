@@ -63,5 +63,12 @@ module Sadvisor
                              'bar.foo.baz.quux=3')
       expect(query.longest_entity_path).to match_array %w(bar foo baz)
     end
+
+    it 'can select many fields' do
+      query = subject.parse 'SELECT foo, bar, baz FROM quux'
+      expect(query.fields.map(&:value)).to match_array [
+        %w(quux foo), %w(quux bar), %w(quux baz)
+      ]
+    end
   end
 end

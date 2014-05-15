@@ -26,7 +26,7 @@ module CQL
       fields = elements.find do |n|
         [CQL::Identifier, CQL::IdentifierList].include? n.class
       end
-      fields.class == CQL::Identifier ? [fields] : fields.elements
+      fields.class == CQL::Identifier ? [fields] : fields.value
     end
 
     # Get the longest path through entities traversed in the query
@@ -172,7 +172,17 @@ module CQL
   class IdentifierList < CQLNode
     # An array of fields
     def value
-      elements.map { |n| n.value }
+      identifiers = []
+      flatten_identifiers = lambda do |node|
+        if node.class == CQL::Identifier
+          identifiers.push node
+        else
+          node.elements.each(&flatten_identifiers)
+        end
+      end
+      flatten_identifiers.call self
+
+      identifiers
     end
   end
 
