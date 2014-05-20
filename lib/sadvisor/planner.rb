@@ -94,9 +94,46 @@ module Sadvisor
   class IndexLookupStep < PlanStep
     attr_reader :index
 
-    def initialize(index)
+    def initialize(index, state = nil, parent = nil)
       super()
       @index = index
+
+      return if state.nil?
+      @state = state.dup
+      update_state parent
+    end
+
+    def update_state(parent)
+      # Find fields which are filtered by the index
+      eq_filter = @state.eq & @index.fields
+      range_filter = @index.fields.include?(state.range) ? state.range : nil
+
+      @state.fields -= @index.fields + @index.extra
+      @state.eq -= eq_filter
+      @state.range = nil if @index.fields.include?(@state.range)
+      @state.order_by -= @index.fields
+
+      index_path = index.path
+      cardinality = @state.cardinality
+      if (index.path.first.id_fields.to_set - parent.fields).empty?
+        index_path = index.path[1..-1] if index.path.length > 1
+        cardinality = index.path[0].count if parent.is_a? RootStep
+      end
+
+      @state.cardinality = new_cardinality cardinality, eq_filter, range_filter
+
+      last = state.path.last
+      if index_path.length == 1
+        @state.path = @state.path[1..-1]
+      elsif state.path.length > 0
+        @state.path = @state.path[index_path.length - 1..-1]
+      end
+
+      # If we still have fields left to fetch, we need to allow
+      # another lookup
+      if @state.path.length == 0 && @state.fields.count > 0
+        @state.path = [last]
+      end
     end
 
     def inspect
@@ -118,9 +155,8 @@ module Sadvisor
     def self.apply(parent, index, state)
       # If we have the IDs for the first step, we can skip that in the index
       index_path = index.path
-      if (index_path.first.id_fields.to_set - parent.fields).empty? && \
-          index.path.length > 1
-        index_path = index.path[1..-1]
+      if (index_path.first.id_fields.to_set - parent.fields).empty?
+        index_path = index.path[1..-1] if index_path.length > 1
       end
 
       # Check that this index is a valid jump in the path
@@ -150,44 +186,41 @@ module Sadvisor
         if path_fields.all?(&index_fields.method(:include?)) &&
            (last_fields.all?(&index_fields.method(:include?)) ||
             index_path.last.id_fields.all?(&index_fields.method(:include?)))
-          new_state = state.dup
-          new_state.fields -= index_fields.to_a
-
           # TODO: Check that fields are usable for predicates
-          new_state.eq -= index.fields
-          new_state.range = nil if index.fields.include?(state.range)
-          new_state.order_by -= index.fields
-          new_state.cardinality = new_cardinality parent.is_a?(RootStep),
-                                                  index, state
-
-          if index_path.length == 1
-            new_state.path = state.path[1..-1]
-          elsif state.path.length > 0
-            new_state.path = state.path[index_path.length - 1..-1]
-          end
-
-          # If we still have fields left to fetch, we need to allow
-          # another lookup
-          if new_state.path.length == 0 && new_state.fields.count > 0
-            new_state.path = [state.path.last]
-          end
-
-          new_step = IndexLookupStep.new index
-          new_step.state = new_state
-          return [new_step]
+          return [IndexLookupStep.new(index, state, parent)]
         end
       end
 
       []
     end
 
-    def self.new_cardinality(first, index, state)
-      cardinality = state.cardinality
+    def filter_cardinality(eq_filter, range_filter, entity)
+      filter = range_filter && range_filter.entity == entity ? 0.1 : 1.0
+      filter *= (eq_filter[entity] || []).map do |field|
+        1.0 / field.cardinality
+      end.inject(1.0, &:*)
 
-      path = first ? index.path[1..-1] : index.path
-      path.each do |entity|
-        cardinality = sample(cardinality, entity.count)
-        # TODO: Update cardinality via predicates
+      filter
+    end
+
+    def new_cardinality(cardinality, eq_filter, range_filter)
+      eq_filter = eq_filter.group_by(&:parent)
+      index_path = @index.path.reverse
+
+      # Update cardinality via predicates for first (last) entity in path
+      cardinality *= filter_cardinality eq_filter, range_filter,
+                                        index_path.first
+
+      index_path.each_cons(2) do |entity, next_entity|
+        tail = entity.foreign_key_for(next_entity).nil?
+        if tail
+          cardinality = cardinality * 1.0 * next_entity.count / entity.count
+        else
+          cardinality = sample 1.0 * cardinality, next_entity.count
+        end
+
+        # Update cardinality via the filtering implicit to the index
+        cardinality *= filter_cardinality eq_filter, range_filter, next_entity
       end
 
       cardinality.ceil
@@ -195,7 +228,7 @@ module Sadvisor
 
     # Get the estimated cardinality of the set of samples of m items with
     # replacement from a set of cardinality n
-    def self.sample(m, n)
+    def sample(m, n)
       samples = [1.0]
 
       1.upto(m - 1).each do
@@ -357,7 +390,6 @@ module Sadvisor
       end
       if first_fields == @path.first.id_fields && @path.length > 1
         @path.shift
-        @cardinality = @path.first.count
       end
     end
 

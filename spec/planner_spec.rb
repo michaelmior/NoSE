@@ -1,17 +1,22 @@
 module Sadvisor
   describe Planner do
     before(:each) do
-      @entity = Entity.new('Tweet')
+      @entity = Entity.new('Tweet') * 1000
       @id_field = IDField.new('TweetId')
       @entity << @id_field
-      @body_field = StringField.new('Body', 140)
+      @body_field = StringField.new('Body', 140) * 5
       @entity << @body_field
 
       @time_field = IntegerField.new('Timestamp')
       @entity << @time_field
 
+      @other = Entity.new('User') * 10
+      @other << IDField.new('UserId')
+      @entity << ForeignKey.new('User', @other)
+
       @workload = Workload.new
       @workload.add_entity @entity
+      @workload.add_entity @other
     end
 
     it 'can look up fields by key' do
@@ -88,6 +93,51 @@ module Sadvisor
         IndexLookupStep.new(time_index),
         IndexLookupStep.new(id_index)
       ]
+    end
+
+    context 'when updating cardinality' do
+      before(:each) do
+        simple_query = Parser.parse 'SELECT Body FROM Tweet ' \
+                                    'WHERE Tweet.TweetId = ?'
+        @simple_state = QueryState.new simple_query, @workload
+
+        query = Parser.parse 'SELECT Body FROM Tweet ' \
+                             'WHERE Tweet.User.UserId = ?'
+        @state = QueryState.new query, @workload
+      end
+
+      it 'can reduce the cardinality to 1 when filtering by ID' do
+        step = FilterStep.new [@workload['Tweet']['TweetId']], nil,
+                              @simple_state
+        expect(step.state.cardinality).to eq 1
+      end
+
+      it 'can apply equality predicates when filtering' do
+        step = FilterStep.new [@workload['Tweet']['Body']], nil,
+                              @simple_state
+        expect(step.state.cardinality).to eq 200
+      end
+
+      it 'can apply multiple predicates when filtering' do
+        step = FilterStep.new [@workload['Tweet']['Body']],
+                              @workload['Tweet']['Timestamp'],
+                              @simple_state
+        expect(step.state.cardinality).to eq 20
+      end
+
+      it 'can apply range predicates when filtering' do
+        step = FilterStep.new [], @workload['Tweet']['Timestamp'],
+                              @simple_state
+        expect(step.state.cardinality).to eq 100
+      end
+
+      it 'can update the cardinality when performing a lookup' do
+        index = Index.new [@workload['User']['UserId']],
+                          [@workload['Tweet']['Body']],
+                          [@workload['Tweet'], @workload['User']]
+        step = IndexLookupStep.new index, @state, RootStep.new(@state)
+        expect(step.state.cardinality).to eq 100
+      end
     end
   end
 end
