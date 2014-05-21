@@ -84,9 +84,6 @@ module Sadvisor
     def initialize(state)
       super()
       @state = state
-
-      # We start with these fields because they were given in the query
-      @fields |= state.eq
     end
   end
 
@@ -115,7 +112,7 @@ module Sadvisor
 
       index_path = index.path
       cardinality = @state.cardinality
-      if (index.path.first.id_fields.to_set - parent.fields).empty?
+      if (index.path.first.id_fields.to_set - parent.fields - @state.eq).empty?
         index_path = index.path[1..-1] if index.path.length > 1
         cardinality = index.path[0].count if parent.is_a? RootStep
       end
@@ -153,9 +150,13 @@ module Sadvisor
     # Check if this step can be applied for the given index, returning an array
     # of possible applications of the step
     def self.apply(parent, index, state)
+      # We have the fields that have already been looked up,
+      # plus what was given in equality predidcates
+      given_fields = parent.fields + state.eq
+
       # If we have the IDs for the first step, we can skip that in the index
       index_path = index.path
-      if (index_path.first.id_fields.to_set - parent.fields).empty?
+      if (index_path.first.id_fields.to_set - given_fields).empty?
         index_path = index.path[1..-1] if index_path.length > 1
       end
 
@@ -168,7 +169,7 @@ module Sadvisor
 
         # We should filter instead if we have the necessary fields
         return [] if path_fields.map do |field|
-          parent.fields.include? field
+          given_fields.include? field
         end.any? && !parent.is_a?(RootStep)
 
         last_fields = path_fields.select do |field|
@@ -181,7 +182,7 @@ module Sadvisor
 
         # We need to get some new fields for this lookup to be useful
         index_fields = (index.fields + index.extra).to_set
-        return [] if (index_fields - parent.fields).empty?
+        return [] if (index_fields - given_fields).empty?
 
         if path_fields.all?(&index_fields.method(:include?)) &&
            (last_fields.all?(&index_fields.method(:include?)) ||
@@ -345,8 +346,9 @@ module Sadvisor
       return nil if filter_fields.empty?
 
       # Check that we have all the fields we are filtering
+      given_fields = state.given_fields + parent.fields
       has_fields = filter_fields.map do |field|
-        parent.fields.member? field
+        given_fields.member? field
       end.all?
 
       return FilterStep.new eq_filter, range_filter, state if has_fields
@@ -363,7 +365,8 @@ module Sadvisor
 
   # Ongoing state of a query throughout the execution plan
   class QueryState
-    attr_accessor :from, :fields, :eq, :range, :order_by, :path, :cardinality
+    attr_accessor :from, :fields, :eq, :range, :order_by, :path, :cardinality,
+                  :given_fields
     attr_reader :query, :entities, :workload
 
     def initialize(query, workload)
@@ -372,12 +375,13 @@ module Sadvisor
       @from = workload[query.from.value]
       @fields = query.fields.map { |field| workload.find_field field.value }
       @eq = query.eq_fields.map \
-          { |condition| workload.find_field condition.field.value }
+          { |condition| workload.find_field condition.field.value }.to_set
       @range = workload.find_field query.range_field.field.value \
           unless query.range_field.nil?
       @order_by = query.order_by.map { |field| workload.find_field field }
       @path = query.longest_entity_path.map(&workload.method(:[])).reverse
       @cardinality = @path.first.count
+      @given_fields = @eq.dup
 
       check_first_path
     end

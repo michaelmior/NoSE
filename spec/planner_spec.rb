@@ -81,20 +81,6 @@ module Sadvisor
       expect(tree.first.last).to eq FilterStep.new([], @time_field)
     end
 
-    it 'can perform a separate lookup by ID' do
-      query = Parser.parse 'SELECT Body FROM Tweet WHERE Tweet.Timestamp = 1'
-      time_index = Index.new [@time_field], [@id_field], [@entity]
-      id_index = Index.new [@id_field], [@body_field], [@entity]
-
-      planner = Planner.new(@workload, [time_index, id_index])
-      tree = planner.find_plans_for_query(query)
-
-      expect(tree).to include [
-        IndexLookupStep.new(time_index),
-        IndexLookupStep.new(id_index)
-      ]
-    end
-
     context 'when updating cardinality' do
       before(:each) do
         simple_query = Parser.parse 'SELECT Body FROM Tweet ' \
