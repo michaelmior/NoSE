@@ -134,7 +134,7 @@ module Sadvisor
     end
 
     def inspect
-      "#{super} #{index.inspect} * #{state.cardinality}"
+      "#{super} #{@index.inspect} * #{@state.cardinality}"
     end
 
     # Two index steps are equal if they use the same index
@@ -144,7 +144,7 @@ module Sadvisor
 
     # Rough cost estimate as the size of data returned
     def cost
-      state.cardinality * index.entry_size
+      @state.cardinality * @index.entry_size
     end
 
     # Check if this step can be applied for the given index, returning an array
@@ -316,9 +316,13 @@ module Sadvisor
     end
 
     def inspect
-      "#{super} #{@eq.inspect} #{@range.inspect} " \
+      "#{super} #{@eq.inspect} #{@range.inspect} " +
+      begin
         "#{instance_variable_get(:@parent).state.cardinality} " \
         "-> #{state.cardinality}"
+      rescue NoMethodError
+        ''
+      end
     end
 
     # Get the fields we can possibly filter on
