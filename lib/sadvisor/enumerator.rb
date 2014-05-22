@@ -61,7 +61,7 @@ module Sadvisor
       end.inject([], &:+) << []
       range_choices = range_fields.prefixes.to_a << []
 
-      eq_choices.product(range_choices).flatten(1).reject(&:empty?)
+      eq_choices.product(range_choices).map(&:flatten).reject(&:empty?)
     end
 
     # Get fields which should be included in an index for the given path
