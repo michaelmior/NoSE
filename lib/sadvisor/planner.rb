@@ -60,7 +60,7 @@ module Sadvisor
       @fields += index.fields + index.extra
     end
 
-    # Get the list of steps which led us here as a QueryPlan
+    # Get the list of steps which led us here as a {QueryPlan}
     def parent_steps
       steps = nil
 
@@ -99,40 +99,6 @@ module Sadvisor
       return if state.nil?
       @state = state.dup
       update_state parent
-    end
-
-    # Modify the state to reflect the fields looked up by the index
-    def update_state(parent)
-      # Find fields which are filtered by the index
-      eq_filter = @state.eq & @index.fields
-      range_filter = @index.fields.include?(state.range) ? state.range : nil
-
-      @state.fields -= @index.fields + @index.extra
-      @state.eq -= eq_filter
-      @state.range = nil if @index.fields.include?(@state.range)
-      @state.order_by -= @index.fields
-
-      index_path = index.path
-      cardinality = @state.cardinality
-      if (index.path.first.id_fields.to_set - parent.fields - @state.eq).empty?
-        index_path = index.path[1..-1] if index.path.length > 1
-        cardinality = index.path[0].count if parent.is_a? RootStep
-      end
-
-      @state.cardinality = new_cardinality cardinality, eq_filter, range_filter
-
-      last = state.path.last
-      if index_path.length == 1
-        @state.path = @state.path[1..-1]
-      elsif state.path.length > 0
-        @state.path = @state.path[index_path.length - 1..-1]
-      end
-
-      # If we still have fields left to fetch, we need to allow
-      # another lookup
-      if @state.path.length == 0 && @state.fields.count > 0
-        @state.path = [last]
-      end
     end
 
     def inspect
@@ -188,6 +154,42 @@ module Sadvisor
       end
 
       []
+    end
+
+    private
+
+    # Modify the state to reflect the fields looked up by the index
+    def update_state(parent)
+      # Find fields which are filtered by the index
+      eq_filter = @state.eq & @index.fields
+      range_filter = @index.fields.include?(state.range) ? state.range : nil
+
+      @state.fields -= @index.fields + @index.extra
+      @state.eq -= eq_filter
+      @state.range = nil if @index.fields.include?(@state.range)
+      @state.order_by -= @index.fields
+
+      index_path = index.path
+      cardinality = @state.cardinality
+      if (index.path.first.id_fields.to_set - parent.fields - @state.eq).empty?
+        index_path = index.path[1..-1] if index.path.length > 1
+        cardinality = index.path[0].count if parent.is_a? RootStep
+      end
+
+      @state.cardinality = new_cardinality cardinality, eq_filter, range_filter
+
+      last = state.path.last
+      if index_path.length == 1
+        @state.path = @state.path[1..-1]
+      elsif state.path.length > 0
+        @state.path = @state.path[index_path.length - 1..-1]
+      end
+
+      # If we still have fields left to fetch, we need to allow
+      # another lookup
+      if @state.path.length == 0 && @state.fields.count > 0
+        @state.path = [last]
+      end
     end
 
     # Update the cardinality based on filtering implicit to the index
@@ -293,19 +295,6 @@ module Sadvisor
       update_state
     end
 
-    # Apply the filters and perform a uniform estimate on the cardinality
-    def update_state
-      @state.eq -= @eq
-      @state.cardinality *= @eq.map { |field| 1.0 / field.cardinality } \
-        .inject(1.0, &:*)
-
-      if @range
-        @state.range = nil
-        @state.cardinality *= 0.1
-      end
-      @state.cardinality = @state.cardinality.ceil
-    end
-
     # Two filtering steps are equal if they filter on the same fields
     def ==(other)
       other.instance_of?(self.class) && \
@@ -322,18 +311,10 @@ module Sadvisor
       end
     end
 
-    # Get the fields we can possibly filter on
-    def self.filter_fields(state)
-      eq_filter = state.eq.select { |field| !state.path.member? field.parent }
-      filter_fields = eq_filter.dup
-      if state.range && !state.path.member?(state.range.parent)
-        range_filter = state.range
-        filter_fields << range_filter
-      else
-        range_filter = nil
-      end
-
-      [filter_fields, eq_filter, range_filter]
+    def cost
+      # Assume this has no cost and the cost is captured in the fact that we
+      # have to retrieve more data earlier. All this does is skip records.
+      0
     end
 
     # Check if filtering can be done (we have all the necessary fields)
@@ -343,7 +324,7 @@ module Sadvisor
       return nil if parent.is_a? RootStep
 
       # Get fields and check for possible filtering
-      filter_fields, eq_filter, range_filter = self.filter_fields state
+      filter_fields, eq_filter, range_filter = filter_fields state
       return nil if filter_fields.empty?
 
       # Check that we have all the fields we are filtering
@@ -357,10 +338,34 @@ module Sadvisor
       nil
     end
 
-    def cost
-      # Assume this has no cost and the cost is captured in the fact that we
-      # have to retrieve more data earlier. All this does is skip records.
-      0
+    # Get the fields we can possibly filter on
+    def self.filter_fields(state)
+      eq_filter = state.eq.select { |field| !state.path.member? field.parent }
+      filter_fields = eq_filter.dup
+      if state.range && !state.path.member?(state.range.parent)
+        range_filter = state.range
+        filter_fields << range_filter
+      else
+        range_filter = nil
+      end
+
+      [filter_fields, eq_filter, range_filter]
+    end
+    private_class_method :filter_fields
+
+    private
+
+    # Apply the filters and perform a uniform estimate on the cardinality
+    def update_state
+      @state.eq -= @eq
+      @state.cardinality *= @eq.map { |field| 1.0 / field.cardinality } \
+        .inject(1.0, &:*)
+
+      if @range
+        @state.range = nil
+        @state.cardinality *= 0.1
+      end
+      @state.cardinality = @state.cardinality.ceil
     end
   end
 
@@ -387,17 +392,6 @@ module Sadvisor
       check_first_path
     end
 
-    # Remove the first element from the path if we only have the ID
-    def check_first_path
-      first_fields = @eq + (@range ? [@range] : [])
-      first_fields = first_fields.select do |field|
-        field.parent == @path.first
-      end
-      if first_fields == @path.first.id_fields && @path.length > 1
-        @path.shift
-      end
-    end
-
     def inspect
       @query.text_value +
           "\n  fields: " + @fields.map { |field| field.inspect }.to_a.to_s +
@@ -416,6 +410,19 @@ module Sadvisor
     def dup
       # Ensure a deep copy
       Marshal.load(Marshal.dump(self))
+    end
+
+    private
+
+    # Remove the first element from the path if we only have the ID
+    def check_first_path
+      first_fields = @eq + (@range ? [@range] : [])
+      first_fields = first_fields.select do |field|
+        field.parent == @path.first
+      end
+      if first_fields == @path.first.id_fields && @path.length > 1
+        @path.shift
+      end
     end
   end
 
@@ -467,21 +474,6 @@ module Sadvisor
       @indexes = indexes
     end
 
-    # Find possible query plans for a query strating at the given step
-    def find_plans_for_step(root, step)
-      unless step.state.answered?
-        steps = find_steps_for_state(step, step.state).select do |new_step|
-          new_step != step
-        end
-
-        if steps.length > 0
-          step.children = steps
-          steps.each { |child_step| find_plans_for_step root, child_step }
-        else fail NoPlanException
-        end
-      end
-    end
-
     # Find a tree of plans for the given query
     def find_plans_for_query(query)
       state = QueryState.new query, @workload
@@ -495,6 +487,23 @@ module Sadvisor
     # Get the minimum cost of executing this query for the given set of indexes
     def min_query_cost(query)
       find_plans_for_query(query).min.cost
+    end
+
+    private
+
+    # Find possible query plans for a query strating at the given step
+    def find_plans_for_step(root, step)
+      unless step.state.answered?
+        steps = find_steps_for_state(step, step.state).select do |new_step|
+          new_step != step
+        end
+
+        if steps.length > 0
+          step.children = steps
+          steps.each { |child_step| find_plans_for_step root, child_step }
+        else fail NoPlanException
+        end
+      end
     end
 
     # Get a list of possible next steps for a query in the given state

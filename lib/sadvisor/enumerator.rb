@@ -23,6 +23,15 @@ module Sadvisor
                        eq.group_by(&:parent), range.group_by(&:parent)
     end
 
+    # Produce all possible indices for a given workload
+    def indexes_for_workload
+      @workload.queries.map do |query|
+        indexes_for_query(query).to_set
+      end.inject(Set.new, &:+)
+    end
+
+    private
+
     # Produce all possible indices for a given path through the entity graph
     # which select the given fields and possibly allow equality/range filtering
     def indexes_for_path(path, select, eq, range)
@@ -84,13 +93,6 @@ module Sadvisor
 
         Index.new index, extra, path
       end.compact
-    end
-
-    # Produce all possible indices for a given workload
-    def indexes_for_workload
-      @workload.queries.map do |query|
-        indexes_for_query(query).to_set
-      end.inject(Set.new, &:+)
     end
   end
 end

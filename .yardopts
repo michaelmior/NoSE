@@ -1,3 +1,4 @@
+--private
 --query '!(docstring.blank? && [:inspect, :to_s, :hash].include?(name))'
 -
 LICENSE.md
