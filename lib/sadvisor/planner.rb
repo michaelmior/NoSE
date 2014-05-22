@@ -161,35 +161,28 @@ module Sadvisor
       end
 
       # Check that this index is a valid jump in the path
-      if index_path.length <= state.path.length &&
-         state.path[0..index_path.length - 1] == index_path
-        # Check that all required fields are included in the index
-        path_fields = state.eq + state.order_by
-        path_fields << state.range unless state.range.nil?
+      return [] unless state.path[0..index_path.length - 1] == index_path
 
-        # We should filter instead if we have the necessary fields
-        return [] if path_fields.map do |field|
-          given_fields.include? field
-        end.any? && !parent.is_a?(RootStep)
+      # Check that all required fields are included in the index
+      path_fields = state.eq + state.order_by
+      path_fields << state.range unless state.range.nil?
 
-        last_fields = path_fields.select do |field|
-          field.parent == index_path.last
-        end
-        path_fields = path_fields.select do |field|
-          next if field.parent == index_path.last
-          index_path.include? field.parent
-        end
+      last_fields = path_fields.select do |field|
+        field.parent == index_path.last
+      end
+      path_fields = path_fields.select do |field|
+        next if field.parent == index_path.last
+        index_path.include? field.parent
+      end
 
-        # We need to get some new fields for this lookup to be useful
-        index_fields = (index.fields + index.extra).to_set
-        return [] if (index_fields - given_fields).empty?
+      # Make sure we have the final required fields in the index
+      index_fields = (index.fields + index.extra).to_set
 
-        if path_fields.all?(&index_fields.method(:include?)) &&
-           (last_fields.all?(&index_fields.method(:include?)) ||
-            index_path.last.id_fields.all?(&index_fields.method(:include?)))
-          # TODO: Check that fields are usable for predicates
-          return [IndexLookupStep.new(index, state, parent)]
-        end
+      if path_fields.all?(&index_fields.method(:include?)) &&
+         (last_fields.all?(&index_fields.method(:include?)) ||
+          index_path.last.id_fields.all?(&index_fields.method(:include?)))
+        # TODO: Check that fields are usable for predicates
+        return [IndexLookupStep.new(index, state, parent)]
       end
 
       []
@@ -519,15 +512,16 @@ module Sadvisor
 
       @@index_free_steps.each \
           { |step| steps.push step.apply(parent, state) }
+      steps.flatten!
+      steps.compact!
 
+      return steps if steps.length > 0
       @indexes.each do |index|
         @@index_steps.each do |step|
           steps.push step.apply(parent, index, state).each \
               { |new_step| new_step.add_fields_from_index index }
         end
       end
-
-      # Some steps may be applicable in multiple ways
       steps.flatten.compact
     end
   end
