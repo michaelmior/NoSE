@@ -457,21 +457,6 @@ module Sadvisor
 
   # A query planner which can construct a tree of query plans
   class Planner
-    # rubocop:disable ClassVars
-
-    # Possible steps which require indices
-    @@index_steps = [
-      IndexLookupStep
-    ]
-
-    # Possible steps which do not require indices
-    @@index_free_steps = [
-      SortStep,
-      FilterStep
-    ]
-
-    # rubocop:enable all
-
     def initialize(workload, indexes)
       @workload = workload
       @indexes = indexes
@@ -510,17 +495,15 @@ module Sadvisor
     def find_steps_for_state(parent, state)
       steps = []
 
-      @@index_free_steps.each \
-          { |step| steps.push step.apply(parent, state) }
+      [SortStep, FilterStep].each \
+        { |step| steps.push step.apply(parent, state) }
       steps.flatten!
       steps.compact!
 
       return steps if steps.length > 0
       @indexes.each do |index|
-        @@index_steps.each do |step|
-          steps.push step.apply(parent, index, state).each \
-              { |new_step| new_step.add_fields_from_index index }
-        end
+        steps.push IndexLookupStep.apply(parent, index, state).each \
+            { |new_step| new_step.add_fields_from_index index }
       end
       steps.flatten.compact
     end
