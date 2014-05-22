@@ -24,48 +24,6 @@ module Sadvisor
       @workload = workload
     end
 
-    # Get the reduction in cost from using each configuration of indices
-    def benefits(combos, simple_costs)
-      @workload.queries.map do |query|
-        combos.map do |combo|
-          combo_planner = Planner.new @workload, combo
-          begin
-            [0, simple_costs[query] - combo_planner.min_query_cost(query)].max
-          rescue NoPlanException
-            0
-          end
-        end
-      end
-    end
-
-    # Solve the given MathProg program and return the output of the post-solver
-    def solve_mpl(template_name, indexes, data)
-      namespace = Namespace.new(data)
-      template_file = File.dirname(__FILE__) + "/#{template_name}.mod.erb"
-      template = File.read(template_file)
-      mpl = ERB.new(template, 0, '>').result(namespace.get_binding)
-
-      # Solve the problem, which prints the solution
-      file = Tempfile.new 'schema.mod'
-      begin
-        file.write mpl
-        file.close
-
-        Rglpk.disable_output
-        tran = Rglpk::Workspace.new
-        prob = tran.read_model file.path
-        prob.simplex msg_lev: Rglpk::GLP_MSG_OFF
-        prob.mip presolve: Rglpk::GLP_ON, msg_lev: Rglpk::GLP_MSG_OFF
-
-        output = tran.postsolve prob
-      ensure
-        file.close
-        file.unlink
-      end
-
-      output.split.map(&:to_i).map { |i| indexes[i - 1] }
-    end
-
     # Search for the best configuration of indices for a given space constraint
     def search_all(max_space)
       # Construct the simple indices for all entities and
@@ -107,14 +65,6 @@ module Sadvisor
                 configurations: configurations,
                 index_sizes: index_sizes,
                 configuration_sizes: configuration_sizes
-    end
-
-    # Create a new range over the entities traversed by an index using
-    # the numerical indices into the query entity path
-    def self.index_range(entities, index)
-      Range.new(*(index.entities.map do |entity|
-        entities.index entity.name
-      end).minmax)
     end
 
     # Search for optimal indices using an ILP which searches for
@@ -171,6 +121,59 @@ module Sadvisor
                 index_sizes: index_sizes,
                 query_overlap: query_overlap,
                 benefits: benefits
+    end
+
+    # Create a new range over the entities traversed by an index using
+    # the numerical indices into the query entity path
+    def self.index_range(entities, index)
+      Range.new(*(index.entities.map do |entity|
+        entities.index entity.name
+      end).minmax)
+    end
+    private_class_method :index_range
+
+    private
+
+    # Get the reduction in cost from using each configuration of indices
+    def benefits(combos, simple_costs)
+      @workload.queries.map do |query|
+        combos.map do |combo|
+          combo_planner = Planner.new @workload, combo
+          begin
+            [0, simple_costs[query] - combo_planner.min_query_cost(query)].max
+          rescue NoPlanException
+            0
+          end
+        end
+      end
+    end
+
+    # Solve the given MathProg program and return the output of the post-solver
+    def solve_mpl(template_name, indexes, data)
+      namespace = Namespace.new(data)
+      template_file = File.dirname(__FILE__) + "/#{template_name}.mod.erb"
+      template = File.read(template_file)
+      mpl = ERB.new(template, 0, '>').result(namespace.get_binding)
+
+      # Solve the problem, which prints the solution
+      file = Tempfile.new 'schema.mod'
+      begin
+        file.write mpl
+        file.close
+
+        Rglpk.disable_output
+        tran = Rglpk::Workspace.new
+        prob = tran.read_model file.path
+        prob.simplex msg_lev: Rglpk::GLP_MSG_OFF
+        prob.mip presolve: Rglpk::GLP_ON, msg_lev: Rglpk::GLP_MSG_OFF
+
+        output = tran.postsolve prob
+      ensure
+        file.close
+        file.unlink
+      end
+
+      output.split.map(&:to_i).map { |i| indexes[i - 1] }
     end
   end
 end

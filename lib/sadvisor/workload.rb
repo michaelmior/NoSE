@@ -60,20 +60,6 @@ module Sadvisor
       end
     end
 
-    # Iterative helper for {Sadvisor::Workload#find_field_keys}
-    def find_field_keys_each(field, keys = [])
-      if field.count >= 2
-        field = field.dup
-        key_field = @entities[field[0]].fields[field[1]]
-        keys << (key_field ? [key_field] : @entities[field[0]].id_fields)
-        field[0..1] = key_field ? key_field.entity.name : field[1]
-        keys += find_field_keys_each(field)
-        keys
-      else
-        [@entities[field[0]].id_fields]
-      end
-    end
-
     # Find the keys traversed looking up a given field
     def find_field_keys(field)
       find_field_keys_each field[0..-2].reverse
@@ -90,19 +76,6 @@ module Sadvisor
       end
     end
 
-    # Check if fields referenced by queries in the workload consist of valid
-    # paths through the entity graph
-    def valid_paths?(query)
-      fields = query.where.map { |condition| condition.field }
-      fields += query.order_by
-      fields.map!(&:value)
-
-      return true if fields.empty?
-
-      longest = fields.max_by(&:count)
-      fields.map { |field| longest[0..field.count - 1] == field }.all?
-    end
-
     # Check if the queries are valid for the loaded entities
     def valid?
       @query_weights.keys.each do |query|
@@ -117,7 +90,38 @@ module Sadvisor
 
       fields_exist?
     end
+
+    private
+
+    # Iterative helper for {Sadvisor::Workload#find_field_keys}
+    def find_field_keys_each(field, keys = [])
+      if field.count >= 2
+        field = field.dup
+        key_field = @entities[field[0]].fields[field[1]]
+        keys << (key_field ? [key_field] : @entities[field[0]].id_fields)
+        field[0..1] = key_field ? key_field.entity.name : field[1]
+        keys += find_field_keys_each(field)
+        keys
+      else
+        [@entities[field[0]].id_fields]
+      end
+    end
+
+    # Check if fields referenced by queries in the workload consist of valid
+    # paths through the entity graph
+    def valid_paths?(query)
+      fields = query.where.map { |condition| condition.field }
+      fields += query.order_by
+      fields.map!(&:value)
+
+      return true if fields.empty?
+
+      longest = fields.max_by(&:count)
+      fields.map { |field| longest[0..field.count - 1] == field }.all?
+    end
   end
+
+  private
 
   # A helper class for DSL creation to avoid messing with {Workload}
   class WorkloadDSL

@@ -37,5 +37,6 @@ module Sadvisor
 
       root_node.elements.each { |node| clean_tree(node) }
     end
+    private_class_method :clean_tree
   end
 end

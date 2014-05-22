@@ -83,6 +83,15 @@ module Sadvisor
       fields.map(&:cardinality).inject(1, :*) * entry_size
     end
 
+    # Check if an index can support a given query
+    # @see #supports_predicates?
+    def supports_query?(query, workload)
+      supports_predicates? query.from.value, query.fields, query.eq_fields, \
+                           query.range_field, query.order_by, workload
+    end
+
+    private
+
     # Check if the index supports the given range predicate
     def supports_range?(range, workload)
       if range
@@ -98,7 +107,7 @@ module Sadvisor
       # XXX Need to consider when these fields are not the last
       order_fields = order_by.map { |field| workload.find_field field }
       order_fields.length == 0 || \
-          order_fields == @fields[-order_fields.length..-1]
+        order_fields == @fields[-order_fields.length..-1]
     end
 
     # Check if the given predicates can be supported by this index
@@ -126,17 +135,10 @@ module Sadvisor
       from_entity = workload.entities[from]
       return false unless predicate_fields.map do |field|
         keys_for_field(workload.find_field field) == \
-            from_entity.key_fields(field)
+          from_entity.key_fields(field)
       end.all?
 
       true
-    end
-
-    # Check if an index can support a given query
-    # @see #supports_predicates?
-    def supports_query?(query, workload)
-      supports_predicates? query.from.value, query.fields, query.eq_fields, \
-                           query.range_field, query.order_by, workload
     end
   end
 

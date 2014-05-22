@@ -60,19 +60,19 @@ module Sadvisor
     context 'when checking for valid paths' do
       it 'accepts queries without a where clause' do
         query = Parser.parse('SELECT Id FROM Foo')
-        expect(subject.valid_paths? query).to be_true
+        expect(subject.send(:valid_paths?, query)).to be_true
       end
 
       it 'accepts queries with paths with a common prefix' do
         query = Parser.parse('SELECT Id FROM Foo WHERE ' \
                              'Foo.Bar.Baz = 1 AND Foo.Bar = 1')
-        expect(subject.valid_paths? query).to be_true
+        expect(subject.send(:valid_paths?, query)).to be_true
       end
 
       it 'rejects queries with paths without a common prefix' do
         query = Parser.parse('SELECT Id FROM Foo WHERE ' \
                              'Foo.Bar.Baz = 1 AND Foo.Quux = 1')
-        expect(subject.valid_paths? query).to be_false
+        expect(subject.send(:valid_paths?, query)).to be_false
       end
     end
   end

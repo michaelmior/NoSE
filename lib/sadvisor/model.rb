@@ -136,6 +136,7 @@ module Sadvisor
                            :<<, child_class.new(*args)
                      end)
     end
+    private_class_method :inherited
   end
 
   # Field holding an integer
