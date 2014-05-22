@@ -4,6 +4,7 @@ require 'tempfile'
 require 'rglpk'
 
 module Sadvisor
+  # Simple wrapper for ERB template isolation
   class Namespace
     def initialize(hash)
       hash.each do |key, value|
@@ -11,11 +12,13 @@ module Sadvisor
       end
     end
 
+    # Return a binding within the class instance
     def get_binding
       binding
     end
   end
 
+  # Searches for the optimal indices for a given workload
   class Search
     def initialize(workload)
       @workload = workload
@@ -106,6 +109,8 @@ module Sadvisor
                 configuration_sizes: configuration_sizes
     end
 
+    # Create a new range over the entities traversed by an index using
+    # the numerical indices into the query entity path
     def self.index_range(entities, index)
       Range.new(*(index.entities.map do |entity|
         entities.index entity.name

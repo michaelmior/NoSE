@@ -55,6 +55,7 @@ module Sadvisor
       end
     end
 
+    # Mark the fields in this index as fetched
     def add_fields_from_index(index)
       @fields += index.fields + index.extra
     end
@@ -100,6 +101,7 @@ module Sadvisor
       update_state parent
     end
 
+    # Modify the state to reflect the fields looked up by the index
     def update_state(parent)
       # Find fields which are filtered by the index
       eq_filter = @state.eq & @index.fields
@@ -188,6 +190,7 @@ module Sadvisor
       []
     end
 
+    # Update the cardinality based on filtering implicit to the index
     def filter_cardinality(eq_filter, range_filter, entity)
       filter = range_filter && range_filter.entity == entity ? 0.1 : 1.0
       filter *= (eq_filter[entity] || []).map do |field|
@@ -197,6 +200,7 @@ module Sadvisor
       filter
     end
 
+    # Update the cardinality after traversing the index
     def new_cardinality(cardinality, eq_filter, range_filter)
       eq_filter = eq_filter.group_by(&:parent)
       index_path = @index.path.reverse
@@ -425,7 +429,7 @@ module Sadvisor
       @root = RootStep.new(state)
     end
 
-    # Enumerate all steps in the given plan
+    # Enumerate all plans in the tree
     def each
       nodes = [@root]
 
@@ -439,6 +443,7 @@ module Sadvisor
       end
     end
 
+    # Return the total number of plans for this query
     def size
       to_a.count
     end
@@ -487,6 +492,7 @@ module Sadvisor
       tree
     end
 
+    # Get the minimum cost of executing this query for the given set of indexes
     def min_query_cost(query)
       find_plans_for_query(query).min.cost
     end

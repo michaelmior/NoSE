@@ -14,6 +14,7 @@ module Sadvisor
       WorkloadDSL.new(self).instance_eval(&block) if block_given?
     end
 
+    # Add a new {Entity} or {CQL::Statement} to the workload
     def <<(other)
       if other.is_a? Entity
         add_entity other
@@ -29,12 +30,14 @@ module Sadvisor
       @entities[name]
     end
 
+    # Add a new {CQL::Statement} to the workload or parse a string
     def add_query(query, weight = 1)
       query = Parser.parse query if query.is_a? String
 
       @query_weights[query] = weight
     end
 
+    # Strip the weights from the query dictionary and return a list of queries
     def queries
       @query_weights.keys
     end
@@ -57,6 +60,7 @@ module Sadvisor
       end
     end
 
+    # Iterative helper for {Sadvisor::Workload#find_field_keys}
     def find_field_keys_each(field, keys = [])
       if field.count >= 2
         field = field.dup
@@ -123,10 +127,12 @@ module Sadvisor
 
     # rubocop:disable MethodName
 
+    # Shortcut to add a new {Entity} to the workload
     def Entity(*args, &block)
       @workload.add_entity Entity.new(*args, &block)
     end
 
+    # Shortcut to add a new {CQL::Statement} to the workload
     def Q(query, weight)
       @workload.add_query query, weight
     end

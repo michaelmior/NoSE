@@ -1,4 +1,7 @@
+# rubocop:disable Documentation
+
 module Enumerable
+  # Enumerate all non-empty prefixes of the enumerable
   def prefixes
     Enumerator.new do |enum|
       prefix = []
@@ -9,3 +12,5 @@ module Enumerable
     end
   end
 end
+
+# rubocop:enable Documentation

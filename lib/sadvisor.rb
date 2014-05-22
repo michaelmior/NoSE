@@ -1,3 +1,7 @@
+# Namespace module for the whole project
+module Sadvisor
+end
+
 require 'sadvisor/util'
 
 require 'sadvisor/enumerator'

@@ -62,6 +62,7 @@ module Sadvisor
       self
     end
 
+    # Get the field on the entity with the given name
     def [](field)
       @fields[field]
     end
@@ -221,6 +222,7 @@ module Sadvisor
       @key_fields = fields_for_path path, entity
     end
 
+    # Get the keys along a given path of entities
     def fields_for_path(path, entity)
       path = path[1..-1] if path[0] == entity.name
 

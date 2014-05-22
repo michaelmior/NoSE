@@ -190,6 +190,7 @@ module CQL
   class WhereClause < CQLNode
   end
 
+  # An expression in a where clause
   class Expression < CQLNode
   end
 
