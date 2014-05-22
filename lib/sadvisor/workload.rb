@@ -93,7 +93,7 @@ module Sadvisor
 
     private
 
-    # Iterative helper for {Sadvisor::Workload#find_field_keys}
+    # Iterative helper for {#find_field_keys}
     def find_field_keys_each(field, keys = [])
       if field.count >= 2
         field = field.dup
