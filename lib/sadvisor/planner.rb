@@ -102,7 +102,7 @@ module Sadvisor
     end
 
     def inspect
-      "#{super} #{@index.inspect} * #{@state.cardinality}"
+      "#{super} #{@index.inspect} * #{@state.cardinality} $#{cost}"
     end
 
     # Two index steps are equal if they use the same index
