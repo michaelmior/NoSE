@@ -328,9 +328,16 @@ module Sadvisor
       return nil if filter_fields.empty?
 
       # Check that we have all the fields we are filtering
-      given_fields = state.given_fields + parent.fields
       has_fields = filter_fields.map do |field|
-        given_fields.member? field
+        next true if parent.fields.member? field
+
+        # We can also filter if we have a foreign key
+        # XXX for now we assume this value is the same
+        if field.is_a? IDField
+          parent.fields.any? do |pfield|
+            pfield.is_a?(ForeignKey) && pfield.entity == field.parent
+          end
+        end
       end.all?
 
       return FilterStep.new eq_filter, range_filter, state if has_fields
