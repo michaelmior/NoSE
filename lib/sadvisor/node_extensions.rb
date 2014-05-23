@@ -21,6 +21,10 @@ module CQL
 
   # A parsed query
   class Statement < CQLNode
+    def inspect
+      text_value
+    end
+
     # All fields projected by this query
     def fields
       fields = elements.find do |n|
