@@ -97,10 +97,10 @@ module Sadvisor
           benefit > 0 ? indexes[j] : nil
         end.compact
         query_indices.each_with_index do |index1, j|
-          range1 = Search.index_range entities, index1
+          range1 = Search.send :index_range, entities, index1
 
           query_indices[j + 1..-1].each do |index2|
-            range2 = Search.index_range entities, index2
+            range2 = Search.send :index_range, entities, index2
             unless (range1.to_a & range2.to_a).empty?
               overlap1 = indexes.index(index1)
               overlap2 = indexes.index(index2)
