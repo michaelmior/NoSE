@@ -501,7 +501,21 @@ module Sadvisor
         if steps.length > 0
           step.children = steps
           steps.each { |child_step| find_plans_for_step root, child_step }
-        else fail NoPlanException
+        elsif step == root
+          fail NoPlanException
+        else
+          # Walk up the tree and remove the branch for the failed plan
+          prune_step = step.instance_variable_get(:@parent)
+          prev_step = step
+          while prune_step.children.length <= 1 && prune_step != root
+            prune_step = prune_step.instance_variable_get(:@parent)
+            prev_step = prune_step
+          end
+
+          # If we reached the root, we have no plan
+          fail NoPlanException if prune_step == root
+
+          prune_step.delete prev_step
         end
       end
     end
