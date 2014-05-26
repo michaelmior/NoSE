@@ -1,9 +1,4 @@
-# rubocop:disable all
-
-$:.unshift File.dirname(__FILE__) + '/../lib'
-require 'sadvisor'
-
-workload = Sadvisor::Workload.new do
+$workload = Sadvisor::Workload.new do
   Entity 'Category' do
     ID     'id'
     String 'name', 20
@@ -102,8 +97,3 @@ workload = Sadvisor::Workload.new do
   Q 'SELECT bid, qty FROM Bid WHERE Bid.Item.id = ? ORDER BY Bid.bid DESC LIMIT 5', 1.0
   Q 'SELECT id FROM Bid WHERE Bid.Item.id = ?', 1.0 # XXX: total bids
 end
-
-#puts workload.inspect
-
-indexes = Sadvisor::Search.new(workload).search_overlap
-indexes.each { |index| puts index.inspect }

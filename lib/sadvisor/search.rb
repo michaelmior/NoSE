@@ -36,7 +36,7 @@ module Sadvisor
       simple_planner = Planner.new @workload, simple_indexes
       simple_costs = {}
       @workload.queries.each do |query|
-        simple_costs[query] = simple_planner.min_query_cost query
+        simple_costs[query] = simple_planner.min_plan(query).cost
       end
 
       # Generate all possible combinations of indices
@@ -84,7 +84,7 @@ module Sadvisor
       simple_planner = Planner.new @workload, simple_indexes
       simple_costs = {}
       @workload.queries.each do |query|
-        simple_costs[query] = simple_planner.min_query_cost query
+        simple_costs[query] = simple_planner.min_plan(query).cost
       end
 
       benefits = benefits indexes.map { |index| simple_indexes + [index] },
@@ -140,7 +140,7 @@ module Sadvisor
         combos.map do |combo|
           combo_planner = Planner.new @workload, combo
           begin
-            [0, simple_costs[query] - combo_planner.min_query_cost(query)].max
+            [0, simple_costs[query] - combo_planner.min_plan(query).cost].max
           rescue NoPlanException
             0
           end
