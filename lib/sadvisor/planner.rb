@@ -491,9 +491,9 @@ module Sadvisor
       tree
     end
 
-    # Get the minimum cost of executing this query for the given set of indexes
-    def min_query_cost(query)
-      find_plans_for_query(query).min.cost
+    # Get the minimum cost plan for executing this query
+    def min_plan(query)
+      find_plans_for_query(query).min
     end
 
     private
