@@ -537,7 +537,12 @@ module Sadvisor
       steps.compact!
 
       return steps if steps.length > 0
-      @indexes.each do |index|
+
+      # Don't allow indices to be used multiple times
+      used_indexes = parent.parent_steps.select do |step|
+        step.kind_of? IndexLookupStep
+      end.map(&:index)
+      (@indexes - used_indexes).each do |index|
         steps.push IndexLookupStep.apply(parent, index, state).each \
             { |new_step| new_step.add_fields_from_index index }
       end
