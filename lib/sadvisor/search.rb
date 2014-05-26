@@ -25,7 +25,7 @@ module Sadvisor
     end
 
     # Search for the best configuration of indices for a given space constraint
-    def search_all(max_space)
+    def search_all(max_space = 1.0/0)
       # Construct the simple indices for all entities and
       # remove this from the total size
       simple_indexes = @workload.entities.values.map(&:simple_index)
@@ -69,7 +69,7 @@ module Sadvisor
 
     # Search for optimal indices using an ILP which searches for
     # non-overlapping indices
-    def search_overlap(max_space)
+    def search_overlap(max_space = 1.0/0)
       # Construct the simple indices for all entities and
       # remove this from the total size
       simple_indexes = @workload.entities.values.map(&:simple_index)

@@ -1,5 +1,7 @@
+<% if max_space.finite? %>
 # Total storage capacity
 param max_space;
+<% end %>
 
 # Benefit of queries for configuration and configuration storage
 set benefits, dimen 3;
@@ -17,8 +19,10 @@ var y{Indexes}, >=0, <=1, binary;
 maximize obj :
   sum{(i,j,c) in benefits} x[i,j] * c;
 
+<% if max_space.finite? %>
 s.t. size :
   sum{(i,c) in Sizes} c * y[i] <= max_space;
+<% end %>
 
 <%
 query_overlap.each do |query, overlaps|
@@ -50,8 +54,10 @@ printf {i in Indexes: y[i] == 1} "%i ", i;
 
 data;
 
+<% if max_space.finite? %>
 # Total storage capacity
 param max_space := <%= max_space %>;
+<% end %>
 
 set Sizes :=
 <% index_sizes.each_with_index do |size, i| %>

@@ -105,5 +105,5 @@ end
 
 #puts workload.inspect
 
-indexes = Sadvisor::Search.new(workload).search_overlap 10000000
+indexes = Sadvisor::Search.new(workload).search_overlap
 indexes.each { |index| puts index.inspect }
