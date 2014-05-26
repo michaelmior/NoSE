@@ -13,4 +13,10 @@ module Enumerable
   end
 end
 
+class Fixnum
+  def finite?
+    true
+  end
+end
+
 # rubocop:enable Documentation
