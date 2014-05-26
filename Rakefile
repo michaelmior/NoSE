@@ -16,6 +16,16 @@ task :workload, [:name] do |_, args|
   puts '=========== Indexes ==========='
   indexes = Sadvisor::Search.new($workload).search_overlap
   indexes.each { |index| puts index.inspect }
+  puts
+
+  puts '=========== Query plans ==========='
+  simple_indexes = $workload.entities.values.map(&:simple_index)
+  planner = Sadvisor::Planner.new $workload, indexes + simple_indexes
+  $workload.queries.each do |query|
+    puts query.inspect
+    puts planner.min_plan(query).inspect
+    puts
+  end
 
   # rubocop:enable GlobalVars
 end
