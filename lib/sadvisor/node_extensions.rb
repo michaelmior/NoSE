@@ -28,6 +28,8 @@ module CQL
 
     # Produce a string with highlights using ANSI color codes
     def highlight
+      return text_value unless $stdout.isatty
+
       out = 'SELECT '.green + \
             fields.map(&:value).map(&:last).join(', ').blue + \
             ' FROM '.green + from.value.blue
