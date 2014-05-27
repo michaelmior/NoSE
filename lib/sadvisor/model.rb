@@ -15,8 +15,8 @@ module Sadvisor
       EntityDSL.new(self).instance_eval(&block) if block_given?
     end
 
-    def inspect
-      @name + ' ' + fields.keys.inspect.gsub('"', '')
+    def to_s
+      @name.light_blue + ' [' + fields.keys.map(&:to_s).join(', ') + ']'
     end
 
     # Compare by name, fields, and count
@@ -105,8 +105,8 @@ module Sadvisor
       [@parent, @name].hash
     end
 
-    def inspect
-      parent.name + '.' + name
+    def to_s
+      parent.name.light_blue + '.' + name.blue
     end
 
     # Set the estimated cardinality of the field
@@ -217,7 +217,7 @@ module Sadvisor
     # Most of the work is delegated to the array
     extend Forwardable
     def_delegators :@key_fields, :each, :<<, :[], :==, :===, :eql?,
-                   :inspect, :to_a, :to_ary, :last
+                   :inspect, :to_s, :to_a, :to_ary, :last
 
     def initialize(path, entity)
       @key_fields = fields_for_path path, entity

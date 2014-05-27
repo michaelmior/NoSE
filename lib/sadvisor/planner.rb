@@ -9,7 +9,7 @@ module Sadvisor
     # Most of the work is delegated to the array
     extend Forwardable
     def_delegators :@steps, :each, :<<, :[], :==, :===, :eql?,
-                   :inspect, :to_a, :to_ary, :last
+                   :inspect, :to_s, :to_a, :to_ary, :last
 
     def initialize
       @steps = []
@@ -39,7 +39,7 @@ module Sadvisor
       @fields = Set.new
     end
 
-    def inspect
+    def to_s
       self.class.name.split('::').last.split(/(?=[A-Z])/)[0..-2] \
           .map(&:downcase).join(' ').capitalize
     end
@@ -101,8 +101,8 @@ module Sadvisor
       update_state parent
     end
 
-    def inspect
-      "#{super} #{@index.inspect} * #{@state.cardinality} $#{cost}"
+    def to_s
+      "#{super} #{@index.to_s} * #{@state.cardinality} $#{cost}"
     end
 
     # Two index steps are equal if they use the same index
@@ -249,7 +249,7 @@ module Sadvisor
     end
 
     def inspect
-      super + ' ' + @sort_fields.map(&:inspect).to_s.gsub('"', '')
+      super + ' [' + @sort_fields.map(&:to_s).join(', ') + ']'
     end
 
     # Two sorting steps are equal if they sort on the same fields
@@ -301,8 +301,8 @@ module Sadvisor
         @eq == other.eq && @range == other.range
     end
 
-    def inspect
-      "#{super} #{@eq.inspect} #{@range.inspect} " +
+    def to_s
+      "#{super} #{@eq.to_s} #{@range.to_s} " +
       begin
         "#{instance_variable_get(:@parent).state.cardinality} " \
         "-> #{state.cardinality}"
@@ -399,13 +399,13 @@ module Sadvisor
       check_first_path
     end
 
-    def inspect
+    def to_s
       @query.text_value +
-          "\n  fields: " + @fields.map { |field| field.inspect }.to_a.to_s +
-          "\n      eq: " + @eq.map { |field| field.inspect }.to_a.to_s +
+          "\n  fields: " + @fields.map { |field| field.to_s }.to_a.to_s +
+          "\n      eq: " + @eq.map { |field| field.to_s }.to_a.to_s +
           "\n   range: " + (@range.nil? ? '(nil)' : @range.name) +
-          "\n   order: " + @order_by.map { |field| field.inspect }.to_a.to_s +
-          "\n    path: " + @path.to_a.inspect
+          "\n   order: " + @order_by.map { |field| field.to_s }.to_a.to_s +
+          "\n    path: " + @path.to_a.to_s
     end
 
     # Check if the query has been fully answered
@@ -462,10 +462,10 @@ module Sadvisor
       to_a.count
     end
 
-    def inspect(step = nil, indent = 0)
+    def to_s(step = nil, indent = 0)
       step = @root if step.nil?
-      '  ' * indent + step.inspect + "\n" + step.children.map do |child_step|
-        inspect child_step, indent + 1
+      '  ' * indent + step.to_s + "\n" + step.children.map do |child_step|
+        to_s child_step, indent + 1
       end.reduce('', &:+)
     end
   end
