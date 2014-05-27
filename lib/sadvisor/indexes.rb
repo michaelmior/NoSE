@@ -18,10 +18,11 @@ module Sadvisor
       end
     end
 
-    def to_s
+    def to_color
       field_names = @fields.map(&:inspect)
       extra_names = @extra.map(&:inspect)
-      '[' + field_names.join(', ') + '] → [' + extra_names.join(', ') + ']'
+      '[' + field_names.join(', ') + '] → [' + extra_names.join(', ') + ']' + \
+        " $#{size}".yellow
     end
 
     # Two indices are equal if they contain the same fields

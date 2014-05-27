@@ -15,8 +15,8 @@ module Sadvisor
       EntityDSL.new(self).instance_eval(&block) if block_given?
     end
 
-    def to_s
-      @name.light_blue + ' [' + fields.keys.map(&:to_s).join(', ') + ']'
+    def to_color
+      @name.light_blue + ' [' + fields.keys.map(&:to_color).join(', ') + ']'
     end
 
     # Compare by name, fields, and count
@@ -105,7 +105,7 @@ module Sadvisor
       [@parent, @name].hash
     end
 
-    def to_s
+    def to_color
       parent.name.light_blue + '.' + name.blue
     end
 
