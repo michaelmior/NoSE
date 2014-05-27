@@ -31,12 +31,15 @@ module CQL
       return text_value unless $stdout.isatty
 
       out = 'SELECT '.green + \
-            fields.map(&:value).map(&:last).join(', ').blue + \
-            ' FROM '.green + from.value.blue
+            fields.map(&:value).map(&:last).map(&:blue).join(', '.green) + \
+            ' FROM '.green + from.value.light_blue
 
       out += ' WHERE '.green if where.length > 0
       out += where.map do |condition|
-        where_out = condition.field.text_value.blue
+        # require 'pry'
+        # binding.pry
+        field = condition.field.value
+        where_out = field[0..-2].join('.').light_blue + '.' + field[-1].blue
         where_out += ' ' + condition.logical_operator.value.to_s + ' '
         where_out += condition.value.to_s.red
 
@@ -44,7 +47,9 @@ module CQL
       end.join(' AND '.green)
 
       out += ' ORDER BY '.green if order_by.length > 0
-      out += order_by.map { |field| field.join('.') }.join(', ').blue
+      out += order_by.map do |field|
+        field[0..-2].join('.').light_blue + '.' + field[-1].blue
+      end.join(', '.green)
 
       out += ' LIMIT '.green + limit.to_s.red if limit
 
