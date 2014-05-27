@@ -32,7 +32,7 @@ module Sadvisor
     def self.clean_tree(root_node)
       return if root_node.elements.nil?
       root_node.elements.delete_if do |node|
-        node.class.name == 'Treetop::Runtime::SyntaxNode'
+        node.class == Treetop::Runtime::SyntaxNode
       end
 
       root_node.elements.each { |node| clean_tree(node) }
