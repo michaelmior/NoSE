@@ -21,6 +21,7 @@ module Sadvisor
     end
 
     # The estimated cost of executing the query using this plan
+    # @return [Numeric]
     def cost
       @steps.map(&:cost).inject(0, &:+)
     end
@@ -60,7 +61,8 @@ module Sadvisor
       @fields += index.fields + index.extra
     end
 
-    # Get the list of steps which led us here as a {QueryPlan}
+    # Get the list of steps which led us here
+    # @return [QueryPlan]
     def parent_steps
       steps = nil
 
@@ -75,6 +77,7 @@ module Sadvisor
     end
 
     # The cost of executing this step in the plan
+    # @return [Numeric]
     def cost
       0
     end
@@ -114,6 +117,7 @@ module Sadvisor
     end
 
     # Rough cost estimate as the size of data returned
+    # @return [Numeric]
     def cost
       # TODO: Only count cost of selected fields
       @state.cardinality * @index.entry_size
@@ -261,6 +265,7 @@ module Sadvisor
       other.instance_of?(self.class) && @sort_fields == other.sort_fields
     end
 
+    # (see PlanStep#cost)
     def cost
       # TODO: Find some estimate of sort cost
       #       This could be partially captured by the fact that sort + limit
@@ -315,6 +320,7 @@ module Sadvisor
       end
     end
 
+    # (see PlanStep#cost)
     def cost
       # Assume this has no cost and the cost is captured in the fact that we
       # have to retrieve more data earlier. All this does is skip records.
@@ -415,11 +421,13 @@ module Sadvisor
     end
 
     # Check if the query has been fully answered
+    # @return [Boolean]
     def answered?
       @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
     end
 
     # Create a deep copy of the query state
+    # @return [QueryState]
     def dup
       # Ensure a deep copy
       Marshal.load(Marshal.dump(self))
@@ -464,6 +472,7 @@ module Sadvisor
     end
 
     # Return the total number of plans for this query
+    # @return [Integer]
     def size
       to_a.count
     end
@@ -488,6 +497,8 @@ module Sadvisor
     end
 
     # Find a tree of plans for the given query
+    # @return [QueryPlanTree]
+    # @raise [NoPlanException]
     def find_plans_for_query(query)
       state = QueryState.new query, @workload
       tree = QueryPlanTree.new(state)
@@ -498,6 +509,7 @@ module Sadvisor
     end
 
     # Get the minimum cost plan for executing this query
+    # @return [QueryPlan]
     def min_plan(query)
       find_plans_for_query(query).min
     end
@@ -505,6 +517,7 @@ module Sadvisor
     private
 
     # Find possible query plans for a query strating at the given step
+    # @raise [NoPlanException]
     def find_plans_for_step(root, step)
       unless step.state.answered?
         steps = find_steps_for_state(step, step.state).select do |new_step|
@@ -534,6 +547,8 @@ module Sadvisor
     end
 
     # Get a list of possible next steps for a query in the given state
+    # @return [Array<PlanStep>]
+    # @raise [NoPlanException]
     def find_steps_for_state(parent, state)
       steps = []
 

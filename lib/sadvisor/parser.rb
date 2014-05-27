@@ -12,6 +12,7 @@ module Sadvisor
     @parser = CQLParser.new
 
     # Parse an input string and return an AST
+    # @return [CQL::Statement]
     def self.parse(data)
       # Pass the data over to the parser instance
       tree = @parser.parse(data)
