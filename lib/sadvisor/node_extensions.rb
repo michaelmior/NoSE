@@ -22,12 +22,8 @@ module CQL
 
   # A parsed query
   class Statement < CQLNode
-    def inspect
-      text_value
-    end
-
     # Produce a string with highlights using ANSI color codes
-    def highlight
+    def inspect
       return text_value unless $stdout.isatty
 
       out = 'SELECT '.green + \
@@ -40,7 +36,7 @@ module CQL
         # binding.pry
         field = condition.field.value
         where_out = field[0..-2].join('.').light_blue + '.' + field[-1].blue
-        where_out += ' ' + condition.logical_operator.value.to_s + ' '
+        where_out += ' ' + condition.logical_operator.value.to_s.green + ' '
         where_out += condition.value.to_s.red
 
         where_out

@@ -39,7 +39,7 @@ module Sadvisor
       @fields = Set.new
     end
 
-    def to_s
+    def to_color
       self.class.name.split('::').last.split(/(?=[A-Z])/)[0..-2] \
           .map(&:downcase).join(' ').capitalize
     end
@@ -101,8 +101,9 @@ module Sadvisor
       update_state parent
     end
 
-    def to_s
-      "#{super} #{@index.to_s} * #{@state.cardinality} $#{cost}"
+    def to_color
+      "#{super} #{@index.to_color} * #{@state.cardinality} " + \
+        "$#{cost}".yellow
     end
 
     # Two index steps are equal if they use the same index
@@ -248,8 +249,8 @@ module Sadvisor
       @sort_fields = sort_fields
     end
 
-    def inspect
-      super + ' [' + @sort_fields.map(&:to_s).join(', ') + ']'
+    def to_color
+      super + ' [' + @sort_fields.map(&:to_color).join(', ') + ']'
     end
 
     # Two sorting steps are equal if they sort on the same fields
@@ -301,8 +302,8 @@ module Sadvisor
         @eq == other.eq && @range == other.range
     end
 
-    def to_s
-      "#{super} #{@eq.to_s} #{@range.to_s} " +
+    def to_color
+      "#{super} #{@eq.to_color} #{@range.to_color} " +
       begin
         "#{instance_variable_get(:@parent).state.cardinality} " \
         "-> #{state.cardinality}"
@@ -399,13 +400,15 @@ module Sadvisor
       check_first_path
     end
 
-    def to_s
+    def to_color
       @query.text_value +
-          "\n  fields: " + @fields.map { |field| field.to_s }.to_a.to_s +
-          "\n      eq: " + @eq.map { |field| field.to_s }.to_a.to_s +
-          "\n   range: " + (@range.nil? ? '(nil)' : @range.name) +
-          "\n   order: " + @order_by.map { |field| field.to_s }.to_a.to_s +
-          "\n    path: " + @path.to_a.to_s
+        "\n  fields: " + @fields.map { |field| field.to_color }.to_a.to_color +
+        "\n      eq: " + @eq.map { |field| field.to_color }.to_a.to_color +
+        "\n   range: " + (@range.nil? ? '(nil)' : @range.name) +
+        "\n   order: " + @order_by.map do |field|
+                           field.to_color
+                         end.to_a.to_color +
+        "\n    path: " + @path.to_a.to_color
     end
 
     # Check if the query has been fully answered
@@ -462,10 +465,10 @@ module Sadvisor
       to_a.count
     end
 
-    def to_s(step = nil, indent = 0)
+    def to_color(step = nil, indent = 0)
       step = @root if step.nil?
-      '  ' * indent + step.to_s + "\n" + step.children.map do |child_step|
-        to_s child_step, indent + 1
+      '  ' * indent + step.to_color + "\n" + step.children.map do |child_step|
+        to_color child_step, indent + 1
       end.reduce('', &:+)
     end
   end

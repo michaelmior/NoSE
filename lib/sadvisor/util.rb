@@ -23,8 +23,12 @@ end
 
 class Object
   def inspect
-    out = to_s
+    out = respond_to?(:to_color) ? to_color : to_s
     $stdout.isatty ? out : out.uncolorize
+  end
+
+  def to_color
+    to_s
   end
 end
 

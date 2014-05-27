@@ -40,7 +40,7 @@ task :workload, [:name] do |_, args|
   puts $stdout.isatty ? header.blue : header
   planner = Sadvisor::Planner.new $workload, indexes + simple_indexes
   $workload.queries.each do |query|
-    puts query.highlight
+    puts query.inspect
     puts planner.min_plan(query).inspect
     puts
   end
