@@ -8,6 +8,7 @@ GEM
       columnize (~> 0.3)
       debugger-linecache (~> 1.2)
     coderay (1.0.9)
+    colorize (0.7.0)
     columnize (0.3.6)
     debug_inspector (0.0.2)
     debugger-linecache (1.2.0)
@@ -56,6 +57,7 @@ PLATFORMS
 
 DEPENDENCIES
   binding_of_caller
+  colorize
   pry
   pry-byebug
   pry-rescue

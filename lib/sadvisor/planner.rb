@@ -40,7 +40,7 @@ module Sadvisor
     end
 
     def inspect
-      self.class.name.split(/(?=[A-Z])/)[0..-2] \
+      self.class.name.split('::').last.split(/(?=[A-Z])/)[0..-2] \
           .map(&:downcase).join(' ').capitalize
     end
 

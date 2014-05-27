@@ -13,16 +13,16 @@ task :workload, [:name] do |_, args|
 
   require_relative "workloads/#{args.name}"
 
-  puts '=========== Indexes ==========='
+  puts(("Indexes\n" + '━' * 50).blue)
   indexes = Sadvisor::Search.new($workload).search_overlap
   indexes.each { |index| puts index.inspect }
   puts
 
-  puts '=========== Query plans ==========='
+  puts(("Query plans\n" + '━' * 50).blue)
   simple_indexes = $workload.entities.values.map(&:simple_index)
   planner = Sadvisor::Planner.new $workload, indexes + simple_indexes
   $workload.queries.each do |query|
-    puts query.inspect
+    puts query.highlight
     puts planner.min_plan(query).inspect
     puts
   end

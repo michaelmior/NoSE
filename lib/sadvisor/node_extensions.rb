@@ -1,3 +1,4 @@
+require 'colorize'
 require 'treetop'
 
 # Elements of a query parse tree
@@ -23,6 +24,29 @@ module CQL
   class Statement < CQLNode
     def inspect
       text_value
+    end
+
+    # Produce a string with highlights using ANSI color codes
+    def highlight
+      out = 'SELECT '.green + \
+            fields.map(&:value).map(&:last).join(', ').blue + \
+            ' FROM '.green + from.value.blue
+
+      out += ' WHERE '.green if where.length > 0
+      out += where.map do |condition|
+        where_out = condition.field.text_value.blue
+        where_out += ' ' + condition.logical_operator.value.to_s + ' '
+        where_out += condition.value.to_s.red
+
+        where_out
+      end.join(' AND '.green)
+
+      out += ' ORDER BY '.green if order_by.length > 0
+      out += order_by.map { |field| field.join('.') }.join(', ').blue
+
+      out += ' LIMIT '.green + limit.to_s.red if limit
+
+      out
     end
 
     # All fields projected by this query
@@ -207,7 +231,7 @@ module CQL
 
     # The value the field is being compared to
     def value
-      elements[-1].value
+      elements[-1].class == CQL::Operator ? '?' : elements[-1].value
     end
 
     # The operator this condition applies to
