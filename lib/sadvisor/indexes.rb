@@ -18,10 +18,10 @@ module Sadvisor
       end
     end
 
-    def inspect
+    def to_s
       field_names = @fields.map(&:inspect)
       extra_names = @extra.map(&:inspect)
-      (field_names.to_s + ' -> ' + extra_names.to_s).gsub('"', '')
+      (field_names.to_s.blue + ' -> ' + extra_names.to_s.blue).gsub('"', '')
     end
 
     # Two indices are equal if they contain the same fields
