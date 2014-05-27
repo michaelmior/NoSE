@@ -26,6 +26,7 @@ module Sadvisor
     end
 
     # Retrieve an entity by name
+    # @return [Entity]
     def [](name)
       @entities[name]
     end
@@ -38,6 +39,7 @@ module Sadvisor
     end
 
     # Strip the weights from the query dictionary and return a list of queries
+    # @return [Array<CQL::Statement>]
     def queries
       @query_weights.keys
     end
@@ -48,6 +50,7 @@ module Sadvisor
     end
 
     # Find a field given an +Enumerable+ of identifiers
+    # @return [Field]
     def find_field(field)
       if field.count > 2
         # Do a foreign key lookup
@@ -66,6 +69,7 @@ module Sadvisor
     end
 
     # Check if all the fields used by queries in the workload exist
+    # @return [Boolean]
     def fields_exist?
       @query_weights.keys.each do |query|
         # Projected fields and fields in the where clause exist
@@ -77,6 +81,7 @@ module Sadvisor
     end
 
     # Check if the queries are valid for the loaded entities
+    # @return [Boolean]
     def valid?
       @query_weights.keys.each do |query|
         # Entity must exist

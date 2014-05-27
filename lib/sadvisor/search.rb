@@ -13,6 +13,7 @@ module Sadvisor
     end
 
     # Return a binding within the class instance
+    # @return [Binding]
     def get_binding
       binding
     end
@@ -25,6 +26,7 @@ module Sadvisor
     end
 
     # Search for the best configuration of indices for a given space constraint
+    # @return [Array<Index>]
     def search_all(max_space = 1.0/0)
       # Construct the simple indices for all entities and
       # remove this from the total size
@@ -69,6 +71,7 @@ module Sadvisor
 
     # Search for optimal indices using an ILP which searches for
     # non-overlapping indices
+    # @return [Array<Index>]
     def search_overlap(max_space = 1.0/0)
       # Construct the simple indices for all entities and
       # remove this from the total size

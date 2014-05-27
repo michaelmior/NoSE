@@ -27,21 +27,26 @@ module Sadvisor
     end
 
     # Two indices are equal if they contain the same fields
+    # @return [Boolean]
     def ==(other)
       @fields == other.fields && \
           @field_keys == other.instance_variable_get(:@field_keys) \
           && @extra.to_set == other.extra.to_set
     end
 
+    # (see Index#==)
     def eql?(other)
       self == other
     end
 
+    # Hash based on the fields, their keys, and the extra fields
+    # @return [Fixnum]
     def hash
       [@fields, @field_keys, @extra.to_set].hash
     end
 
     # Get all the entities referenced in this index
+    # @return [Array<Entity>]
     def entities
       (@fields + @extra).map(&:parent)
     end
@@ -59,16 +64,19 @@ module Sadvisor
 
     # Check if this index is a mapping from the key of the given entity
     # @see Entity#id_fields
+    # @return [Boolean]
     def identity_for?(entity)
       @fields == entity.id_fields
     end
 
     # Check if the index contains a given field
+    # @return [Boolean]
     def contains_field?(field)
       !(@fields + @extra).find { |index_field| field == index_field }.nil?
     end
 
     # Check if all the fields the query needs are indexed
+    # @return [Boolean]
     def contains_fields?(fields, workload)
       fields.map do |field|
         contains_field?(workload.find_field field.value)
@@ -76,17 +84,20 @@ module Sadvisor
     end
 
     # The size of a single entry in the index
+    # @return [Fixnum]
     def entry_size
       (@fields + @extra).map(&:size).inject(0, :+)
     end
 
     # The total size of this index
+    # @return [Fixnum]
     def size
       fields.map(&:cardinality).inject(1, :*) * entry_size
     end
 
     # Check if an index can support a given query
     # @see #supports_predicates?
+    # @return [Boolean]
     def supports_query?(query, workload)
       supports_predicates? query.from.value, query.fields, query.eq_fields, \
                            query.range_field, query.order_by, workload
@@ -95,6 +106,7 @@ module Sadvisor
     private
 
     # Check if the index supports the given range predicate
+    # @return [Boolean]
     def supports_range?(range, workload)
       if range
         range_field = workload.find_field range.field.value
@@ -105,6 +117,7 @@ module Sadvisor
     end
 
     # Check if the index supports ordering by the given list of fields
+    # @return [Boolean]
     def supports_order?(order_by, workload)
       # XXX Need to consider when these fields are not the last
       order_fields = order_by.map { |field| workload.find_field field }
@@ -113,6 +126,7 @@ module Sadvisor
     end
 
     # Check if the given predicates can be supported by this index
+    # @return [Boolean]
     def supports_predicates?(from, fields, eq, range, order_by, workload)
       # Ensure all the fields the query needs are indexed
       return false unless contains_fields? fields, workload
@@ -147,6 +161,7 @@ module Sadvisor
   # Allow entities to create their own indices
   class Entity
     # Create a simple index which maps entity keys to other fields
+    # @return [Index]
     def simple_index
       Index.new(id_fields, fields.values - id_fields, [self])
     end
@@ -157,6 +172,7 @@ module CQL
   # Allow statements to materialize views
   class Statement
     # Construct an index which acts as a materialized view for a query
+    # @return [Index]
     def materialize_view(workload)
       # Start with fields used for equality and range predicates, then order
       fields = eq_fields

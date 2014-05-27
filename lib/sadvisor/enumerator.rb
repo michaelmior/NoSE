@@ -6,6 +6,7 @@ module Sadvisor
     end
 
     # Produce all possible indices for a given query
+    # @return [Array<Index>]
     def indexes_for_query(query)
       path = query.longest_entity_path.map do |entity|
         @workload[entity]
@@ -24,6 +25,7 @@ module Sadvisor
     end
 
     # Produce all possible indices for a given workload
+    # @return [Array<Index>]
     def indexes_for_workload
       @workload.queries.map do |query|
         indexes_for_query(query).to_set

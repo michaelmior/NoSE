@@ -20,24 +20,30 @@ module Sadvisor
     end
 
     # Compare by name, fields, and count
+    # @return [Boolean]
     def ==(other)
       other.is_a?(Entity) && @name == other.name && @fields == other.fields
     end
 
+    # (see Entity#==)
     def eql?(other)
       self == other
     end
 
+    # The hash is based on the name of the entity and its fields
+    # @return [Fixnum]
     def hash
       [@name, @fields].hash
     end
 
     # Get the key fields for the entity
+    # @return [Array<Field>]
     def id_fields
       fields.values.select { |field| field.instance_of? IDField }
     end
 
     # Find the foreign key to a particular entity
+    # @return [Field, nil]
     def foreign_key_for(entity)
       fields.values.find do |field|
         field.kind_of?(ForeignKey) && field.entity == entity
@@ -52,6 +58,7 @@ module Sadvisor
     end
 
     # Shortcut for {#count=}
+    # @return [Entity]
     def *(other)
       if other.is_a? Integer
         @count = other
@@ -63,11 +70,13 @@ module Sadvisor
     end
 
     # Get the field on the entity with the given name
+    # @return [Field]
     def [](field)
       @fields[field]
     end
 
     # All the keys found when traversing foreign keys
+    # @return [KeyPath]
     def key_fields(path)
       KeyPath.new path, self
     end
@@ -97,10 +106,13 @@ module Sadvisor
         @parent == other.parent && @name == other.name
     end
 
+    # (see Field#==)
     def eql?(other)
       self == other
     end
 
+    # Hash by entity and name
+    # @return [Fixnum]
     def hash
       [@parent, @name].hash
     end
@@ -110,6 +122,7 @@ module Sadvisor
     end
 
     # Set the estimated cardinality of the field
+    # @return [Field]
     def *(other)
       if other.is_a? Integer
         @cardinality = other
@@ -224,6 +237,7 @@ module Sadvisor
     end
 
     # Get the keys along a given path of entities
+    # @return [Array<Field>]
     def fields_for_path(path, entity)
       path = path[1..-1] if path[0] == entity.name
 
@@ -238,6 +252,7 @@ module Sadvisor
     end
 
     # Get the common prefix of two paths
+    # return [Array<Field>]
     def &(other)
       fail TypeError unless other.is_a? KeyPath
       each_with_index do |field, i|

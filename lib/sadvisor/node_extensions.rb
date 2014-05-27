@@ -61,6 +61,7 @@ module CQL
     end
 
     # Get the longest path through entities traversed in the query
+    # @return [Array<String>]
     def longest_entity_path
       if where.length > 0
         fields = where.map { |condition| condition.field.value }
@@ -72,6 +73,7 @@ module CQL
     end
 
     # All conditions in the where clause of the query
+    # @return [Array<CQL::Condition>]
     def where
       where = elements.find { |n| n.class == CQL::WhereClause }
       return [] if where.nil? || where.elements.length == 0
@@ -90,28 +92,33 @@ module CQL
     end
 
     # All fields with equality predicates in the where clause
+    # @return [Array<Array<String>>]
     def eq_fields
       where.select { |condition| !condition.range? }
     end
 
     # The range predicate (if it exists) for this query
+    # @return [Array<String>, nil]
     def range_field
       where.find { |condition| condition.range? }
     end
 
     # The integer limit for the query, or +nil+ if no limit is given
+    # @return [Fixnum, nil]
     def limit
       limit = elements.find { |n| n.class == CQL::LimitClause }
       limit ? limit.value : nil
     end
 
     # The fields used in the order by clause for the query
+    # @return [Array<Array<String>>]
     def order_by
       order_by = elements.find { |n| n.class == CQL::OrderByClause }
       order_by ? order_by.value : []
     end
 
     # The entity this query selects from
+    # @return [String]
     def from
       elements.find { |n| [CQL::Entity].include? n.class }
     end
@@ -120,6 +127,7 @@ module CQL
   # A literal integer used in where clauses
   class IntegerLiteral < CQLNode
     # The integer value of the literal
+    # @return [Fixnum]
     def value
       text_value.to_i
     end
@@ -128,6 +136,7 @@ module CQL
   # A literal float used in where clauses
   class FloatLiteral < CQLNode
     # The float value of the literal
+    # @return [Float]
     def value
       text_value.to_f
     end
@@ -136,6 +145,7 @@ module CQL
   # A literal string used in where clauses
   class StringLiteral < CQLNode
     # The string value of the literal with quotes removed
+    # @return [String]
     def value
       text_value[1..-2]
     end
@@ -177,6 +187,7 @@ module CQL
   # The limit clause of a query
   class LimitClause < CQLNode
     # The integer value of the limit
+    # @return [Fixnum]
     def value
       elements[0].text_value.to_i
     end
@@ -243,6 +254,7 @@ module CQL
     end
 
     # Check if this is a range predicate
+    # @return [Boolean]
     def range?
       [:>, :>=, :<, :<=].include?(logical_operator.value)
     end
@@ -251,6 +263,7 @@ module CQL
   # An operator used for predicates in a where clause
   class Operator < CQLNode
     # A symbol representing the operator
+    # @return[Symbol]
     def value
       text_value.to_sym
     end

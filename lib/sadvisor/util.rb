@@ -27,6 +27,8 @@ class Object
     $stdout.isatty ? out : out.uncolorize
   end
 
+  # Get a colored representation of the object
+  # @return [String]
   def to_color
     to_s
   end
