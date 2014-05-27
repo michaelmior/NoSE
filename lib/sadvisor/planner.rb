@@ -93,6 +93,8 @@ module Sadvisor
     attr_reader :index
 
     def initialize(index, state = nil, parent = nil)
+      # TODO: Track exactly how the index is used
+
       super()
       @index = index
 
@@ -113,6 +115,7 @@ module Sadvisor
 
     # Rough cost estimate as the size of data returned
     def cost
+      # TODO: Only count cost of selected fields
       @state.cardinality * @index.entry_size
     end
 
@@ -259,9 +262,9 @@ module Sadvisor
     end
 
     def cost
-      # XXX Find some estimate of sort cost
-      #     This could be partially captured by the fact that sort + limit
-      #     effectively removes the limit
+      # TODO: Find some estimate of sort cost
+      #       This could be partially captured by the fact that sort + limit
+      #       effectively removes the limit
       0
     end
 
