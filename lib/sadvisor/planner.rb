@@ -522,7 +522,7 @@ module Sadvisor
           # If we reached the root, we have no plan
           fail NoPlanException if prune_step == root
 
-          prune_step.delete prev_step
+          prune_step.children.delete prev_step
         end
       end
     end
