@@ -11,6 +11,7 @@ module Sadvisor
       @path = path
 
       # Track which key this field is mapped over
+      # TODO: Chek if we still need field keys now that we have the path
       @field_keys = {}
       (@fields + @extra).each do |field|
         id_fields = field.parent.id_fields
