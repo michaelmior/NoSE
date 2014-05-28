@@ -94,68 +94,6 @@ module Sadvisor
     def size
       fields.map(&:cardinality).inject(1, :*) * entry_size
     end
-
-    # Check if an index can support a given query
-    # @see #supports_predicates?
-    # @return [Boolean]
-    def supports_query?(query, workload)
-      supports_predicates? query.from.value, query.fields, query.eq_fields, \
-                           query.range_field, query.order_by, workload
-    end
-
-    private
-
-    # Check if the index supports the given range predicate
-    # @return [Boolean]
-    def supports_range?(range, workload)
-      if range
-        range_field = workload.find_field range.field.value
-        @fields.last == range_field
-      else
-        true
-      end
-    end
-
-    # Check if the index supports ordering by the given list of fields
-    # @return [Boolean]
-    def supports_order?(order_by, workload)
-      # XXX Need to consider when these fields are not the last
-      order_fields = order_by.map { |field| workload.find_field field }
-      order_fields.length == 0 || \
-        order_fields == @fields[-order_fields.length..-1]
-    end
-
-    # Check if the given predicates can be supported by this index
-    # @return [Boolean]
-    def supports_predicates?(from, fields, eq, range, order_by, workload)
-      # Ensure all the fields the query needs are indexed
-      return false unless contains_fields? fields, workload
-
-      # Track fields used in predicates
-      predicate_fields = []
-
-      # Range predicates must occur last
-      return false unless supports_range? range, workload
-      predicate_fields.push range.field.value if range
-
-      # All fields in the where clause must be indexes
-      return false unless eq.map do |condition|
-        @fields.include?(workload.find_field condition.field.value)
-      end.all?
-      predicate_fields += eq.map { |field| field.field.value }
-
-      # Fields for ordering must appear last
-      return false unless supports_order? order_by, workload
-      predicate_fields += order_by
-
-      from_entity = workload.entities[from]
-      return false unless predicate_fields.map do |field|
-        keys_for_field(workload.find_field field) == \
-          from_entity.key_fields(field)
-      end.all?
-
-      true
-    end
   end
 
   # Allow entities to create their own indices
