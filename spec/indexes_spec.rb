@@ -63,62 +63,6 @@ module Sadvisor
       expect(index.size).to eq(@id_field.size * 10)
     end
 
-    it 'does not support queries when empty' do
-      index = Index.new([], [], [])
-      expect(index.supports_query?(simple_query, @workload)).to be_false
-    end
-
-    it 'supports equality queries on indexed fields' do
-      index = Index.new([@id_field], [], [])
-      expect(index.supports_query?(equality_query, @workload)).to be_true
-    end
-
-    it 'does not support equality queries on unindexed fields' do
-      index = Index.new([], [@id_field], [])
-      expect(index.supports_query?(equality_query, @workload)).to be_false
-    end
-
-    it 'supports range queries on indexed fields' do
-      index = Index.new([@id_field], [], [])
-      expect(index.supports_query?(range_query, @workload)).to be_true
-    end
-
-    it 'supports range and equality predicates in the correct order' do
-      index = Index.new([@field, @id_field], [], [])
-      expect(index.supports_query?(combo_query, @workload)).to be_true
-    end
-
-    it 'does not support range and equality predicates in the wrong order' do
-      index = Index.new([@id_field, @field], [], [])
-      expect(index.supports_query?(combo_query, @workload)).to be_false
-    end
-
-    it 'does not support range queries if the range field is not last' do
-      index = Index.new([@id_field, @field], [], [])
-      expect(index.supports_query?(range_query, @workload)).to be_false
-    end
-
-    it 'supports ordering' do
-      index = Index.new([@id_field], [], [])
-      expect(index.supports_query?(order_query, @workload)).to be_true
-    end
-
-    it 'does not support ordering if the ordered field does not appear last' do
-      index = Index.new([@id_field, @field], [], [])
-      expect(index.supports_query?(order_query, @workload)).to be_false
-    end
-
-    it 'supports queries with foreign keys' do
-      index = Index.new([@other_field], [@id_field], [])
-      index.set_field_keys @other_field, [@foreign_key]
-      expect(index.supports_query?(foreign_query, @workload)).to be_true
-    end
-
-    it 'does not support foreign keys queries if the field is not keyed' do
-      index = Index.new([@other_field], [@id_field], [])
-      expect(index.supports_query?(foreign_query, @workload)).to be_false
-    end
-
     context 'when materializing views' do
       it 'supports simple lookups' do
         index = simple_query.materialize_view(@workload)
