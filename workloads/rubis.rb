@@ -1,82 +1,85 @@
 $workload = Sadvisor::Workload.new do
-  Entity 'Category' do
+  (Entity 'Category' do
     ID     'id'
-    String 'name', 20
-  end
+    String('name', 20) * 20
+  end) * 20
 
-  Entity 'Region' do
+  (Entity 'Region' do
     ID     'id'
-    String 'name', 25
-  end
+    String('name', 25) * 62
+  end) * 62
 
-  Entity 'User' do
+  (Entity 'User' do
     ID         'id'
-    String     'firstname', 20
-    String     'lastname', 20
-    String     'nickname', 20
-    String     'email', 50
-    Integer    'rating'
-    Float      'balance'
-    Date       'creation_date'
-    ForeignKey 'region', 'Region'
-  end
+    String(    'firstname', 20) * 1001848
+    String(    'lastname', 20) * 1001848
+    String(    'nickname', 20) * 1001848
+    String(    'password', 20) * 1001848
+    String(    'email', 20) * 1001848
+    Integer(   'rating') * 5
+    Float(     'balance') * 1
+    Date(      'creation_date') * 10381
+    ForeignKey('region', 'Region') * 62
+  end) * 1001848
 
-  Entity 'Item' do
+  (Entity 'Item' do
     ID         'id'
-    String     'name', 100
-    String     'description', 255
-    Float      'initial_price'
-    Integer    'quantity'
-    Float      'reserve_price'
-    Float      'buy_now'
-    Integer    'nb_of_bids'
-    Date       'start_date'
-    Date       'end_date'
+    String(    'name', 100) * 33721
+    String(    'description', 255) * 33721
+    Float(     'initial_price') * 4494
+    Integer(   'quantity') * 11
+    Float(     'reserve_price') * 389
+    Float(     'buy_now') * 97
+    Integer(   'nb_of_bids') * 15
+    Float(     'max_bid') * 2167
+    Date(      'start_date') * 1
+    Date(      'end_date') * 1
     ForeignKey 'seller', 'User'
     ForeignKey 'category', 'Category'
-  end
+  end) * 33721
 
-  Entity 'OldItem' do
+  (Entity 'OldItem' do
     ID         'id'
-    String     'name', 100
-    String     'description', 255
-    Float      'initial_price'
-    Integer    'quantity'
-    Float      'reserve_price'
-    Float      'buy_now'
-    Integer    'nb_of_bids'
-    Date       'start_date'
-    Date       'end_date'
+    String(    'name', 100) * 500000
+    String(    'description', 255) * 500000
+    Float(     'initial_price') * 5000
+    Integer(   'quantity') * 10
+    Float(     'reserve_price') * 5974
+    Float(     'buy_now') * 11310
+    Integer(   'nb_of_bids') * 58
+    Float(     'max_bid') * 5125
+    Date(      'start_date') * 48436
+    Date(      'end_date') * 239737
     ForeignKey 'seller', 'User'
     ForeignKey 'category', 'Category'
-  end
+  end) * 500000
 
-  Entity 'Bid' do
+  (Entity 'Bid' do
     ID         'id'
-    ForeignKey 'user_id', 'User'
-    ForeignKey 'item_id', 'Item'
-    Integer    'qty'
-    Float      'bid'
-    Date       'date'
-  end
+    ForeignKey('user_id', 'User') * 993655
+    ForeignKey('item_id', 'Item') * 426931
+    Integer(   'qty') * 10
+    Float(     'bid') * 5121
+    Date(      'date') * 52913
+  end) * 5060576
 
-  Entity 'Comment' do
+  (Entity 'Comment' do
     ID         'id'
-    ForeignKey 'from_user_id', 'User'
+    ForeignKey('from_user_id', 'User') * 413603
     # ForeignKey 'to_user_id', 'User'
-    ForeignKey 'item_id', 'Item'
-    Integer    'rating'
-    Date       'date'
-    String     'comment', 255
-  end
+    ForeignKey('item_id', 'Item') * 443798
+    Integer(   'rating') * 5
+    Date(      'date') * 51399
+    String(    'comment', 255) * 533426
+  end) * 533426
 
-  Entity 'BuyNow' do
+  (Entity 'BuyNow' do
     ID         'id'
-    ForeignKey 'buyer_id', 'User'
-    ForeignKey 'item_id', 'Item'
-    Integer    'qty'
-    Date       'date'
-  end
+    ForeignKey('buyer_id', 'User') * 1519
+    ForeignKey('item_id', 'Item') * 1549
+    Integer(   'qty') * 10
+    Date(      'date') * 915
+  end) * 1882
 
   # BrowseCategories
   Q 'SELECT id, name FROM Category', 1.0
