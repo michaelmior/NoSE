@@ -29,8 +29,6 @@ module Sadvisor
 
   # A single step in a query plan
   class PlanStep
-    include Enumerable
-
     attr_accessor :children, :state
     attr_reader :fields
 

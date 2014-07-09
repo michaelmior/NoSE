@@ -48,12 +48,12 @@ module Sadvisor
 
     it 'contains fields' do
       index = Index.new([@id_field], [], [])
-      expect(index.contains_field? @id_field).to be_true
+      expect(index.contains_field? @id_field).to be true
     end
 
     it 'can store additional fields' do
       index = Index.new([], [@id_field], [])
-      expect(index.contains_field? @id_field).to be_true
+      expect(index.contains_field? @id_field).to be true
     end
 
     it 'can calculate its size' do
@@ -92,7 +92,7 @@ module Sadvisor
 
     it 'can tell if it maps identities for a field' do
       index = Index.new([@id_field], [], [])
-      expect(index.identity_for? @entity).to be_true
+      expect(index.identity_for? @entity).to be true
     end
 
     it 'can be created to map entity fields by id' do

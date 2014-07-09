@@ -10,6 +10,7 @@ gem 'treetop'
 
 group :test do
   gem 'rspec'
+  gem 'rspec-collection_matchers'
   gem 'simplecov'
 end
 
