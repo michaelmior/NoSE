@@ -78,6 +78,8 @@ module Sadvisor
           return false unless find_field field.value
         end
       end
+
+      true
     end
 
     # Check if the queries are valid for the loaded entities

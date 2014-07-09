@@ -3,7 +3,7 @@ module Sadvisor
     subject { Parser }
 
     it 'can parse a simple select' do
-      expect(subject.parse('SELECT foo FROM bar')).to be_true
+      expect(subject.parse('SELECT foo FROM bar')).to be_truthy
     end
 
     it 'correctly parses limits' do
