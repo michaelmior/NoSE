@@ -1,4 +1,7 @@
 $workload = Sadvisor::Workload.new do
+  # Define entities along with the size and cardinality of their fields
+  # as well as an estimated number of each entity
+
   (Entity 'Category' do
     ID     'id'
     String('name', 20) * 20
@@ -80,6 +83,8 @@ $workload = Sadvisor::Workload.new do
     Integer(   'qty') * 10
     Date(      'date') * 915
   end) * 1882
+
+  # Define queries and their relative weights
 
   # BrowseCategories
   Q 'SELECT id, name FROM Category', 0.11
