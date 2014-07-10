@@ -200,7 +200,7 @@ module Sadvisor
 
     # Update the cardinality based on filtering implicit to the index
     def filter_cardinality(eq_filter, range_filter, entity)
-      filter = range_filter && range_filter.entity == entity ? 0.1 : 1.0
+      filter = range_filter && range_filter.parent == entity ? 0.1 : 1.0
       filter *= (eq_filter[entity] || []).map do |field|
         1.0 / field.cardinality
       end.inject(1.0, &:*)
