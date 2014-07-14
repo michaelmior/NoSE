@@ -27,7 +27,7 @@ module Sadvisor
 
     # Search for the best configuration of indices for a given space constraint
     # @return [Array<Index>]
-    def search_all(max_space = 1.0/0)
+    def search_all(max_space = 1.0/0, gap=0.01)
       # Construct the simple indices for all entities and
       # remove this from the total size
       simple_indexes = @workload.entities.values.map(&:simple_index)
@@ -61,7 +61,7 @@ module Sadvisor
       end
 
       # Generate the MathProg file and solve the program
-      solve_mpl 'schema_all', indexes,
+      solve_mpl 'schema_all', indexes, gap,
                 max_space: max_space,
                 benefits: benefits,
                 configurations: configurations,
@@ -72,7 +72,7 @@ module Sadvisor
     # Search for optimal indices using an ILP which searches for
     # non-overlapping indices
     # @return [Array<Index>]
-    def search_overlap(max_space = 1.0/0)
+    def search_overlap(max_space = 1.0/0, gap=0.01)
       # Construct the simple indices for all entities and
       # remove this from the total size
       simple_indexes = @workload.entities.values.map(&:simple_index)
@@ -119,7 +119,7 @@ module Sadvisor
       end
 
       # Generate the MathProg file and solve the program
-      solve_mpl 'schema_overlap', indexes,
+      solve_mpl 'schema_overlap', indexes, gap,
                 max_space: max_space,
                 index_sizes: index_sizes,
                 query_overlap: query_overlap,
@@ -152,7 +152,7 @@ module Sadvisor
     end
 
     # Solve the given MathProg program and return the output of the post-solver
-    def solve_mpl(template_name, indexes, data)
+    def solve_mpl(template_name, indexes, gap, data)
       namespace = Namespace.new(data)
       template_file = File.dirname(__FILE__) + "/#{template_name}.mod.erb"
       template = File.read(template_file)
@@ -168,7 +168,8 @@ module Sadvisor
         tran = Rglpk::Workspace.new
         prob = tran.read_model file.path
         prob.simplex msg_lev: Rglpk::GLP_MSG_OFF
-        prob.mip presolve: Rglpk::GLP_ON, msg_lev: Rglpk::GLP_MSG_OFF
+        prob.mip presolve: Rglpk::GLP_ON, msg_lev: Rglpk::GLP_MSG_OFF,
+                 mip_gap: gap
 
         output = tran.postsolve prob
       ensure
