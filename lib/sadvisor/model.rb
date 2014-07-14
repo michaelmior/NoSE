@@ -22,18 +22,14 @@ module Sadvisor
     # Compare by name, fields, and count
     # @return [Boolean]
     def ==(other)
-      other.is_a?(Entity) && @name == other.name && @fields == other.fields
+      self.hash == other.hash
     end
-
-    # (see Entity#==)
-    def eql?(other)
-      self == other
-    end
+    alias_method :eql?, :==
 
     # The hash is based on the name of the entity and its fields
     # @return [Fixnum]
     def hash
-      [@name, @fields].hash
+      @hash ||= [@name, @fields].hash
     end
 
     # Get the key fields for the entity
@@ -105,16 +101,12 @@ module Sadvisor
       other.kind_of?(Field) && @type == other.type &&
         @parent == other.parent && @name == other.name
     end
-
-    # (see Field#==)
-    def eql?(other)
-      self == other
-    end
+    alias_method :eql?, :==
 
     # Hash by entity and name
     # @return [Fixnum]
     def hash
-      [@parent, @name].hash
+      @hash ||= [@parent, @name].hash
     end
 
     def to_color

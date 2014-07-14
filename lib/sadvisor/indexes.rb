@@ -33,16 +33,12 @@ module Sadvisor
           @field_keys == other.instance_variable_get(:@field_keys) \
           && @extra.to_set == other.extra.to_set
     end
-
-    # (see Index#==)
-    def eql?(other)
-      self == other
-    end
+    alias_method :eql?, :==
 
     # Hash based on the fields, their keys, and the extra fields
     # @return [Fixnum]
     def hash
-      [@fields, @field_keys, @extra.to_set].hash
+      @hash ||= [@fields, @field_keys, @extra.to_set].hash
     end
 
     # Get all the entities referenced in this index
