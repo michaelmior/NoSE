@@ -108,6 +108,7 @@ $workload = Sadvisor::Workload.new do
   # SearchItemsByCategory
   Q 'SELECT id, name, initial_price, max_bid, nb_of_bids, end_date FROM Item WHERE Item.category = ? AND Item.end_date >= ?', (0.32 + 0.06)
 
-  # SearchItemsByRegion
-  Q 'SELECT id, name, initial_price, max_bid, nb_of_bids, end_date FROM Item WHERE Item.User.region = ? AND Item.category = ? AND Item.end_date >= ?', 0.06
+  # XXX Not currently supported
+  # # SearchItemsByRegion
+  # Q 'SELECT id, name, initial_price, max_bid, nb_of_bids, end_date FROM Item WHERE Item.User.region = ? AND Item.category = ? AND Item.end_date >= ?', 0.06
 end
