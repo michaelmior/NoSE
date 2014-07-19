@@ -52,6 +52,15 @@ module CQL
       out
     end
 
+    # All fields referenced anywhere in the query
+    def all_fields
+      all_fields = fields.map(&:value) + eq_fields.map do |condition|
+        condition.field.value
+      end
+      all_fields << range_field.field.value unless range_field.nil?
+      all_fields.to_set
+    end
+
     # All fields projected by this query
     def fields
       fields = elements.find do |n|
