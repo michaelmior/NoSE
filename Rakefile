@@ -6,13 +6,14 @@ RSpec::Core::RakeTask.new(:spec)
 YARD::Rake::YardocTask.new(:doc)
 
 desc 'Run the advisor for a given workload'
-task :workload, [:name] do |_, args|
+task :workload, [:name, :max_space] do |_, args|
   # rubocop:disable GlobalVars
 
   $LOAD_PATH.unshift File.dirname(__FILE__) + '/lib'
   require 'sadvisor'
 
   require_relative "workloads/#{args.name}"
+  max_space = args.max_space ? args.max_space.to_i : Float::INFINITY
 
   # Display progress while searching
   progress_thread = Thread.new do
@@ -23,7 +24,7 @@ task :workload, [:name] do |_, args|
     end
   end if $stdout.isatty
 
-  indexes = Sadvisor::Search.new($workload).search_overlap
+  indexes = Sadvisor::Search.new($workload).search_overlap(max_space)
   simple_indexes = $workload.entities.values.map(&:simple_index)
   if progress_thread
     Thread.kill progress_thread
