@@ -94,10 +94,13 @@ module Sadvisor
     attr_reader :index
 
     def initialize(index, state = nil, parent = nil)
-      # TODO: Track exactly how the index is used
-
       super()
       @index = index
+
+      all_fields = state.query.all_fields.map do |field|
+        state.workload.find_field field
+      end
+      @fields = @index.fields.to_set + (@index.extra.to_set & all_fields)
 
       return if state.nil?
       @state = state.dup
@@ -117,8 +120,8 @@ module Sadvisor
     # Rough cost estimate as the size of data returned
     # @return [Numeric]
     def cost
-      # TODO: Only count cost of selected fields
-      @state.cardinality * @index.entry_size
+      @state.cardinality * \
+        (@index.fields.to_set + @fields).map(&:size).inject(0, :+)
     end
 
     # Check if this step can be applied for the given index, returning an array
@@ -405,6 +408,12 @@ module Sadvisor
       @given_fields = @eq.dup
 
       check_first_path
+    end
+
+    def all_fields
+      all_fields = @fields + @eq
+      all_fields << @range unless @range.nil?
+      all_fields
     end
 
     def to_color
