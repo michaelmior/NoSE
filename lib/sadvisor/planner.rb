@@ -97,10 +97,14 @@ module Sadvisor
       super()
       @index = index
 
-      all_fields = state.query.all_fields.map do |field|
-        state.workload.find_field field
+      if state && state.query
+        all_fields = state.query.all_fields.map do |field|
+          state.workload.find_field field
+        end
+        @fields = @index.fields.to_set + (@index.extra.to_set & all_fields)
+      else
+        @fields = (@index.fields + @index.extra).to_set
       end
-      @fields = @index.fields.to_set + (@index.extra.to_set & all_fields)
 
       return if state.nil?
       @state = state.dup
