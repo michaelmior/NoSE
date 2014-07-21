@@ -6,6 +6,7 @@ gem 'colorize'
 gem 'ruby-progressbar'
 gem 'rake'
 gem 'rglpk', '~>0.3.1'
+gem 'thor'
 gem 'treetop'
 
 group :test do
