@@ -4,7 +4,7 @@ require_relative './parser'
 module Sadvisor
   # A representation of a query workload over a given set of entities
   class Workload
-    attr_reader :entities
+    attr_reader :entities, :query_weights
 
     def initialize(&block)
       @query_weights = {}

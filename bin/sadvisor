@@ -78,6 +78,7 @@ module Sadvisor
                 {
                   type: step.class.name.downcase \
                     .sub('sadvisor::', '').sub('step', ''),
+                  cost: step.cost
                 }.update Hash[*methods.map do |method|
                   value = step.send(method)
                   value_hash = value.hash.abs
@@ -86,10 +87,14 @@ module Sadvisor
                   value[:key] = hash.encrypt(value_hash) if value.is_a? Hash
                   [method.to_s, value]
                 end.flatten]
-              end
+              end,
+              cost: plan.cost
             }
           end,
-          total_size: total_size
+          total_size: total_size,
+          total_cost: $workload.query_weights.map do |query, weight|
+            weight * plans[query].cost
+          end.inject(0, &:+)
         }
 
         puts JSON.pretty_generate state
