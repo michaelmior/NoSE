@@ -82,7 +82,7 @@ module Sadvisor
                   value = step.send(method)
                   value_hash = value.hash.abs
                   value = value.is_a?(Enumerable) ? \
-                    value.map(&:state) : value.state
+                    value.map(&:state) : value.state if value
                   value[:key] = hash.encrypt(value_hash) if value.is_a? Hash
                   [method.to_s, value]
                 end.flatten]
