@@ -67,7 +67,7 @@ module Sadvisor
       if options[:format] == 'json'
         hash = Hashids.new
         state = {
-          indexes: indexes.map do |index|
+          indexes: (indexes - simple_indexes).map do |index|
             index.state.update key: hash.encrypt(index.hash.abs)
           end,
           plans: plans.map do |query, plan|
