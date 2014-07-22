@@ -2,13 +2,13 @@
 module Sadvisor
 end
 
-require 'sadvisor/util'
+require_relative 'sadvisor/util'
 
-require 'sadvisor/enumerator'
-require 'sadvisor/indexes'
-require 'sadvisor/model'
-require 'sadvisor/parser'
-require 'sadvisor/planner'
-require 'sadvisor/random'
-require 'sadvisor/search'
-require 'sadvisor/workload'
+require_relative 'sadvisor/enumerator'
+require_relative 'sadvisor/indexes'
+require_relative 'sadvisor/model'
+require_relative 'sadvisor/parser'
+require_relative 'sadvisor/planner'
+require_relative 'sadvisor/random'
+require_relative 'sadvisor/search'
+require_relative 'sadvisor/workload'

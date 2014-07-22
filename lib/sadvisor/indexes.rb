@@ -19,6 +19,14 @@ module Sadvisor
       end
     end
 
+    def state
+      {
+        fields: @fields.map(&:state),
+        extra: @extra.map(&:state),
+        path: @path.map(&:state)
+      }
+    end
+
     def to_color
       field_names = @fields.map(&:inspect)
       extra_names = @extra.map(&:inspect)
