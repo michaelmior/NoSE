@@ -114,7 +114,7 @@ module Sadvisor
     # Hash by entity and name
     # @return [Fixnum]
     def hash
-      @hash ||= [@parent, @name].hash
+      @hash ||= [@parent.name, @name].hash
     end
 
     def to_color
