@@ -15,6 +15,10 @@ module Sadvisor
       EntityDSL.new(self).instance_eval(&block) if block_given?
     end
 
+    def state
+      @name
+    end
+
     def to_color
       @name.light_blue + ' [' + fields.keys.map(&:to_color).join(', ') + ']'
     end
@@ -94,6 +98,10 @@ module Sadvisor
       @type = type
       @size = size
       @cardinality = nil
+    end
+
+    def state
+      @parent.name + '.' + @name
     end
 
     # Compare by parent entity and name

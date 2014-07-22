@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+
+require 'json'
 require 'ruby-progressbar'
 require 'thor'
 
@@ -6,8 +8,11 @@ module Sadvisor
   class SadvisorCLI < Thor
     desc 'workload NAME', 'run the workload NAME'
     option :max_space, type: :numeric, default: Float::INFINITY
+    option :format, type: :string, default: 'text'
     def workload(name)
       # rubocop:disable GlobalVars
+
+      is_text = options[:format] == 'text'
 
       $LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
       require 'sadvisor'
@@ -20,14 +25,14 @@ module Sadvisor
           bar.increment
           sleep 0.1
         end
-      end if $stdout.isatty
+      end if $stdout.isatty and is_text
 
       indexes = Sadvisor::Search.new($workload) \
         .search_overlap(options[:max_space])
       simple_indexes = $workload.entities.values.map(&:simple_index)
       if progress_thread
         Thread.kill progress_thread
-        puts "\n\n"
+        puts "\n\n" if is_text
       end
 
       planner = Sadvisor::Planner.new $workload, (indexes + simple_indexes)
@@ -41,21 +46,45 @@ module Sadvisor
       end.map(&:index).to_set
 
       header = "Indexes\n" + '━' * 50
-      puts $stdout.isatty ? header.blue : header
-      (simple_indexes.to_set + indexes).each { |index| puts index.inspect }
-      puts
+      puts $stdout.isatty ? header.blue : header if is_text
+      (simple_indexes.to_set + indexes).each { |index| puts index.inspect } if is_text
+      puts if is_text
 
       total_size = (indexes - simple_indexes).map(&:size).inject(0, :+)
-      puts ($stdout.isatty ? 'Total size: '.blue : 'Total size: ') + total_size.to_s
-      puts
+      puts ($stdout.isatty ? 'Total size: '.blue : 'Total size: ') + total_size.to_s if is_text
+      puts if is_text
 
       # Output queries plans for the discovered indices
       header = "Query plans\n" + '━' * 50
-      puts $stdout.isatty ? header.blue : header
+      puts $stdout.isatty ? header.blue : header if is_text
       plans.each do |query, plan|
-        puts query.inspect
-        puts plan.inspect
-        puts
+        puts query.inspect if is_text
+        puts plan.inspect if is_text
+        puts if is_text
+      end
+
+      if options[:format] == 'json'
+        state = {
+          indexes: indexes.map(&:state),
+          plans: plans.map do |query, plan|
+            {
+              query: query.text_value,
+              steps: plan.map do |step|
+                methods = (step.methods - PlanStep.instance_methods)
+                {
+                  type: step.class.name.downcase \
+                    .sub('sadvisor::', '').sub('step', ''),
+                }.update Hash[*methods.map do |method|
+                  value = step.send(method)
+                  value = value.is_a?(Enumerable) ? \
+                    value.map(&:state) : value.state
+                  [method.to_s, value]
+                end.flatten]
+              end
+            }
+          end
+        }
+        puts JSON.pretty_generate state
       end
 
       # rubocop:enable GlobalVars
