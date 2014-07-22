@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'hashids'
 require 'json'
 require 'ruby-progressbar'
 require 'thor'
@@ -64,8 +65,11 @@ module Sadvisor
       end
 
       if options[:format] == 'json'
+        hash = Hashids.new
         state = {
-          indexes: indexes.map(&:state),
+          indexes: indexes.map do |index|
+            index.state.update key: hash.encrypt(index.hash.abs)
+          end,
           plans: plans.map do |query, plan|
             {
               query: query.text_value,
@@ -76,14 +80,17 @@ module Sadvisor
                     .sub('sadvisor::', '').sub('step', ''),
                 }.update Hash[*methods.map do |method|
                   value = step.send(method)
+                  value_hash = value.hash.abs
                   value = value.is_a?(Enumerable) ? \
                     value.map(&:state) : value.state
+                  value[:key] = hash.encrypt(value_hash) if value.is_a? Hash
                   [method.to_s, value]
                 end.flatten]
               end
             }
           end
         }
+
         puts JSON.pretty_generate state
       end
 
