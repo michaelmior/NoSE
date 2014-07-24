@@ -68,8 +68,8 @@ $workload = Sadvisor::Workload.new do
 
   (Entity 'comments' do
     ID         'id'
-    ForeignKey('from_user_id', 'users') * 413603
-    # ForeignKey 'to_user_id', 'users'
+    # ForeignKey('from_user_id', 'users') * 413603
+    ForeignKey 'to_user_id', 'users'
     ForeignKey('item_id', 'items') * 443798
     Integer(   'rating') * 5
     Date(      'date') * 51399
@@ -87,28 +87,31 @@ $workload = Sadvisor::Workload.new do
   # Define queries and their relative weights
 
   # BrowseCategories
-  Q 'SELECT id, name FROM categories', 0.11
-
-  # BrowseRegions
-  Q 'SELECT id, name FROM regions', (0.03 + 0.02)
+  Q 'SELECT id, name FROM categories', (4.44 + 3.21)
 
   # ViewBidHistory
-  Q 'SELECT name FROM items WHERE items.id = ?', 0.02 / 4
-  Q 'SELECT name FROM olditems WHERE olditems.id = ?', 0.02 / 4
-  Q 'SELECT id, user_id, item_id, qty, bid, date FROM bids WHERE bids.item_id = ? ORDER BY bids.date DESC', 0.02 / 4
-  Q 'SELECT id, nickname FROM users WHERE users.bids.item_id = ?', 0.02 / 4
+  Q 'SELECT name FROM items WHERE items.id = ?', 2.38 / 4
+  Q 'SELECT name FROM olditems WHERE olditems.id = ?', 2.38 / 4
+  Q 'SELECT id, user_id, item_id, qty, bid, date FROM bids WHERE bids.item_id = ? ORDER BY bids.date DESC', 2.38 / 4
+  Q 'SELECT id, nickname FROM users WHERE users.bids.item_id = ?', 2.38 / 4
 
   # ViewItem
-  Q 'SELECT name FROM items WHERE items.id = ?', 0.12 / 4.0 * 0.75
-  Q 'SELECT name FROM olditems WHERE olditems.id = ?', 0.12 / 4.0 * 0.25
-  Q 'SELECT bid FROM bids WHERE bids.items.id = ? ORDER BY bids.bid DESC LIMIT 1', 0.12 / 4.0
-  Q 'SELECT bid, qty FROM bids WHERE bids.item_id = ? ORDER BY bids.bid DESC LIMIT 5', 0.12 / 4.0
-  Q 'SELECT id FROM bids WHERE bids.item_id = ?', 0.12 / 4.0 # XXX: total bids
+  Q 'SELECT name FROM items WHERE items.id = ?', 22.95 / 4.0 * 0.75
+  Q 'SELECT name FROM olditems WHERE olditems.id = ?', 22.95 / 4.0 * 0.25
+  Q 'SELECT bid FROM bids WHERE bids.items.id = ? ORDER BY bids.bid DESC LIMIT 1', 22.95 / 4.0
+  Q 'SELECT bid, qty FROM bids WHERE bids.item_id = ? ORDER BY bids.bid DESC LIMIT 5', 22.95 / 4.0
+  Q 'SELECT id FROM bids WHERE bids.item_id = ?', 22.95 / 4.0 # XXX: total bids
 
   # SearchItemsByCategory
-  Q 'SELECT id, name, initial_price, max_bid, nb_of_bids, end_date FROM items WHERE items.category = ? AND items.end_date >= ?', (0.32 + 0.06)
+  Q 'SELECT id, name, initial_price, max_bid, nb_of_bids, end_date FROM items WHERE items.category = ? AND items.end_date >= ?', (27.77 + 8.26)
 
   # XXX Not currently supported
   # # SearchItemsByRegion
   # Q 'SELECT id, name, initial_price, max_bid, nb_of_bids, end_date FROM items WHERE items.users.region = ? AND items.category = ? AND items.end_date >= ?', 0.06
+  # # BrowseRegions
+  # Q 'SELECT id, name FROM regions', (0.03 + 0.02)
+
+  # ViewUserInfo
+  Q 'SELECT id, to_user_id, item_id, rating, date, comment FROM comments WHERE comments.to_user_id = ?', 4.41 / 2
+  Q 'SELECT id, nickname FROM users WHERE users.id = ?', 4.41 / 2
 end
