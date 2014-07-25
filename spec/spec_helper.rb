@@ -7,6 +7,7 @@
 
 require 'rspec/collection_matchers'
 require 'simplecov'
+SimpleCov.add_filter '/spec/'
 SimpleCov.start
 
 RSpec.configure do |config|
