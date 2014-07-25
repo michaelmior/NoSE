@@ -29,6 +29,7 @@ module Sadvisor
 
     private
 
+    # Probabilities of selecting various field types
     FIELD_TYPES = [
       [IntegerField, 0.45],
       [StringField,  0.35],
@@ -107,6 +108,7 @@ module Sadvisor
       end
     end
 
+    # Random names of variables combined to create random names
     VARIABLE_NAMES = %w(Foo Bar Baz Quux Corge Grault Garply Waldo Fred Plugh)
 
     # Generate a random name for an attribute
