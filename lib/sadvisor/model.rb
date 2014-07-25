@@ -207,6 +207,8 @@ module Sadvisor
       @entity = entity
     end
 
+    # The number of entities associated with the foreign key,
+    # or a manually set cardinality
     def cardinality
       @entity.count || super
     end

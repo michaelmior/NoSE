@@ -178,6 +178,7 @@ module CQL
 
   # An entity name
   class Entity < Identifier
+    # The name of the entity
     def value
       text_value.to_s
     end
