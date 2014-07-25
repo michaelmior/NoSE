@@ -38,10 +38,12 @@ module Sadvisor
       @fields = Set.new
     end
 
+    # :nocov:
     def to_color
       self.class.name.split('::').last.split(/(?=[A-Z])/)[0..-2] \
           .map(&:downcase).join(' ').capitalize
     end
+    # :nocov:
 
     def children=(children)
       @children = children
@@ -113,10 +115,12 @@ module Sadvisor
       update_state parent
     end
 
+    # :nocov:
     def to_color
       "#{super} #{@index.to_color} * #{@state.cardinality} " + \
         "$#{cost}".yellow
     end
+    # :nocov:
 
     # Two index steps are equal if they use the same index
     def ==(other)
@@ -264,9 +268,11 @@ module Sadvisor
       @sort_fields = sort_fields
     end
 
+    # :nocov:
     def to_color
       super + ' [' + @sort_fields.map(&:to_color).join(', ') + ']'
     end
+    # :nocov:
 
     # Two sorting steps are equal if they sort on the same fields
     def ==(other)
@@ -318,6 +324,7 @@ module Sadvisor
         @eq == other.eq && @range == other.range
     end
 
+    # :nocov:
     def to_color
       "#{super} #{@eq.to_color} #{@range.to_color} " +
       begin
@@ -327,6 +334,7 @@ module Sadvisor
         ''
       end
     end
+    # :nocov:
 
     # (see PlanStep#cost)
     def cost
@@ -424,6 +432,7 @@ module Sadvisor
       all_fields
     end
 
+    # :nocov:
     def to_color
       @query.text_value +
         "\n  fields: " + @fields.map { |field| field.to_color }.to_a.to_color +
@@ -434,6 +443,7 @@ module Sadvisor
                          end.to_a.to_color +
         "\n    path: " + @path.to_a.to_color
     end
+    # :nocov:
 
     # Check if the query has been fully answered
     # @return [Boolean]
@@ -492,12 +502,14 @@ module Sadvisor
       to_a.count
     end
 
+    # :nocov:
     def to_color(step = nil, indent = 0)
       step = @root if step.nil?
       '  ' * indent + step.to_color + "\n" + step.children.map do |child_step|
         to_color child_step, indent + 1
       end.reduce('', &:+)
     end
+    # :nocov:
   end
 
   # Thrown when it is not possible to construct a plan for a query

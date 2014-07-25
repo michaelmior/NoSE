@@ -21,6 +21,7 @@ module Sadvisor
       }
     end
 
+    # :nocov:
     def to_color
       hash_names = @hash_fields.map(&:inspect)
       order_names = @order_fields.map(&:inspect)
@@ -30,6 +31,7 @@ module Sadvisor
         '→ [' + extra_names.join(', ') + ']' + \
         " $#{size}".yellow
     end
+    # :nocov:
 
     # Two indices are equal if they contain the same fields
     # @return [Boolean]

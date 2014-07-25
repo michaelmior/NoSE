@@ -23,6 +23,7 @@ module CQL
   # A parsed query
   class Statement < CQLNode
     # Produce a string with highlights using ANSI color codes
+    # :nocov:
     def inspect
       return text_value unless $stdout.isatty
 
@@ -51,6 +52,7 @@ module CQL
 
       out
     end
+    # :nocov:
 
     # All fields referenced anywhere in the query
     def all_fields
