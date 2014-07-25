@@ -278,7 +278,7 @@ module Sadvisor
       # TODO: Find some estimate of sort cost
       #       This could be partially captured by the fact that sort + limit
       #       effectively removes the limit
-      0
+      1
     end
 
     # Check if an external sort can used (if a sort is the last step)

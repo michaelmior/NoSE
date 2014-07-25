@@ -95,7 +95,7 @@ module Sadvisor
         # Skip indices which will be in the base schema
         next if path.length == 1 && index == path[0].id_fields
 
-        Index.new index, [], extra, path
+        Index.new index, order, extra, path
       end.compact
     end
   end
