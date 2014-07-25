@@ -50,20 +50,17 @@ module Sadvisor
     end
 
     # Get all possible index fields which jump a path with a set of filters
-    def index_choices(path, eq, range)
+    def index_choices(path, eq)
       eq_fields = path.map { |entity| eq[entity] }.compact.flatten
-      range_fields = path.map { |entity| range[entity] || [] }.reduce(&:+)
 
       # If we have no filtering on the first entity, add the ID fields
-      eq_fields += path[0].id_fields \
-        if (eq[path[0]] || range[path[0]]).nil?
+      eq_fields += path[0].id_fields if eq[path[0]].nil?
 
       eq_choices = 1.upto(eq_fields.count).map do |n|
         eq_fields.permutation(n).to_a
-      end.inject([], &:+) << []
-      range_choices = range_fields.prefixes.to_a << []
+      end.inject([], &:+)
 
-      eq_choices.product(range_choices).map(&:flatten).reject(&:empty?)
+      eq_choices
     end
 
     # Get fields which should be included in an index for the given path
@@ -81,11 +78,16 @@ module Sadvisor
 
     # Get all possible indices which jump a given section in a query path
     def indexes_for_step(path, select, eq, range)
-      index_choices = index_choices path, eq, range
+      index_choices = index_choices path, eq
+
+      range_fields = path.map { |entity| range[entity] || [] }.reduce(&:+)
+      order_choices = range_fields.prefixes.to_a << []
+
       extra_choices = extra_choices path, select, eq, range
 
       # Generate all possible indices based on the field choices
-      index_choices.product(extra_choices).map do |index, extra|
+      choices = index_choices.product(order_choices, extra_choices)
+      choices.map do |index, order, extra|
         # Don't duplicate fields
         extra -= index
         next if extra.empty?
@@ -93,7 +95,6 @@ module Sadvisor
         # Skip indices which will be in the base schema
         next if path.length == 1 && index == path[0].id_fields
 
-        # TODO Enumerate partitioned indices
         Index.new index, [], extra, path
       end.compact
     end
