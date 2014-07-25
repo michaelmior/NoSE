@@ -89,7 +89,7 @@ module Sadvisor
       choices = index_choices.product(order_choices, extra_choices)
       choices.map do |index, order, extra|
         # Don't duplicate fields
-        extra -= index
+        extra -= index + order
         next if extra.empty?
 
         # Skip indices which will be in the base schema
