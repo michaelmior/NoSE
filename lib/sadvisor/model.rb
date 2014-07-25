@@ -19,9 +19,11 @@ module Sadvisor
       @name
     end
 
+    # :nocov:
     def to_color
       @name.light_blue + ' [' + fields.keys.map(&:to_color).join(', ') + ']'
     end
+    # :nocov:
 
     # Compare by name, fields, and count
     # @return [Boolean]
@@ -117,9 +119,11 @@ module Sadvisor
       @hash ||= [@parent.name, @name].hash
     end
 
+    # :nocov:
     def to_color
       parent.name.light_blue + '.' + name.blue
     end
+    # :nocov:
 
     # Set the estimated cardinality of the field
     # @return [Field]
