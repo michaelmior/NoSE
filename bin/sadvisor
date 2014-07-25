@@ -48,11 +48,14 @@ module Sadvisor
 
       header = "Indexes\n" + '━' * 50
       puts $stdout.isatty ? header.blue : header if is_text
-      (simple_indexes.to_set + indexes).each { |index| puts index.inspect } if is_text
+      (simple_indexes.to_set + indexes).each do |index|
+        puts index.inspect
+      end if is_text
       puts if is_text
 
       total_size = (indexes - simple_indexes).map(&:size).inject(0, :+)
-      puts ($stdout.isatty ? 'Total size: '.blue : 'Total size: ') + total_size.to_s if is_text
+      puts ($stdout.isatty ? 'Total size: '.blue : 'Total size: ') + \
+        total_size.to_s if is_text
       puts if is_text
 
       # Output queries plans for the discovered indices
