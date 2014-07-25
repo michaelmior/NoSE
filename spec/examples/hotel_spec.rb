@@ -62,10 +62,6 @@ module Sadvisor
       index = Index.new([guest_id], [], [@w['POI']['Name']], [
         @w['Guest'], @w['Reservation'], @w['Room'], @w['Hotel'], @w['POI']
       ])
-      index.set_field_keys guest_id, \
-                           [@w['Hotel']['Room'],
-                            @w['Room']['Reservation'],
-                            guest_id]
       planner = Planner.new @w, [index]
       tree = planner.find_plans_for_query @query
       expect(tree).to have(1).plan
