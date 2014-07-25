@@ -50,8 +50,8 @@ module Sadvisor
     end
 
     it 'can find multiple plans' do
-      index1 = Index.new [@time_field], [@body_field], [@entity]
-      index2 = Index.new [@id_field], [@time_field, @body_field], [@entity]
+      index1 = Index.new [], [@time_field], [@body_field], [@entity]
+      index2 = Index.new [@id_field], [], [@time_field, @body_field], [@entity]
       planner = Planner.new(@workload, [index1, index2])
       query = Parser.parse 'SELECT Body FROM Tweet ORDER BY Tweet.Timestamp'
 
@@ -63,7 +63,7 @@ module Sadvisor
     end
 
     it 'knows which fields are available at a given step' do
-      index = Index.new [@id_field], [@body_field, @time_field], [@entity]
+      index = Index.new [@id_field], [], [@body_field, @time_field], [@entity]
       planner = Planner.new(@workload, [index])
       query = Parser.parse 'SELECT Body FROM Tweet'
 
@@ -72,7 +72,7 @@ module Sadvisor
     end
 
     it 'can apply external filtering' do
-      index = Index.new [@id_field], [@body_field, @time_field], [@entity]
+      index = Index.new [@id_field], [], [@body_field, @time_field], [@entity]
       planner = Planner.new(@workload, [index])
       query = Parser.parse 'SELECT Body FROM Tweet WHERE Tweet.Timestamp > 1'
 
@@ -119,6 +119,7 @@ module Sadvisor
 
       it 'can update the cardinality when performing a lookup' do
         index = Index.new [@workload['User']['UserId']],
+                          [],
                           [@workload['Tweet']['Body']],
                           [@workload['Tweet'], @workload['User']]
         step = IndexLookupStep.new index, @state, RootStep.new(@state)

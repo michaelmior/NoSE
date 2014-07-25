@@ -59,7 +59,7 @@ module Sadvisor
 
     it 'can look up entities via multiple foreign keys' do
       guest_id = @w['Guest']['GuestID']
-      index = Index.new([guest_id], [@w['POI']['Name']], [
+      index = Index.new([guest_id], [], [@w['POI']['Name']], [
         @w['Guest'], @w['Reservation'], @w['Room'], @w['Hotel'], @w['POI']
       ])
       index.set_field_keys guest_id, \

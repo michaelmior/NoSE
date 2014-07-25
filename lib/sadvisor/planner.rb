@@ -56,7 +56,7 @@ module Sadvisor
 
     # Mark the fields in this index as fetched
     def add_fields_from_index(index)
-      @fields += index.fields + index.extra
+      @fields += index.hash_fields + index.order_fields + index.extra
     end
 
     # Get the list of steps which led us here
@@ -101,9 +101,11 @@ module Sadvisor
         all_fields = state.query.all_fields.map do |field|
           state.workload.find_field field
         end
-        @fields = @index.fields.to_set + (@index.extra.to_set & all_fields)
+        @fields = (@index.hash_fields + @index.order_fields).to_set + \
+          (@index.extra.to_set & all_fields)
       else
-        @fields = (@index.fields + @index.extra).to_set
+        @fields = (@index.hash_fields + @index.order_fields +
+                   @index.extra).to_set
       end
 
       return if state.nil?
@@ -124,8 +126,7 @@ module Sadvisor
     # Rough cost estimate as the size of data returned
     # @return [Numeric]
     def cost
-      @state.cardinality * \
-        (@index.fields.to_set + @fields).map(&:size).inject(0, :+)
+      @state.cardinality * @fields.map(&:size).inject(0, :+)
     end
 
     # Check if this step can be applied for the given index, returning an array
@@ -157,7 +158,8 @@ module Sadvisor
       end
 
       # Make sure we have the final required fields in the index
-      index_fields = (index.fields + index.extra).to_set
+      index_fields = (index.hash_fields + index.order_fields + \
+                      index.extra).to_set
 
       if path_fields.all?(&index_fields.method(:include?)) &&
          (last_fields.all?(&index_fields.method(:include?)) ||
@@ -174,13 +176,14 @@ module Sadvisor
     # Modify the state to reflect the fields looked up by the index
     def update_state(parent)
       # Find fields which are filtered by the index
-      eq_filter = @state.eq & @index.fields
-      range_filter = @index.fields.include?(state.range) ? state.range : nil
+      eq_filter = @state.eq & @index.hash_fields
+      range_filter = @index.order_fields.include?(state.range) ? \
+        state.range : nil
 
-      @state.fields -= @index.fields + @index.extra
+      @state.fields -= @index.hash_fields + @index.order_fields + @index.extra
       @state.eq -= eq_filter
-      @state.range = nil if @index.fields.include?(@state.range)
-      @state.order_by -= @index.fields
+      @state.range = nil if @index.order_fields.include?(@state.range)
+      @state.order_by -= @index.order_fields
 
       index_path = index.path
       cardinality = @state.cardinality
@@ -414,6 +417,7 @@ module Sadvisor
       check_first_path
     end
 
+    # All the fields referenced anywhere in the query
     def all_fields
       all_fields = @fields + @eq
       all_fields << @range unless @range.nil?
