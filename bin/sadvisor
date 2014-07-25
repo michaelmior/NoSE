@@ -85,8 +85,9 @@ module Sadvisor
                   value = value.is_a?(Enumerable) ? \
                     value.map(&:state) : value.state if value
                   value[:key] = hash.encrypt(value_hash) if value.is_a? Hash
+
                   [method.to_s, value]
-                end.flatten]
+                end.flatten(1)]
               end,
               cost: plan.cost
             }

@@ -30,8 +30,7 @@ module Sadvisor
     end
 
     def to_color
-      field_names = @hash_fields.map(&:inspect) + ', ' + \
-                    @order_fields.map(&:inspect)
+      field_names = @hash_fields.map(&:inspect) + @order_fields.map(&:inspect)
       extra_names = @extra.map(&:inspect)
       '[' + field_names.join(', ') + '] → [' + extra_names.join(', ') + ']' + \
         " $#{size}".yellow
