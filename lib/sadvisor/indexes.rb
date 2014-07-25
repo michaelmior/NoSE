@@ -3,17 +3,18 @@ require_relative 'node_extensions'
 module Sadvisor
   # A representation of materialized views over fields in an entity
   class Index
-    attr_reader :fields, :extra, :path
+    attr_reader :hash_fields, :order_fields, :extra, :path
 
-    def initialize(fields, extra, path)
-      @fields = fields
+    def initialize(hash_fields, order_fields, extra, path)
+      @hash_fields = hash_fields
+      @order_fields = order_fields
       @extra = extra
       @path = path
 
       # Track which key this field is mapped over
-      # TODO: Chek if we still need field keys now that we have the path
+      # TODO: Check if we still need field keys now that we have the path
       @field_keys = {}
-      (@fields + @extra).each do |field|
+      (@hash_fields + @order_fields + @extra).each do |field|
         id_fields = field.parent.id_fields
         @field_keys[field] = id_fields ? id_fields[0..0] : []
       end
@@ -21,14 +22,16 @@ module Sadvisor
 
     def state
       {
-        fields: @fields.map(&:state),
+        hash_fields: @hash_fields.map(&:state),
+        order_fields: @order_fields.map(&:state),
         extra: @extra.map(&:state),
         path: @path.map(&:state)
       }
     end
 
     def to_color
-      field_names = @fields.map(&:inspect)
+      field_names = @hash_fields.map(&:inspect) + ', ' + \
+                    @order_fields.map(&:inspect)
       extra_names = @extra.map(&:inspect)
       '[' + field_names.join(', ') + '] → [' + extra_names.join(', ') + ']' + \
         " $#{size}".yellow
@@ -37,7 +40,8 @@ module Sadvisor
     # Two indices are equal if they contain the same fields
     # @return [Boolean]
     def ==(other)
-      @fields == other.fields && \
+      @hash_fields == other.hash_fields && \
+          @order_fields == other.order_fields && \
           @field_keys == other.instance_variable_get(:@field_keys) \
           && @extra.to_set == other.extra.to_set
     end
@@ -46,13 +50,13 @@ module Sadvisor
     # Hash based on the fields, their keys, and the extra fields
     # @return [Fixnum]
     def hash
-      @hash ||= [@fields, @field_keys, @extra.to_set].hash
+      @hash ||= [@hash_fields, @order_fields, @field_keys, @extra.to_set].hash
     end
 
     # Get all the entities referenced in this index
     # @return [Array<Entity>]
     def entities
-      (@fields + @extra).map(&:parent)
+      (@hash_fields + @order_fields + @extra).map(&:parent)
     end
 
     # Set the keys which a field in the index is derived from
@@ -70,13 +74,15 @@ module Sadvisor
     # @see Entity#id_fields
     # @return [Boolean]
     def identity_for?(entity)
-      @fields == entity.id_fields
+      @hash_fields == entity.id_fields
     end
 
     # Check if the index contains a given field
     # @return [Boolean]
     def contains_field?(field)
-      !(@fields + @extra).find { |index_field| field == index_field }.nil?
+      !(@hash_fields + @order_fields + @extra).find do |index_field|
+        field == index_field
+      end.nil?
     end
 
     # Check if all the fields the query needs are indexed
@@ -90,13 +96,14 @@ module Sadvisor
     # The size of a single entry in the index
     # @return [Fixnum]
     def entry_size
-      (@fields + @extra).map(&:size).inject(0, :+)
+      (@hash_fields + @order_fields + @extra).map(&:size).inject(0, :+)
     end
 
     # The total size of this index
     # @return [Fixnum]
     def size
-      fields.map(&:cardinality).inject(1, :*) * entry_size
+      (@hash_fields + @order_fields).map(&:cardinality) \
+        .inject(1, :*) * entry_size
     end
   end
 
@@ -105,7 +112,7 @@ module Sadvisor
     # Create a simple index which maps entity keys to other fields
     # @return [Index]
     def simple_index
-      Index.new(id_fields, fields.values - id_fields, [self])
+      Index.new(id_fields, [], fields.values - id_fields, [self])
     end
   end
 end
@@ -117,19 +124,22 @@ module CQL
     # @return [Index]
     def materialize_view(workload)
       # Start with fields used for equality and range predicates, then order
-      fields = eq_fields
-      fields.push range_field if range_field
+      order_fields = []
+      order_fields.push workload.find_field(range_field.field.value) \
+        if range_field
+      order_fields += order_by.map { |field| workload.find_field field }
 
-      fields = fields.map { |field| workload.find_field field.field.value }
-      fields += order_by.map { |field| workload.find_field field }
+      hash_fields = eq_fields.map do |field|
+        workload.find_field field.field.value
+      end
 
       # Add all other fields used in the query, minus those already added
-      extra = self.fields.map do |field|
+      extra = fields.map do |field|
         workload.find_field field.value
       end
-      extra -= fields
+      extra -= (hash_fields + order_fields)
 
-      Sadvisor::Index.new(fields, extra,
+      Sadvisor::Index.new(hash_fields, order_fields, extra,
                           longest_entity_path.reverse \
                             .map(&workload.method(:[])))
     end
