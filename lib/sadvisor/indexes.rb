@@ -10,14 +10,6 @@ module Sadvisor
       @order_fields = order_fields
       @extra = extra
       @path = path
-
-      # Track which key this field is mapped over
-      # TODO: Check if we still need field keys now that we have the path
-      @field_keys = {}
-      (@hash_fields + @order_fields + @extra).each do |field|
-        id_fields = field.parent.id_fields
-        @field_keys[field] = id_fields ? id_fields[0..0] : []
-      end
     end
 
     def state
@@ -44,32 +36,14 @@ module Sadvisor
     def ==(other)
       @hash_fields == other.hash_fields && \
           @order_fields == other.order_fields && \
-          @field_keys == other.instance_variable_get(:@field_keys) \
-          && @extra.to_set == other.extra.to_set
+          @extra.to_set == other.extra.to_set
     end
     alias_method :eql?, :==
 
     # Hash based on the fields, their keys, and the extra fields
     # @return [Fixnum]
     def hash
-      @hash ||= [@hash_fields, @order_fields, @field_keys, @extra.to_set].hash
-    end
-
-    # Get all the entities referenced in this index
-    # @return [Array<Entity>]
-    def entities
-      (@hash_fields + @order_fields + @extra).map(&:parent)
-    end
-
-    # Set the keys which a field in the index is derived from
-    # This is useful when an entity may be reached via multiple foreign keys
-    def set_field_keys(field, keys)
-      @field_keys[field] = keys
-    end
-
-    # Get the keys which correspond to an entity for a given field
-    def keys_for_field(field)
-      @field_keys[field]
+      @hash ||= [@hash_fields, @order_fields, @extra.to_set].hash
     end
 
     # Check if this index is a mapping from the key of the given entity
@@ -85,14 +59,6 @@ module Sadvisor
       !(@hash_fields + @order_fields + @extra).find do |index_field|
         field == index_field
       end.nil?
-    end
-
-    # Check if all the fields the query needs are indexed
-    # @return [Boolean]
-    def contains_fields?(fields, workload)
-      fields.map do |field|
-        contains_field?(workload.find_field field.value)
-      end.all?
     end
 
     # The size of a single entry in the index

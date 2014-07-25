@@ -39,5 +39,15 @@ module Sadvisor
       expect(indexes.to_a).to include \
         Index.new([@w['Foo']['Baz']], [], [@w['Bar']['Baz']], [])
     end
+
+    it 'produces a simple index for a filter within a workload' do
+      enum = IndexEnumerator.new @w
+      query = Parser.parse 'SELECT Bar FROM Foo WHERE Foo.Baz=""'
+      @w.add_query query
+      indexes = enum.indexes_for_workload
+      expect(indexes).to have(1).item
+      expect(indexes.to_a).to include \
+        Index.new([@w['Foo']['Baz']], [], [@w['Foo']['Bar']], [])
+    end
   end
 end

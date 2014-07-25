@@ -129,7 +129,7 @@ module Sadvisor
     # Create a new range over the entities traversed by an index using
     # the numerical indices into the query entity path
     def self.index_range(entities, index)
-      Range.new(*(index.entities.map do |entity|
+      Range.new(*(index.path.map do |entity|
         entities.index entity.name
       end).minmax)
     end
