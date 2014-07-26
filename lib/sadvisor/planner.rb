@@ -113,6 +113,7 @@ module Sadvisor
       return if state.nil?
       @state = state.dup
       update_state parent
+      @state.freeze
     end
 
     # :nocov:
@@ -298,6 +299,7 @@ module Sadvisor
         new_state.order_by = []
         new_step = SortStep.new(state.order_by)
         new_step.state = new_state
+        new_step.state.freeze
       end
 
       new_step
@@ -316,6 +318,7 @@ module Sadvisor
       return if state.nil?
       @state = state.dup
       update_state
+      @state.freeze
     end
 
     # Two filtering steps are equal if they filter on the same fields
@@ -451,13 +454,6 @@ module Sadvisor
       @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
     end
 
-    # Create a deep copy of the query state
-    # @return [QueryState]
-    def dup
-      # Ensure a deep copy
-      Marshal.load(Marshal.dump(self))
-    end
-
     private
 
     # Remove the first element from the path if we only have the ID
@@ -528,6 +524,7 @@ module Sadvisor
     # @raise [NoPlanException]
     def find_plans_for_query(query)
       state = QueryState.new query, @workload
+      state.freeze
       tree = QueryPlanTree.new(state)
 
       find_plans_for_step tree.root, tree.root
