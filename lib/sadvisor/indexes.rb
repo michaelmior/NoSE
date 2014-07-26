@@ -3,13 +3,18 @@ require_relative 'node_extensions'
 module Sadvisor
   # A representation of materialized views over fields in an entity
   class Index
-    attr_reader :hash_fields, :order_fields, :extra, :path
+    attr_reader :hash_fields, :order_fields, :extra, :all_fields, :path
 
     def initialize(hash_fields, order_fields, extra, path)
       @hash_fields = hash_fields
       @order_fields = order_fields
       @extra = extra
+      @all_fields = (hash_fields + order_fields + extra).to_set
       @path = path
+
+      # Initialize the hash function and freeze ourselves
+      hash
+      freeze
     end
 
     def state
@@ -58,15 +63,13 @@ module Sadvisor
     # Check if the index contains a given field
     # @return [Boolean]
     def contains_field?(field)
-      !(@hash_fields + @order_fields + @extra).find do |index_field|
-        field == index_field
-      end.nil?
+      @all_fields.include? field
     end
 
     # The size of a single entry in the index
     # @return [Fixnum]
     def entry_size
-      (@hash_fields + @order_fields + @extra).map(&:size).inject(0, :+)
+      @all_fields.map(&:size).inject(0, :+)
     end
 
     # The total size of this index

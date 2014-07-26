@@ -11,6 +11,9 @@ module Sadvisor
       @fields = {}
       @count = 1
 
+      # Precompute the hash
+      hash
+
       # Apply the DSL
       EntityDSL.new(self).instance_eval(&block) if block_given?
     end

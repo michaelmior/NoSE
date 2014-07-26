@@ -58,7 +58,7 @@ module Sadvisor
 
     # Mark the fields in this index as fetched
     def add_fields_from_index(index)
-      @fields += index.hash_fields + index.order_fields + index.extra
+      @fields += index.all_fields
     end
 
     # Get the list of steps which led us here
@@ -106,8 +106,7 @@ module Sadvisor
         @fields = (@index.hash_fields + @index.order_fields).to_set + \
           (@index.extra.to_set & all_fields)
       else
-        @fields = (@index.hash_fields + @index.order_fields +
-                   @index.extra).to_set
+        @fields = @index.all_fields
       end
 
       return if state.nil?
@@ -163,12 +162,9 @@ module Sadvisor
       end
 
       # Make sure we have the final required fields in the index
-      index_fields = (index.hash_fields + index.order_fields + \
-                      index.extra).to_set
-
-      if path_fields.all?(&index_fields.method(:include?)) &&
-         (last_fields.all?(&index_fields.method(:include?)) ||
-          index_path.last.id_fields.all?(&index_fields.method(:include?)))
+      if path_fields.all?(&index.all_fields.method(:include?)) &&
+         (last_fields.all?(&index.all_fields.method(:include?)) ||
+          index_path.last.id_fields.all?(&index.all_fields.method(:include?)))
         # TODO: Check that fields are usable for predicates
         return [IndexLookupStep.new(index, state, parent)]
       end
@@ -185,7 +181,7 @@ module Sadvisor
       range_filter = @index.order_fields.include?(state.range) ? \
         state.range : nil
 
-      @state.fields -= @index.hash_fields + @index.order_fields + @index.extra
+      @state.fields -= @index.all_fields
       @state.eq -= eq_filter
       @state.range = nil if @index.order_fields.include?(@state.range)
       @state.order_by -= @index.order_fields
@@ -415,9 +411,12 @@ module Sadvisor
       @query = query
       @workload = workload
       @from = workload[query.from.value]
-      @fields = query.fields.map { |field| workload.find_field field.value }
-      @eq = query.eq_fields.map \
-          { |condition| workload.find_field condition.field.value }.to_set
+      @fields = query.fields.map do |field|
+        workload.find_field field.value
+      end.to_set
+      @eq = query.eq_fields.map do |condition|
+        workload.find_field condition.field.value
+      end.to_set
       @range = workload.find_field query.range_field.field.value \
           unless query.range_field.nil?
       @order_by = query.order_by.map { |field| workload.find_field field }
