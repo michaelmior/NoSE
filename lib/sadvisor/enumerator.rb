@@ -28,7 +28,7 @@ module Sadvisor
     # @return [Array<Index>]
     def indexes_for_workload
       @workload.queries.map do |query|
-        indexes_for_query(query).to_set
+        indexes_for_query(query).to_set.add query.materialize_view(@workload)
       end.inject(Set.new, &:+)
     end
 
