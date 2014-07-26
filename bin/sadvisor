@@ -28,8 +28,15 @@ module Sadvisor
         end
       end if $stdout.isatty and is_text
 
-      indexes = Sadvisor::Search.new($workload) \
-        .search_overlap(options[:max_space])
+      if options[:max_space].finite?
+        indexes = Sadvisor::Search.new($workload) \
+          .search_overlap(options[:max_space])
+      else
+        # No need to search here, we'll prune to the used indices later
+        indexes = Sadvisor::IndexEnumerator.new($workload) \
+          .indexes_for_workload.to_a
+      end
+
       simple_indexes = $workload.entities.values.map(&:simple_index)
       if progress_thread
         Thread.kill progress_thread
