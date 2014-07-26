@@ -544,9 +544,7 @@ module Sadvisor
     # @raise [NoPlanException]
     def find_plans_for_step(root, step)
       unless step.state.answered?
-        steps = find_steps_for_state(step, step.state).select do |new_step|
-          new_step != step
-        end
+        steps = find_steps_for_state(step, step.state)
 
         if steps.length > 0
           step.children = steps
