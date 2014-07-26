@@ -58,9 +58,10 @@ module Sadvisor
     end
 
     it 'can calculate its size' do
-      index = Index.new([@id_field], [], [], [])
-      @id_field *= 10
-      expect(index.entry_size).to eq(@id_field.size)
+      @big_id_field = IDField.new('Id') * 10
+      @entity << @big_id_field
+      index = Index.new([@big_id_field], [], [], [])
+      expect(index.entry_size).to eq(@big_id_field.size)
       expect(index.size).to eq(@id_field.size * 10)
     end
 
