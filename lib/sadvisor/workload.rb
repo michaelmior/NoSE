@@ -17,9 +17,9 @@ module Sadvisor
     # Add a new {Entity} or {CQL::Statement} to the workload
     def <<(other)
       if other.is_a? Entity
-        add_entity other
+        add_entity other.freeze
       elsif other.is_a? CQL::Statement
-        add_query other
+        add_query other.freeze
       else
         fail TypeError, 'can only add queries and entities to a workload'
       end
@@ -35,7 +35,7 @@ module Sadvisor
     def add_query(query, weight = 1)
       query = Parser.parse query if query.is_a? String
 
-      @query_weights[query] = weight
+      @query_weights[query.freeze] = weight
     end
 
     # Strip the weights from the query dictionary and return a list of queries
