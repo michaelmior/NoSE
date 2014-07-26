@@ -59,6 +59,10 @@ module Sadvisor
     def <<(field)
       @fields[field.name] = field
       field.instance_variable_set(:@parent, self)
+
+      field.hash
+      field.freeze
+
       self
     end
 
