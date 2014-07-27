@@ -98,7 +98,7 @@ $workload = Sadvisor::Workload.new do
   # ViewItem
   Q 'SELECT name FROM items WHERE items.id = ?', 22.95 / 4.0 * 0.75
   Q 'SELECT name FROM olditems WHERE olditems.id = ?', 22.95 / 4.0 * 0.25
-  Q 'SELECT bid FROM bids WHERE bids.items.id = ? ORDER BY bids.bid DESC LIMIT 1', 22.95 / 4.0
+  Q 'SELECT bid FROM bids WHERE bids.item_id = ? ORDER BY bids.bid DESC LIMIT 1', 22.95 / 4.0
   Q 'SELECT bid, qty FROM bids WHERE bids.item_id = ? ORDER BY bids.bid DESC LIMIT 5', 22.95 / 4.0
   Q 'SELECT id FROM bids WHERE bids.item_id = ?', 22.95 / 4.0 # XXX: total bids
 
