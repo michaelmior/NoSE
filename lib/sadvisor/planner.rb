@@ -142,8 +142,9 @@ module Sadvisor
 
       # If we have the IDs for the first step, we can skip that in the index
       index_path = index.path
-      if (index_path.first.id_fields.to_set - given_fields).empty?
-        index_path = index.path[1..-1] if index_path.length > 1
+      if (index_path.first.id_fields.to_set - given_fields).empty? &&
+          index_path.length > 1 && state.path.length > 1
+        index_path = index.path[1..-1]
       end
 
       # Check that this index is a valid jump in the path
