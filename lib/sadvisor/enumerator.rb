@@ -27,9 +27,26 @@ module Sadvisor
     # Produce all possible indices for a given workload
     # @return [Array<Index>]
     def indexes_for_workload
-      @workload.queries.map do |query|
+      indexes = @workload.queries.map do |query|
         indexes_for_query(query).to_set.add query.materialize_view(@workload)
       end.inject(Set.new, &:+)
+
+      # Combine the data of indices based on matching hash fields
+      indexes.select do |index|
+        index.order_fields.empty?
+      end.group_by(&:hash_fields).each do |hash_fields, hash_indexes|
+        extra_choices = hash_indexes.map(&:extra).uniq
+        combos = 2.upto(extra_choices.count).map do |n|
+          extra_choices.combination(n).to_a.uniq
+        end.inject(Set.new, &:+)
+
+        combos.map do |extra|
+          indexes.add Index.new hash_fields, [], extra.flatten.uniq,
+                                hash_indexes.first.path
+        end
+      end
+
+      indexes
     end
 
     private
