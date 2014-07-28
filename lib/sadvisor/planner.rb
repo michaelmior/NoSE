@@ -136,6 +136,15 @@ module Sadvisor
     # Check if this step can be applied for the given index, returning an array
     # of possible applications of the step
     def self.apply(parent, index, state)
+      # Check for the case where only a simple lookup is needed
+      if state.path.length == 0 && state.fields.count > 0
+        if index == state.fields.first.parent.simple_index
+          return [IndexLookupStep.new(index, state, parent)]
+        else
+          return []
+        end
+      end
+
       # We have the fields that have already been looked up,
       # plus what was given in equality predidcates
       given_fields = parent.fields + state.eq
@@ -196,18 +205,12 @@ module Sadvisor
 
       @state.cardinality = new_cardinality cardinality, eq_filter, range_filter
 
-      last = state.path.last
       if index_path.length == 1
         @state.path = @state.path[1..-1]
       elsif state.path.length > 0
         @state.path = @state.path[index_path.length - 1..-1]
       end
-
-      # If we still have fields left to fetch, we need to allow
-      # another lookup
-      if @state.path.length == 0 && @state.fields.count > 0
-        @state.path = [last]
-      end
+      @state.path = [] if @state.path.nil?
     end
 
     # Update the cardinality based on filtering implicit to the index
