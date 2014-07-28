@@ -1,6 +1,6 @@
 GEM
   remote: https://rubygems.org/
-  remote: https://EosBFRxCzpVTvE36qhx5@gem.fury.io/michaelmior/
+  remote: https://gem.fury.io/michaelmior/
   specs:
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
@@ -14,6 +14,7 @@ GEM
     debugger-linecache (1.2.0)
     diff-lcs (1.2.5)
     docile (1.1.5)
+    gurobi (0.0.1.mmior.1)
     hashids (0.3.0)
     interception (0.5)
     method_source (0.8.2)
@@ -66,6 +67,7 @@ PLATFORMS
 DEPENDENCIES
   binding_of_caller
   colorize
+  gurobi (= 0.0.1.mmior.1)
   hashids
   pry
   pry-byebug

@@ -1,4 +1,5 @@
 require 'erb'
+require 'gurobi'
 require 'ostruct'
 require 'tempfile'
 require 'rglpk'
@@ -118,12 +119,79 @@ module Sadvisor
         end
       end
 
-      # Generate the MathProg file and solve the program
-      solve_mpl 'schema_overlap', indexes, gap,
-                max_space: max_space,
-                index_sizes: index_sizes,
-                query_overlap: query_overlap,
-                benefits: benefits
+      # TODO Add MathProg back as an option
+      # # Generate the MathProg file and solve the program
+      # solve_mpl 'schema_overlap', indexes, gap,
+      #           max_space: max_space,
+      #           index_sizes: index_sizes,
+      #           query_overlap: query_overlap,
+      #           benefits: benefits
+
+      # Solve the LP using Gurobi
+      solve_gurobi indexes,
+                   max_space: max_space,
+                   index_sizes: index_sizes,
+                   query_overlap: query_overlap,
+                   benefits: benefits
+    end
+
+    # Solve the index selection problem using Gurobi
+    def solve_gurobi(indexes, data)
+      model = Gurobi::Model.new(Gurobi::Env.new)
+      model.getEnv.set_int(Gurobi::IntParam::OUTPUT_FLAG, 0)
+
+      # Initialize query and index variables
+      index_vars = []
+      query_vars = []
+      (0...indexes.length).each do |i|
+        index_vars[i] = model.addVar(0, 1, 0, Gurobi::BINARY, "i#{i}")
+        query_vars[i] = []
+        (0...@workload.queries.length).each do |q|
+          query_vars[i][q] = model.addVar(0, 1, 0, Gurobi::BINARY, "q#{q}i#{i}")
+
+        end
+      end
+
+      # Add constraint for indices being present
+      model.update
+      (0...indexes.length).each do |i|
+        (0...@workload.queries.length).each do |q|
+          model.addConstr(query_vars[i][q] + -1 * index_vars[i] <= 0)
+        end
+      end
+
+      # Add space constraint if needed
+      if data[:max_space].finite?
+        space = indexes.each_with_index.map do |index, i|
+          (index.size * 1.0) * index_vars[i]
+        end.inject(&:+)
+        model.addConstr(space <= data[:max_space] * 1.0)
+      end
+
+      # Add overlapping index constraints
+      data[:query_overlap].each do |q, overlaps|
+        overlaps.each do |i, overlap|
+          overlap.each do |j|
+            model.addConstr(query_vars[i][q] + query_vars[j][q] <= 1)
+          end
+        end
+      end
+
+      # Set the objective function
+      max_benefit = (0...indexes.length).to_a \
+                    .product((0...@workload.queries.length).to_a).map do |i, q|
+        query_vars[i][q] * (data[:benefits][q][i] * 1.0)
+      end.inject(&:+)
+      model.setObjective(max_benefit, Gurobi::MAXIMIZE)
+
+      # Run the optimizer
+      model.update
+      model.optimize
+
+      # Return the selected indices
+      indexes.select.with_index do |_, i|
+        index_vars[i].get_double(Gurobi::DoubleAttr::X) == 1.0
+      end
     end
 
     # Create a new range over the entities traversed by an index using

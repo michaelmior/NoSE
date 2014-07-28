@@ -1,8 +1,9 @@
 source 'https://rubygems.org'
-source 'https://EosBFRxCzpVTvE36qhx5@gem.fury.io/michaelmior/'
+source 'https://gem.fury.io/michaelmior/'
 
 gem 'binding_of_caller'
 gem 'colorize'
+gem 'gurobi', '=0.0.1.mmior.1'
 gem 'hashids'
 gem 'ruby-progressbar'
 gem 'rake'
