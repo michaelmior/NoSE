@@ -6,7 +6,7 @@ gem 'colorize'
 gem 'hashids'
 gem 'ruby-progressbar'
 gem 'rake'
-gem 'rglpk', '~>0.3.1'
+gem 'rglpk', '~>0.3.2'
 gem 'thor'
 gem 'treetop'
 
