@@ -33,7 +33,8 @@ module Sadvisor
       # remove this from the total size
       simple_indexes = @workload.entities.values.map(&:simple_index)
       simple_size = simple_indexes.map(&:size).inject(0, &:+)
-      max_space -= simple_size  # XXX need to check if max_space < simple_size
+      max_space -= simple_size
+      return [] if max_space <= 0
 
       # Get the cost of all queries with the simple indices
       simple_planner = Planner.new @workload, simple_indexes
@@ -78,7 +79,8 @@ module Sadvisor
       # remove this from the total size
       simple_indexes = @workload.entities.values.map(&:simple_index)
       simple_size = simple_indexes.map(&:size).inject(0, &:+)
-      max_space -= simple_size  # XXX need to check if max_space < simple_size
+      max_space -= simple_size
+      return [] if max_space <= 0
 
       # Generate all possible combinations of indices
       indexes = IndexEnumerator.new(@workload).indexes_for_workload.to_a
