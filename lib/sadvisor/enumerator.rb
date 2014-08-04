@@ -41,7 +41,7 @@ module Sadvisor
         end.inject(Set.new, &:+)
 
         combos.map do |extra|
-          indexes.add Index.new hash_fields, [], extra.flatten.uniq,
+          indexes.add Index.new hash_fields, [], extra.inject(Set.new, &:+),
                                 hash_indexes.first.path
         end
       end

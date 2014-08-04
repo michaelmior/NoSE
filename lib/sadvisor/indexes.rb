@@ -6,9 +6,13 @@ module Sadvisor
     attr_reader :hash_fields, :order_fields, :extra, :all_fields, :path
 
     def initialize(hash_fields, order_fields, extra, path)
-      @hash_fields = hash_fields
+      @hash_fields = hash_fields.to_set
       @order_fields = order_fields
-      @extra = extra
+      if extra.first.is_a? Set
+        require 'pry'
+        binding.pry
+      end
+      @extra = extra.to_set
       @all_fields = (hash_fields + order_fields + extra).to_set
       @path = path
 
@@ -57,7 +61,7 @@ module Sadvisor
     # @see Entity#id_fields
     # @return [Boolean]
     def identity_for?(entity)
-      @hash_fields == entity.id_fields
+      @hash_fields == entity.id_fields.to_set
     end
 
     # Check if the index contains a given field

@@ -68,12 +68,12 @@ module Sadvisor
     context 'when materializing views' do
       it 'supports simple lookups' do
         index = simple_query.materialize_view(@workload)
-        expect(index.extra).to eq([@id_field])
+        expect(index.extra).to eq([@id_field].to_set)
       end
 
       it 'supports equality predicates' do
         index = equality_query.materialize_view(@workload)
-        expect(index.hash_fields).to eq([@id_field])
+        expect(index.hash_fields).to eq([@id_field].to_set)
       end
 
       it 'support range queries' do
@@ -83,7 +83,7 @@ module Sadvisor
 
       it 'supports multiple predicates' do
         index = combo_query.materialize_view(@workload)
-        expect(index.hash_fields).to eq([@field])
+        expect(index.hash_fields).to eq([@field].to_set)
         expect(index.order_fields).to eq([@id_field])
       end
 
@@ -100,9 +100,9 @@ module Sadvisor
 
     it 'can be created to map entity fields by id' do
       index = @entity.simple_index
-      expect(index.hash_fields).to eq([@id_field])
+      expect(index.hash_fields).to eq([@id_field].to_set)
       expect(index.order_fields).to eq([])
-      expect(index.extra).to eq([@field, @foreign_key])
+      expect(index.extra).to eq([@field, @foreign_key].to_set)
     end
   end
 end
