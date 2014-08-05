@@ -21,12 +21,13 @@ module Sadvisor
 
       # Display progress while searching
       progress_thread = Thread.new do
-        bar = ProgressBar.create title: 'Finding indexes', total: nil
-        while true
+        bar = ProgressBar.create title: 'Finding indexes', total: nil,
+                                 output: $stderr
+        loop do
           bar.increment
           sleep 0.1
         end
-      end if $stdout.isatty and is_text
+      end if $stderr.isatty
 
       if options[:max_space].finite?
         indexes = Sadvisor::Search.new($workload) \
