@@ -187,7 +187,7 @@ module Sadvisor
     # Modify the state to reflect the fields looked up by the index
     def update_state(parent)
       # Find fields which are filtered by the index
-      eq_filter = @state.eq & @index.hash_fields
+      eq_filter = @state.eq & (@index.hash_fields + @index.order_fields)
       range_filter = @index.order_fields.include?(state.range) ? \
         state.range : nil
 
