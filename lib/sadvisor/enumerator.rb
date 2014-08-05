@@ -108,7 +108,7 @@ module Sadvisor
       choices.map do |index, extra|
         indexes = []
 
-        for order in order_choices
+        order_choices.each do |order|
           # Don't duplicate fields
           extra -= index + order
 

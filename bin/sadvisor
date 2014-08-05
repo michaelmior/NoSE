@@ -93,8 +93,11 @@ module Sadvisor
                 }.update Hash[*methods.map do |method|
                   value = step.send(method)
                   value_hash = value.hash.abs
-                  value = value.is_a?(Enumerable) ? \
-                    value.map(&:state) : value.state if value
+                  if value.is_a?(Enumerable)
+                    value = value.map(&:state)
+                  elsif value
+                    value = value.state
+                  end
                   value[:key] = hash.encrypt(value_hash) if value.is_a? Hash
 
                   [method.to_s, value]

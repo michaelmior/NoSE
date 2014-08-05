@@ -8,10 +8,6 @@ module Sadvisor
     def initialize(hash_fields, order_fields, extra, path)
       @hash_fields = hash_fields.to_set
       @order_fields = order_fields
-      if extra.first.is_a? Set
-        require 'pry'
-        binding.pry
-      end
       @extra = extra.to_set
       @all_fields = (hash_fields + order_fields + extra).to_set
       @path = path

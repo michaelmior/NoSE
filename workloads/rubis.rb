@@ -1,3 +1,5 @@
+# rubocop:disable all
+
 $workload = Sadvisor::Workload.new do
   # Define entities along with the size and cardinality of their fields
   # as well as an estimated number of each entity
@@ -115,3 +117,5 @@ $workload = Sadvisor::Workload.new do
   Q 'SELECT id, to_user_id, item_id, rating, date, comment FROM comments WHERE comments.to_user_id = ?', 4.41 / 2
   Q 'SELECT id, nickname FROM users WHERE users.id = ?', 4.41 / 2
 end
+
+# rubocop:enable all

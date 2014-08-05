@@ -100,6 +100,7 @@ module Sadvisor
       expect(tree.min).to match_array [IndexLookupStep.new(view)]
     end
 
+    # rubocop:disable LineLength
     # XXX Disabled until fixed
     # it 'can search for an optimal index by checking non-overlapping indexes' do
     #   indexes = Search.new(@w).search_overlap 1000
@@ -107,5 +108,6 @@ module Sadvisor
     #     Index.new([@w['Guest']['GuestID']], [@w['POI']['Name']], [])
     #   ]
     # end
+    # rubocop:enable LineLength
   end
 end

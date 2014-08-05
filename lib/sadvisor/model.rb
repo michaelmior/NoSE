@@ -31,7 +31,7 @@ module Sadvisor
     # Compare by name, fields, and count
     # @return [Boolean]
     def ==(other)
-      self.hash == other.hash
+      hash == other.hash
     end
     alias_method :eql?, :==
 
@@ -51,7 +51,7 @@ module Sadvisor
     # @return [Field, nil]
     def foreign_key_for(entity)
       fields.values.find do |field|
-        field.kind_of?(ForeignKey) && field.entity == entity
+        field.is_a?(ForeignKey) && field.entity == entity
       end
     end
 
@@ -115,7 +115,7 @@ module Sadvisor
 
     # Compare by parent entity and name
     def ==(other)
-      other.kind_of?(Field) && @type == other.type &&
+      other.is_a?(Field) && @type == other.type &&
         @parent == other.parent && @name == other.name
     end
     alias_method :eql?, :==

@@ -15,7 +15,7 @@ module Sadvisor
 
     # Return a binding within the class instance
     # @return [Binding]
-    def get_binding
+    def binding
       binding
     end
   end
@@ -28,7 +28,7 @@ module Sadvisor
 
     # Search for the best configuration of indices for a given space constraint
     # @return [Array<Index>]
-    def search_all(max_space = Float::INFINITY, gap=0.01)
+    def search_all(max_space = Float::INFINITY, gap = 0.01)
       # Construct the simple indices for all entities and
       # remove this from the total size
       simple_indexes = @workload.entities.values.map(&:simple_index)
@@ -74,7 +74,7 @@ module Sadvisor
     # Search for optimal indices using an ILP which searches for
     # non-overlapping indices
     # @return [Array<Index>]
-    def search_overlap(max_space = Float::IFINITY, gap=0.01)
+    def search_overlap(max_space = Float::IFINITY, gap = 0.01)
       # Construct the simple indices for all entities and
       # remove this from the total size
       simple_indexes = @workload.entities.values.map(&:simple_index)
@@ -121,7 +121,7 @@ module Sadvisor
         end
       end
 
-      # TODO Add MathProg back as an option
+      # TODO: Add MathProg back as an option
       # # Generate the MathProg file and solve the program
       # solve_mpl 'schema_overlap', indexes, gap,
       #           max_space: max_space,
@@ -166,7 +166,7 @@ module Sadvisor
       if data[:max_space].finite?
         space = indexes.each_with_index.map do |index, i|
           (index.size * 1.0) * index_vars[i]
-        end.inject(&:+)
+        end.reduce(&:+)
         model.addConstr(space <= data[:max_space] * 1.0)
       end
 
@@ -183,7 +183,7 @@ module Sadvisor
       max_benefit = (0...indexes.length).to_a \
                     .product((0...@workload.queries.length).to_a).map do |i, q|
         query_vars[i][q] * (data[:benefits][q][i] * 1.0)
-      end.inject(&:+)
+      end.reduce(&:+)
       model.setObjective(max_benefit, Gurobi::MAXIMIZE)
 
       # Run the optimizer
@@ -226,7 +226,7 @@ module Sadvisor
       namespace = Namespace.new(data)
       template_file = File.dirname(__FILE__) + "/#{template_name}.mod.erb"
       template = File.read(template_file)
-      mpl = ERB.new(template, 0, '>').result(namespace.get_binding)
+      mpl = ERB.new(template, 0, '>').result(namespace.binding)
 
       # Solve the problem, which prints the solution
       file = Tempfile.new 'schema.mod'
