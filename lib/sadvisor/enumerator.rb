@@ -96,6 +96,7 @@ module Sadvisor
     # Get all possible indices which jump a given section in a query path
     def indexes_for_step(path, select, eq, range)
       index_choices = index_choices path, eq
+      max_eq_fields = index_choices.map(&:length).max
 
       range_fields = path.map { |entity| range[entity] || [] }.reduce(&:+)
       order_choices = range_fields.prefixes.to_a << []
@@ -103,17 +104,31 @@ module Sadvisor
       extra_choices = extra_choices path, select, eq, range
 
       # Generate all possible indices based on the field choices
-      choices = index_choices.product(order_choices, extra_choices)
-      choices.map do |index, order, extra|
-        # Don't duplicate fields
-        extra -= index + order
-        next if extra.empty?
+      choices = index_choices.product(extra_choices)
+      choices.map do |index, extra|
+        indexes = []
 
-        # Skip indices which will be in the base schema
-        next if path.length == 1 && index == path[0].id_fields
+        for order in order_choices
+          # Don't duplicate fields
+          extra -= index + order
 
-        Index.new index, order, extra, path
-      end.compact
+          # Skip indices which will be in the base schema
+          next if path.length == 1 && index == path[0].id_fields \
+                                   && order.length == 0
+
+          indexes << Index.new(index, order, extra, path)
+        end
+
+        # Partition into the ordering portion
+        if index.length == max_eq_fields
+          index.partitions.each do |index_prefix, order_prefix|
+            indexes << Index.new(index_prefix, order_prefix + order,
+                                 extra, path)
+          end
+        end
+
+        indexes
+      end.inject([], &:+).flatten
     end
   end
 end

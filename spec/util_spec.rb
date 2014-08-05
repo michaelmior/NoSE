@@ -2,11 +2,18 @@ require 'stringio'
 
 describe Enumerable do
   it 'can generate all possible prefixes' do
-    expect([1,2,3].prefixes).to match_array [[1], [1, 2], [1, 2, 3]]
+    expect([1, 2, 3].prefixes).to match_array [[1], [1, 2], [1, 2, 3]]
   end
 
   it 'generates an empty prefix list when there are no elements' do
     expect([].prefixes).to match_array []
+  end
+
+  it 'can generate all partitionings of itself' do
+    expect([1, 2, 3, 4].partitions).to match_array [
+      [[1], [2, 3, 4]],
+      [[1, 2], [3, 4]],
+      [[1, 2, 3], [4]]]
   end
 end
 
