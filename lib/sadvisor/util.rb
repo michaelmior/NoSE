@@ -13,6 +13,15 @@ module Enumerable
       end
     end
   end
+
+  # Enumerate all partitionings of an enumerable
+  def partitions
+    Enumerator.new do |enum|
+      1.upto(length - 1).map do |length|
+        enum.yield partition.with_index { |_, i| i < length }
+      end
+    end
+  end
 end
 
 class Fixnum
