@@ -124,14 +124,11 @@ module Sadvisor
         indexes = []
 
         order_choices.each do |order|
-          # Don't duplicate fields
-          extra -= index + order
-
           # Skip indices which will be in the base schema
           next if path.length == 1 && index == path[0].id_fields \
                                    && order.length == 0
 
-          indexes << Index.new(index, order, extra, path)
+          indexes << Index.new(index, order, extra - (index + order), path)
         end
 
         # Partition into the ordering portion
