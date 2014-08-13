@@ -2,6 +2,7 @@ require 'hashids'
 require 'json'
 require 'ruby-progressbar'
 require 'thor'
+require 'zlib'
 
 module Sadvisor
   class SadvisorCLI < Thor
@@ -73,10 +74,10 @@ module Sadvisor
       end
 
       if options[:format] == 'json'
-        hash = Hashids.new
+        hash = ->(value) { Hashids.new.encrypt(Zlib.crc32(value.to_s)) }
         state = {
           indexes: (indexes - simple_indexes).map do |index|
-            index.state.update key: hash.encrypt(index.hash.abs)
+            index.state.update key: hash.call(index.state)
           end,
           plans: plans.map do |query, plan|
             {
@@ -89,13 +90,12 @@ module Sadvisor
                   cost: step.cost
                 }.update Hash[*methods.map do |method|
                   value = step.send(method)
-                  value_hash = value.hash.abs
                   if value.is_a?(Enumerable)
                     value = value.map(&:state)
                   elsif value
                     value = value.state
                   end
-                  value[:key] = hash.encrypt(value_hash) if value.is_a? Hash
+                  value[:key] = hash.call(value) if value.is_a? Hash
 
                   [method.to_s, value]
                 end.flatten(1)]
