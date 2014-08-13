@@ -144,7 +144,7 @@ module Sadvisor
     end
 
     # Shortcut to add a new {CQL::Statement} to the workload
-    def Q(query, weight)
+    def Q(query, weight = 1.0)
       @workload.add_query query, weight
     end
 
