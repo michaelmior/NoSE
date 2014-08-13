@@ -34,7 +34,9 @@ module Sadvisor
       # Combine the data of indices based on matching hash fields
       indexes.select do |index|
         index.order_fields.empty?
-      end.group_by(&:hash_fields).each do |hash_fields, hash_indexes|
+      end.group_by do |index|
+        [index.hash_fields, index.path]
+      end.each do |(hash_fields, path), hash_indexes|
         extra_choices = hash_indexes.map(&:extra).uniq
         combos = 2.upto(extra_choices.count).map do |n|
           extra_choices.combination(n).to_a.uniq
@@ -42,7 +44,7 @@ module Sadvisor
 
         combos.map do |extra|
           indexes.add Index.new hash_fields, [], extra.inject(Set.new, &:+),
-                                hash_indexes.first.path
+                                path
         end
       end
 
