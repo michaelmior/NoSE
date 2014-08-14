@@ -172,9 +172,10 @@ module Sadvisor
       end
 
       # Make sure we have the final required fields in the index
-      if path_fields.all?(&index.all_fields.method(:include?)) &&
-         (last_fields.all?(&index.all_fields.method(:include?)) ||
-          index_path.last.id_fields.all?(&index.all_fields.method(:include?)))
+      index_includes = index.all_fields.method(:include?)
+      if path_fields.all?(&index_includes) &&
+         (last_fields.all?(&index_includes) ||
+          index_path.last.id_fields.all?(&index_includes))
         # TODO: Check that fields are usable for predicates
         return [IndexLookupStep.new(index, state, parent)]
       end
