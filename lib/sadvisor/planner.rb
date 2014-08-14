@@ -532,6 +532,7 @@ module Sadvisor
       tree = QueryPlanTree.new(state)
 
       find_plans_for_step tree.root, tree.root
+      fail NoPlanException if tree.root.children.empty?
 
       tree
     end
@@ -554,7 +555,7 @@ module Sadvisor
           step.children = steps
           steps.each { |child_step| find_plans_for_step root, child_step }
         elsif step == root
-          fail NoPlanException
+          return
         else
           # Walk up the tree and remove the branch for the failed plan
           prune_step = step.instance_variable_get(:@parent)
@@ -565,7 +566,7 @@ module Sadvisor
           end
 
           # If we reached the root, we have no plan
-          fail NoPlanException if prune_step == root
+          return if prune_step == root
 
           prune_step.children.delete prev_step
         end
