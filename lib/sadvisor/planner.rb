@@ -171,6 +171,13 @@ module Sadvisor
         index_path.include? field.parent
       end
 
+      next_entity = state.path[index_path.length]
+      unless next_entity.nil?
+        return [] unless index.all_fields.any? do |field|
+          field.foreign_key_to? next_entity
+        end
+      end
+
       # Make sure we have the final required fields in the index
       index_includes = index.all_fields.method(:include?)
       if path_fields.all?(&index_includes) &&

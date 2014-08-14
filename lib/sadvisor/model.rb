@@ -150,6 +150,11 @@ module Sadvisor
       @cardinality || @parent.count || 1
     end
 
+    # Check if this field is a foreign key to the given entity
+    def foreign_key_to?(entity)
+      false
+    end
+
     # Populate a helper DSL object with all subclasses of Field
     def self.inherited(child_class)
       # Add convenience methods for all field types for an entity DSL
@@ -222,6 +227,11 @@ module Sadvisor
     # or a manually set cardinality
     def cardinality
       @entity.count || super
+    end
+
+    # Check if this field is a foreign key to the given entity
+    def foreign_key_to?(entity)
+      @entity == entity
     end
   end
 
