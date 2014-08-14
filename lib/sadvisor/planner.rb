@@ -117,8 +117,12 @@ module Sadvisor
 
     # :nocov:
     def to_color
-      "#{super} #{@index.to_color} * #{@state.cardinality} " + \
-        "$#{cost}".yellow
+      if @state.nil?
+        "#{super} #{@index.to_color}"
+      else
+        "#{super} #{@index.to_color} * #{@state.cardinality} " + \
+          "$#{cost}".yellow
+      end
     end
     # :nocov:
 
