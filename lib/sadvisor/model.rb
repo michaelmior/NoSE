@@ -38,7 +38,7 @@ module Sadvisor
     # The hash is based on the name of the entity and its fields
     # @return [Fixnum]
     def hash
-      @hash ||= [@name, @fields].hash
+      @hash ||= @name.hash
     end
 
     # Get the key fields for the entity
