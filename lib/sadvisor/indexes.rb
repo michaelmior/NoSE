@@ -78,6 +78,14 @@ module Sadvisor
       (@hash_fields + @order_fields).map(&:cardinality) \
         .inject(1, :*) * entry_size
     end
+
+    # Create a new range over the entities traversed by an index using
+    # the numerical indices into a list of entities
+    def entity_range(entities)
+      Range.new(*(@path.map do |entity|
+        entities.index entity.name
+      end).minmax) rescue (nil..nil)
+    end
   end
 
   # Allow entities to create their own indices
