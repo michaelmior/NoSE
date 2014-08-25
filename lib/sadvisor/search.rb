@@ -101,7 +101,7 @@ module Sadvisor
         entities = query.longest_entity_path
         query_indices = benefits[i].each_with_index.map do |benefit, j|
           if benefit > 0
-            [j, Search.send(:index_range, entities, indexes[j])]
+            [j, indexes[j].entity_range(entities)]
           end
         end.compact
         query_indices.each_with_index do |(overlap1, range1), j|
@@ -194,15 +194,6 @@ module Sadvisor
       end
     end
 
-    # Create a new range over the entities traversed by an index using
-    # the numerical indices into the query entity path
-    def self.index_range(entities, index)
-      Range.new(*(index.path.map do |entity|
-        entities.index entity.name
-      end).minmax) rescue (nil..nil)
-    end
-    private_class_method :index_range
-
     private
 
     # Get the reduction in cost from using each configuration of indices
@@ -212,7 +203,7 @@ module Sadvisor
         combos.map do |combo|
           # XXX This breaks search_all
           # Skip indices which don't cross the query path
-          range = Search.send(:index_range, entities, combo.last)
+          range = combo.last.entity_range entities
           next 0 if range == (nil..nil)
 
           combo_planner = Planner.new @workload, combo
