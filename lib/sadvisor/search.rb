@@ -100,16 +100,13 @@ module Sadvisor
       @workload.queries.each_with_index do |query, i|
         entities = query.longest_entity_path
         query_indices = benefits[i].each_with_index.map do |benefit, j|
-          benefit > 0 ? indexes[j] : nil
+          if benefit > 0
+            [j, Search.send(:index_range, entities, indexes[j])]
+          end
         end.compact
-        query_indices.each_with_index do |index1, j|
-          range1 = Search.send :index_range, entities, index1
-
-          query_indices[j + 1..-1].each do |index2|
-            range2 = Search.send :index_range, entities, index2
+        query_indices.each_with_index do |(overlap1, range1), j|
+          query_indices[j + 1..-1].each do |(overlap2, range2)|
             unless (range1.to_a & range2.to_a).empty?
-              overlap1 = indexes.index(index1)
-              overlap2 = indexes.index(index2)
               query_overlap[i] = {} unless query_overlap.key?(i)
               if query_overlap[i].key? overlap1
                 query_overlap[i][overlap1] << overlap2
