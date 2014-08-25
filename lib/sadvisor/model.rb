@@ -47,6 +47,12 @@ module Sadvisor
       fields.values.select { |field| field.instance_of? IDField }
     end
 
+    # Get all foreign key fields on the entity
+    # @return [Array<ForeignKey>]
+    def foreign_keys
+      fields.values.select { |field| field.is_a? ForeignKey }
+    end
+
     # Find the foreign key to a particular entity
     # @return [Field, nil]
     def foreign_key_for(entity)

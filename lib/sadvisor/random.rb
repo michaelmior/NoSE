@@ -1,6 +1,8 @@
 module Sadvisor
   # A simple representation of a random ER diagram
   class Network
+    attr_reader :entities
+
     def initialize(params = {})
       @beta = params.fetch :beta, 0.5
       @nodes_nb = params.fetch :nodes_nb, 100
@@ -10,7 +12,7 @@ module Sadvisor
       @nodes = 0..(@nodes_nb - 1)
       num_entities = RandomGaussian.new 10_000, 100
       @entities = @nodes.map do |node|
-        Sadvisor::Entity.new(random_name(node)) * num_entities.rand
+        Sadvisor::Entity.new('E' + random_name(node)) * num_entities.rand
       end
 
       @neighbours = Array.new(@nodes_nb) { Set.new }
@@ -40,13 +42,13 @@ module Sadvisor
     # Select random fields for each entity
     def pick_fields
       @nodes.each do |node|
-        @entities[node] << IDField.new('ID')
+        @entities[node] << IDField.new(@entities[node].name + 'ID')
         0.upto(@field_count.rand).each do |field_index|
           type_rand = rand
           field = FIELD_TYPES.find do |_, threshold|
             type_rand -= threshold
             type_rand <= threshold
-          end[0].send(:new, random_name(field_index))
+          end[0].send(:new, 'F' + random_name(field_index))
           @entities[node] << field
         end
       end
@@ -65,7 +67,7 @@ module Sadvisor
           end
 
           @entities[from_node] << ForeignKey.new(
-            @entities[to_node].name + 'ID',
+            'FK' + @entities[to_node].name + 'ID',
             @entities[to_node])
         end
       end
@@ -114,6 +116,41 @@ module Sadvisor
     # Generate a random name for an attribute
     def random_name(index)
       index.to_s.chars.map(&:to_i).map { |digit| VARIABLE_NAMES[digit] }.join
+    end
+  end
+
+  class QueryGenerator
+    def initialize(entities)
+      @entities = entities
+    end
+
+    def random_query
+      path = random_path(4)
+      select = path.first.fields.values.sample 2
+      conditions = 1.upto(3).map do
+        path.sample.fields.values.sample
+      end
+
+      "SELECT #{select.map(&:name).join ', '} FROM #{path.first.name} " \
+        "WHERE #{conditions.map do |field|
+          entity_names = path[0..path.index(field.parent)].map(&:name)
+          "#{entity_names.join '.'}.#{field.name} = ?"
+        end.join ' AND '}"
+    end
+
+    private
+
+    # Return a random path through the entity graph
+    # @return [Array<Entity>]
+    def random_path(max_length)
+      path = [@entities.sample]
+      while path.length < max_length
+        keys = path.last.foreign_keys - path
+        break if keys.empty?
+        path << keys.sample.entity
+      end
+
+      path
     end
   end
 end
