@@ -175,6 +175,15 @@ module Sadvisor
         index_path.include? field.parent
       end
 
+      index_includes = index.all_fields.method(:include?)
+      has_last_ids = index_path.last.id_fields.map do |field|
+        state.fields.include? field
+      end.all?
+
+      if not has_last_ids and last_fields.all?(&index_includes)
+        return [IndexLookupStep.new(index, state, parent)]
+      end
+
       next_entity = state.path[index_path.length]
       unless next_entity.nil?
         return [] unless index.all_fields.any? do |field|
@@ -183,7 +192,6 @@ module Sadvisor
       end
 
       # Make sure we have the final required fields in the index
-      index_includes = index.all_fields.method(:include?)
       if path_fields.all?(&index_includes) &&
          (last_fields.all?(&index_includes) ||
           index_path.last.id_fields.all?(&index_includes))
