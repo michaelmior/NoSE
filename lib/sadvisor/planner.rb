@@ -551,7 +551,14 @@ module Sadvisor
       state.freeze
       tree = QueryPlanTree.new(state)
 
-      find_plans_for_step tree.root, tree.root
+      # Limit indices to those which cross the query path
+      entities = query.longest_entity_path
+      indexes = @indexes.clone.select do |index|
+        index.entity_range(entities) != (nil..nil)
+      end
+      query.longest_entity_path
+
+      find_plans_for_step tree.root, tree.root, indexes
       fail NoPlanException if tree.root.children.empty?
 
       tree
@@ -567,13 +574,15 @@ module Sadvisor
 
     # Find possible query plans for a query strating at the given step
     # @raise [NoPlanException]
-    def find_plans_for_step(root, step)
+    def find_plans_for_step(root, step, indexes)
       unless step.state.answered?
-        steps = find_steps_for_state(step, step.state)
+        steps = find_steps_for_state(step, step.state, indexes)
 
         if steps.length > 0
           step.children = steps
-          steps.each { |child_step| find_plans_for_step root, child_step }
+          steps.each do |child_step|
+            find_plans_for_step root, child_step, indexes
+          end
         elsif step == root
           return
         else
@@ -596,7 +605,7 @@ module Sadvisor
     # Get a list of possible next steps for a query in the given state
     # @return [Array<PlanStep>]
     # @raise [NoPlanException]
-    def find_steps_for_state(parent, state)
+    def find_steps_for_state(parent, state, indexes)
       steps = []
 
       [SortStep, FilterStep].each \
@@ -610,7 +619,7 @@ module Sadvisor
       used_indexes = parent.parent_steps.select do |step|
         step.kind_of? IndexLookupStep
       end.map(&:index)
-      (@indexes - used_indexes).each do |index|
+      (indexes - used_indexes).each do |index|
         steps.push IndexLookupStep.apply(parent, index, state).each \
             { |new_step| new_step.add_fields_from_index index }
       end
