@@ -48,7 +48,7 @@ module Sadvisor
 
           # Check that the paths have a common prefix
           next unless paths.sort_by(&:length).reverse.inject do |a, b|
-            a.prefixes.member?(b) && b
+            a && a.prefixes.member?(b) && b
           end
 
           indexes.add Index.new hash_fields, [], extra.inject(Set.new, &:+),
@@ -129,13 +129,13 @@ module Sadvisor
                                    && order.length == 0
 
           indexes << Index.new(index, order, extra - (index + order), path)
-        end
 
-        # Partition into the ordering portion
-        if index.length == max_eq_fields
-          index.partitions.each do |index_prefix, order_prefix|
-            indexes << Index.new(index_prefix, order_prefix + order,
-                                 extra, path)
+          # Partition into the ordering portion
+          if index.length == max_eq_fields
+            index.partitions.each do |index_prefix, order_prefix|
+              indexes << Index.new(index_prefix, order_prefix + order,
+                                   extra, path)
+            end
           end
         end
 
