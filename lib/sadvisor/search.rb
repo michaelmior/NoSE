@@ -209,6 +209,7 @@ module Sadvisor
       @workload.queries.map do |query|
         entities = query.longest_entity_path
         combos.map do |combo|
+          # XXX This breaks search_all
           # Skip indices which don't cross the query path
           range = Search.send(:index_range, entities, combo.last)
           next 0 if range == (nil..nil)
