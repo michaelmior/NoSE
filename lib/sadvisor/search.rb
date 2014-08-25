@@ -155,14 +155,14 @@ module Sadvisor
       model.update
       (0...indexes.length).each do |i|
         (0...@workload.queries.length).each do |q|
-          model.addConstr(query_vars[i][q] + -1 * index_vars[i] <= 0)
+          model.addConstr(query_vars[i][q] + index_vars[i] * -1 <= 0)
         end
       end
 
       # Add space constraint if needed
       if data[:max_space].finite?
         space = indexes.each_with_index.map do |index, i|
-          (index.size * 1.0) * index_vars[i]
+          index_vars[i] * (index.size * 1.0)
         end.reduce(&:+)
         model.addConstr(space <= data[:max_space] * 1.0)
       end
