@@ -179,8 +179,9 @@ module Sadvisor
       # Set the objective function
       max_benefit = (0...indexes.length).to_a \
                     .product((0...@workload.queries.length).to_a).map do |i, q|
+        next if data[:benefits][q][i] == 0
         query_vars[i][q] * (data[:benefits][q][i] * 1.0)
-      end.reduce(&:+)
+      end.compact.reduce(&:+)
       model.setObjective(max_benefit, Gurobi::MAXIMIZE)
 
       # Run the optimizer
