@@ -28,8 +28,8 @@ module Sadvisor
     # @return [Array<Index>]
     def indexes_for_workload
       indexes = @workload.queries.map do |query|
-        indexes_for_query(query).to_set.add query.materialize_view(@workload)
-      end.inject(Set.new, &:+)
+        indexes_for_query(query).to_a << query.materialize_view(@workload)
+      end.inject([], &:+)
 
       # Combine the data of indices based on matching hash fields
       indexes.select do |index|
@@ -39,8 +39,8 @@ module Sadvisor
           [index.extra, index.path]
         end.uniq
         combos = 2.upto(extra_choices.count).map do |n|
-          extra_choices.combination(n).to_a.uniq
-        end.inject(Set.new, &:+)
+          extra_choices.combination(n).to_a
+        end.inject([], &:+)
 
         combos.map do |combo|
           extra = combo.map(&:first)
@@ -51,8 +51,8 @@ module Sadvisor
             a && a.prefixes.member?(b) && b
           end
 
-          indexes.add Index.new hash_fields, [], extra.inject(Set.new, &:+),
-                                paths.sort_by(&:length).last
+          indexes << Index.new(hash_fields, [], extra.inject(Set.new, &:+),
+                               paths.sort_by(&:length).last)
         end
       end
 
@@ -62,6 +62,8 @@ module Sadvisor
         index.hash_fields.to_set == index.path.first.id_fields.to_set &&
         index.order_fields.empty?
       end
+
+      indexes.to_set
     end
 
     private
