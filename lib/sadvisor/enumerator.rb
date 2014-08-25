@@ -38,9 +38,9 @@ module Sadvisor
         extra_choices = hash_indexes.map do |index|
           [index.extra, index.path]
         end.uniq
-        combos = 2.upto(extra_choices.count).map do |n|
-          extra_choices.combination(n).to_a
-        end.inject([], &:+)
+
+        # XXX More combos?
+        combos = extra_choices.combination(2).to_a
 
         combos.map do |combo|
           extra = combo.map(&:first)
