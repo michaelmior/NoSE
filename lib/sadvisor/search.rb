@@ -74,7 +74,7 @@ module Sadvisor
     # Search for optimal indices using an ILP which searches for
     # non-overlapping indices
     # @return [Array<Index>]
-    def search_overlap(max_space = Float::IFINITY, gap = 0.01)
+    def search_overlap(max_space = Float::INFINITY, gap = 0.01)
       # Construct the simple indices for all entities and
       # remove this from the total size
       simple_indexes = @workload.entities.values.map(&:simple_index)
