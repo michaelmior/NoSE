@@ -14,7 +14,7 @@ GEM
     debugger-linecache (1.2.0)
     diff-lcs (1.2.5)
     docile (1.1.5)
-    gurobi (0.0.1.mmior.1)
+    gurobi (0.0.2.mmior.1)
     hashids (0.3.0)
     interception (0.5)
     method_source (0.8.2)
@@ -67,7 +67,7 @@ PLATFORMS
 DEPENDENCIES
   binding_of_caller
   colorize
-  gurobi (= 0.0.1.mmior.1)
+  gurobi (= 0.0.2.mmior.1)
   hashids
   pry
   pry-byebug

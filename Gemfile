@@ -3,7 +3,7 @@ source 'https://gem.fury.io/michaelmior/'
 
 gem 'binding_of_caller'
 gem 'colorize'
-gem 'gurobi', '=0.0.1.mmior.1'
+gem 'gurobi', '=0.0.2.mmior.1'
 gem 'hashids'
 gem 'ruby-progressbar'
 gem 'rake'
