@@ -198,7 +198,7 @@ module Sadvisor
     def self.index_range(entities, index)
       Range.new(*(index.path.map do |entity|
         entities.index entity.name
-      end).minmax)
+      end).minmax) rescue (nil..nil)
     end
     private_class_method :index_range
 
@@ -207,7 +207,12 @@ module Sadvisor
     # Get the reduction in cost from using each configuration of indices
     def benefits(combos, simple_costs)
       @workload.queries.map do |query|
+        entities = query.longest_entity_path
         combos.map do |combo|
+          # Skip indices which don't cross the query path
+          range = Search.send(:index_range, entities, combo.last)
+          next 0 if range == (nil..nil)
+
           combo_planner = Planner.new @workload, combo
           begin
             [0, simple_costs[query] - combo_planner.min_plan(query).cost].max
