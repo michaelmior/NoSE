@@ -191,7 +191,8 @@ module Sadvisor
     # Determine which indices overlap each other for queries in the workload
     def overlap(indexes, benefits)
       query_overlap = {}
-      @workload.queries.each_with_index do |query, i|
+
+      Parallel.each_with_index(@workload.queries) do |query, i|
         entities = query.longest_entity_path
         query_indices = benefits[i].each_with_index.map do |benefit, j|
           if benefit > 0
@@ -220,7 +221,8 @@ module Sadvisor
     def benefits(combos, simple_costs)
       @workload.queries.map do |query|
         entities = query.longest_entity_path
-        combos.map do |combo|
+
+        Parallel.map(combos) do |combo|
           # XXX This breaks search_all
           # Skip indices which don't cross the query path
           range = combo.last.entity_range entities

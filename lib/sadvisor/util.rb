@@ -2,6 +2,7 @@
 
 require 'colorize'
 require 'memoist2'
+require 'parallel'
 
 module Enumerable
   # Enumerate all non-empty prefixes of the enumerable
