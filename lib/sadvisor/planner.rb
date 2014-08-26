@@ -208,8 +208,11 @@ module Sadvisor
     def update_state(parent)
       # Find fields which are filtered by the index
       eq_filter = @state.eq & (@index.hash_fields + @index.order_fields)
-      range_filter = @index.order_fields.include?(state.range) ? \
-        state.range : nil
+      if @index.order_fields.include?(state.range)
+        range_filter = state.range
+      else
+        range_filter = nil
+      end
 
       @state.fields -= @index.all_fields
       @state.eq -= eq_filter
@@ -556,7 +559,6 @@ module Sadvisor
       indexes = @indexes.clone.select do |index|
         index.entity_range(entities) != (nil..nil)
       end
-      query.longest_entity_path
 
       find_plans_for_step tree.root, tree.root, indexes
       fail NoPlanException if tree.root.children.empty?
@@ -575,30 +577,29 @@ module Sadvisor
     # Find possible query plans for a query strating at the given step
     # @raise [NoPlanException]
     def find_plans_for_step(root, step, indexes)
-      unless step.state.answered?
-        steps = find_steps_for_state(step, step.state, indexes)
+      return if step.state.answered?
 
-        if steps.length > 0
-          step.children = steps
-          steps.each do |child_step|
-            find_plans_for_step root, child_step, indexes
-          end
-        elsif step == root
-          return
-        else
-          # Walk up the tree and remove the branch for the failed plan
-          prune_step = step.instance_variable_get(:@parent)
-          prev_step = step
-          while prune_step.children.length <= 1 && prune_step != root
-            prune_step = prune_step.instance_variable_get(:@parent)
-            prev_step = prune_step
-          end
+      steps = find_steps_for_state(step, step.state, indexes)
 
-          # If we reached the root, we have no plan
-          return if prune_step == root
-
-          prune_step.children.delete prev_step
+      if steps.length > 0
+        step.children = steps
+        steps.each do |child_step|
+          find_plans_for_step root, child_step, indexes
         end
+      elsif step == root
+        return
+      else
+        # Walk up the tree and remove the branch for the failed plan
+        prune_step = step.instance_variable_get(:@parent)
+        while prune_step.children.length <= 1 && prune_step != root
+          prune_step = prune_step.instance_variable_get(:@parent)
+          prev_step = prune_step
+        end
+
+        # If we reached the root, we have no plan
+        return if prune_step == root
+
+        prune_step.children.delete prev_step
       end
     end
 
@@ -617,7 +618,7 @@ module Sadvisor
 
       # Don't allow indices to be used multiple times
       used_indexes = parent.parent_steps.select do |step|
-        step.kind_of? IndexLookupStep
+        step.is_a? IndexLookupStep
       end.map(&:index)
       (indexes - used_indexes).each do |index|
         steps.push IndexLookupStep.apply(parent, index, state).each \

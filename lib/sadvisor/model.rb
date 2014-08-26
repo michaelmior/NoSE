@@ -6,6 +6,8 @@ module Sadvisor
     attr_reader :fields, :name
     attr_accessor :count
 
+    alias_method :state, :name
+
     def initialize(name, &block)
       @name = name
       @fields = {}
@@ -16,10 +18,6 @@ module Sadvisor
 
       # Apply the DSL
       EntityDSL.new(self).instance_eval(&block) if block_given?
-    end
-
-    def state
-      @name
     end
 
     # :nocov:
