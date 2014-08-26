@@ -5,6 +5,8 @@ require 'treetop'
 module CQL
   # Abstract class used for nodes in the query parse tree
   class CQLNode < Treetop::Runtime::SyntaxNode
+    include Memoist2
+
     # Two nodes in the parse tree are equal if they have the same value
     def ==(other)
       if self.respond_to?(:value) && other.respond_to?(:value)
@@ -82,6 +84,7 @@ module CQL
         [from.value]
       end
     end
+    memoize :longest_entity_path
 
     # All conditions in the where clause of the query
     # @return [Array<CQL::Condition>]
@@ -101,6 +104,7 @@ module CQL
 
       conditions
     end
+    memoize :where
 
     # All fields with equality predicates in the where clause
     # @return [Array<Array<String>>]
@@ -176,6 +180,7 @@ module CQL
         text_value.to_s
       end
     end
+    memoize :value
   end
 
   # An entity name
@@ -238,6 +243,7 @@ module CQL
 
       identifiers
     end
+    memoize :value
   end
 
   # A where clause in a query
@@ -270,6 +276,7 @@ module CQL
     def range?
       [:>, :>=, :<, :<=].include?(logical_operator.value)
     end
+    memoize :range?
   end
 
   # An operator used for predicates in a where clause
