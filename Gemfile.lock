@@ -17,6 +17,7 @@ GEM
     gurobi (0.0.2.mmior.1)
     hashids (0.3.0)
     interception (0.5)
+    memoist2 (0.2.1.pre.mmior.1)
     method_source (0.8.2)
     multi_json (1.10.1)
     polyglot (0.3.5)
@@ -69,6 +70,7 @@ DEPENDENCIES
   colorize
   gurobi (= 0.0.2.mmior.1)
   hashids
+  memoist2 (= 0.2.1.pre.mmior.1)
   pry
   pry-byebug
   pry-rescue

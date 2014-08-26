@@ -1,6 +1,7 @@
 # rubocop:disable Documentation
 
 require 'colorize'
+require 'memoist2'
 
 module Enumerable
   # Enumerate all non-empty prefixes of the enumerable
