@@ -151,7 +151,7 @@ module Sadvisor
 
       # We have the fields that have already been looked up,
       # plus what was given in equality predidcates
-      given_fields = parent.fields + state.eq
+      given_fields = parent.fields + state.given_fields
 
       # If we have the IDs for the first step, we can skip that in the index
       index_path = index.path
@@ -180,7 +180,7 @@ module Sadvisor
         state.fields.include? field
       end.all?
 
-      if not has_last_ids and last_fields.all?(&index_includes)
+      if !has_last_ids && last_fields.all?(&index_includes)
         return [IndexLookupStep.new(index, state, parent)]
       end
 
