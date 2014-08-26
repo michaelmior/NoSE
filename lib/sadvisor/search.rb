@@ -96,27 +96,7 @@ module Sadvisor
       benefits = benefits indexes.map { |index| simple_indexes + [index] },
                           simple_costs
 
-      query_overlap = {}
-      @workload.queries.each_with_index do |query, i|
-        entities = query.longest_entity_path
-        query_indices = benefits[i].each_with_index.map do |benefit, j|
-          if benefit > 0
-            [j, indexes[j].entity_range(entities)]
-          end
-        end.compact
-        query_indices.each_with_index do |(overlap1, range1), j|
-          query_indices[j + 1..-1].each do |(overlap2, range2)|
-            unless (range1.to_a & range2.to_a).empty?
-              query_overlap[i] = {} unless query_overlap.key?(i)
-              if query_overlap[i].key? overlap1
-                query_overlap[i][overlap1] << overlap2
-              else
-                query_overlap[i][overlap1] = [overlap2]
-              end
-            end
-          end
-        end
-      end
+      query_overlap = overlap indexes, benefits
 
       # TODO: Add MathProg back as an option
       # # Generate the MathProg file and solve the program
@@ -134,25 +114,11 @@ module Sadvisor
                    benefits: benefits
     end
 
-    # Solve the index selection problem using Gurobi
-    def solve_gurobi(indexes, data)
-      model = Gurobi::Model.new(Gurobi::Env.new)
-      model.getEnv.set_int(Gurobi::IntParam::OUTPUT_FLAG, 0)
+    private
 
-      # Initialize query and index variables
-      index_vars = []
-      query_vars = []
-      (0...indexes.length).each do |i|
-        index_vars[i] = model.addVar(0, 1, 0, Gurobi::BINARY, "i#{i}")
-        query_vars[i] = []
-        (0...@workload.queries.length).each do |q|
-          query_vars[i][q] = model.addVar(0, 1, 0, Gurobi::BINARY, "q#{q}i#{i}")
-
-        end
-      end
-
+    # Add all necessary constraints to the Gurobi model
+    def gurobi_add_constraints(model, index_vars, query_vars, indexes, data)
       # Add constraint for indices being present
-      model.update
       (0...indexes.length).each do |i|
         (0...@workload.queries.length).each do |q|
           model.addConstr(query_vars[i][q] + index_vars[i] * -1 <= 0)
@@ -175,14 +141,42 @@ module Sadvisor
           end
         end
       end
+    end
 
-      # Set the objective function
-      max_benefit = (0...indexes.length).to_a \
-                    .product((0...@workload.queries.length).to_a).map do |i, q|
+    # Set the objective function on the Gurobi model
+    def gurobi_set_objective(model, query_vars, data)
+      max_benefit = (0...query_vars.length).to_a \
+        .product((0...@workload.queries.length).to_a).map do |i, q|
         next if data[:benefits][q][i] == 0
         query_vars[i][q] * (data[:benefits][q][i] * 1.0)
       end.compact.reduce(&:+)
+
       model.setObjective(max_benefit, Gurobi::MAXIMIZE)
+    end
+
+    # Solve the index selection problem using Gurobi
+    def solve_gurobi(indexes, data)
+      model = Gurobi::Model.new(Gurobi::Env.new)
+      model.getEnv.set_int(Gurobi::IntParam::OUTPUT_FLAG, 0)
+
+      # Initialize query and index variables
+      index_vars = []
+      query_vars = []
+      (0...indexes.length).each do |i|
+        index_vars[i] = model.addVar(0, 1, 0, Gurobi::BINARY, "i#{i}")
+        query_vars[i] = []
+        (0...@workload.queries.length).each do |q|
+          query_vars[i][q] = model.addVar(0, 1, 0, Gurobi::BINARY, "q#{q}i#{i}")
+
+        end
+      end
+
+      # Add all constraints to the model
+      model.update
+      gurobi_add_constraints model, index_vars, query_vars, indexes, data
+
+      # Set the objective function
+      gurobi_set_objective model, query_vars, data
 
       # Run the optimizer
       model.update
@@ -194,7 +188,33 @@ module Sadvisor
       end
     end
 
-    private
+    # Determine which indices overlap each other for queries in the workload
+    def overlap(indexes, benefits)
+      query_overlap = {}
+      @workload.queries.each_with_index do |query, i|
+        entities = query.longest_entity_path
+        query_indices = benefits[i].each_with_index.map do |benefit, j|
+          if benefit > 0
+            [j, indexes[j].entity_range(entities)]
+          end
+        end.compact
+
+        query_indices.each_with_index do |(overlap1, range1), j|
+          query_indices[j + 1..-1].each do |(overlap2, range2)|
+            unless (range1.to_a & range2.to_a).empty?
+              query_overlap[i] = {} unless query_overlap.key?(i)
+              if query_overlap[i].key? overlap1
+                query_overlap[i][overlap1] << overlap2
+              else
+                query_overlap[i][overlap1] = [overlap2]
+              end
+            end
+          end
+        end
+      end
+
+      query_overlap
+    end
 
     # Get the reduction in cost from using each configuration of indices
     def benefits(combos, simple_costs)
