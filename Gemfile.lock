@@ -20,6 +20,7 @@ GEM
     memoist2 (0.2.1.pre.mmior.1)
     method_source (0.8.2)
     multi_json (1.10.1)
+    parallel (1.2.4)
     polyglot (0.3.5)
     pry (0.10.0)
       coderay (~> 1.1.0)
@@ -71,6 +72,7 @@ DEPENDENCIES
   gurobi (= 0.0.2.mmior.1)
   hashids
   memoist2 (= 0.2.1.pre.mmior.1)
+  parallel
   pry
   pry-byebug
   pry-rescue
