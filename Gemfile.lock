@@ -51,6 +51,7 @@ GEM
     rspec-mocks (3.0.2)
       rspec-support (~> 3.0.0)
     rspec-support (3.0.2)
+    ruby-graphviz (1.2.1)
     ruby-progressbar (1.5.1)
     simplecov (0.8.2)
       docile (~> 1.1.0)
@@ -81,6 +82,7 @@ DEPENDENCIES
   rglpk (~> 0.3.2)
   rspec
   rspec-collection_matchers
+  ruby-graphviz
   ruby-progressbar
   simplecov
   thor
