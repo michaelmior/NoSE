@@ -85,6 +85,7 @@ module Sadvisor
       # Generate all possible combinations of indices
       indexes = IndexEnumerator.new(@workload).indexes_for_workload.to_a
       index_sizes = indexes.map(&:size)
+      return [] if indexes.empty?
 
       # Get the cost of all queries with the simple indices
       simple_planner = Planner.new @workload, simple_indexes
