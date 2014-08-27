@@ -10,6 +10,7 @@ gem 'ruby-progressbar'
 gem 'parallel'
 gem 'rake'
 gem 'rglpk', '~>0.3.2'
+gem 'ruby-graphviz'
 gem 'thor'
 gem 'treetop'
 

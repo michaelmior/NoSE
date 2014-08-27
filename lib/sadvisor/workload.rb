@@ -1,6 +1,8 @@
 require_relative './model'
 require_relative './parser'
 
+require 'graphviz'
+
 module Sadvisor
   # A representation of a query workload over a given set of entities
   class Workload
@@ -96,6 +98,22 @@ module Sadvisor
       end
 
       fields_exist?
+    end
+
+    # Output a PNG representation of entities in the workload
+    def output_png(filename)
+      graph = GraphViz.new :G, type: :digraph
+      nodes = Hash[@entities.values.map do |entity|
+        [entity.name, graph.add_nodes(entity.name)]
+      end]
+
+      entities.values.each do |entity|
+        entity.foreign_keys.each do |key|
+          graph.add_edges nodes[entity.name], nodes[key.entity.name]
+        end
+      end
+
+      graph.output png: filename
     end
 
     private
