@@ -101,10 +101,18 @@ module Sadvisor
     end
 
     # Output a PNG representation of entities in the workload
-    def output_png(filename)
+    def output_png(filename, include_fields = false)
       graph = GraphViz.new :G, type: :digraph
       nodes = Hash[@entities.values.map do |entity|
-        [entity.name, graph.add_nodes(entity.name)]
+        label = "#{entity.name}\n"
+        if include_fields
+          label += entity.fields.values.map do |field|
+            type = field.class.name.sub(/^Sadvisor::(.*?)(Field)?$/, '\1')
+            "#{field.name}: #{type}"
+          end.join("\n")
+        end
+
+        [entity.name, graph.add_nodes(label)]
       end]
 
       entities.values.each do |entity|
