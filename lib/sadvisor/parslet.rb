@@ -38,6 +38,56 @@ module Sadvisor
       limit.maybe.capture(:limit) }
     root :statement
   end
+
+  # Simple transformations to clean up the CQL parse tree
+  class CQLT < Parslet::Transform
+    rule(identifier: simple(:identifier)) { identifier }
+    rule(field: sequence(:field)) { field.map(&:to_s) }
+  end
+
+  # A single condition in a where clause
+  class Condition
+    attr_reader :field, :is_range
+    alias_method :range?, :is_range
+
+    def initialize(field, operator)
+      @field = field
+      @is_range = [:>, :>=, :<, :<=].include? operator
+    end
+
+    def inspect
+      @field.inspect + ' ' + @is_range.inspect
+    end
+  end
+
+  # A CQL statement and its associated data
+  class Statement
+    attr_reader :select, :from, :conditions, :order, :limit
+
+    def initialize(query, workload)
+      tree = CQLT.new.apply(CQLP.new.parse query)
+      @from = workload[tree[:entity].to_s]
+      @select = tree[:select].map do |field|
+        workload.find_field [tree[:entity].to_s, field.to_s]
+      end
+
+      populate_conditions tree[:where][:expression], workload
+
+      @order = tree[:order][:fields].map do |field|
+        workload.find_field field.map(&:to_s)
+      end
+      @limit = tree[:limit].to_i if tree[:limit]
+    end
+
+    private
+
+    def populate_conditions(where, workload)
+      @conditions = where.map do |condition|
+        field = workload.find_field condition[:field].map(&:to_s)
+        Condition.new field, condition[:op].to_sym
+      end
+    end
+  end
 end
 
 # rubocop:enable all
