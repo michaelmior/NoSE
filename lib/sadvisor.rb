@@ -12,3 +12,6 @@ require_relative 'sadvisor/planner'
 require_relative 'sadvisor/random'
 require_relative 'sadvisor/search'
 require_relative 'sadvisor/workload'
+
+# XXX Temporary separate file for new parser
+require_relative 'sadvisor/parslet'
