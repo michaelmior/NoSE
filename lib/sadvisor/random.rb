@@ -120,10 +120,12 @@ module Sadvisor
   end
 
   class QueryGenerator
-    def initialize(entities)
-      @entities = entities
+    def initialize(workload)
+      @workload = workload
     end
 
+    # Generate a new random query from entities in the workload
+    # @return Statement
     def random_query
       path = random_path(4)
       select = path.first.fields.values.sample 2
@@ -131,19 +133,34 @@ module Sadvisor
         path.sample.fields.values.sample
       end
 
-      "SELECT #{select.map(&:name).join ', '} FROM #{path.first.name} " \
-        "WHERE #{conditions.map do |field|
-          entity_names = path[0..path.index(field.parent)].map(&:name)
-          "#{entity_names.join '.'}.#{field.name} = ?"
-        end.join ' AND '}"
+      query = "SELECT #{select.map(&:name).join ', '} " \
+              "FROM #{path.first.name} WHERE #{conditions.map do |field|
+                "#{condition_field_name field, path}.#{field.name} = ?"
+              end.join ' AND '}"
+
+      Statement.new query, @workload
     end
 
     private
 
+    # Get the name to be used in the query for a condition field
+    # @return String
+    def condition_field_name(field, path)
+      field_path = path.first.name
+      path_end = path.index(field.parent)
+      last_entity = path.first
+      path[1..path_end].each do |entity|
+        field_path += '.' + last_entity.foreign_key_for(entity).name
+        last_entity = entity
+      end
+
+      field_path
+    end
+
     # Return a random path through the entity graph
     # @return [Array<Entity>]
     def random_path(max_length)
-      path = [@entities.sample]
+      path = [@workload.entities.values.sample]
       while path.length < max_length
         keys = path.last.foreign_keys - path
         break if keys.empty?
