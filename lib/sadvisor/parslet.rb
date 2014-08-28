@@ -66,7 +66,11 @@ module Sadvisor
                 :eq_fields, :range_field,
                 :longest_entity_path
 
+    attr_reader :query
+    alias_method :inspect, :query
+
     def initialize(query, workload)
+      @query = query
       tree = CQLT.new.apply(CQLP.new.parse query)
       @from = workload[tree[:entity].to_s]
 
@@ -91,6 +95,7 @@ module Sadvisor
         workload.find_field [tree[:entity].to_s, field.to_s]
       end
 
+      return if tree[:order].nil?
       @order = tree[:order][:fields].map do |field|
         workload.find_field field.map(&:to_s)
       end
@@ -104,7 +109,8 @@ module Sadvisor
       end
 
       @eq_fields = @conditions.reject(&:range?).map(&:field)
-      @range_field = @conditions.find(&:range?).field
+      @range_field = @conditions.find(&:range?)
+      @range_field = @range_field.field unless @range_field.nil?
     end
 
     # Calculate the longest path of entities traversed by the query
@@ -113,7 +119,8 @@ module Sadvisor
       return @longest_entity_path = [@from] if where.length == 0
 
       fields = where.map { |condition| condition[:field].map(&:to_s) }
-      fields += tree[:order][:fields].map { |field| field.map(&:to_s) }
+      fields += tree[:order][:fields].map { |field| field.map(&:to_s) } \
+        unless tree[:order].nil?
       path = fields.max_by(&:length)[1..-2]  # end is field
       @longest_entity_path = path.reduce [@from] do |entities, key|
         entities + [entities.last[key].entity]
