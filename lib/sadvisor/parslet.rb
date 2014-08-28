@@ -62,29 +62,61 @@ module Sadvisor
 
   # A CQL statement and its associated data
   class Statement
-    attr_reader :select, :from, :conditions, :order, :limit
+    attr_reader :select, :from, :conditions, :order, :limit,
+                :eq_fields, :range_field,
+                :longest_entity_path
 
     def initialize(query, workload)
       tree = CQLT.new.apply(CQLP.new.parse query)
       @from = workload[tree[:entity].to_s]
-      @select = tree[:select].map do |field|
-        workload.find_field [tree[:entity].to_s, field.to_s]
-      end
 
+      populate_fields tree, workload
       populate_conditions tree[:where][:expression], workload
 
-      @order = tree[:order][:fields].map do |field|
-        workload.find_field field.map(&:to_s)
-      end
       @limit = tree[:limit].to_i if tree[:limit]
+
+      find_longest_path tree
+    end
+
+    # All fields referenced anywhere in the query
+    def all_fields
+      (@select + @conditions.map(&:field) + @order).to_set
     end
 
     private
 
+    # Populate the fields selected by this query
+    def populate_fields(tree, workload)
+      @select = tree[:select].map do |field|
+        workload.find_field [tree[:entity].to_s, field.to_s]
+      end
+
+      @order = tree[:order][:fields].map do |field|
+        workload.find_field field.map(&:to_s)
+      end
+    end
+
+    # Populate the list of condition objects
     def populate_conditions(where, workload)
       @conditions = where.map do |condition|
         field = workload.find_field condition[:field].map(&:to_s)
         Condition.new field, condition[:op].to_sym
+      end
+
+      @eq_fields = @conditions.reject(&:range?).map(&:field)
+      @range_field = @conditions.find(&:range?).field
+    end
+
+    # Calculate the longest path of entities traversed by the query
+    def find_longest_path(tree)
+      where = tree[:where][:expression]
+      return @longest_entity_path = [@from] if where.length == 0
+
+      fields = where.map { |condition| condition[:field].map(&:to_s) }
+      fields += tree[:order][:fields].map { |field| field.map(&:to_s) }
+      path = fields.max_by(&:length)[1..-2]  # end is field
+      @longest_entity_path = path.reduce [@from] do |entities, key|
+        entities + [entities.last[key].entity]
       end
     end
   end
