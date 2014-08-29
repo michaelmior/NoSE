@@ -75,7 +75,7 @@ module Sadvisor
       @from = workload[tree[:entity].to_s]
 
       populate_fields tree, workload
-      populate_conditions tree[:where][:expression], workload
+      populate_conditions tree[:where], workload
 
       @limit = tree[:limit].to_i if tree[:limit]
 
@@ -95,7 +95,7 @@ module Sadvisor
         workload.find_field [tree[:entity].to_s, field.to_s]
       end
 
-      return if tree[:order].nil?
+      return @order = [] if tree[:order].nil?
       @order = tree[:order][:fields].map do |field|
         workload.find_field field.map(&:to_s)
       end
@@ -103,9 +103,13 @@ module Sadvisor
 
     # Populate the list of condition objects
     def populate_conditions(where, workload)
-      @conditions = where.map do |condition|
-        field = workload.find_field condition[:field].map(&:to_s)
-        Condition.new field, condition[:op].to_sym
+      if where.nil?
+        @conditions = []
+      else
+        @conditions = where[:expression].map do |condition|
+          field = workload.find_field condition[:field].map(&:to_s)
+          Condition.new field, condition[:op].to_sym
+        end
       end
 
       @eq_fields = @conditions.reject(&:range?).map(&:field)
@@ -115,6 +119,7 @@ module Sadvisor
 
     # Calculate the longest path of entities traversed by the query
     def find_longest_path(tree)
+      return @longest_entity_path = [@from] if tree[:where].nil?
       where = tree[:where][:expression]
       return @longest_entity_path = [@from] if where.length == 0
 

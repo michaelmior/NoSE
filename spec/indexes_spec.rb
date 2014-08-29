@@ -1,43 +1,42 @@
 module Sadvisor
   describe Index do
-    let(:simple_query)   { Parser.parse('SELECT Id FROM Foo') }
-    let(:equality_query) { Parser.parse('SELECT Id FROM Foo WHERE Foo.Id=3') }
-    let(:range_query)    do Parser.parse('SELECT Id FROM Foo WHERE ' \
-                                         'Foo.Id > 3')
+    let(:workload) do
+      Workload.new do
+        Entity 'Corge' do
+          Integer 'Quux'
+        end
+
+        (Entity 'Foo' do
+          ID 'Id'
+          Integer 'Bar'
+          ForeignKey 'Corge', 'Corge'
+        end) * 100
+      end
     end
-    let(:combo_query)    do Parser.parse('SELECT Id FROM Foo WHERE ' \
-                                         'Foo.Id > 3 AND Foo.Bar = 1')
+    let(:simple_query) do
+      Statement.new('SELECT Id FROM Foo', workload)
     end
-    let(:order_query)    do Parser.parse('SELECT Id FROM Foo ' \
-                                                  'ORDER BY Foo.Id')
+    let(:equality_query) do
+      Statement.new('SELECT Id FROM Foo WHERE Foo.Id = ?', workload)
     end
-    let(:foreign_query)  do Parser.parse('SELECT Id FROM Foo WHERE ' \
-                                         'Foo.Corge.Quux = 3')
+    let(:range_query) do
+      Statement.new 'SELECT Id FROM Foo WHERE Foo.Id > ?', workload
+    end
+    let(:combo_query) do
+      Statement.new 'SELECT Id FROM Foo WHERE Foo.Id > ? AND Foo.Bar = ?',
+                    workload
+    end
+    let(:order_query) do
+      Statement.new 'SELECT Id FROM Foo ORDER BY Foo.Id', workload
     end
 
     before(:each) do
-      @entity = Entity.new('Foo') * 100
-      @id_field = IDField.new('Id')
-      @field = IntegerField.new('Bar')
-      @entity << @id_field
-      @entity << @field
-
-      @other_entity = Entity.new('Baz')
-      @other_field = IntegerField.new('Quux')
-      @other_entity << @other_field
-
-      @foreign_key = ForeignKey.new('Corge', @other_entity)
-      @entity << @foreign_key
-
-      @workload = Workload.new
-      @workload.add_query simple_query
-      @workload.add_query equality_query
-      @workload.add_query range_query
-      @workload.add_query range_query
-      @workload.add_query combo_query
-      @workload.add_query order_query
-      @workload.add_entity @entity
-      @workload.add_entity @other_entity
+      workload.add_query simple_query
+      workload.add_query equality_query
+      workload.add_query range_query
+      workload.add_query range_query
+      workload.add_query combo_query
+      workload.add_query order_query
     end
 
     it 'has zero size when empty' do
@@ -48,61 +47,64 @@ module Sadvisor
     end
 
     it 'contains fields' do
-      index = Index.new([@id_field], [], [], [])
-      expect(index.contains_field? @id_field).to be true
+      index = Index.new([workload['Foo']['Id']], [], [], [])
+      expect(index.contains_field? workload['Foo']['Id']).to be true
     end
 
     it 'can store additional fields' do
-      index = Index.new([], [], [@id_field], [])
-      expect(index.contains_field? @id_field).to be true
+      index = Index.new([], [], [workload['Foo']['Id']], [])
+      expect(index.contains_field? workload['Foo']['Id']).to be true
     end
 
     it 'can calculate its size' do
-      @big_id_field = IDField.new('Id') * 10
-      @entity << @big_id_field
-      index = Index.new([@big_id_field], [], [], [])
-      expect(index.entry_size).to eq(@big_id_field.size)
-      expect(index.size).to eq(@id_field.size * 10)
+      big_id_field = IDField.new('Id') * 10
+      workload['Foo'] << big_id_field
+      index = Index.new([big_id_field], [], [], [])
+      expect(index.entry_size).to eq(big_id_field.size)
+      expect(index.size).to eq(workload['Foo']['Id'].size * 10)
     end
 
     context 'when materializing views' do
       it 'supports simple lookups' do
-        index = simple_query.materialize_view(@workload)
-        expect(index.extra).to eq([@id_field].to_set)
+        index = simple_query.materialize_view
+        expect(index.extra).to eq([workload['Foo']['Id']].to_set)
       end
 
       it 'supports equality predicates' do
-        index = equality_query.materialize_view(@workload)
-        expect(index.hash_fields).to eq([@id_field].to_set)
+        index = equality_query.materialize_view
+        expect(index.hash_fields).to eq([workload['Foo']['Id']].to_set)
       end
 
       it 'support range queries' do
-        index = range_query.materialize_view(@workload)
-        expect(index.order_fields).to eq([@id_field])
+        index = range_query.materialize_view
+        expect(index.order_fields).to eq([workload['Foo']['Id']])
       end
 
       it 'supports multiple predicates' do
-        index = combo_query.materialize_view(@workload)
-        expect(index.hash_fields).to eq([@field].to_set)
-        expect(index.order_fields).to eq([@id_field])
+        index = combo_query.materialize_view
+        expect(index.hash_fields).to eq([workload['Foo']['Bar']].to_set)
+        expect(index.order_fields).to eq([workload['Foo']['Id']])
       end
 
       it 'supports order by' do
-        index = order_query.materialize_view(@workload)
-        expect(index.order_fields).to eq([@id_field])
+        index = order_query.materialize_view
+        expect(index.order_fields).to eq([workload['Foo']['Id']])
       end
     end
 
     it 'can tell if it maps identities for a field' do
-      index = Index.new([@id_field], [], [], [])
-      expect(index.identity_for? @entity).to be true
+      index = Index.new([workload['Foo']['Id']], [], [], [])
+      expect(index.identity_for? workload['Foo']).to be true
     end
 
     it 'can be created to map entity fields by id' do
-      index = @entity.simple_index
-      expect(index.hash_fields).to eq([@id_field].to_set)
+      index = workload['Foo'].simple_index
+      expect(index.hash_fields).to eq([workload['Foo']['Id']].to_set)
       expect(index.order_fields).to eq([])
-      expect(index.extra).to eq([@field, @foreign_key].to_set)
+      expect(index.extra).to eq([
+        workload['Foo']['Bar'],
+        workload['Foo']['Corge']
+      ].to_set)
     end
   end
 end

@@ -9,7 +9,7 @@ module Sadvisor
       @hash_fields = hash_fields.to_set
       @order_fields = order_fields
       @extra = extra.to_set
-      @all_fields = (hash_fields + order_fields + extra).to_set
+      @all_fields = @hash_fields + order_fields.to_set + @extra
       @path = path
 
       # Initialize the hash function and freeze ourselves
@@ -96,33 +96,18 @@ module Sadvisor
       Index.new(id_fields, [], fields.values - id_fields, [self])
     end
   end
-end
 
-module CQL
   # Allow statements to materialize views
   class Statement
     # Construct an index which acts as a materialized view for a query
     # @return [Index]
-    def materialize_view(workload)
-      # Start with fields used for equality and range predicates, then order
-      order_fields = []
-      order_fields.push workload.find_field(range_field.field.value) \
-        if range_field
-      order_fields += order_by.map { |field| workload.find_field field }
+    def materialize_view
+      order_fields = @order
+      order_fields << @range_field if @range_field
 
-      hash_fields = eq_fields.map do |field|
-        workload.find_field field.field.value
-      end
-
-      # Add all other fields used in the query, minus those already added
-      extra = fields.map do |field|
-        workload.find_field field.value
-      end
-      extra -= (hash_fields + order_fields)
-
-      Sadvisor::Index.new(hash_fields, order_fields, extra,
-                          longest_entity_path.reverse \
-                            .map(&workload.method(:[])))
+      Sadvisor::Index.new(@eq_fields, order_fields,
+                          all_fields - (@eq_fields + @order).to_set,
+                          @longest_entity_path.reverse)
     end
   end
 end
