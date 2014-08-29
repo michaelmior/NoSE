@@ -100,9 +100,7 @@ module Sadvisor
       @index = index
 
       if state && state.query
-        all_fields = state.query.all_fields.map do |field|
-          state.workload.find_field field
-        end
+        all_fields = state.query.all_fields
         @fields = (@index.hash_fields + @index.order_fields).to_set + \
           (@index.extra.to_set & all_fields)
       else
@@ -207,7 +205,7 @@ module Sadvisor
     # Modify the state to reflect the fields looked up by the index
     def update_state(parent)
       # Find fields which are filtered by the index
-      eq_filter = @state.eq & (@index.hash_fields + @index.order_fields)
+      eq_filter = @state.eq & (@index.hash_fields + @index.order_fields).to_set
       if @index.order_fields.include?(state.range)
         range_filter = state.range
       else
@@ -437,17 +435,12 @@ module Sadvisor
     def initialize(query, workload)
       @query = query
       @workload = workload
-      @from = workload[query.from.value]
-      @fields = query.fields.map do |field|
-        workload.find_field field.value
-      end.to_set
-      @eq = query.eq_fields.map do |condition|
-        workload.find_field condition.field.value
-      end.to_set
-      @range = workload.find_field query.range_field.field.value \
-          unless query.range_field.nil?
-      @order_by = query.order_by.map { |field| workload.find_field field }
-      @path = query.longest_entity_path.map(&workload.method(:[])).reverse
+      @from = query.from
+      @fields = query.select
+      @eq = query.eq_fields
+      @range = query.range_field
+      @order_by = query.order
+      @path = query.longest_entity_path.reverse
       @cardinality = @path.first.count
       @given_fields = @eq.dup
 

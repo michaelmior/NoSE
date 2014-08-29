@@ -93,7 +93,7 @@ module Sadvisor
     def populate_fields(tree, workload)
       @select = tree[:select].map do |field|
         workload.find_field [tree[:entity].to_s, field.to_s]
-      end
+      end.to_set
 
       return @order = [] if tree[:order].nil?
       @order = tree[:order][:fields].map do |field|
@@ -112,7 +112,7 @@ module Sadvisor
         end
       end
 
-      @eq_fields = @conditions.reject(&:range?).map(&:field)
+      @eq_fields = @conditions.reject(&:range?).map(&:field).to_set
       @range_field = @conditions.find(&:range?)
       @range_field = @range_field.field unless @range_field.nil?
     end

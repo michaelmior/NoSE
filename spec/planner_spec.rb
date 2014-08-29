@@ -22,7 +22,7 @@ module Sadvisor
     it 'can look up fields by key' do
       index = @entity.simple_index
       planner = Planner.new(@workload, [index])
-      query = Parser.parse 'SELECT Body FROM Tweet'
+      query = Statement.new 'SELECT Body FROM Tweet', @workload
 
       tree = planner.find_plans_for_query query
       expect(tree.first).to eq([IndexLookupStep.new(index)])
@@ -33,8 +33,8 @@ module Sadvisor
     it 'can perform an external sort if an index does not exist' do
       index = @entity.simple_index
       planner = Planner.new(@workload, [index])
-      query = Parser.parse 'SELECT Body FROM Tweet ORDER BY ' \
-                           'Tweet.Timestamp'
+      query = Statement.new 'SELECT Body FROM Tweet ORDER BY ' \
+                            'Tweet.Timestamp', @workload
 
       tree = planner.find_plans_for_query query
       steps = [IndexLookupStep.new(index), SortStep.new([@time_field])]
@@ -44,7 +44,7 @@ module Sadvisor
 
     it 'raises an exception if there is no plan' do
       planner = Planner.new(@workload, [])
-      query = Parser.parse 'SELECT Body FROM Tweet'
+      query = Statement.new 'SELECT Body FROM Tweet', @workload
       expect { planner.find_plans_for_query query }.to \
           raise_error NoPlanException
     end
@@ -53,7 +53,8 @@ module Sadvisor
       index1 = Index.new [], [@time_field], [@body_field], [@entity]
       index2 = Index.new [@id_field], [], [@time_field, @body_field], [@entity]
       planner = Planner.new(@workload, [index1, index2])
-      query = Parser.parse 'SELECT Body FROM Tweet ORDER BY Tweet.Timestamp'
+      query = Statement.new 'SELECT Body FROM Tweet ORDER BY Tweet.Timestamp',
+                            @workload
 
       tree = planner.find_plans_for_query query
       expect(tree.to_a).to match_array [
@@ -65,7 +66,7 @@ module Sadvisor
     it 'knows which fields are available at a given step' do
       index = Index.new [@id_field], [], [@body_field, @time_field], [@entity]
       planner = Planner.new(@workload, [index])
-      query = Parser.parse 'SELECT Body FROM Tweet'
+      query = Statement.new 'SELECT Body FROM Tweet', @workload
 
       plan = planner.find_plans_for_query(query).first
       expect(plan.last.fields).to include(@id_field, @body_field, @time_field)
@@ -74,7 +75,8 @@ module Sadvisor
     it 'can apply external filtering' do
       index = Index.new [@id_field], [], [@body_field, @time_field], [@entity]
       planner = Planner.new(@workload, [index])
-      query = Parser.parse 'SELECT Body FROM Tweet WHERE Tweet.Timestamp > 1'
+      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.Timestamp > ?',
+                            @workload
 
       tree = planner.find_plans_for_query(query)
       expect(tree).to have(1).plan
@@ -83,12 +85,12 @@ module Sadvisor
 
     context 'when updating cardinality' do
       before(:each) do
-        simple_query = Parser.parse 'SELECT Body FROM Tweet ' \
-                                    'WHERE Tweet.TweetId = ?'
+        simple_query = Statement.new 'SELECT Body FROM Tweet ' \
+                                     'WHERE Tweet.TweetId = ?', @workload
         @simple_state = QueryState.new simple_query, @workload
 
-        query = Parser.parse 'SELECT Body FROM Tweet ' \
-                             'WHERE Tweet.User.UserId = ?'
+        query = Statement.new 'SELECT Body FROM Tweet ' \
+                              'WHERE Tweet.User.UserId = ?', @workload
         @state = QueryState.new query, @workload
       end
 
