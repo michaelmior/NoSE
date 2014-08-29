@@ -1,43 +1,137 @@
-# Load our custom syntax node classes so the parser can use them
-require_relative 'node_extensions'
+require 'parslet'
+
+# rubocop:disable Style/Blocks, Style/BlockEndNewline
 
 module Sadvisor
-  # A parser for a generic query language for NoSQL databases
-  class Parser
-    # Load the Treetop grammar from the 'cql_parser' file, and create a new
-    # instance of that parser as a class variable so we don't have to re-create
-    # it every time we need to parse a string
-    Treetop.load(File.expand_path(File.join(File.dirname(__FILE__),
-                                            'cql_parser.treetop')))
-    @parser = CQLParser.new
+  # Parser for a simple CQL-like grammar
+  class CQLP < Parslet::Parser
+    rule(:operator)    {
+      str('=') | str('!=') | str('<=') | str('>=') | str('<') | str('>') }
+    rule(:space)       { match('\s').repeat(1) }
+    rule(:space?)      { space.maybe }
+    rule(:comma)       { str(',') >> space? }
+    rule(:literal)     { str('?') }
+    rule(:integer)     { match('[0-9]').repeat(1) }
 
-    # Parse an input string and return an AST
-    # @return [CQL::Statement]
-    def self.parse(data)
-      # Pass the data over to the parser instance
-      tree = @parser.parse(data)
+    rule(:identifier)  { match('[A-z]').repeat(1).as(:identifier) }
+    rule(:identifiers) { identifier >> (comma >> identifier).repeat }
 
-      # If the AST is nil then there was an error during parsing
-      # we need to report a simple error message to help the user
-      fail Exception, "Parse error at offset: #{@parser.index}" if tree.nil?
+    rule(:field)       {
+      (identifier >> (str('.') >> identifier).repeat(1)).as_array(:field) }
+    rule(:fields)      { field >> (comma >> field).repeat }
 
-      # Remove all syntax nodes that aren't one of our custom
-      # classes. If we don't do this we will end up with a *lot*
-      # of essentially useless nodes
-      clean_tree(tree)
+    rule(:condition)   {
+      field.as(:field) >> space >> operator.as(:op) >> space? >> literal }
+    rule(:expression)  {
+      condition >> (space >> str('AND') >> space >> expression).repeat }
+    rule(:where)       {
+      space >> str('WHERE') >> space >> expression.as_array(:expression) }
 
-      tree
+    rule(:limit)       { space >> str('LIMIT') >> space >> integer.as(:limit) }
+    rule(:order)       {
+      space >> str('ORDER BY') >> space >> fields.as_array(:fields) }
+
+    rule(:statement)   {
+      str('SELECT') >> space >> identifiers.as_array(:select) >> space >> \
+      str('FROM') >> space >> identifier.as(:entity) >> \
+      where.maybe.as_array(:where) >> order.maybe.as(:order) >> \
+      limit.maybe.capture(:limit) }
+    root :statement
+  end
+
+  # Simple transformations to clean up the CQL parse tree
+  class CQLT < Parslet::Transform
+    rule(identifier: simple(:identifier)) { identifier }
+    rule(field: sequence(:field)) { field.map(&:to_s) }
+  end
+
+  # A single condition in a where clause
+  class Condition
+    attr_reader :field, :is_range
+    alias_method :range?, :is_range
+
+    def initialize(field, operator)
+      @field = field
+      @is_range = [:>, :>=, :<, :<=].include? operator
     end
 
-    # Remove unnecessary nodes
-    def self.clean_tree(root_node)
-      return if root_node.elements.nil?
-      root_node.elements.delete_if do |node|
-        node.class == Treetop::Runtime::SyntaxNode
+    def inspect
+      @field.inspect + ' ' + @is_range.inspect
+    end
+  end
+
+  # A CQL statement and its associated data
+  class Statement
+    attr_reader :select, :from, :conditions, :order, :limit,
+                :eq_fields, :range_field,
+                :longest_entity_path
+
+    attr_reader :query
+    alias_method :inspect, :query
+
+    def initialize(query, workload)
+      @query = query
+      tree = CQLT.new.apply(CQLP.new.parse query)
+      @from = workload[tree[:entity].to_s]
+
+      populate_fields tree, workload
+      populate_conditions tree[:where], workload
+
+      @limit = tree[:limit].to_i if tree[:limit]
+
+      find_longest_path tree
+    end
+
+    # All fields referenced anywhere in the query
+    def all_fields
+      (@select + @conditions.map(&:field) + @order).to_set
+    end
+
+    private
+
+    # Populate the fields selected by this query
+    def populate_fields(tree, workload)
+      @select = tree[:select].map do |field|
+        workload.find_field [tree[:entity].to_s, field.to_s]
+      end.to_set
+
+      return @order = [] if tree[:order].nil?
+      @order = tree[:order][:fields].map do |field|
+        workload.find_field field.map(&:to_s)
+      end
+    end
+
+    # Populate the list of condition objects
+    def populate_conditions(where, workload)
+      if where.nil?
+        @conditions = []
+      else
+        @conditions = where[:expression].map do |condition|
+          field = workload.find_field condition[:field].map(&:to_s)
+          Condition.new field, condition[:op].to_sym
+        end
       end
 
-      root_node.elements.each { |node| clean_tree(node) }
+      @eq_fields = @conditions.reject(&:range?).map(&:field).to_set
+      @range_field = @conditions.find(&:range?)
+      @range_field = @range_field.field unless @range_field.nil?
     end
-    private_class_method :clean_tree
+
+    # Calculate the longest path of entities traversed by the query
+    def find_longest_path(tree)
+      return @longest_entity_path = [@from] if tree[:where].nil?
+      where = tree[:where][:expression]
+      return @longest_entity_path = [@from] if where.length == 0
+
+      fields = where.map { |condition| condition[:field].map(&:to_s) }
+      fields += tree[:order][:fields].map { |field| field.map(&:to_s) } \
+        unless tree[:order].nil?
+      path = fields.max_by(&:length)[1..-2]  # end is field
+      @longest_entity_path = path.reduce [@from] do |entities, key|
+        entities + [entities.last[key].entity]
+      end
+    end
   end
 end
+
+# rubocop:enable all
