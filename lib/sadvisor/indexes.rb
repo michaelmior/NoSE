@@ -41,16 +41,14 @@ module Sadvisor
     # Two indices are equal if they contain the same fields
     # @return [Boolean]
     def ==(other)
-      @hash_fields == other.hash_fields && \
-          @order_fields == other.order_fields && \
-          @extra.to_set == other.extra.to_set
+      hash == other.hash
     end
     alias_method :eql?, :==
 
-    # Hash based on the fields, their keys, and the extra fields
+    # Hash based on the fields, their keys, and the path
     # @return [Fixnum]
     def hash
-      @hash ||= [@hash_fields, @order_fields, @extra.to_set].hash
+      @hash ||= [@hash_fields, @order_fields, @extra.to_set, @path].hash
     end
 
     # Check if this index is a mapping from the key of the given entity

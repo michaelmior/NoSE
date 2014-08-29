@@ -8,27 +8,19 @@ module Sadvisor
     # Produce all possible indices for a given query
     # @return [Array<Index>]
     def indexes_for_query(query)
-      path = query.longest_entity_path.map do |entity|
-        @workload[entity]
-      end.reverse
-      select = query.fields.map { |field| @workload.find_field field.value }
-      eq = query.eq_fields.map do |condition|
-        @workload.find_field condition.field.value
-      end
+      range = query.order
+      range << query.range_field unless query.range_field.nil?
 
-      range = query.order_by.map { |field| @workload.find_field field }
-      range << @workload.find_field(query.range_field.field.value) \
-        unless query.range_field.nil?
-
-      indexes_for_path path, select,
-                       eq.group_by(&:parent), range.group_by(&:parent)
+      indexes_for_path query.longest_entity_path, query.select,
+                       query.eq_fields.group_by(&:parent),
+                       range.group_by(&:parent)
     end
 
     # Produce all possible indices for a given workload
     # @return [Array<Index>]
     def indexes_for_workload
       indexes = @workload.queries.map do |query|
-        indexes_for_query(query).to_a << query.materialize_view(@workload)
+        indexes_for_query(query).to_a << query.materialize_view
       end.inject([], &:+)
 
       # Combine the data of indices based on matching hash fields
@@ -104,7 +96,7 @@ module Sadvisor
         [select[0].parent.id_fields, select]
       else
         filter_choices = (eq[last] || []) + (range[last] || [])
-        choices = [last.id_fields]
+        choices = [last.id_fields, select]
         choices << filter_choices unless filter_choices.empty?
         choices
       end
