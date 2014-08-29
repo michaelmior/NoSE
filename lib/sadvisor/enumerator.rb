@@ -92,8 +92,8 @@ module Sadvisor
     # Get fields which should be included in an index for the given path
     def extra_choices(path, select, eq, range)
       last = path[-1]
-      if select[0].parent == last
-        [select[0].parent.id_fields, select]
+      if select.first.parent == last
+        [select.first.parent.id_fields, select]
       else
         filter_choices = (eq[last] || []) + (range[last] || [])
         choices = [last.id_fields, select]
