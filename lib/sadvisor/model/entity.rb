@@ -85,7 +85,8 @@ module Sadvisor
     # Get the field on the entity with the given name
     # @return [Field]
     def [](field)
-      @fields[field]
+      return @fields[field] if @fields.key? field
+      fail FieldNotFound
     end
 
     # All the keys found when traversing foreign keys
@@ -100,5 +101,8 @@ module Sadvisor
     def initialize(entity)
       @entity = entity
     end
+  end
+
+  class EntityNotFound < StandardError
   end
 end
