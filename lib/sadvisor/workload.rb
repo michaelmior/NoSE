@@ -30,7 +30,8 @@ module Sadvisor
     # Retrieve an entity by name
     # @return [Entity]
     def [](name)
-      @entities[name]
+      return @entities[name] if @entities.key? name
+      fail EntityNotFound
     end
 
     # Add a new {Statement} to the workload or parse a string
@@ -146,5 +147,8 @@ module Sadvisor
     end
 
     # rubocop:enable MethodName
+  end
+
+  class EntityNotFound < StandardError
   end
 end
