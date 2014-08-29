@@ -84,22 +84,6 @@ module Sadvisor
       true
     end
 
-    # Check if the queries are valid for the loaded entities
-    # @return [Boolean]
-    def valid?
-      @query_weights.keys.each do |query|
-        # Entity must exist
-        return false unless @entities.key?(query.from.value)
-
-        # No more than one range query
-        return false if query.range_field
-
-        return false unless valid_paths? query
-      end
-
-      fields_exist?
-    end
-
     # Output a PNG representation of entities in the workload
     def output_png(filename, include_fields = false)
       graph = GraphViz.new :G, type: :digraph
@@ -138,19 +122,6 @@ module Sadvisor
       else
         [@entities[field[0]].id_fields]
       end
-    end
-
-    # Check if fields referenced by queries in the workload consist of valid
-    # paths through the entity graph
-    def valid_paths?(query)
-      fields = query.where.map { |condition| condition.field }
-      fields += query.order_by
-      fields.map!(&:value)
-
-      return true if fields.empty?
-
-      longest = fields.max_by(&:count)
-      fields.map { |field| longest[0..field.count - 1] == field }.all?
     end
   end
 
