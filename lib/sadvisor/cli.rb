@@ -81,7 +81,7 @@ module Sadvisor
           end,
           plans: plans.map do |query, plan|
             {
-              query: query.text_value,
+              query: query.query.to_s,
               steps: plan.map do |step|
                 methods = (step.methods - PlanStep.instance_methods)
                 {

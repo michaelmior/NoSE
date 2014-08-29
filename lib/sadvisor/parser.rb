@@ -79,7 +79,7 @@ module Sadvisor
 
       @limit = tree[:limit].to_i if tree[:limit]
 
-      find_longest_path tree
+      find_longest_path tree, workload
     end
 
     # All fields referenced anywhere in the query
@@ -118,7 +118,7 @@ module Sadvisor
     end
 
     # Calculate the longest path of entities traversed by the query
-    def find_longest_path(tree)
+    def find_longest_path(tree, workload)
       return @longest_entity_path = [@from] if tree[:where].nil?
       where = tree[:where][:expression]
       return @longest_entity_path = [@from] if where.length == 0
@@ -128,7 +128,13 @@ module Sadvisor
         unless tree[:order].nil?
       path = fields.max_by(&:length)[1..-2]  # end is field
       @longest_entity_path = path.reduce [@from] do |entities, key|
-        entities + [entities.last[key].entity]
+        if entities.last[key]
+          # Search through foreign keys
+          entities + [entities.last[key].entity]
+        else
+          # Assume only one foreign key in the opposite direction
+          entities + [workload[key]]
+        end
       end
     end
   end

@@ -94,14 +94,14 @@ $workload = Sadvisor::Workload.new do
   # ViewBidHistory
   Q 'SELECT name FROM items WHERE items.id = ?', 2.38 / 4
   Q 'SELECT name FROM olditems WHERE olditems.id = ?', 2.38 / 4
-  Q 'SELECT id, user_id, item_id, qty, bid, date FROM bids WHERE bids.item_id = ? ORDER BY bids.date DESC', 2.38 / 4
+  Q 'SELECT id, user_id, item_id, qty, bid, date FROM bids WHERE bids.item_id = ? ORDER BY bids.date', 2.38 / 4
   Q 'SELECT id, nickname FROM users WHERE users.bids.item_id = ?', 2.38 / 4
 
   # ViewItem
   Q 'SELECT name FROM items WHERE items.id = ?', 22.95 / 4.0 * 0.75
   Q 'SELECT name FROM olditems WHERE olditems.id = ?', 22.95 / 4.0 * 0.25
-  Q 'SELECT bid FROM bids WHERE bids.item_id = ? ORDER BY bids.bid DESC LIMIT 1', 22.95 / 4.0
-  Q 'SELECT bid, qty FROM bids WHERE bids.item_id = ? ORDER BY bids.bid DESC LIMIT 5', 22.95 / 4.0
+  Q 'SELECT bid FROM bids WHERE bids.item_id = ? ORDER BY bids.bid LIMIT 1', 22.95 / 4.0
+  Q 'SELECT bid, qty FROM bids WHERE bids.item_id = ? ORDER BY bids.bid LIMIT 5', 22.95 / 4.0
   Q 'SELECT id FROM bids WHERE bids.item_id = ?', 22.95 / 4.0 # XXX: total bids
 
   # SearchItemsByCategory
