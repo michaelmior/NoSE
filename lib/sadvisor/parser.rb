@@ -53,6 +53,8 @@ module Sadvisor
     def initialize(field, operator)
       @field = field
       @is_range = [:>, :>=, :<, :<=].include? operator
+
+      freeze
     end
 
     def inspect
@@ -80,6 +82,8 @@ module Sadvisor
       @limit = tree[:limit].to_i if tree[:limit]
 
       find_longest_path tree, workload
+
+      freeze
     end
 
     # All fields referenced anywhere in the query
