@@ -66,11 +66,6 @@ module Sadvisor
       end
     end
 
-    # Find the keys traversed looking up a given field
-    def find_field_keys(field)
-      find_field_keys_each field[0..-2].reverse
-    end
-
     # Check if all the fields used by queries in the workload exist
     # @return [Boolean]
     def fields_exist?
