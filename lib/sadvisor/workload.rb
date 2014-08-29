@@ -33,9 +33,9 @@ module Sadvisor
       @entities[name]
     end
 
-    # Add a new {CQL::Statement} to the workload or parse a string
+    # Add a new {Statement} to the workload or parse a string
     def add_query(query, weight = 1)
-      query = Parser.parse query if query.is_a? String
+      query = Statement.new(query, self) if query.is_a? String
 
       @query_weights[query.freeze] = weight
     end
