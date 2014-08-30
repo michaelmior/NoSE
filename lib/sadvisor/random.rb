@@ -119,6 +119,7 @@ module Sadvisor
     end
   end
 
+  # Generates random queries over entities in a given workload
   class QueryGenerator
     def initialize(workload)
       @workload = workload
