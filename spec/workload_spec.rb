@@ -31,5 +31,9 @@ module Sadvisor
 
       expect(subject.find_field %w(Foo Baz Quux)).to be other_field
     end
+
+    it 'raises an exception for nonexistent entities' do
+      expect { subject['Bar'] }.to raise_error EntityNotFound
+    end
   end
 end
