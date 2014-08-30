@@ -103,6 +103,7 @@ module Sadvisor
     end
   end
 
-  class EntityNotFound < StandardError
+  # Raised when looking up a field on an entity which does not exist
+  class FieldNotFound < StandardError
   end
 end

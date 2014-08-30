@@ -144,6 +144,7 @@ module Sadvisor
     # rubocop:enable MethodName
   end
 
+  # Raised when looking up an entity in the workload which does not exist
   class EntityNotFound < StandardError
   end
 end

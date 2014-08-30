@@ -71,6 +71,10 @@ module Sadvisor
       expect(entity.fields).to have(3).items
       expect(entity.fields['Quux'].size).to eq 20
     end
+
+    it 'raises an exception for nonexistent fields' do
+      expect { subject['Bar'] }.to raise_error FieldNotFound
+    end
   end
 
   describe KeyPath do
