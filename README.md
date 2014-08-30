@@ -6,7 +6,7 @@ This project is written in Ruby and uses [GLPK](https://www.gnu.org/software/glp
 Testing has been done with Ruby 2+ with dependencies managed via [bundler](http://bundler.io/).
 To get started, run `bundle install` to install the necessary dependencies.
 The `GUROBI_HOME` environment must be set to a valid [Gurobi](http://www.gurobi.com/) installation.
-Note that this project depends on a [fork](https://github.com/michaelmior/rglpk) of the Rglpk library to interface with GLPK and [gurobi](https://github.com/fuminori-ido/gurobi) for Gurobi.
+Note that this project depends on forks of several gems.
 
 An example of the workload input format is given in the `workloads/` directory.
 To run the schema advisor, simply execute the command below

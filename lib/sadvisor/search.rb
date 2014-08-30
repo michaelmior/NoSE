@@ -1,80 +1,18 @@
-require 'erb'
 require 'gurobi'
 require 'ostruct'
 require 'tempfile'
-require 'rglpk'
 
 module Sadvisor
-  # Simple wrapper for ERB template isolation
-  class Namespace
-    def initialize(hash)
-      hash.each do |key, value|
-        singleton_class.send(:define_method, key) { value }
-      end
-    end
-
-    # Return a binding within the class instance
-    # @return [Binding]
-    def binding
-      binding
-    end
-  end
-
   # Searches for the optimal indices for a given workload
   class Search
     def initialize(workload)
       @workload = workload
     end
 
-    # Search for the best configuration of indices for a given space constraint
-    # @return [Array<Index>]
-    def search_all(max_space = Float::INFINITY, gap = 0.01)
-      # Construct the simple indices for all entities and
-      # remove this from the total size
-      simple_indexes = @workload.entities.values.map(&:simple_index)
-      simple_size = simple_indexes.map(&:size).inject(0, &:+)
-      max_space -= simple_size
-      return [] if max_space <= 0
-
-      # Get the cost of all queries with the simple indices
-      simple_planner = Planner.new @workload, simple_indexes
-      simple_costs = {}
-      @workload.queries.each do |query|
-        simple_costs[query] = simple_planner.min_plan(query).cost
-      end
-
-      # Generate all possible combinations of indices
-      indexes = IndexEnumerator.new(@workload).indexes_for_workload.to_a
-      index_sizes = indexes.map(&:size)
-
-      combos = 1.upto(indexes.count).map do |n|
-        indexes.combination(n).to_a
-      end.inject([], &:+)
-      configuration_sizes = combos.map do |config|
-        config.map(&:size).inject(0, :+)
-      end
-
-      benefits = benefits combos, simple_costs
-
-      # Configurations are a list of list of numerical indices into the array
-      # of query indices
-      configurations = combos.map do |combo|
-        combo.map { |index| indexes.index(index) + 1 }
-      end
-
-      # Generate the MathProg file and solve the program
-      solve_mpl 'schema_all', indexes, gap,
-                max_space: max_space,
-                benefits: benefits,
-                configurations: configurations,
-                index_sizes: index_sizes,
-                configuration_sizes: configuration_sizes
-    end
-
     # Search for optimal indices using an ILP which searches for
     # non-overlapping indices
     # @return [Array<Index>]
-    def search_overlap(max_space = Float::INFINITY, gap = 0.01)
+    def search_overlap(max_space = Float::INFINITY)
       # Construct the simple indices for all entities and
       # remove this from the total size
       simple_indexes = @workload.entities.values.map(&:simple_index)
@@ -98,14 +36,6 @@ module Sadvisor
                           simple_costs
 
       query_overlap = overlap indexes, benefits
-
-      # TODO: Add MathProg back as an option
-      # # Generate the MathProg file and solve the program
-      # solve_mpl 'schema_overlap', indexes, gap,
-      #           max_space: max_space,
-      #           index_sizes: index_sizes,
-      #           query_overlap: query_overlap,
-      #           benefits: benefits
 
       # Solve the LP using Gurobi
       solve_gurobi indexes,
@@ -224,7 +154,6 @@ module Sadvisor
         entities = query.longest_entity_path
 
         Parallel.map(combos) do |combo|
-          # XXX This breaks search_all
           # Skip indices which don't cross the query path
           range = combo.last.entity_range entities
           next 0 if range == (nil..nil)
@@ -237,35 +166,6 @@ module Sadvisor
           end
         end
       end
-    end
-
-    # Solve the given MathProg program and return the output of the post-solver
-    def solve_mpl(template_name, indexes, gap, data)
-      namespace = Namespace.new(data)
-      template_file = File.dirname(__FILE__) + "/#{template_name}.mod.erb"
-      template = File.read(template_file)
-      mpl = ERB.new(template, 0, '>').result(namespace.binding)
-
-      # Solve the problem, which prints the solution
-      file = Tempfile.new 'schema.mod'
-      begin
-        file.write mpl
-        file.close
-
-        Rglpk.disable_output
-        tran = Rglpk::Workspace.new
-        prob = tran.read_model file.path
-        prob.simplex msg_lev: Rglpk::GLP_MSG_OFF
-        prob.mip presolve: Rglpk::GLP_ON, msg_lev: Rglpk::GLP_MSG_OFF,
-                 mip_gap: gap
-
-        output = tran.postsolve prob
-      ensure
-        file.close
-        file.unlink
-      end
-
-      output.split.map(&:to_i).map { |i| indexes[i - 1] }
     end
   end
 end
