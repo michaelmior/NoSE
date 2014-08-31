@@ -29,7 +29,7 @@ module Sadvisor
 
   # A single step in a query plan
   class PlanStep
-    attr_accessor :children, :state
+    attr_accessor :children, :state, :parent
     attr_reader :fields
 
     def initialize
@@ -352,7 +352,7 @@ module Sadvisor
     def to_color
       "#{super} #{@eq.to_color} #{@range.to_color} " +
       begin
-        "#{instance_variable_get(:@parent).state.cardinality} " \
+        "#{@parent.state.cardinality} " \
         "-> #{state.cardinality}"
       rescue NoMethodError
         ''
@@ -553,7 +553,8 @@ module Sadvisor
         index.entity_range(entities) != (nil..nil)
       end
 
-      find_plans_for_step tree.root, tree.root, indexes
+      indexes_by_path = indexes.group_by { |index| index.path.first }
+      find_plans_for_step tree.root, tree.root, indexes_by_path
       fail NoPlanException if tree.root.children.empty?
 
       tree
@@ -569,23 +570,28 @@ module Sadvisor
 
     # Find possible query plans for a query strating at the given step
     # @raise [NoPlanException]
-    def find_plans_for_step(root, step, indexes)
+    def find_plans_for_step(root, step, indexes_by_path, used_indexes = [])
       return if step.state.answered?
 
-      steps = find_steps_for_state(step, step.state, indexes)
+      steps = find_steps_for_state step, step.state,
+                                   indexes_by_path, used_indexes
 
       if steps.length > 0
         step.children = steps
         steps.each do |child_step|
-          find_plans_for_step root, child_step, indexes
+          if child_step.is_a? IndexLookupStep
+            used_indexes = used_indexes.clone
+            used_indexes << child_step.index
+          end
+          find_plans_for_step root, child_step, indexes_by_path, used_indexes
         end
       elsif step == root
         return
       else
         # Walk up the tree and remove the branch for the failed plan
-        prune_step = step.instance_variable_get(:@parent)
+        prune_step = step.parent
         while prune_step.children.length <= 1 && prune_step != root
-          prune_step = prune_step.instance_variable_get(:@parent)
+          prune_step = prune_step.parent
           prev_step = prune_step
         end
 
@@ -599,7 +605,7 @@ module Sadvisor
     # Get a list of possible next steps for a query in the given state
     # @return [Array<PlanStep>]
     # @raise [NoPlanException]
-    def find_steps_for_state(parent, state, indexes)
+    def find_steps_for_state(parent, state, indexes_by_path, used_indexes)
       steps = []
 
       [SortStep, FilterStep].each \
@@ -610,9 +616,9 @@ module Sadvisor
       return steps if steps.length > 0
 
       # Don't allow indices to be used multiple times
-      used_indexes = parent.parent_steps.select do |step|
-        step.is_a? IndexLookupStep
-      end.map(&:index)
+      entities = [state.path.first]
+      entities << parent.parent.state.path.first unless parent.parent.nil?
+      indexes = indexes_by_path.values_at(*entities).compact.flatten
       (indexes - used_indexes).each do |index|
         steps.push IndexLookupStep.apply(parent, index, state).each \
             { |new_step| new_step.add_fields_from_index index }
