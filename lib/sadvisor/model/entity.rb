@@ -84,9 +84,9 @@ module Sadvisor
 
     # Get the field on the entity with the given name
     # @return [Field]
-    def [](field)
+    def [](field, silent = false)
       return @fields[field] if @fields.key? field
-      fail FieldNotFound
+      fail FieldNotFound unless silent
     end
 
     # All the keys found when traversing foreign keys

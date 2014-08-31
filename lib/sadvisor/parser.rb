@@ -132,7 +132,7 @@ module Sadvisor
         unless tree[:order].nil?
       path = fields.max_by(&:length)[1..-2]  # end is field
       @longest_entity_path = path.reduce [@from] do |entities, key|
-        if entities.last[key]
+        if entities.last.send(:[], key, true)
           # Search through foreign keys
           entities + [entities.last[key].entity]
         else
