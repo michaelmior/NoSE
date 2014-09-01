@@ -554,7 +554,7 @@ module Sadvisor
       end
 
       indexes_by_path = indexes.group_by { |index| index.path.first }
-      find_plans_for_step tree.root, tree.root, indexes_by_path
+      find_plans_for_step tree.root, indexes_by_path
       fail NoPlanException if tree.root.children.empty?
 
       tree
@@ -568,9 +568,25 @@ module Sadvisor
 
     private
 
+    # Remove plans ending with this step in the tree
+    # @return[Boolean] true if pruning resulted in an empty tree
+    def prune_plan(prune_step)
+      # Walk up the tree and remove the branch for the failed plan
+      while prune_step.children.length <= 1 && !prune_step.is_a?(RootStep)
+        prune_step = prune_step.parent
+        prev_step = prune_step
+      end
+
+      # If we reached the root, we have no plan
+      return true if prune_step.is_a? RootStep
+
+      prune_step.children.delete prev_step
+
+      false
+    end
+
     # Find possible query plans for a query strating at the given step
-    # @raise [NoPlanException]
-    def find_plans_for_step(root, step, indexes_by_path, used_indexes = [])
+    def find_plans_for_step(step, indexes_by_path, used_indexes = [])
       return if step.state.answered?
 
       steps = find_steps_for_state step, step.state,
@@ -583,29 +599,16 @@ module Sadvisor
             used_indexes = used_indexes.clone
             used_indexes << child_step.index
           end
-          find_plans_for_step root, child_step, indexes_by_path, used_indexes
+          find_plans_for_step child_step, indexes_by_path, used_indexes
         end
-      elsif step == root
-        return
       else
-        # Walk up the tree and remove the branch for the failed plan
-        prune_step = step.parent
-        while prune_step.children.length <= 1 && prune_step != root
-          prune_step = prune_step.parent
-          prev_step = prune_step
-        end
-
-        # If we reached the root, we have no plan
-        return if prune_step == root
-
-        prune_step.children.delete prev_step
+        return if step.is_a?(RootStep) || prune_plan(step.parent)
       end
     end
 
-    # Get a list of possible next steps for a query in the given state
+    # Find all possible plan steps not using indexes
     # @return [Array<PlanStep>]
-    # @raise [NoPlanException]
-    def find_steps_for_state(parent, state, indexes_by_path, used_indexes)
+    def find_nonindexed_steps(parent, state)
       steps = []
 
       [SortStep, FilterStep].each \
@@ -613,6 +616,13 @@ module Sadvisor
       steps.flatten!
       steps.compact!
 
+      steps
+    end
+
+    # Get a list of possible next steps for a query in the given state
+    # @return [Array<PlanStep>]
+    def find_steps_for_state(parent, state, indexes_by_path, used_indexes)
+      steps = find_nonindexed_steps parent, state
       return steps if steps.length > 0
 
       # Don't allow indices to be used multiple times
