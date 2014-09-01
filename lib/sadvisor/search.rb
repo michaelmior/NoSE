@@ -75,11 +75,11 @@ module Sadvisor
     end
 
     # Set the objective function on the Gurobi model
-    def gurobi_set_objective(model, query_vars, data)
+    def gurobi_set_objective(model, query_vars, benefits)
       max_benefit = (0...query_vars.length).to_a \
         .product((0...@workload.queries.length).to_a).map do |i, q|
-        next if data[:benefits][q][i] == 0
-        query_vars[i][q] * (data[:benefits][q][i] * 1.0)
+        next if benefits[q][i] == 0
+        query_vars[i][q] * (benefits[q][i] * 1.0)
       end.compact.reduce(&:+)
 
       model.setObjective(max_benefit, Gurobi::MAXIMIZE)
@@ -107,7 +107,7 @@ module Sadvisor
       gurobi_add_constraints model, index_vars, query_vars, indexes, data
 
       # Set the objective function
-      gurobi_set_objective model, query_vars, data
+      gurobi_set_objective model, query_vars, data[:benefits]
 
       # Run the optimizer
       model.update
