@@ -25,7 +25,7 @@ end
 
 describe Object do
   context 'for objects with a to_color method' do
-    subject do
+    subject(:obj) do
       class Foo
         def to_color
           'foo'.red
@@ -37,19 +37,19 @@ describe Object do
 
     it 'should inspect colored output when stdout is a terminal' do
       $stdout = double('stdout', isatty: true, write: nil)
-      expect(subject.inspect).to eq "\e[0;31;49mfoo\e[0m"
+      expect(obj.inspect).to eq "\e[0;31;49mfoo\e[0m"
       $stdout = STDOUT
     end
 
     it 'should inspect uncolored output when stdout is not a terminal' do
       $stdout = StringIO.new
-      expect(subject.inspect).to eq 'foo'
+      expect(obj.inspect).to eq 'foo'
       $stdout = STDOUT
     end
   end
 
   context 'for objects without a to_color method' do
-    subject do
+    subject(:obj) do
       class Bar
         def to_s
           'foo'
@@ -60,8 +60,8 @@ describe Object do
     end
 
     it 'should use uncolored output' do
-      expect(subject.to_s).to eq 'foo'
-      expect(subject.to_color).to eq 'foo'
+      expect(obj.to_s).to eq 'foo'
+      expect(obj.to_color).to eq 'foo'
     end
   end
 end

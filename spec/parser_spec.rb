@@ -1,6 +1,6 @@
 module Sadvisor
   describe Statement do
-    subject do
+    subject(:statement) do
       @workload = Workload.new do
         Entity 'jane' do
           ID 'quux'
@@ -19,30 +19,30 @@ module Sadvisor
     end
 
     it 'reports the entity being selected from' do
-      expect(subject.from).to eq @workload['foo']
+      expect(statement.from).to eq @workload['foo']
     end
 
     it 'knows its limits' do
-      expect(subject.limit).to eq 5
+      expect(statement.limit).to eq 5
     end
 
     it 'keeps a list of selected fields' do
-      expect(subject.select).to match_array [@workload['foo']['bob']]
+      expect(statement.select).to match_array [@workload['foo']['bob']]
     end
 
     it 'tracks the range field' do
-      expect(subject.range_field).to eq @workload['foo']['baz']
+      expect(statement.range_field).to eq @workload['foo']['baz']
     end
 
     it 'tracks fields used in equality predicates' do
-      expect(subject.eq_fields).to match_array [
+      expect(statement.eq_fields).to match_array [
         @workload['foo']['bar'],
         @workload['jane']['quux']
       ]
     end
 
     it 'can report the longest entity path' do
-      expect(subject.longest_entity_path).to match_array [
+      expect(statement.longest_entity_path).to match_array [
         @workload['foo'],
         @workload['jane']
       ]
