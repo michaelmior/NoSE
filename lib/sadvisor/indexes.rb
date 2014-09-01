@@ -1,5 +1,3 @@
-require_relative 'node_extensions'
-
 module Sadvisor
   # A representation of materialized views over fields in an entity
   class Index
