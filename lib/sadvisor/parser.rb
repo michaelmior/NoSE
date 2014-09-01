@@ -32,8 +32,8 @@ module Sadvisor
       space >> str('ORDER BY') >> space >> fields.as_array(:fields) }
 
     rule(:statement)   {
-      str('SELECT') >> space >> identifiers.as_array(:select) >> space >> \
-      str('FROM') >> space >> identifier.as(:entity) >> \
+      str('SELECT') >> space >> (identifiers.as_array(:select) | str('*')) >> \
+      space >> str('FROM') >> space >> identifier.as(:entity) >> \
       where.maybe.as_array(:where) >> order.maybe.as(:order) >> \
       limit.maybe.capture(:limit) }
     root :statement
@@ -95,9 +95,13 @@ module Sadvisor
 
     # Populate the fields selected by this query
     def populate_fields(tree, workload)
-      @select = tree[:select].map do |field|
-        workload.find_field [tree[:entity].to_s, field.to_s]
-      end.to_set
+      if tree[:select]
+        @select = tree[:select].map do |field|
+          workload.find_field [tree[:entity].to_s, field.to_s]
+        end.to_set
+      else
+        @select = @from.fields.values
+      end
 
       return @order = [] if tree[:order].nil?
       @order = tree[:order][:fields].map do |field|
