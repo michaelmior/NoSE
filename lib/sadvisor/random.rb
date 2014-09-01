@@ -5,7 +5,7 @@ module Sadvisor
 
     def initialize(params = {})
       @beta = params.fetch :beta, 0.5
-      @nodes_nb = params.fetch :nodes_nb, 100
+      @nodes_nb = params.fetch :nodes_nb, 10
       @node_degree = params.fetch :node_degree, 3
       @field_count = RandomGaussian.new params.fetch(:num_fields, 5), 1
 
@@ -23,11 +23,13 @@ module Sadvisor
       add_foreign_keys
     end
 
+    # :nocov:
     def inspect
       @nodes.map do |node|
         @entities[node].inspect
       end.join "\n"
     end
+    # :nocov:
 
     private
 
