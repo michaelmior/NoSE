@@ -101,7 +101,9 @@ module Sadvisor
     # @return [Index]
     def materialize_view
       order_fields = @order
-      order_fields << @range_field if @range_field
+      if @range_field && !@order.include?(@range_field)
+        order_fields << @range_field
+      end
 
       Sadvisor::Index.new(@eq_fields, order_fields,
                           all_fields - (@eq_fields + @order).to_set,
