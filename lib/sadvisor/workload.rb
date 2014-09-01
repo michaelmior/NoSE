@@ -20,7 +20,7 @@ module Sadvisor
     def <<(other)
       if other.is_a? Entity
         add_entity other.freeze
-      elsif other.is_a? CQL::Statement
+      elsif other.is_a? Statement
         add_query other.freeze
       else
         fail TypeError, 'can only add queries and entities to a workload'

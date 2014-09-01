@@ -8,14 +8,23 @@ module Sadvisor
       workload.add_entity entity
     end
 
-    it 'holds queries and entities' do
-      expect(workload.entities).to have(1).item
-      expect(workload.entities['Foo']).to be entity
+    context 'when adding items' do
+      it 'holds entities' do
+        expect(workload.entities).to have(1).item
+        expect(workload.entities['Foo']).to be entity
+      end
 
-      valid_query = Statement.new 'SELECT Id FROM Foo', workload
+      it 'automatically parses queries' do
+        valid_query = Statement.new 'SELECT Id FROM Foo', workload
+        workload.add_query(valid_query)
 
-      workload.add_query(valid_query)
-      expect(workload.queries).to match_array [valid_query]
+        expect(workload.queries).to have(1).item
+        expect(workload.queries.first).to be_a Statement
+      end
+
+      it 'only accepts entities and queries' do
+        expect { workload << 3 }.to raise_error TypeError
+      end
     end
 
     it 'can find fields on entities from queries' do
