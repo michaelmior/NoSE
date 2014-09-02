@@ -76,7 +76,7 @@ module Sadvisor
       if other.is_a? Integer
         @count = other
       else
-        fail TypeError 'count must be an integer'
+        fail TypeError.new 'count must be an integer'
       end
 
       self
