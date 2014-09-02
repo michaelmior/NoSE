@@ -21,6 +21,7 @@ group :test do
 end
 
 group :development do
+  gem 'ruby-prof'
   gem 'pry'
   gem 'pry-byebug'
   gem 'pry-rescue'
