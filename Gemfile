@@ -4,14 +4,13 @@ source 'https://gem.fury.io/michaelmior/'
 gem 'binding_of_caller'
 gem 'colorize'
 gem 'gurobi', '=0.0.2.mmior.1'
-gem 'hashids'
-gem 'ruby-progressbar'
+gem 'hashids', require: false
+gem 'ruby-progressbar', require: false
 gem 'parallel'
 gem 'parslet', '=1.7.0.mmior.1'
-gem 'rake'
+gem 'rake', require: false
 gem 'ruby-graphviz'
-gem 'thor'
-gem 'treetop'
+gem 'thor', require: false
 
 group :test do
   gem 'rspec'
