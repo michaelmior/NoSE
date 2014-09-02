@@ -29,8 +29,8 @@ module Sadvisor
 
   # A single step in a query plan
   class PlanStep
-    attr_accessor :children, :state, :parent
-    attr_reader :fields
+    attr_accessor :state, :parent
+    attr_reader :children, :fields
 
     def initialize
       @children = []
