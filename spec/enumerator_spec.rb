@@ -48,5 +48,15 @@ module Sadvisor
       expect(indexes.to_a).to include \
         Index.new([@w['Foo']['Baz']], [], [@w['Foo']['Bar']], [@w['Foo']])
     end
+
+    it 'does not produce empty indexes' do
+      enum = IndexEnumerator.new @w
+      query = Statement.new 'SELECT Baz FROM Bar WHERE Bar.Quux.Baz = ?', @w
+      @w.add_query query
+      indexes = enum.indexes_for_workload
+      expect(indexes).to all(satisfy do |index|
+        !index.order_fields.empty? || !index.extra.empty?
+      end)
+    end
   end
 end
