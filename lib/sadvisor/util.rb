@@ -1,7 +1,6 @@
 # rubocop:disable Documentation
 
 require 'colorize'
-require 'memoist2'
 require 'parallel'
 
 module Enumerable
