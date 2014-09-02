@@ -54,6 +54,7 @@ GEM
       rspec-support (~> 3.0.0)
     rspec-support (3.0.2)
     ruby-graphviz (1.2.1)
+    ruby-prof (0.15.1)
     ruby-progressbar (1.5.1)
     simplecov (0.8.2)
       docile (~> 1.1.0)
@@ -85,6 +86,7 @@ DEPENDENCIES
   rspec
   rspec-collection_matchers
   ruby-graphviz
+  ruby-prof
   ruby-progressbar
   simplecov
   thor
