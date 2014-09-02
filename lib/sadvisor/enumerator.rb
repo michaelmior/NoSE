@@ -96,7 +96,8 @@ module Sadvisor
         [select.first.parent.id_fields, select]
       else
         filter_choices = (eq[last] || []) + (range[last] || [])
-        choices = [last.id_fields, select]
+        choices = [last.id_fields]
+        choices << select if path.include? select.first.parent
         choices << filter_choices unless filter_choices.empty?
         choices
       end
@@ -122,7 +123,10 @@ module Sadvisor
           next if path.length == 1 && index == path[0].id_fields \
                                    && order.length == 0
 
-          indexes << Index.new(index, order, extra - (index + order), path)
+          index_extra = extra - (index + order)
+          next if order.empty? && index_extra.empty?
+
+          indexes << Index.new(index, order, index_extra, path)
 
           # Partition into the ordering portion
           if index.length == max_eq_fields
