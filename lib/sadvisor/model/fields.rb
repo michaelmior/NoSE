@@ -5,11 +5,11 @@ module Sadvisor
   class Field
     attr_reader :name, :type, :size, :parent
 
-    def initialize(name, type, size)
+    def initialize(name, type, size, count: nil)
       @name = name
       @type = type
       @size = size
-      @cardinality = nil
+      @cardinality = count
     end
 
     def state
@@ -41,7 +41,7 @@ module Sadvisor
       if other.is_a? Integer
         @cardinality = other
       else
-        fail TypeError 'cardinality must be an integer'
+        fail TypeError.new 'cardinality must be an integer'
       end
 
       self
@@ -73,36 +73,36 @@ module Sadvisor
 
   # Field holding an integer
   class IntegerField < Field
-    def initialize(name)
-      super(name, :integer, 8)
+    def initialize(name, **options)
+      super(name, :integer, 8, **options)
     end
   end
 
   # Field holding a float
   class FloatField < Field
-    def initialize(name)
-      super(name, :float, 8)
+    def initialize(name, **options)
+      super(name, :float, 8, **options)
     end
   end
 
   # Field holding a string of some average length
   class StringField < Field
-    def initialize(name, length = 10)
-      super(name, :string, length)
+    def initialize(name, length = 10, **options)
+      super(name, :string, length, **options)
     end
   end
 
   # Field holding a date
   class DateField < Field
-    def initialize(name)
-      super(name, :date, 8)
+    def initialize(name, **options)
+      super(name, :date, 8, **options)
     end
   end
 
   # Field holding a unique identifier
   class IDField < Field
-    def initialize(name)
-      super(name, :key, 16)
+    def initialize(name, **options)
+      super(name, :key, 16, **options)
     end
   end
 
@@ -110,8 +110,8 @@ module Sadvisor
   class ForeignKey < IDField
     attr_reader :entity, :relationship
 
-    def initialize(name, entity)
-      super(name)
+    def initialize(name, entity, **options)
+      super(name, **options)
       @relationship = :one
 
       # XXX: This is a hack which allows us to look up the stack to find an
@@ -143,8 +143,8 @@ module Sadvisor
 
   # Field holding a foreign key to many other entities
   class ToManyKey < ForeignKey
-    def initialize(name, entity)
-      super(name, entity)
+    def initialize(name, entity, **options)
+      super(name, entity, **options)
       @relationship = :many
     end
   end

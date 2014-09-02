@@ -6,84 +6,84 @@ $workload = Sadvisor::Workload.new do
 
   (Entity 'categories' do
     ID     'id'
-    String('name', 20) * 20
+    String 'name', 20, count: 20
   end) * 20
 
   (Entity 'regions' do
     ID     'id'
-    String('name', 25) * 62
+    String 'name', 25, count: 62
   end) * 62
 
   (Entity 'users' do
     ID         'id'
-    String(    'firstname', 20) * 1001848
-    String(    'lastname', 20) * 1001848
-    String(    'nickname', 20) * 1001848
-    String(    'password', 20) * 1001848
-    String(    'email', 20) * 1001848
-    Integer(   'rating') * 5
-    Float(     'balance') * 1
-    Date(      'creation_date') * 10381
-    ForeignKey('region', 'regions') * 62
+    String     'firstname', 20, count: 1001848
+    String     'lastname', 20, count: 1001848
+    String     'nickname', 20, count: 1001848
+    String     'password', 20, count: 1001848
+    String     'email', 20, count: 1001848
+    Integer    'rating', count: 5
+    Float      'balance', count: 1
+    Date       'creation_date', count: 10381
+    ForeignKey 'region', 'regions', count: 62
   end) * 1001848
 
   (Entity 'items' do
     ID         'id'
-    String(    'name', 100) * 33721
-    String(    'description', 255) * 33721
-    Float(     'initial_price') * 4494
-    Integer(   'quantity') * 11
-    Float(     'reserve_price') * 389
-    Float(     'buy_now') * 97
-    Integer(   'nb_of_bids') * 15
-    Float(     'max_bid') * 2167
-    Date(      'start_date') * 1
-    Date(      'end_date') * 1
+    String     'name', 100, count: 33721
+    String     'description', 255, count: 33721
+    Float      'initial_price', count: 4494
+    Integer    'quantity', count: 11
+    Float      'reserve_price', count: 389
+    Float      'buy_now', count: 97
+    Integer    'nb_of_bids', count: 15
+    Float      'max_bid', count: 2167
+    Date       'start_date', count: 1
+    Date       'end_date', count: 1
     ForeignKey 'seller', 'users'
     ForeignKey 'category', 'categories'
   end) * 33721
 
   (Entity 'olditems' do
     ID         'id'
-    String(    'name', 100) * 500000
-    String(    'description', 255) * 500000
-    Float(     'initial_price') * 5000
-    Integer(   'quantity') * 10
-    Float(     'reserve_price') * 5974
-    Float(     'buy_now') * 11310
-    Integer(   'nb_of_bids') * 58
-    Float(     'max_bid') * 5125
-    Date(      'start_date') * 48436
-    Date(      'end_date') * 239737
+    String     'name', 100, count: 500000
+    String     'description', 255, count: 500000
+    Float      'initial_price', count: 5000
+    Integer    'quantity', count: 10
+    Float      'reserve_price', count: 5974
+    Float      'buy_now', count: 11310
+    Integer    'nb_of_bids', count: 58
+    Float      'max_bid', count: 5125
+    Date       'start_date', count: 48436
+    Date       'end_date', count: 239737
     ForeignKey 'seller', 'users'
     ForeignKey 'category', 'categories'
   end) * 500000
 
   (Entity 'bids' do
     ID         'id'
-    ForeignKey('user_id', 'users') * 993655
-    ForeignKey('item_id', 'items') * 426931
-    Integer(   'qty') * 10
-    Float(     'bid') * 5121
-    Date(      'date') * 52913
+    ForeignKey 'user_id', 'users', count: 993655
+    ForeignKey 'item_id', 'items', count: 426931
+    Integer    'qty', count: 10
+    Float      'bid', count: 5121
+    Date       'date', count: 52913
   end) * 5060576
 
   (Entity 'comments' do
     ID         'id'
-    # ForeignKey('from_user_id', 'users') * 413603
+    # ForeignKey 'from_user_id', 'users', count: 413603
     ForeignKey 'to_user_id', 'users'
-    ForeignKey('item_id', 'items') * 443798
-    Integer(   'rating') * 5
-    Date(      'date') * 51399
-    String(    'comment', 255) * 533426
+    ForeignKey 'item_id', 'items', count: 443798
+    Integer    'rating', count: 5
+    Date       'date', count: 51399
+    String     'comment', 255, count: 533426
   end) * 533426
 
   (Entity 'buynow' do
     ID         'id'
-    ForeignKey('buyer_id', 'users') * 1519
-    ForeignKey('item_id', 'items') * 1549
-    Integer(   'qty') * 10
-    Date(      'date') * 915
+    ForeignKey 'buyer_id', 'users', count: 1519
+    ForeignKey 'item_id', 'items', count: 1549
+    Integer    'qty', count: 10
+    Date       'date', count: 915
   end) * 1882
 
   # Define queries and their relative weights
