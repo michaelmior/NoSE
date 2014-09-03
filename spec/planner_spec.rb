@@ -145,5 +145,19 @@ module Sadvisor
       expect { planner.find_plans_for_query query }.to \
         raise_error NoPlanException
     end
+
+    it 'can use materialized views which traverse multiple entities' do
+      query = Statement.new 'SELECT Body FROM Tweet ' \
+                            'WHERE Tweet.User.Username = ?', workload
+      workload.add_query query
+      indexes = IndexEnumerator.new(workload).indexes_for_workload
+
+      planner = Planner.new workload, indexes
+      steps = planner.min_plan(query)
+      index_steps = steps.select { |step| step.is_a? IndexLookupStep }
+      used_indexes = index_steps.map(&:index).to_set
+
+      expect(used_indexes).to match_array [query.materialize_view]
+    end
   end
 end
