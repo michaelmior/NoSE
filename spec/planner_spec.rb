@@ -3,7 +3,9 @@ module Sadvisor
     let(:workload) do
       Workload.new do
         (Entity 'User' do
-          ID 'UserId'
+          ID     'UserId'
+          String 'Username'
+          String 'City'
         end) * 10
 
         (Entity 'Tweet' do
@@ -128,6 +130,20 @@ module Sadvisor
         step = IndexLookupStep.new index, @state, RootStep.new(@state)
         expect(step.state.cardinality).to eq 100
       end
+    end
+
+    it 'fails if required fields are not available' do
+      indexes = [
+        Index.new([workload['User']['Username']], [],
+                  [workload['User']['City']], [workload['User']]),
+        Index.new([workload['Tweet']['TweetId']], [],
+                  [workload['Tweet']['Body']], [workload['Tweet']])
+      ]
+      planner = Planner.new(workload, indexes)
+      query = Statement.new 'SELECT Body FROM Tweet ' \
+                            'WHERE Tweet.User.Username = ?', workload
+      expect { planner.find_plans_for_query query }.to \
+        raise_error NoPlanException
     end
   end
 end
