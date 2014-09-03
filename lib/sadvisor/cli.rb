@@ -1,6 +1,5 @@
 require 'hashids'
 require 'json'
-require 'ruby-progressbar'
 require 'thor'
 require 'zlib'
 
@@ -17,16 +16,6 @@ module Sadvisor
       require 'sadvisor'
       require_relative "../../workloads/#{name}"
 
-      # Display progress while searching
-      progress_thread = Thread.new do
-        bar = ProgressBar.create title: 'Finding indexes', total: nil,
-                                 output: $stderr
-        loop do
-          bar.increment
-          sleep 0.1
-        end
-      end if $stderr.isatty
-
       if options[:max_space].finite?
         indexes = Sadvisor::Search.new($workload) \
           .search_overlap(options[:max_space])
@@ -37,11 +26,6 @@ module Sadvisor
       end
 
       simple_indexes = $workload.entities.values.map(&:simple_index)
-      if progress_thread
-        Thread.kill progress_thread
-        puts "\n\n" if is_text
-      end
-
       planner = Sadvisor::Planner.new $workload, (indexes + simple_indexes)
       plans = {}
       $workload.queries.each do |query|
