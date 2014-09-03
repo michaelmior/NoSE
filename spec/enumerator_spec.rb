@@ -61,5 +61,15 @@ module Sadvisor
         !index.order_fields.empty? || !index.extra.empty?
       end)
     end
+
+    it 'produces indices with multiple entities in the path' do
+      query = Statement.new 'SELECT Baz FROM Bar ' \
+                            'WHERE Bar.Quux.Baz = ?', workload
+      workload.add_query query
+      indexes = enum.indexes_for_workload
+      expect(indexes).to include Index.new([workload['Foo']['Baz']], [],
+                                           [workload['Bar']['Baz']],
+                                           [workload['Foo'], workload['Bar']])
+    end
   end
 end
