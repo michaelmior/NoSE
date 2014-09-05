@@ -10,8 +10,11 @@ module Sadvisor
     rule(:space)       { match('\s').repeat(1) }
     rule(:space?)      { space.maybe }
     rule(:comma)       { str(',') >> space? }
-    rule(:literal)     { str('?') }
-    rule(:integer)     { match('[0-9]').repeat(1) }
+    rule(:integer)     { match('[0-9]').repeat(1).as(:int) }
+    rule(:quote)       { str('"') }
+    rule(:nonquote)    { quote.absent? >> any }
+    rule(:string)      { quote >> nonquote.repeat(1).as(:str) >> quote }
+    rule(:literal)     { str('?') | integer | string }
 
     rule(:identifier)  { match('[A-z]').repeat(1).as(:identifier) }
     rule(:identifiers) { identifier >> (comma >> identifier).repeat }
@@ -21,7 +24,8 @@ module Sadvisor
     rule(:fields)      { field >> (comma >> field).repeat }
 
     rule(:condition)   {
-      field.as(:field) >> space >> operator.as(:op) >> space? >> literal }
+      field.as(:field) >> space >> operator.as(:op) >> space? >> \
+      literal.as(:value) }
     rule(:expression)  {
       condition >> (space >> str('AND') >> space >> expression).repeat }
     rule(:where)       {
@@ -43,16 +47,19 @@ module Sadvisor
   class CQLT < Parslet::Transform
     rule(identifier: simple(:identifier)) { identifier }
     rule(field: sequence(:field)) { field.map(&:to_s) }
+    rule(str: simple(:string)) { string.to_s }
+    rule(int: simple(:integer)) { integer.to_i }
   end
 
   # A single condition in a where clause
   class Condition
-    attr_reader :field, :is_range
+    attr_reader :field, :is_range, :value
     alias_method :range?, :is_range
 
-    def initialize(field, operator)
+    def initialize(field, operator, value)
       @field = field
       @is_range = [:>, :>=, :<, :<=].include? operator
+      @value = value
 
       freeze
     end
@@ -116,7 +123,8 @@ module Sadvisor
       else
         @conditions = where[:expression].map do |condition|
           field = workload.find_field condition[:field].map(&:to_s)
-          Condition.new field, condition[:op].to_sym
+          value = condition[:value]
+          Condition.new field, condition[:op].to_sym, value
         end
       end
 

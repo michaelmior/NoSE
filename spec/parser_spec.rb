@@ -10,6 +10,7 @@ module Sadvisor
           ID 'bar'
           ForeignKey 'baz', 'jane'
           String 'bob'
+          Integer 'quux'
         end
       end
     end
@@ -53,6 +54,18 @@ module Sadvisor
     it 'can select all fields' do
       stmt = Statement.new 'SELECT * FROM foo', workload
       expect(stmt.select).to match_array workload['foo'].fields.values
+    end
+
+    context 'when parsing literals' do
+      it 'can find strings' do
+        stmt = Statement.new 'SELECT * FROM foo WHERE foo.bob = "ot"', workload
+        expect(stmt.conditions.first.value).to eq 'ot'
+      end
+
+      it 'can find integers' do
+        stmt = Statement.new 'SELECT * FROM foo WHERE foo.quux = 3', workload
+        expect(stmt.conditions.first.value).to eq 3
+      end
     end
   end
 end
