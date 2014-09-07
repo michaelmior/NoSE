@@ -14,7 +14,7 @@ module Sadvisor
     rule(:quote)       { str('"') }
     rule(:nonquote)    { quote.absent? >> any }
     rule(:string)      { quote >> nonquote.repeat(1).as(:str) >> quote }
-    rule(:literal)     { str('?') | integer | string }
+    rule(:literal)     { integer | string }
 
     rule(:identifier)  { match('[A-z]').repeat(1).as(:identifier) }
     rule(:identifiers) { identifier >> (comma >> identifier).repeat }
@@ -25,7 +25,7 @@ module Sadvisor
 
     rule(:condition)   {
       field.as(:field) >> space >> operator.as(:op) >> space? >> \
-      literal.as(:value) }
+      (literal.as(:value) | str('?')) }
     rule(:expression)  {
       condition >> (space >> str('AND') >> space >> expression).repeat }
     rule(:where)       {
@@ -124,6 +124,10 @@ module Sadvisor
         @conditions = where[:expression].map do |condition|
           field = workload.find_field condition[:field].map(&:to_s)
           value = condition[:value]
+
+          type = field.class.const_get 'TYPE'
+          fail TypeError unless type.nil? || value.nil? || value.is_a?(type)
+
           Condition.new field, condition[:op].to_sym, value
         end
       end

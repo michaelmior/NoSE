@@ -66,6 +66,12 @@ module Sadvisor
         stmt = Statement.new 'SELECT * FROM foo WHERE foo.quux = 3', workload
         expect(stmt.conditions.first.value).to eq 3
       end
+
+      it 'fails if the value is the wrong type' do
+        expect do
+          Statement.new 'SELECT * FROM foo WHERE foo.bob = 3', workload
+        end.to raise_error TypeError
+      end
     end
   end
 end
