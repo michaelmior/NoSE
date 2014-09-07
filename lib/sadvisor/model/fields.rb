@@ -5,6 +5,8 @@ module Sadvisor
   class Field
     attr_reader :name, :type, :size, :parent
 
+    TYPE = nil
+
     def initialize(name, type, size, count: nil)
       @name = name
       @type = type
@@ -73,6 +75,8 @@ module Sadvisor
 
   # Field holding an integer
   class IntegerField < Field
+    TYPE = Integer
+
     def initialize(name, **options)
       super(name, :integer, 8, **options)
     end
@@ -87,6 +91,8 @@ module Sadvisor
 
   # Field holding a string of some average length
   class StringField < Field
+    TYPE = String
+
     def initialize(name, length = 10, **options)
       super(name, :string, length, **options)
     end
