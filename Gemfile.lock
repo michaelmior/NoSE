@@ -19,7 +19,10 @@ GEM
     hashids (0.3.0)
     interception (0.5)
     method_source (0.8.2)
+    mini_portile (0.6.0)
     multi_json (1.10.1)
+    nokogiri (1.6.3.1)
+      mini_portile (= 0.6.0)
     parallel (1.2.4)
     parslet (1.7.0.mmior.1)
       blankslate (~> 2.0)
@@ -37,6 +40,10 @@ GEM
       binding_of_caller (>= 0.7)
       pry (>= 0.9.11)
     rake (10.3.2)
+    representable (2.0.4)
+      multi_json
+      nokogiri
+      uber (~> 0.0.7)
     rspec (3.0.0)
       rspec-core (~> 3.0.0)
       rspec-expectations (~> 3.0.0)
@@ -60,6 +67,7 @@ GEM
     simplecov-html (0.8.0)
     slop (3.5.0)
     thor (0.19.1)
+    uber (0.0.8)
     yard (0.8.7.4)
 
 PLATFORMS
@@ -77,6 +85,7 @@ DEPENDENCIES
   pry-rescue
   pry-stack_explorer
   rake
+  representable
   rspec
   rspec-collection_matchers
   ruby-graphviz
