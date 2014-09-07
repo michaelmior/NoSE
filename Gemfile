@@ -8,6 +8,7 @@ gem 'hashids', require: false
 gem 'parallel'
 gem 'parslet', '=1.7.0.mmior.1'
 gem 'rake', require: false
+gem 'representable'
 gem 'ruby-graphviz'
 gem 'thor', require: false
 
