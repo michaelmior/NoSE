@@ -3,6 +3,8 @@ require 'forwardable'
 module Sadvisor
   # A single plan for a query
   class QueryPlan
+    attr_accessor :query
+
     include Comparable
     include Enumerable
 
@@ -11,8 +13,9 @@ module Sadvisor
     def_delegators :@steps, :each, :<<, :[], :==, :===, :eql?,
                    :inspect, :to_s, :to_a, :to_ary, :last
 
-    def initialize
+    def initialize(query)
       @steps = []
+      @query = query
     end
 
     # Two plans are compared by their execution cost
@@ -67,7 +70,7 @@ module Sadvisor
       steps = nil
 
       if @parent.nil?
-        steps = QueryPlan.new
+        steps = QueryPlan.new state.query
       else
         steps = @parent.parent_steps
         steps << self
@@ -80,6 +83,11 @@ module Sadvisor
     # @return [Numeric]
     def cost
       0
+    end
+
+    # Add the Subtype module to all step classes
+    def self.inherited(child_class)
+      child_class.send(:include, Subtype)
     end
   end
 

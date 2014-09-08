@@ -47,7 +47,14 @@ end
 #
 module Subtype
   def self.included(base)
+    base.send :include, InstanceMethods
     base.extend ClassMethods
+  end
+
+  module InstanceMethods
+    def subtype_name
+      self.class.subtype_name
+    end
   end
 
   module ClassMethods
