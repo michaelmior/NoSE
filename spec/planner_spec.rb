@@ -24,7 +24,7 @@ module Sadvisor
       query = Statement.new 'SELECT Body FROM Tweet', workload
 
       tree = planner.find_plans_for_query query
-      expect(tree.first).to eq([IndexLookupStep.new(index)])
+      expect(tree.first).to eq([IndexLookupPlanStep.new(index)])
       expect(tree).to have(1).plan
       expect(tree.first.cost).to be > 0
     end
@@ -36,7 +36,10 @@ module Sadvisor
                             'Tweet.Timestamp', workload
 
       tree = planner.find_plans_for_query query
-      steps = [IndexLookupStep.new(index), SortStep.new([entity['Timestamp']])]
+      steps = [
+        IndexLookupPlanStep.new(index),
+        SortPlanStep.new([entity['Timestamp']])
+      ]
       expect(tree.first).to eq steps
       expect(tree).to have(1).plan
     end
@@ -58,8 +61,11 @@ module Sadvisor
 
       tree = planner.find_plans_for_query query
       expect(tree.to_a).to match_array [
-        [IndexLookupStep.new(index1)],
-        [IndexLookupStep.new(index2), SortStep.new([entity['Timestamp']])]
+        [IndexLookupPlanStep.new(index1)],
+        [
+          IndexLookupPlanStep.new(index2),
+          SortPlanStep.new([entity['Timestamp']])
+        ]
       ]
     end
 
@@ -83,7 +89,7 @@ module Sadvisor
 
       tree = planner.find_plans_for_query(query)
       expect(tree).to have(1).plan
-      expect(tree.first.last).to eq FilterStep.new([], entity['Timestamp'])
+      expect(tree.first.last).to eq FilterPlanStep.new([], entity['Timestamp'])
     end
 
     context 'when updating cardinality' do
@@ -98,27 +104,27 @@ module Sadvisor
       end
 
       it 'can reduce the cardinality to 1 when filtering by ID' do
-        step = FilterStep.new [workload['Tweet']['TweetId']], nil,
-                              @simple_state
+        step = FilterPlanStep.new [workload['Tweet']['TweetId']], nil,
+                                  @simple_state
         expect(step.state.cardinality).to eq 1
       end
 
       it 'can apply equality predicates when filtering' do
-        step = FilterStep.new [workload['Tweet']['Body']], nil,
-                              @simple_state
+        step = FilterPlanStep.new [workload['Tweet']['Body']], nil,
+                                  @simple_state
         expect(step.state.cardinality).to eq 200
       end
 
       it 'can apply multiple predicates when filtering' do
-        step = FilterStep.new [workload['Tweet']['Body']],
-                              workload['Tweet']['Timestamp'],
-                              @simple_state
+        step = FilterPlanStep.new [workload['Tweet']['Body']],
+                                  workload['Tweet']['Timestamp'],
+                                  @simple_state
         expect(step.state.cardinality).to eq 20
       end
 
       it 'can apply range predicates when filtering' do
-        step = FilterStep.new [], workload['Tweet']['Timestamp'],
-                              @simple_state
+        step = FilterPlanStep.new [], workload['Tweet']['Timestamp'],
+                                  @simple_state
         expect(step.state.cardinality).to eq 100
       end
 
@@ -127,7 +133,7 @@ module Sadvisor
                           [],
                           [workload['Tweet']['Body']],
                           [workload['Tweet'], workload['User']]
-        step = IndexLookupStep.new index, @state, RootStep.new(@state)
+        step = IndexLookupPlanStep.new index, @state, RootPlanStep.new(@state)
         expect(step.state.cardinality).to eq 100
       end
     end
@@ -154,7 +160,7 @@ module Sadvisor
 
       planner = Planner.new workload, indexes
       steps = planner.min_plan(query)
-      index_steps = steps.select { |step| step.is_a? IndexLookupStep }
+      index_steps = steps.select { |step| step.is_a? IndexLookupPlanStep }
       used_indexes = index_steps.map(&:index).to_set
 
       expect(used_indexes).to match_array [query.materialize_view]
