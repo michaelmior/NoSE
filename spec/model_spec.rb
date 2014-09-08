@@ -15,7 +15,7 @@ module Sadvisor
       entity << field
 
       expect(field.entity).to be(other)
-      expect(field.type).to eq(:key)
+      expect(field.class.subtype_name).to eq('foreign_key')
       expect(field.relationship).to eq(:one)
       expect(field.cardinality).to eq(100)
     end
@@ -26,7 +26,7 @@ module Sadvisor
       entity << field
 
       expect(field.entity).to be(others)
-      expect(field.type).to eq(:key)
+      expect(field.class.subtype_name).to eq('to_many')
       expect(field.relationship).to eq(:many)
       expect(field.cardinality).to eq(100)
     end

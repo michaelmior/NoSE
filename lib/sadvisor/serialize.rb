@@ -39,9 +39,13 @@ module Sadvisor
     include Representable::JSON
 
     property :name
-    property :type
     property :size
     property :cardinality
+
+    property :type, exec_context: :decorator
+    def type
+      represented.class.subtype_name
+    end
   end
 
   class EntityRepresenter < Representable::Decorator

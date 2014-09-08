@@ -3,13 +3,12 @@ require 'binding_of_caller'
 module Sadvisor
   # A single field on an {Entity}
   class Field
-    attr_reader :name, :type, :size, :parent
+    attr_reader :name, :size, :parent
 
     TYPE = nil
 
-    def initialize(name, type, size, count: nil)
+    def initialize(name, size, count: nil)
       @name = name
-      @type = type
       @size = size
       @cardinality = count
     end
@@ -20,8 +19,8 @@ module Sadvisor
 
     # Compare by parent entity and name
     def ==(other)
-      other.is_a?(Field) && @type == other.type &&
-        @parent == other.parent && @name == other.name
+      other.is_a?(Field) && @parent == other.parent &&
+        @name == other.name
     end
     alias_method :eql?, :==
 
@@ -69,6 +68,8 @@ module Sadvisor
                        send(:instance_variable_get, :@entity).send \
                            :<<, child_class.new(*args)
                      end)
+
+      child_class.send(:include, Subtype)
     end
     private_class_method :inherited
   end
@@ -78,14 +79,16 @@ module Sadvisor
     TYPE = Integer
 
     def initialize(name, **options)
-      super(name, :integer, 8, **options)
+      super(name, 8, **options)
     end
   end
 
   # Field holding a float
   class FloatField < Field
+    TYPE = Fixnum
+
     def initialize(name, **options)
-      super(name, :float, 8, **options)
+      super(name, 8, **options)
     end
   end
 
@@ -94,21 +97,21 @@ module Sadvisor
     TYPE = String
 
     def initialize(name, length = 10, **options)
-      super(name, :string, length, **options)
+      super(name, length, **options)
     end
   end
 
   # Field holding a date
   class DateField < Field
     def initialize(name, **options)
-      super(name, :date, 8, **options)
+      super(name, 8, **options)
     end
   end
 
   # Field holding a unique identifier
   class IDField < Field
     def initialize(name, **options)
-      super(name, :key, 16, **options)
+      super(name, 16, **options)
     end
   end
 
