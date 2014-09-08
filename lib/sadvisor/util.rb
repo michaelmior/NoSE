@@ -75,7 +75,8 @@ module Subtype
     # Convert camel case class names to an array
     # @return [Array<String>]
     def name_array(cls)
-      cls.name.split('::').last.split(/(?=[A-Z])/).map(&:downcase)
+      cls.name.sub('ID', 'Id').split('::').last.split(/(?=[A-Z]+)/) \
+        .map(&:downcase)
     end
   end
 end

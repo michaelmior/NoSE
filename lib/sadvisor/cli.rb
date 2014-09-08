@@ -58,6 +58,7 @@ module Sadvisor
 
       if options[:format] == 'json'
         result = OpenStruct.new(
+          workload: $workload,
           indexes: indexes - simple_indexes,
           plans: plans.values,
           total_size: total_size,
