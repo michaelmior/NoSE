@@ -44,4 +44,33 @@ class Object
   end
 end
 
+#
+module Subtype
+  def self.included(base)
+    base.extend ClassMethods
+  end
+
+  module ClassMethods
+    # Get a unique string identify this subclass amongst sibling classes
+    # @return String
+    def subtype_name
+      super_name = name_array superclass
+      self_name = name_array self
+      self_name = self_name.reverse.drop_while do |part|
+        super_name.include? part
+      end.reverse
+
+      self_name.join '_'
+    end
+
+    private
+
+    # Convert camel case class names to an array
+    # @return [Array<String>]
+    def name_array(cls)
+      cls.name.split('::').last.split(/(?=[A-Z])/).map(&:downcase)
+    end
+  end
+end
+
 # rubocop:enable Documentation
