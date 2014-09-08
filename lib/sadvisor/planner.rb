@@ -92,7 +92,7 @@ module Sadvisor
   end
 
   # The root of a tree of query plans used as a placeholder
-  class RootStep < PlanStep
+  class RootPlanStep < PlanStep
     def initialize(state)
       super()
       @state = state
@@ -100,7 +100,7 @@ module Sadvisor
   end
 
   # Superclass for steps using indices
-  class IndexLookupStep < PlanStep
+  class IndexLookupPlanStep < PlanStep
     attr_reader :index
 
     def initialize(index, state = nil, parent = nil)
@@ -149,7 +149,7 @@ module Sadvisor
       # Check for the case where only a simple lookup is needed
       if state.path.length == 0 && state.fields.count > 0
         if index == state.fields.first.parent.simple_index
-          return [IndexLookupStep.new(index, state, parent)]
+          return [IndexLookupPlanStep.new(index, state, parent)]
         else
           return []
         end
@@ -187,7 +187,7 @@ module Sadvisor
       end.all?
 
       if has_last_ids && last_fields.all?(&index_includes)
-        return [IndexLookupStep.new(index, state, parent)]
+        return [IndexLookupPlanStep.new(index, state, parent)]
       end
 
       next_entity = state.path[index_path.length]
@@ -202,7 +202,7 @@ module Sadvisor
          (last_fields.all?(&index_includes) ||
           index_path.last.id_fields.all?(&index_includes))
         # TODO: Check that fields are usable for predicates
-        return [IndexLookupStep.new(index, state, parent)]
+        return [IndexLookupPlanStep.new(index, state, parent)]
       end
 
       []
@@ -229,7 +229,7 @@ module Sadvisor
       cardinality = @state.cardinality
       if (index.path.first.id_fields.to_set - parent.fields - @state.eq).empty?
         index_path = index.path[1..-1] if index.path.length > 1
-        cardinality = index.path[0].count if parent.is_a? RootStep
+        cardinality = index.path[0].count if parent.is_a? RootPlanStep
       end
 
       @state.cardinality = new_cardinality cardinality, eq_filter, range_filter
@@ -290,7 +290,7 @@ module Sadvisor
   end
 
   # A query plan step performing external sort
-  class SortStep < PlanStep
+  class SortPlanStep < PlanStep
     attr_reader :sort_fields
 
     def initialize(sort_fields)
@@ -326,7 +326,7 @@ module Sadvisor
 
         new_state = state.dup
         new_state.order_by = []
-        new_step = SortStep.new(state.order_by)
+        new_step = SortPlanStep.new(state.order_by)
         new_step.state = new_state
         new_step.state.freeze
       end
@@ -336,7 +336,7 @@ module Sadvisor
   end
 
   # A query plan performing a filter without an index
-  class FilterStep < PlanStep
+  class FilterPlanStep < PlanStep
     attr_reader :eq, :range
 
     def initialize(eq, range, state = nil)
@@ -379,7 +379,7 @@ module Sadvisor
     def self.apply(parent, state)
       # In case we try to filter at the first step in the chain
       # before fetching any data
-      return nil if parent.is_a? RootStep
+      return nil if parent.is_a? RootPlanStep
 
       # Get fields and check for possible filtering
       filter_fields, eq_filter, range_filter = filter_fields state
@@ -398,7 +398,7 @@ module Sadvisor
         end
       end.all?
 
-      return FilterStep.new eq_filter, range_filter, state if has_fields
+      return FilterPlanStep.new eq_filter, range_filter, state if has_fields
 
       nil
     end
@@ -503,7 +503,7 @@ module Sadvisor
     attr_reader :root
 
     def initialize(state)
-      @root = RootStep.new(state)
+      @root = RootPlanStep.new(state)
     end
 
     # Enumerate all plans in the tree
@@ -580,13 +580,13 @@ module Sadvisor
     # @return[Boolean] true if pruning resulted in an empty tree
     def prune_plan(prune_step)
       # Walk up the tree and remove the branch for the failed plan
-      while prune_step.children.length <= 1 && !prune_step.is_a?(RootStep)
+      while prune_step.children.length <= 1 && !prune_step.is_a?(RootPlanStep)
         prune_step = prune_step.parent
         prev_step = prune_step
       end
 
       # If we reached the root, we have no plan
-      return true if prune_step.is_a? RootStep
+      return true if prune_step.is_a? RootPlanStep
 
       prune_step.children.delete prev_step
 
@@ -603,14 +603,14 @@ module Sadvisor
       if steps.length > 0
         step.children = steps
         steps.each do |child_step|
-          if child_step.is_a? IndexLookupStep
+          if child_step.is_a? IndexLookupPlanStep
             used_indexes = used_indexes.clone
             used_indexes << child_step.index
           end
           find_plans_for_step child_step, indexes_by_path, used_indexes
         end
       else
-        return if step.is_a?(RootStep) || prune_plan(step.parent)
+        return if step.is_a?(RootPlanStep) || prune_plan(step.parent)
       end
     end
 
@@ -619,7 +619,7 @@ module Sadvisor
     def find_nonindexed_steps(parent, state)
       steps = []
 
-      [SortStep, FilterStep].each \
+      [SortPlanStep, FilterPlanStep].each \
         { |step| steps.push step.apply(parent, state) }
       steps.flatten!
       steps.compact!
@@ -638,7 +638,7 @@ module Sadvisor
       entities << parent.parent.state.path.first unless parent.parent.nil?
       indexes = indexes_by_path.values_at(*entities).compact.flatten
       (indexes - used_indexes).each do |index|
-        steps.push IndexLookupStep.apply(parent, index, state).each \
+        steps.push IndexLookupPlanStep.apply(parent, index, state).each \
             { |new_step| new_step.add_fields_from_index index }
       end
       steps.flatten.compact

@@ -32,7 +32,7 @@ module Sadvisor
       end
 
       indexes = plans.values.map(&:to_a).flatten.select do |step|
-        step.is_a? Sadvisor::IndexLookupStep
+        step.is_a? Sadvisor::IndexLookupPlanStep
       end.map(&:index).to_set
 
       header = "Indexes\n" + '━' * 50
