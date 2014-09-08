@@ -68,7 +68,7 @@ module Sadvisor
             to_node = node
           end
 
-          @entities[from_node] << ForeignKey.new(
+          @entities[from_node] << ForeignKeyField.new(
             'FK' + @entities[to_node].name + 'ID',
             @entities[to_node])
         end

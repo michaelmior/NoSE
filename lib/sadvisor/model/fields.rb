@@ -116,7 +116,7 @@ module Sadvisor
   end
 
   # Field holding a foreign key to another entity
-  class ForeignKey < IDField
+  class ForeignKeyField < IDField
     attr_reader :entity, :relationship
 
     def initialize(name, entity, **options)
@@ -147,11 +147,11 @@ module Sadvisor
     end
   end
 
-  # Alias of {ForeignKey}
-  ToOneKey = ForeignKey
+  # Alias of {ForeignKeyField}
+  ToOneKeyField = ForeignKeyField
 
   # Field holding a foreign key to many other entities
-  class ToManyKey < ForeignKey
+  class ToManyKeyField < ForeignKeyField
     def initialize(name, entity, **options)
       super(name, entity, **options)
       @relationship = :many
@@ -179,7 +179,7 @@ module Sadvisor
       key_field = entity.fields[path[0]]
       if key_field.instance_of? IDField
         [key_field]
-      elsif key_field.is_a? ForeignKey
+      elsif key_field.is_a? ForeignKeyField
         [key_field] + key_field.entity.key_fields(path[1..-1])
       else
         entity.id_fields
