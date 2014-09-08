@@ -11,7 +11,7 @@ module Sadvisor
 
     it 'can have foreign keys' do
       other = entity * 100
-      field = ToOneKey.new('other', other)
+      field = ToOneKeyField.new('other', other)
       entity << field
 
       expect(field.entity).to be(other)
@@ -22,7 +22,7 @@ module Sadvisor
 
     it 'can have foreign keys with cardinality > 1' do
       others = entity * 100
-      field = ToManyKey.new('others', others)
+      field = ToManyKeyField.new('others', others)
       entity << field
 
       expect(field.entity).to be(others)
@@ -55,7 +55,7 @@ module Sadvisor
       other_entity = Entity.new('Bar')
       other_entity << IntegerField.new('Baz')
 
-      foreign_key = ForeignKey.new('Quux', other_entity)
+      foreign_key = ForeignKeyField.new('Quux', other_entity)
       entity << foreign_key
 
       expect(entity.key_fields %w(Foo Quux Baz)).to eq [foreign_key]

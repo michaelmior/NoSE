@@ -46,16 +46,16 @@ module Sadvisor
     end
 
     # Get all foreign key fields on the entity
-    # @return [Array<ForeignKey>]
+    # @return [Array<ForeignKeyField>]
     def foreign_keys
-      fields.values.select { |field| field.is_a? ForeignKey }
+      fields.values.select { |field| field.is_a? ForeignKeyField }
     end
 
     # Find the foreign key to a particular entity
     # @return [Field, nil]
     def foreign_key_for(entity)
       fields.values.find do |field|
-        field.is_a?(ForeignKey) && field.entity == entity
+        field.is_a?(ForeignKeyField) && field.entity == entity
       end
     end
 

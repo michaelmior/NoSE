@@ -14,7 +14,7 @@ module Sadvisor
 
     it 'does not generate disconnected entities' do
       expect(network.entities).to all(satisfy do |entity|
-        entity.fields.values.any? { |field| field.is_a? ForeignKey } ||
+        entity.fields.values.any? { |field| field.is_a? ForeignKeyField } ||
         network.entities.any? { |other| !other.foreign_key_for(entity).nil? }
       end)
     end

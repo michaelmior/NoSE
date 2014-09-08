@@ -37,7 +37,7 @@ module Sadvisor
       other_entity << other_field
       workload.add_entity other_entity
 
-      entity << ForeignKey.new('Baz', other_entity)
+      entity << ForeignKeyField.new('Baz', other_entity)
 
       expect(workload.find_field %w(Foo Baz Quux)).to be other_field
     end

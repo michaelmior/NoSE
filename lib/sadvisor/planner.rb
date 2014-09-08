@@ -393,7 +393,7 @@ module Sadvisor
         # XXX for now we assume this value is the same
         if field.is_a? IDField
           parent.fields.any? do |pfield|
-            pfield.is_a?(ForeignKey) && pfield.entity == field.parent
+            pfield.is_a?(ForeignKeyField) && pfield.entity == field.parent
           end
         end
       end.all?
