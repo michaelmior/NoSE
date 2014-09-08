@@ -107,7 +107,7 @@ module Sadvisor
           workload.find_field [tree[:entity].to_s, field.to_s]
         end.to_set
       else
-        @select = @from.fields.values
+        @select = @from.fields.values.to_set
       end
 
       return @order = [] if tree[:order].nil?
