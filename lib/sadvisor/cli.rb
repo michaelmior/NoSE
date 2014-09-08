@@ -1,7 +1,6 @@
-require 'hashids'
 require 'json'
+require 'ostruct'
 require 'thor'
-require 'zlib'
 
 module Sadvisor
   class SadvisorCLI < Thor
@@ -58,42 +57,17 @@ module Sadvisor
       end
 
       if options[:format] == 'json'
-        hash = ->(value) { Hashids.new.encrypt(Zlib.crc32(value.to_s)) }
-        state = {
-          indexes: (indexes - simple_indexes).map do |index|
-            index.state.update key: hash.call(index.state)
-          end,
-          plans: plans.map do |query, plan|
-            {
-              query: query.query.to_s,
-              steps: plan.map do |step|
-                methods = (step.methods - PlanStep.instance_methods)
-                {
-                  type: step.class.name.downcase \
-                    .sub('sadvisor::', '').sub('step', ''),
-                  cost: step.cost
-                }.update Hash[*methods.map do |method|
-                  value = step.send(method)
-                  if value.is_a?(Enumerable)
-                    value = value.map(&:state)
-                  elsif value
-                    value = value.state
-                  end
-                  value[:key] = hash.call(value) if value.is_a? Hash
-
-                  [method.to_s, value]
-                end.flatten(1)]
-              end,
-              cost: plan.cost
-            }
-          end,
+        result = OpenStruct.new(
+          indexes: indexes - simple_indexes,
+          plans: plans.values,
           total_size: total_size,
           total_cost: $workload.query_weights.map do |query, weight|
             weight * plans[query].cost
           end.inject(0, &:+)
-        }
+        )
 
-        puts JSON.pretty_generate state
+        puts JSON.pretty_generate \
+          Sadvisor::SearchResultRepresenter.represent(result).to_hash
       end
 
       # rubocop:enable GlobalVars

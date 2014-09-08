@@ -108,4 +108,14 @@ module Sadvisor
       }[step.class.subtype_name.to_sym] || PlanStepRepresenter
     end)
   end
+
+  # Represent results of a search operation
+  class SearchResultRepresenter < Representable::Decorator
+    include Representable::JSON
+
+    collection :indexes, decorator: FullIndexRepresenter
+    collection :plans, decorator: QueryPlanRepresenter
+    property :total_size
+    property :total_cost
+  end
 end
