@@ -32,6 +32,8 @@ module Sadvisor
 
   # A single step in a query plan
   class PlanStep
+    include Supertype
+
     attr_accessor :state, :parent
     attr_reader :children, :fields
 

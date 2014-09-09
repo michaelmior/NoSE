@@ -3,6 +3,8 @@ require 'binding_of_caller'
 module Sadvisor
   # A single field on an {Entity}
   class Field
+    include Supertype
+
     attr_reader :name, :size, :parent
 
     TYPE = nil

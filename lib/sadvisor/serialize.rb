@@ -1,17 +1,54 @@
-require 'hashids'
 require 'representable'
 require 'representable/json'
 
 module Sadvisor
-  # Represnts a field just by the entity and name
+  # Construct a field from a parsed hash
+  class FieldBuilder
+    include Uber::Callable
+
+    def call(_object, _fragment, instance, **options)
+      field_class = Sadvisor::Field.subtype_class instance['type']
+
+      if field_class == Sadvisor::StringField && !instance['size'].nil?
+        field = field_class.new instance['name'], instance['size']
+      elsif field_class.ancestors.include? Sadvisor::ForeignKeyField
+        field = field_class.new instance['name'],
+                                options[:entity_map][instance['entity']]
+      else
+        field = field_class.new instance['name']
+      end
+
+      field *= instance['cardinality'] if instance['cardinality']
+
+      field
+    end
+  end
+
+  # Represents a field just by the entity and name
   class FieldRepresenter < Representable::Decorator
     include Representable::JSON
 
-    property :entity, exec_context: :decorator
     property :name
 
-    def entity
+    property :parent, exec_context: :decorator
+    def parent
       represented.parent.name
+    end
+  end
+
+  # Reconstruct indexes with fields from an existing workload
+  class IndexBuilder
+    include Uber::Callable
+
+    def call(object, _fragment, instance, **_options)
+      workload = object.workload
+      f = lambda do |fields|
+        instance[fields].map { |dict| workload[dict['parent']][dict['name']] }
+      end
+      path = instance['path'].map { |name| workload[name] }
+
+      Index.new f.call('hash_fields'), f.call('order_fields'), f.call('extra'),
+                path, instance['key']
     end
   end
 
@@ -19,10 +56,7 @@ module Sadvisor
   class IndexRepresenter < Representable::Decorator
     include Representable::JSON
 
-    property :key, exec_context: :decorator
-    def key
-      Hashids.new.encrypt(Zlib.crc32 represented.to_s)
-    end
+    property :key
   end
 
   # Represents index data along with the key
@@ -41,15 +75,37 @@ module Sadvisor
   class EntityFieldRepresenter < Representable::Decorator
     include Representable::JSON
 
+    collection_representer class: Object, deserialize: FieldBuilder.new
+
     property :name
     property :size
     property :cardinality
     property :subtype_name, as: :type
+
+    property :entity, exec_context: :decorator
+    def entity
+      represented.entity.name if represented.is_a? ForeignKeyField
+    end
+  end
+
+  # Reconstruct the fields of an entity
+  class EntityBuilder
+    include Uber::Callable
+
+    def call(_object, _fragment, instance, **options)
+      entity = options[:entity_map][instance['name']]
+      fields = Sadvisor::EntityFieldRepresenter.represent([]) \
+        .from_hash(instance['fields'], entity_map: options[:entity_map])
+      fields.each { |field| entity << field }
+      entity
+    end
   end
 
   # Represent the whole entity and its fields
   class EntityRepresenter < Representable::Decorator
     include Representable::JSON
+
+    collection_representer class: Object, deserialize: EntityBuilder.new
 
     property :name
     collection :fields, decorator: EntityFieldRepresenter,
@@ -122,13 +178,78 @@ module Sadvisor
     end
   end
 
+  # Construct a new workload from a parsed hash
+  class WorkloadBuilder
+    include Uber::Callable
+
+    def call(_object, fragment, instance, **_options)
+      workload = fragment.represented
+      entity_map = {}
+      instance['entities'].each do |entity_hash|
+        entity_map[entity_hash['name']] = \
+          Sadvisor::Entity.new entity_hash['name']
+      end
+      entities = Sadvisor::EntityRepresenter.represent([]) \
+        .from_hash(instance['entities'], entity_map: entity_map)
+      entities.each { |entity| workload << entity }
+      instance['queries'].each do |query|
+        workload.add_query query
+      end
+
+      workload
+    end
+  end
+
+  # Reconstruct the steps of a query plan
+  class QueryPlanBuilder
+    include Uber::Callable
+
+    def call(object, _fragment, instance, **_options)
+      workload = object.workload
+      query = Statement.new instance['query'], workload
+
+      plan = Sadvisor::QueryPlan.new query
+      state = Sadvisor::QueryState.new query, workload
+      parent = Sadvisor::RootPlanStep.new state
+
+      f = ->(field) { workload[field['parent']][field['name']] }
+
+      instance['steps'].each do |step_hash|
+        step_class = Sadvisor::PlanStep.subtype_class step_hash['type']
+        if step_class == IndexLookupPlanStep
+          index_key = step_hash['index']['key']
+          step_index = object.indexes.find { |index| index.key == index_key }
+          step = step_class.new step_index, state, parent.state
+        elsif step_class == FilterPlanStep
+          eq = step_hash['eq'].map(&f)
+          range = f.call(step_hash['range']) if step_hash['range']
+          step = step_class.new eq, range, parent.state
+        elsif step_class == Sadvisor::SortPlanStep
+          sort_fields = step_hash['sort_fields'].map(&f)
+          step = step_class.new sort_fields
+        end
+
+        plan << step
+        parent = step
+      end
+
+      plan
+    end
+  end
+
   # Represent results of a search operation
   class SearchResultRepresenter < Representable::Decorator
     include Representable::JSON
 
-    collection :indexes, decorator: FullIndexRepresenter
-    collection :plans, decorator: QueryPlanRepresenter
-    property :workload, decorator: WorkloadRepresenter
+    property :workload, decorator: WorkloadRepresenter,
+                        class: Workload,
+                        deserialize: WorkloadBuilder.new
+    collection :indexes, decorator: FullIndexRepresenter,
+                         class: Object,
+                         deserialize: IndexBuilder.new
+    collection :plans, decorator: QueryPlanRepresenter,
+                       class: Object,
+                       deserialize: QueryPlanBuilder.new
     property :total_size
     property :total_cost
   end
