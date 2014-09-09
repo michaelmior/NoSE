@@ -1,18 +1,27 @@
+require 'hashids'
+
 module Sadvisor
   # A representation of materialized views over fields in an entity
   class Index
     attr_reader :hash_fields, :order_fields, :extra, :all_fields, :path
 
-    def initialize(hash_fields, order_fields, extra, path)
+    def initialize(hash_fields, order_fields, extra, path, saved_key = nil)
       @hash_fields = hash_fields.to_set
       @order_fields = order_fields
       @extra = extra.to_set
       @all_fields = @hash_fields + order_fields.to_set + @extra
       @path = path
+      @key = saved_key
 
       # Initialize the hash function and freeze ourselves
       hash
+      key
       freeze
+    end
+
+    # A simple key which uniquely identifies the index
+    def key
+      @key ||= Hashids.new.encrypt(Zlib.crc32 to_s)
     end
 
     def state

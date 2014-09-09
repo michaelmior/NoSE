@@ -44,7 +44,27 @@ class Object
   end
 end
 
-#
+module Supertype
+  def self.included(base)
+    base.extend ClassMethods
+  end
+
+  module ClassMethods
+    # Get the class given the name of a subtype
+    def subtype_class(name)
+      class_name = self.name.split('::')[0..-2]
+      class_name << (name.split('_').map do |name_part|
+        name_part.capitalize.sub 'Id', 'ID'
+      end.join)
+      class_name[-1] = class_name[-1] + self.name.split('::').last
+
+      class_name.reduce(Object) do |mod, name_part|
+        mod.const_get(name_part)
+      end
+    end
+  end
+end
+
 module Subtype
   def self.included(base)
     base.send :include, InstanceMethods

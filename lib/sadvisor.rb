@@ -11,5 +11,6 @@ require_relative 'sadvisor/parser'
 require_relative 'sadvisor/planner'
 require_relative 'sadvisor/random'
 require_relative 'sadvisor/search'
-require_relative 'sadvisor/serialize'
 require_relative 'sadvisor/workload'
+
+require_relative 'sadvisor/serialize'
