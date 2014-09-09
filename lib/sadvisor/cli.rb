@@ -12,7 +12,6 @@ module Sadvisor
 
       is_text = options[:format] == 'text'
 
-      require 'sadvisor'
       require_relative "../../workloads/#{name}"
 
       if options[:max_space].finite?
@@ -72,6 +71,42 @@ module Sadvisor
       end
 
       # rubocop:enable GlobalVars
+    end
+
+    desc 'repl PLAN_FILE', 'start the REPL with the given PLAN_FILE'
+    def repl(plan_file)
+      representer = Sadvisor::SearchResultRepresenter.represent(OpenStruct.new)
+      json = File.read(plan_file)
+      result = representer.from_json(json)
+
+      loop do
+        line = get_line
+        break if line.nil?
+        line.chomp!
+        query = Statement.new line, result.workload
+
+        # Print the plan corresponding to the query
+        p result.plans.find { |plan| plan.query == query }
+      end
+    end
+
+    private
+
+    def get_line
+      prefix = '>> '
+
+      begin
+        require 'readline'
+        line = Readline.readline prefix
+        return if line.nil?
+
+        Readline::HISTORY.push line
+      rescue LoadError
+        print prefix
+        line = gets
+      end
+
+      line
     end
   end
 end
