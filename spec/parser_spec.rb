@@ -56,6 +56,13 @@ module Sadvisor
       expect(stmt.select).to match_array workload['foo'].fields.values
     end
 
+    it 'compares equal regardless of constant values' do
+      stmt1 = Statement.new 'SELECT * FROM foo WHERE foo.quux = 3', workload
+      stmt2 = Statement.new 'SELECT * FROM foo WHERE foo.quux = 2', workload
+
+      expect(stmt1).to eq stmt2
+    end
+
     context 'when parsing literals' do
       it 'can find strings' do
         stmt = Statement.new 'SELECT * FROM foo WHERE foo.bob = "ot"', workload

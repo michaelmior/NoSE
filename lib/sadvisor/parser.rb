@@ -90,12 +90,22 @@ module Sadvisor
 
       find_longest_path tree, workload
 
+      @tree = tree
+      if tree[:where]
+        tree[:where][:expression].each { |condition| condition.delete :value }
+      end
+
       freeze
     end
 
     # All fields referenced anywhere in the query
     def all_fields
       (@select + @conditions.map(&:field) + @order).to_set
+    end
+
+    # Compare statements as equal by their parse tree
+    def ==(other)
+      other.is_a?(Statement) && @tree == other.instance_variable_get(:@tree)
     end
 
     private
