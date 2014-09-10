@@ -105,6 +105,7 @@ module Sadvisor
         workload['Foo']['Bar'],
         workload['Foo']['Corge']
       ].to_set)
+      expect(index.key).to eq 'Foo'
     end
   end
 end

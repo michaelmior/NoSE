@@ -98,7 +98,7 @@ module Sadvisor
     # Create a simple index which maps entity keys to other fields
     # @return [Index]
     def simple_index
-      Index.new(id_fields, [], fields.values - id_fields, [self])
+      Index.new(id_fields, [], fields.values - id_fields, [self], name)
     end
   end
 
