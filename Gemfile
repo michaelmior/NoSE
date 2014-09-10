@@ -26,3 +26,7 @@ group :development do
   gem 'pry-stack_explorer'
   gem 'yard'
 end
+
+group :cassandra do
+  gem 'cql-rb'
+end
