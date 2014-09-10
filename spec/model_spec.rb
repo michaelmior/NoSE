@@ -77,6 +77,31 @@ module Sadvisor
     end
   end
 
+  describe IntegerField do
+    it 'can convert string literals' do
+      expect(IntegerField.value_from_string '299792458').to eq 299792458
+    end
+  end
+
+  describe FloatField do
+    it 'can convert string literals' do
+      expect(FloatField.value_from_string '3.14159').to eq 3.14159
+    end
+  end
+
+  describe StringField do
+    it 'can convert string literals' do
+      expect(StringField.value_from_string 'pudding').to eq 'pudding'
+    end
+  end
+
+  describe DateField do
+    it 'can convert string literals' do
+      expect(DateField.value_from_string '2001-02-03T04:05:06+07:00').to eq \
+        DateTime.new 2001, 2, 3, 4, 5, 6, '+7'
+    end
+  end
+
   describe KeyPath do
     before(:each) do
       a = @entity_a = Entity.new 'A' do
