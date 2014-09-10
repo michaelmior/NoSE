@@ -83,6 +83,10 @@ module Sadvisor
     def initialize(name, **options)
       super(name, 8, **options)
     end
+
+    def self.value_from_string(string)
+      string.to_i
+    end
   end
 
   # Field holding a float
@@ -91,6 +95,10 @@ module Sadvisor
 
     def initialize(name, **options)
       super(name, 8, **options)
+    end
+
+    def self.value_from_string(string)
+      string.to_f
     end
   end
 
@@ -101,6 +109,10 @@ module Sadvisor
     def initialize(name, length = 10, **options)
       super(name, length, **options)
     end
+
+    def self.value_from_string(string)
+      string
+    end
   end
 
   # Field holding a date
@@ -108,12 +120,20 @@ module Sadvisor
     def initialize(name, **options)
       super(name, 8, **options)
     end
+
+    def self.value_from_string(string)
+      DateTime.parse string
+    end
   end
 
   # Field holding a unique identifier
   class IDField < Field
     def initialize(name, **options)
       super(name, 16, **options)
+    end
+
+    def self.value_from_string(string)
+      string
     end
   end
 
