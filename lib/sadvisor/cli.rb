@@ -1,6 +1,7 @@
 require 'json'
 require 'ostruct'
 require 'thor'
+require 'yaml'
 
 module Sadvisor
   class SadvisorCLI < Thor
@@ -75,9 +76,7 @@ module Sadvisor
 
     desc 'repl PLAN_FILE', 'start the REPL with the given PLAN_FILE'
     def repl(plan_file)
-      representer = Sadvisor::SearchResultRepresenter.represent(OpenStruct.new)
-      json = File.read(plan_file)
-      result = representer.from_json(json)
+      result = load_results plan_file
 
       loop do
         line = get_line
@@ -90,8 +89,38 @@ module Sadvisor
       end
     end
 
+    desc 'create PLAN_FILE', 'create indexes from the given PLAN_FILE'
+    def create(plan_file)
+      result = load_results(plan_file)
+      config = load_config
+
+      require_relative "backends/#{config[:database]}"
+      be_class_name = ['Sadvisor', config[:database].capitalize + 'Backend']
+      backend = be_class_name.reduce(Object) do |mod, name_part|
+        mod.const_get name_part
+      end.new(result.workload, result.indexes, result.plans, **config)
+
+      backend.indexes_ddl.each do |ddl|
+        puts ddl
+      end
+    end
+
     private
 
+    # Load the configuration to use for a backend
+    def load_config
+      config = YAML.load_file File.join(Dir.pwd, 'sadvisor.yml')
+      Hash[config.map { |k, v| [k.to_sym, v] }]
+    end
+
+    # Load results of a previous search operation
+    def load_results(plan_file)
+      representer = Sadvisor::SearchResultRepresenter.represent(OpenStruct.new)
+      json = File.read(plan_file)
+      representer.from_json(json)
+    end
+
+    # Get the next inputted line in the REPL
     def get_line
       prefix = '>> '
 
