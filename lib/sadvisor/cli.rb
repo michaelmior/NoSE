@@ -59,7 +59,7 @@ module Sadvisor
       if options[:format] == 'json'
         result = OpenStruct.new(
           workload: $workload,
-          indexes: indexes,
+          indexes: indexes.to_set + simple_indexes.to_set,
           plans: plans.values,
           total_size: total_size,
           total_cost: $workload.query_weights.map do |query, weight|
