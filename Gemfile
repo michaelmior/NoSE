@@ -2,8 +2,8 @@ source 'https://rubygems.org'
 source 'https://gem.fury.io/michaelmior/'
 
 gem 'binding_of_caller'
-gem 'colorize'
 gem 'gurobi', '=0.0.2.mmior.1'
+gem 'formatador'
 gem 'hashids', require: false
 gem 'parallel'
 gem 'parslet', '=1.7.0.mmior.1'

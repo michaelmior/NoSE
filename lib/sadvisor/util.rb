@@ -1,6 +1,6 @@
 # rubocop:disable Documentation
 
-require 'colorize'
+require 'formatador'
 require 'parallel'
 
 module Enumerable
@@ -33,8 +33,7 @@ end
 
 class Object
   def inspect
-    out = respond_to?(:to_color) ? to_color : to_s
-    $stdout.isatty ? out : out.uncolorize
+    Formatador.parse(respond_to?(:to_color) ? to_color : to_s)
   end
 
   # Get a colored representation of the object

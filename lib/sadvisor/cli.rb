@@ -1,3 +1,4 @@
+require 'formatador'
 require 'json'
 require 'ostruct'
 require 'thor'
@@ -36,20 +37,18 @@ module Sadvisor
       end.map(&:index).to_set
 
       header = "Indexes\n" + '━' * 50
-      puts $stdout.isatty ? header.blue : header if is_text
+      Formatador.display_line "[blue]#{header}[/]" if is_text
       (simple_indexes.to_set + indexes).each do |index|
         puts index.inspect
       end if is_text
       puts if is_text
 
       total_size = (indexes - simple_indexes).map(&:size).inject(0, :+)
-      puts ($stdout.isatty ? 'Total size: '.blue : 'Total size: ') + \
-        total_size.to_s if is_text
-      puts if is_text
+      Formatador.display_line "Total size: [blue]#{total_size}[/]\n" if is_text
 
       # Output queries plans for the discovered indices
       header = "Query plans\n" + '━' * 50
-      puts $stdout.isatty ? header.blue : header if is_text
+      Formatador.display_line "[blue]#{header}[/]" if is_text
       plans.each do |query, plan|
         puts query.inspect if is_text
         puts plan.inspect if is_text
