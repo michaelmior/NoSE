@@ -6,6 +6,7 @@ require_relative 'sadvisor/util'
 
 require_relative 'sadvisor/enumerator'
 require_relative 'sadvisor/indexes'
+require_relative 'sadvisor/loaders'
 require_relative 'sadvisor/model'
 require_relative 'sadvisor/parser'
 require_relative 'sadvisor/planner'

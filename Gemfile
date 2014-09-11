@@ -10,6 +10,7 @@ gem 'parslet', '=1.7.0.mmior.1'
 gem 'rake', require: false
 gem 'representable'
 gem 'ruby-graphviz'
+gem 'smarter_csv'
 gem 'thor', require: false
 
 group :test do
