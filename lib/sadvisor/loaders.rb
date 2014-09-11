@@ -10,14 +10,18 @@ module Sadvisor
     end
 
     # Load data for all the indexes
-    def load(_indexes, directory, show_progress = false)
-      @workload.entities.each do |name, entity|
-        filename = File.join directory, "#{name}.csv"
+    def load(indexes, directory, show_progress = false)
+      simple_indexes = indexes.select { |index| index.path.length == 1 }
+      simple_indexes = simple_indexes.group_by { |index| index.path.first }
+      simple_indexes.each do |entity, simple_index_list|
+        filename = File.join directory, "#{entity.name}.csv"
         total_rows = -1  # account for header row
         File.foreach(filename) { total_rows += 1 }
 
-        puts "Loading #{entity.name}" if show_progress
         if show_progress
+          puts "Loading simple indexes for #{entity.name}" if show_progress
+          puts "#{simple_index_list.map(&:key).join ', '}"
+
           Formatador.new.redisplay_progressbar 0, total_rows
           progress = Formatador::ProgressBar.new total_rows,
                                                  started_at: Time.now
@@ -33,7 +37,7 @@ module Sadvisor
                           inc = [progress.total - progress.current, 100].min
                           progress.increment inc if progress
                         end)) do |minichunk|
-            load_simple_chunk minichunk, entity
+            load_simple_chunk minichunk, entity, simple_index_list
           end
         end
       end
@@ -42,7 +46,7 @@ module Sadvisor
     private
 
     # Load a chunk of data from a simple entity index
-    def load_simple_chunk(chunk, entity)
+    def load_simple_chunk(chunk, entity, indexes)
 
       # Prefix all hash keys with the entity name and convert values
       chunk.map! do |row|
@@ -59,7 +63,9 @@ module Sadvisor
       end
 
       # Insert the batch into the index
-      @backend.index_insert_chunk entity.simple_index, chunk
+      indexes.each do |index|
+        @backend.index_insert_chunk index, chunk
+      end
     end
   end
 end
