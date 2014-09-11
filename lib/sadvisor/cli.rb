@@ -94,17 +94,22 @@ module Sadvisor
     def create(plan_file)
       result = load_results(plan_file)
       config = load_config
-
-      require_relative "backends/#{config[:database]}"
-      be_class_name = ['Sadvisor', config[:database].capitalize + 'Backend']
-      backend = be_class_name.reduce(Object) do |mod, name_part|
-        mod.const_get name_part
-      end.new(result.workload, result.indexes, result.plans, **config)
+      backend = get_backend(config, result)
 
       # Produce the DDL and execute unless the dry run option was given
       backend.indexes_ddl(!options[:dry_run]).each do |ddl|
         puts ddl
       end
+    end
+
+    desc 'load PLAN_FILE DIRECTORY', 'create indexes from the given PLAN_FILE'
+    def load(plan_file, directory)
+      result = load_results(plan_file)
+      config = load_config
+      backend = get_backend(config, result)
+
+      loader = CSVLoader.new result.workload, backend
+      loader.load result.indexes, directory
     end
 
     private
@@ -113,6 +118,15 @@ module Sadvisor
     def load_config
       config = YAML.load_file File.join(Dir.pwd, 'sadvisor.yml')
       Hash[config.map { |k, v| [k.to_sym, v] }]
+    end
+
+    # Get a backend instance for a given configuration and dataset
+    def get_backend(config, result)
+      require_relative "backends/#{config[:database]}"
+      be_class_name = ['Sadvisor', config[:database].capitalize + 'Backend']
+      be_class_name.reduce(Object) do |mod, name_part|
+        mod.const_get name_part
+      end.new(result.workload, result.indexes, result.plans, **config)
     end
 
     # Load results of a previous search operation
