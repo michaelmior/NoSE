@@ -41,7 +41,7 @@ module Sadvisor
       '[' + hash_names.join(', ') + ']' + \
         '[' + order_names.join(', ') + '] ' + \
         '→ [' + extra_names.join(', ') + ']' + \
-        " $#{size}".yellow
+        " [yellow]$#{size}[/]"
     end
     # :nocov:
 

@@ -34,7 +34,7 @@ module Sadvisor
 
     # :nocov:
     def to_color
-      parent.name.light_blue + '.' + name.blue
+      "[blue]#{parent.name}[/].[blue]#{name}[/]"
     end
     # :nocov:
 

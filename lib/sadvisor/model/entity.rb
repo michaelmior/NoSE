@@ -22,7 +22,7 @@ module Sadvisor
 
     # :nocov:
     def to_color
-      @name.light_blue + ' [' + fields.keys.map(&:to_color).join(', ') + ']'
+      "[light_blue]#{@name}[/] [#{fields.keys.map(&:to_color).join ', '}]"
     end
     # :nocov:
 

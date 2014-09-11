@@ -129,7 +129,7 @@ module Sadvisor
         "#{super} #{@index.to_color}"
       else
         "#{super} #{@index.to_color} * #{@state.cardinality} " + \
-          "$#{cost}".yellow
+          "[yellow]$#{cost}[/]"
       end
     end
     # :nocov:
