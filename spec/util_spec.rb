@@ -28,7 +28,7 @@ describe Object do
     subject(:obj) do
       class Foo
         def to_color
-          'foo'.red
+          '[red]foo[/]'
         end
       end
 
@@ -36,15 +36,23 @@ describe Object do
     end
 
     it 'should inspect colored output when stdout is a terminal' do
-      $stdout = double('stdout', isatty: true, write: nil)
-      expect(obj.inspect).to eq "\e[0;31;49mfoo\e[0m"
-      $stdout = STDOUT
+      old_stdout = STDOUT
+      Object.instance_eval { remove_const 'STDOUT' }
+      STDOUT = double('stdout', tty?: true, write: nil)
+
+      expect(obj.inspect).to eq "\e[31mfoo\e[0m"
+
+      Object.instance_eval { remove_const 'STDOUT' }
+      STDOUT = old_stdout
     end
 
     it 'should inspect uncolored output when stdout is not a terminal' do
-      $stdout = StringIO.new
-      expect(obj.inspect).to eq 'foo'
-      $stdout = STDOUT
+      old_stdout = STDOUT
+      Object.instance_eval { remove_const 'STDOUT' }
+      STDOUT = StringIO.new
+
+      Object.instance_eval { remove_const 'STDOUT' }
+      STDOUT = old_stdout
     end
   end
 
