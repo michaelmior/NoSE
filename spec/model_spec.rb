@@ -98,7 +98,7 @@ module Sadvisor
   describe DateField do
     it 'can convert string literals' do
       expect(DateField.value_from_string '2001-02-03T04:05:06+07:00').to eq \
-        DateTime.new 2001, 2, 3, 4, 5, 6, '+7'
+        DateTime.new(2001, 2, 3, 4, 5, 6, '+7').to_time
     end
   end
 
