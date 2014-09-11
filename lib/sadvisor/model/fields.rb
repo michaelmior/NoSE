@@ -122,7 +122,7 @@ module Sadvisor
     end
 
     def self.value_from_string(string)
-      DateTime.parse string
+      DateTime.parse(string).to_time
     end
   end
 
