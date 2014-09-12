@@ -76,6 +76,8 @@ module Sadvisor
     desc 'repl PLAN_FILE', 'start the REPL with the given PLAN_FILE'
     def repl(plan_file)
       result = load_results plan_file
+      config = load_config
+      backend = get_backend(config, result)
 
       loop do
         line = get_line
@@ -83,8 +85,8 @@ module Sadvisor
         line.chomp!
         query = Statement.new line, result.workload
 
-        # Print the plan corresponding to the query
-        p result.plans.find { |plan| plan.query == query }
+        # Execute the query
+        Formatador.display_compact_table backend.query(query)
       end
     end
 

@@ -1,4 +1,5 @@
 require 'cql'
+require 'zlib'
 
 module Sadvisor
   # A backend which communicates with Cassandra via CQL
@@ -49,15 +50,38 @@ module Sadvisor
       end
     end
 
+    # Execute a query with the stored plans
+    def query(query)
+      plan = @plans.find { |possible_plan| possible_plan.query == query }
+
+      fail NotImplementedError, 'Only plans of length one are supported' \
+        if plan.length > 1
+
+      plan.each do |step|
+        if step.is_a? IndexLookupPlanStep
+          return index_lookup step.index, query.select, query.conditions
+        elsif step.is_a? FilterStep
+          fail NotImplementedError, 'Filtering is not yet implemented'
+        elsif step.is_a? SortStep
+          fail NotImplementedError, 'Sorting is not yet implemented'
+        end
+      end
+    end
+
     private
 
     # Get a comma-separated list of field names with optional types
     def field_names(fields, types = false)
       fields.map do |field|
-        name = "\"#{field.parent.name}_#{field.name}\""
+        name = "\"#{field_name field}\""
         name += ' ' + cassandra_type(field.class).to_s if types
         name
       end.join ', '
+    end
+
+    # Get the name of the field as used in Cassandra
+    def field_name(field)
+      "#{field.parent.name}_#{field.name}"
     end
 
     # Get a Cassandra client, connecting if not done already
@@ -81,6 +105,31 @@ module Sadvisor
       when [IDField], [ForeignKeyField], [ToOneKeyField], [ToManyKeyField]
         :uuid
       end
+    end
+
+    # Get the value as used by Cassandra for a given field
+    def cassandra_value(value, field_class)
+      case [field_class]
+      when [IDField], [ForeignKeyField], [ToOneKeyField] [ToManyKeyField]
+        Cql::Uuid.new Zlib.crc32(value.to_s)
+      else
+        value
+      end
+    end
+
+    def index_lookup(index, select, conditions)
+      query = "SELECT #{select.map { |field| field_name field }.join ', '} " \
+              "FROM \"#{index.key}\""
+      query += " WHERE " if conditions.length > 0
+      query += conditions.map do |condition|
+        "#{field_name condition.field} #{condition.operator} ?"
+      end.join ', '
+
+      values = conditions.map do |condition|
+        cassandra_value condition.value, condition.field.class
+      end
+
+      client.execute query, *values, consistency: :one
     end
   end
 end

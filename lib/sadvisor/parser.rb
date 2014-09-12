@@ -53,11 +53,12 @@ module Sadvisor
 
   # A single condition in a where clause
   class Condition
-    attr_reader :field, :is_range, :value
+    attr_reader :field, :is_range, :operator, :value
     alias_method :range?, :is_range
 
     def initialize(field, operator, value)
       @field = field
+      @operator = operator
       @is_range = [:>, :>=, :<, :<=].include? operator
       @value = value
 
@@ -65,7 +66,7 @@ module Sadvisor
     end
 
     def inspect
-      @field.inspect + ' ' + @is_range.inspect
+      "#{@field.inspect} #{@operator} #{value}"
     end
   end
 
