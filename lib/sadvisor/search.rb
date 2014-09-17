@@ -13,36 +13,21 @@ module Sadvisor
     # non-overlapping indices
     # @return [Array<Index>]
     def search_overlap(max_space = Float::INFINITY)
-      # Construct the simple indices for all entities and
-      # remove this from the total size
-      simple_indexes = @workload.entities.values.map(&:simple_index)
-      simple_size = simple_indexes.map(&:size).inject(0, &:+)
-      max_space -= simple_size
-      return [] if max_space <= 0
-
       # Generate all possible combinations of indices
       indexes = IndexEnumerator.new(@workload).indexes_for_workload.to_a
       index_sizes = indexes.map(&:size)
       return [] if indexes.empty?
 
-      # Get the cost of all queries with the simple indices
-      simple_planner = Planner.new @workload, simple_indexes
-      simple_costs = {}
-      @workload.queries.each do |query|
-        simple_costs[query] = simple_planner.min_plan(query).cost
-      end
-
-      benefits = benefits indexes.map { |index| simple_indexes + [index] },
-                          simple_costs
-
-      query_overlap = overlap indexes, benefits
+      # Get the cost of all queries and check for overlapping indices
+      costs = costs indexes
+      query_overlap = overlap indexes, costs
 
       # Solve the LP using Gurobi
       solve_gurobi indexes,
                    max_space: max_space,
                    index_sizes: index_sizes,
                    query_overlap: query_overlap,
-                   benefits: benefits
+                   costs: costs
     end
 
     private
@@ -72,17 +57,35 @@ module Sadvisor
           end
         end
       end
+
+      # Add complete query plan constraints
+      @workload.queries.each_with_index do |query, q|
+        entities = query.longest_entity_path
+        query_constraint = Array.new(entities.length) do |_|
+          Gurobi::LinExpr.new
+        end
+        data[:costs][q].keys.each do |i|
+          indexes[i].entity_range(entities).each do |part|
+            index_var = query_vars[i][q]
+            query_constraint[part] += index_var
+          end
+        end
+
+        query_constraint.each do |constraint|
+          model.addConstr(constraint == 1)
+        end
+      end
     end
 
     # Set the objective function on the Gurobi model
-    def gurobi_set_objective(model, query_vars, benefits)
-      max_benefit = (0...query_vars.length).to_a \
+    def gurobi_set_objective(model, query_vars, costs)
+      min_cost = (0...query_vars.length).to_a \
         .product((0...@workload.queries.length).to_a).map do |i, q|
-        next if benefits[q][i] == 0
-        query_vars[i][q] * (benefits[q][i] * 1.0)
+        next if costs[q][i].nil?
+        query_vars[i][q] * (costs[q][i] * 1.0)
       end.compact.reduce(&:+)
 
-      model.setObjective(max_benefit, Gurobi::MAXIMIZE)
+      model.setObjective(min_cost, Gurobi::MINIMIZE)
     end
 
     # Solve the index selection problem using Gurobi
@@ -107,7 +110,7 @@ module Sadvisor
       gurobi_add_constraints model, index_vars, query_vars, indexes, data
 
       # Set the objective function
-      gurobi_set_objective model, query_vars, data[:benefits]
+      gurobi_set_objective model, query_vars, data[:costs]
 
       # Run the optimizer
       model.update
@@ -120,16 +123,14 @@ module Sadvisor
     end
 
     # Determine which indices overlap each other for queries in the workload
-    def overlap(indexes, benefits)
+    def overlap(indexes, costs)
       query_overlap = {}
 
       Parallel.each_with_index(@workload.queries) do |query, i|
         entities = query.longest_entity_path
-        query_indices = benefits[i].each_with_index.map do |benefit, j|
-          if benefit > 0
-            [j, indexes[j].entity_range(entities)]
-          end
-        end.compact
+        query_indices = costs[i].keys.each do |j|
+          [j, indexes[j].entity_range(entities)]
+        end
 
         query_indices.each_with_index do |(overlap1, range1), j|
           query_indices[j + 1..-1].each do |(overlap2, range2)|
@@ -148,24 +149,32 @@ module Sadvisor
       query_overlap
     end
 
-    # Get the reduction in cost from using each configuration of indices
-    def benefits(combos, simple_costs)
-      @workload.queries.map do |query|
-        entities = query.longest_entity_path
+    # Get the cost of using each index for each query in a workload
+    def costs(indexes)
+      planner = Planner.new @workload, indexes
+      costs = Array.new(@workload.queries.length) { |_| {} }
 
-        Parallel.map(combos) do |combo|
-          # Skip indices which don't cross the query path
-          range = combo.last.entity_range entities
-          next 0 if range == (nil..nil)
+      @workload.queries.each_with_index do |query, i|
+        planner.find_plans_for_query(query).each do |plan|
+          steps_by_index = []
+          plan.each do |step|
+            if step.is_a? IndexLookupPlanStep
+              steps_by_index.push [step]
+            else
+              steps_by_index.last.push step
+            end
+          end
 
-          combo_planner = Planner.new @workload, combo
-          begin
-            [0, simple_costs[query] - combo_planner.min_plan(query).cost].max
-          rescue NoPlanException
-            0
+          # Store the costs for this plan in a nested hash where
+          steps_by_index.each do |steps|
+            index = steps.first.index
+            cost = steps.map(&:cost).inject(0, &:+)
+            costs[i][indexes.index index] = cost
           end
         end
       end
+
+      costs
     end
   end
 end
