@@ -25,8 +25,7 @@ module Sadvisor
           .indexes_for_workload.to_a
       end
 
-      simple_indexes = $workload.entities.values.map(&:simple_index)
-      planner = Sadvisor::Planner.new $workload, (indexes + simple_indexes)
+      planner = Sadvisor::Planner.new $workload, indexes
       plans = {}
       $workload.queries.each do |query|
         plans[query] = planner.min_plan query
@@ -38,12 +37,12 @@ module Sadvisor
 
       header = "Indexes\n" + '━' * 50
       Formatador.display_line "[blue]#{header}[/]" if is_text
-      (simple_indexes.to_set + indexes).each do |index|
+      indexes.each do |index|
         puts index.inspect
       end if is_text
       puts if is_text
 
-      total_size = (indexes - simple_indexes).map(&:size).inject(0, :+)
+      total_size = indexes.map(&:size).inject(0, :+)
       Formatador.display_line "Total size: [blue]#{total_size}[/]\n" if is_text
 
       # Output queries plans for the discovered indices
@@ -58,7 +57,7 @@ module Sadvisor
       if options[:format] == 'json'
         result = OpenStruct.new(
           workload: $workload,
-          indexes: indexes.to_set + simple_indexes.to_set,
+          indexes: indexes.to_set,
           plans: plans.values,
           total_size: total_size,
           total_cost: $workload.query_weights.map do |query, weight|
