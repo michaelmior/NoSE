@@ -20,15 +20,13 @@ module Sadvisor
       index_sizes = indexes.map(&:size)
       return [] if indexes.empty?
 
-      # Get the cost of all queries and check for overlapping indices
+      # Get the cost of all queries
       costs = costs indexes
-      query_overlap = overlap indexes, costs
 
       # Solve the LP using Gurobi
       solve_gurobi indexes,
                    max_space: max_space,
                    index_sizes: index_sizes,
-                   query_overlap: query_overlap,
                    costs: costs
     end
 
@@ -49,15 +47,6 @@ module Sadvisor
           index_vars[i] * (index.size * 1.0)
         end.reduce(&:+)
         model.addConstr(space <= data[:max_space] * 1.0)
-      end
-
-      # Add overlapping index constraints
-      data[:query_overlap].each do |q, overlaps|
-        overlaps.each do |i, overlap|
-          overlap.each do |j|
-            model.addConstr(query_vars[i][q] + query_vars[j][q] <= 1)
-          end
-        end
       end
 
       # Add complete query plan constraints
@@ -122,33 +111,6 @@ module Sadvisor
       indexes.select.with_index do |_, i|
         index_vars[i].get_double(Gurobi::DoubleAttr::X) == 1.0
       end
-    end
-
-    # Determine which indices overlap each other for queries in the workload
-    def overlap(indexes, costs)
-      query_overlap = {}
-
-      Parallel.each_with_index(@workload.queries) do |query, i|
-        entities = query.longest_entity_path
-        query_indices = costs[i].keys.each do |j|
-          [j, indexes[j].entity_range(entities)]
-        end
-
-        query_indices.each_with_index do |(overlap1, range1), j|
-          query_indices[j + 1..-1].each do |(overlap2, range2)|
-            unless (range1.to_a & range2.to_a).empty?
-              query_overlap[i] = {} unless query_overlap.key?(i)
-              if query_overlap[i].key? overlap1
-                query_overlap[i][overlap1] << overlap2
-              else
-                query_overlap[i][overlap1] = [overlap2]
-              end
-            end
-          end
-        end
-      end
-
-      query_overlap
     end
 
     # Get the cost of using each index for each query in a workload
