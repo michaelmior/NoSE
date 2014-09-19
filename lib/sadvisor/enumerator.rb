@@ -8,8 +8,11 @@ module Sadvisor
     # Produce all possible indices for a given query
     # @return [Array<Index>]
     def indexes_for_query(query)
-      range = query.order
-      range << query.range_field unless query.range_field.nil?
+      if query.range_field.nil?
+        range = query.order
+      else
+        range = [query.range_field] + query.order
+      end
 
       indexes_for_path query.longest_entity_path, query.select,
                        query.eq_fields.group_by(&:parent),
