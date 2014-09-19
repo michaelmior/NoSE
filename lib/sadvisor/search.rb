@@ -62,6 +62,7 @@ module Sadvisor
           end
         end
 
+        # Ensure we have exactly one index on each component of the query path
         query_constraint.each do |constraint|
           model.addConstr(constraint == 1)
         end
