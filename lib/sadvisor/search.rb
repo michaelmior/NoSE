@@ -108,6 +108,10 @@ module Sadvisor
       model.update
       model.optimize
 
+      # Ensure we found a valid solution
+      status = model.get_int(Gurobi::IntAttr::STATUS)
+      fail 'Solution not found' if status != Gurobi::OPTIMAL
+
       # Return the selected indices
       indexes.select.with_index do |_, i|
         index_vars[i].get_double(Gurobi::DoubleAttr::X) == 1.0
