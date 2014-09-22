@@ -3,9 +3,7 @@ module Sadvisor
     let(:workload) do
       Workload.new do
         (Entity 'User' do
-          ID     'UserId'
-          String 'Username'
-          String 'City'
+          ID 'UserId'
         end) * 10
 
         (Entity 'Tweet' do

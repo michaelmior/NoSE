@@ -188,7 +188,7 @@ module Sadvisor
         state.fields.include? field
       end.all?
 
-      if has_last_ids && last_fields.all?(&index_includes)
+      if !has_last_ids && last_fields.all?(&index_includes)
         return [IndexLookupPlanStep.new(index, state, parent)]
       end
 
