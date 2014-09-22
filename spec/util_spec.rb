@@ -17,7 +17,7 @@ describe Enumerable do
   end
 end
 
-describe Fixnum do
+describe Integer do
   it 'is finite' do
     expect(3.finite?).to be true
   end
