@@ -4,6 +4,8 @@ module Sadvisor
       Workload.new do
         (Entity 'User' do
           ID 'UserId'
+          String 'Username'
+          String 'City'
         end) * 10
 
         (Entity 'Tweet' do
@@ -157,11 +159,12 @@ module Sadvisor
       indexes = IndexEnumerator.new(workload).indexes_for_workload
 
       planner = Planner.new workload, indexes
-      steps = planner.min_plan(query)
-      index_steps = steps.select { |step| step.is_a? IndexLookupPlanStep }
-      used_indexes = index_steps.map(&:index).to_set
+      plans = planner.find_plans_for_query(query)
+      plan_indexes = plans.map do |plan|
+        plan.select { |step| step.is_a? IndexLookupPlanStep }.map(&:index)
+      end
 
-      expect(used_indexes).to match_array [query.materialize_view]
+      expect(plan_indexes).to include [query.materialize_view]
     end
   end
 end
