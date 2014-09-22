@@ -14,7 +14,7 @@ module Sadvisor
     # @return [Array<Index>]
     def search_overlap(max_space = Float::INFINITY)
       # Generate all possible combinations of indices
-      simple_indexes = $workload.entities.values.map(&:simple_index)
+      simple_indexes = @workload.entities.values.map(&:simple_index)
       indexes = IndexEnumerator.new(@workload).indexes_for_workload.to_a
       indexes += simple_indexes
       index_sizes = indexes.map(&:size)
