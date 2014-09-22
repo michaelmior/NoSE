@@ -25,7 +25,7 @@ module Enumerable
   end
 end
 
-class Fixnum
+class Integer
   def finite?
     true
   end
