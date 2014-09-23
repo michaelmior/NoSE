@@ -150,5 +150,22 @@ module Sadvisor
 
       expect(plan_indexes).to include [query.materialize_view]
     end
+
+    it 'can use multiple indices for a query' do
+      query = Statement.new 'SELECT Body FROM Tweet ' \
+                            'WHERE Tweet.User.Username = ?', workload
+      workload.add_query query
+
+      indexes = [
+        Index.new([user['Username']], [], [tweet['TweetId']], [user, tweet]),
+        Index.new([tweet['TweetId']], [], [tweet['Body']], [tweet])
+      ]
+
+      planner = Planner.new workload, indexes
+      expect(planner.min_plan(query)).to eq [
+        IndexLookupPlanStep.new(indexes[0]),
+        IndexLookupPlanStep.new(indexes[1])
+      ]
+    end
   end
 end
