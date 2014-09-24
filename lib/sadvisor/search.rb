@@ -12,12 +12,14 @@ module Sadvisor
     # Search for optimal indices using an ILP which searches for
     # non-overlapping indices
     # @return [Array<Index>]
-    def search_overlap(max_space = Float::INFINITY)
+    def search_overlap(max_space = Float::INFINITY, indexes = nil)
       # Generate all possible combinations of indices
-      simple_indexes = @workload.entities.values.map(&:simple_index)
-      indexes = IndexEnumerator.new(@workload).indexes_for_workload.to_a
-      indexes += simple_indexes
-      index_sizes = indexes.map(&:size)
+      if indexes.nil?
+        simple_indexes = @workload.entities.values.map(&:simple_index)
+        indexes = IndexEnumerator.new(@workload).indexes_for_workload.to_a
+        indexes += simple_indexes
+        index_sizes = indexes.map(&:size)
+      end
       return [] if indexes.empty?
 
       # Get the cost of all queries
