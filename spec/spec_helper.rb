@@ -7,6 +7,9 @@
 
 require 'rspec/collection_matchers'
 require 'simplecov'
+
+Dir['./spec/support/**/*.rb'].sort.each { |f| require f }
+
 SimpleCov.add_filter '/spec/'
 SimpleCov.start
 
