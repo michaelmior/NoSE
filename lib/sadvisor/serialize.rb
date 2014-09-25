@@ -132,6 +132,11 @@ module Sadvisor
 
     property :subtype_name, as: :type
     property :cost
+
+    property :cardinality, exec_context: :decorator
+    def cardinality
+      represented.instance_variable_get(:@state).cardinality
+    end
   end
 
   # Represent the index for index lookup plan steps
