@@ -1,25 +1,9 @@
 module Sadvisor
   describe Planner do
-    let(:workload) do
-      Workload.new do
-        (Entity 'User' do
-          ID 'UserId'
-          String 'Username'
-          String 'City'
-        end) * 10
-
-        (Entity 'Tweet' do
-          ID         'TweetId'
-          String     'Body', 140, count: 5
-          Integer    'Timestamp'
-          ForeignKey 'User', 'User'
-        end) * 1000
-      end
-    end
-    let(:entity) { workload['Tweet'] }
+    include_context 'entities'
 
     it 'can look up fields by key' do
-      index = entity.simple_index
+      index = tweet.simple_index
       planner = Planner.new(workload, [index])
       query = Statement.new 'SELECT Body FROM Tweet', workload
 
@@ -30,7 +14,7 @@ module Sadvisor
     end
 
     it 'can perform an external sort if an index does not exist' do
-      index = entity.simple_index
+      index = tweet.simple_index
       planner = Planner.new(workload, [index])
       query = Statement.new 'SELECT Body FROM Tweet ORDER BY ' \
                             'Tweet.Timestamp', workload
@@ -38,7 +22,7 @@ module Sadvisor
       tree = planner.find_plans_for_query query
       steps = [
         IndexLookupPlanStep.new(index),
-        SortPlanStep.new([entity['Timestamp']])
+        SortPlanStep.new([tweet['Timestamp']])
       ]
       expect(tree.first).to eq steps
       expect(tree).to have(1).plan
@@ -52,9 +36,9 @@ module Sadvisor
     end
 
     it 'can find multiple plans' do
-      index1 = Index.new [], [entity['Timestamp']], [entity['Body']], [entity]
-      index2 = Index.new [entity['TweetId']], [], [entity['Timestamp'],
-                         entity['Body']], [entity]
+      index1 = Index.new [], [tweet['Timestamp']], [tweet['Body']], [tweet]
+      index2 = Index.new [tweet['TweetId']], [], [tweet['Timestamp'],
+                         tweet['Body']], [tweet]
       planner = Planner.new(workload, [index1, index2])
       query = Statement.new 'SELECT Body FROM Tweet ORDER BY Tweet.Timestamp',
                             workload
@@ -64,32 +48,32 @@ module Sadvisor
         [IndexLookupPlanStep.new(index1)],
         [
           IndexLookupPlanStep.new(index2),
-          SortPlanStep.new([entity['Timestamp']])
+          SortPlanStep.new([tweet['Timestamp']])
         ]
       ]
     end
 
     it 'knows which fields are available at a given step' do
-      index = Index.new [entity['TweetId']], [], [entity['Body'],
-                        entity['Timestamp']], [entity]
+      index = Index.new [tweet['TweetId']], [], [tweet['Body'],
+                        tweet['Timestamp']], [tweet]
       planner = Planner.new workload, [index]
       query = Statement.new 'SELECT Body FROM Tweet', workload
 
       plan = planner.find_plans_for_query(query).first
-      expect(plan.last.fields).to include(entity['TweetId'], entity['Body'],
-                                          entity['Timestamp'])
+      expect(plan.last.fields).to include(tweet['TweetId'], tweet['Body'],
+                                          tweet['Timestamp'])
     end
 
     it 'can apply external filtering' do
-      index = Index.new [entity['TweetId']], [], [entity['Body'],
-                        entity['Timestamp']], [entity]
+      index = Index.new [tweet['TweetId']], [], [tweet['Body'],
+                        tweet['Timestamp']], [tweet]
       planner = Planner.new workload, [index]
       query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.Timestamp > ?',
                             workload
 
       tree = planner.find_plans_for_query(query)
       expect(tree).to have(1).plan
-      expect(tree.first.last).to eq FilterPlanStep.new([], entity['Timestamp'])
+      expect(tree.first.last).to eq FilterPlanStep.new([], tweet['Timestamp'])
     end
 
     context 'when updating cardinality' do
