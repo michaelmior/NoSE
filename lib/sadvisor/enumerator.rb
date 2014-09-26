@@ -14,9 +14,13 @@ module Sadvisor
         range = [query.range_field] + query.order
       end
 
-      indexes_for_path query.longest_entity_path, query.select,
-                       query.eq_fields.group_by(&:parent),
-                       range.group_by(&:parent)
+      eq = query.eq_fields.group_by(&:parent)
+      eq.default_proc = ->(*) { [] }
+
+      range = range.group_by(&:parent)
+      range.default_proc = ->(*) { [] }
+
+      indexes_for_path query.longest_entity_path, query.select, eq, range
     end
 
     # Produce all possible indices for a given workload
@@ -98,7 +102,7 @@ module Sadvisor
       if select.first.parent == last
         [select.first.parent.id_fields, select]
       else
-        filter_choices = (eq[last] || []) + (range[last] || [])
+        filter_choices = eq[last] + range[last]
         choices = [last.id_fields]
         choices << select if path.include? select.first.parent
         choices << filter_choices unless filter_choices.empty?
@@ -111,7 +115,7 @@ module Sadvisor
       index_choices = index_choices path, eq
       max_eq_fields = index_choices.map(&:length).max
 
-      range_fields = path.map { |entity| range[entity] || [] }.reduce(&:+)
+      range_fields = path.map { |entity| range[entity] }.reduce(&:+)
       order_choices = range_fields.prefixes.to_a << []
 
       extra_choices = extra_choices path, select, eq, range
