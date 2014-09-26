@@ -91,7 +91,7 @@ module Sadvisor
 
       eq_choices = 1.upto(eq_fields.count).map do |n|
         eq_fields.permutation(n).to_a
-      end.inject([], &:+)
+      end.inject([], &:+).reject(&:empty?)
 
       eq_choices
     end
