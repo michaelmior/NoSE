@@ -577,11 +577,7 @@ module Sadvisor
       if steps.length > 0
         step.children = steps
         steps.each do |child_step|
-          if child_step.is_a? IndexLookupPlanStep
-            used_indexes = used_indexes.clone
-            used_indexes << child_step.index
-          end
-          find_plans_for_step child_step, indexes_by_path, used_indexes
+          find_plans_for_step child_step, indexes_by_path, used_indexes.clone
 
           # Remove this step if finding a plan from here failed
           if child_step.children.length == 0 and not child_step.state.answered?
@@ -619,8 +615,12 @@ module Sadvisor
       entities << parent.parent.state.path.first unless parent.parent.nil?
       indexes = indexes_by_path.values_at(*entities).compact.flatten
       (indexes - used_indexes).each do |index|
-        steps.push IndexLookupPlanStep.apply(parent, index, state).each \
-            { |new_step| new_step.add_fields_from_index index }
+        new_steps = IndexLookupPlanStep.apply parent, index, state
+        new_steps.each do |new_step|
+          new_step.add_fields_from_index index
+          used_indexes << index
+        end
+        steps.push new_steps
       end
       steps.flatten.compact
     end
