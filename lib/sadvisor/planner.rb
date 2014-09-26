@@ -156,6 +156,9 @@ module Sadvisor
       path_fields = state.fields_for_entities index.path
       return [] unless path_fields.all?(&index.all_fields.method(:include?))
 
+      # We need all hash fields to perform the lookup
+      return [] unless index.hash_fields.all?(&parent.fields.method(:include?))
+
       # Get the possible fields we need to select
       # This always includes the ID of the last and next entities
       # as well as the selected fields if we're at the end of the path

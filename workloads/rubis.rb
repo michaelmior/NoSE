@@ -7,6 +7,7 @@ $workload = Sadvisor::Workload.new do
   (Entity 'categories' do
     ID     'id'
     String 'name', 20, count: 20
+    Integer 'dummy', count: 1
   end) * 20
 
   (Entity 'regions' do
@@ -89,7 +90,8 @@ $workload = Sadvisor::Workload.new do
   # Define queries and their relative weights
 
   # BrowseCategories
-  Q 'SELECT id, name FROM categories', (4.44 + 3.21)
+  # XXX Must have at least one equality predicate
+  Q 'SELECT id, name FROM categories WHERE categories.dummy = 1', (4.44 + 3.21)
 
   # ViewBidHistory
   Q 'SELECT name FROM items WHERE items.id = ?', 2.38 / 4

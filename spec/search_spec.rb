@@ -3,7 +3,7 @@ module Sadvisor
     include_context 'entities'
 
     it 'raises an exception if there is no space' do
-      workload.add_query 'SELECT TweetId FROM Tweet'
+      workload.add_query 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?'
       expect { Search.new(workload).search_overlap(1) }.to raise_error
     end
 

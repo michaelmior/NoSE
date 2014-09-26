@@ -52,7 +52,7 @@ module Sadvisor
     end
 
     it 'can select all fields' do
-      stmt = Statement.new 'SELECT * FROM foo', workload
+      stmt = Statement.new 'SELECT * FROM foo WHERE foo.bar = ?', workload
       expect(stmt.select).to match_array workload['foo'].fields.values
     end
 

@@ -15,12 +15,6 @@ module Sadvisor
       end
     end
 
-    it 'produces no indices for a simple select' do
-      query = Statement.new 'SELECT Bar FROM Foo', workload
-      indexes = enum.indexes_for_query query
-      expect(indexes).to be_empty
-    end
-
     it 'produces a simple index for a filter' do
       query = Statement.new 'SELECT Bar FROM Foo WHERE Foo.Baz = ?', workload
       indexes = enum.indexes_for_query query
