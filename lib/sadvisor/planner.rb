@@ -540,7 +540,7 @@ module Sadvisor
 
       indexes_by_path = indexes.group_by { |index| index.path.first }
       find_plans_for_step tree.root, indexes_by_path
-      fail NoPlanException if tree.root.children.empty?
+      fail NoPlanException, query.query if tree.root.children.empty?
 
       tree
     end
