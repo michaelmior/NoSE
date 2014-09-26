@@ -12,7 +12,7 @@ module Sadvisor
     # Search for optimal indices using an ILP which searches for
     # non-overlapping indices
     # @return [Array<Index>]
-    def search_overlap(max_space = Float::INFINITY, indexes = nil)
+    def search_overlap(max_space = Float::INFINITY, indexes: nil)
       # Generate all possible combinations of indices
       if indexes.nil?
         simple_indexes = @workload.entities.values.map(&:simple_index)
@@ -57,10 +57,18 @@ module Sadvisor
         query_constraint = Array.new(entities.length) do |_|
           Gurobi::LinExpr.new
         end
-        data[:costs][q].keys.each do |i|
+        data[:costs][q].each do |i, (step_indexes, _)|
           indexes[i].entity_range(entities).each do |part|
             index_var = query_vars[i][q]
             query_constraint[part] += index_var
+          end
+
+          # All indices used at this step must either all be used, or none used
+          if step_indexes.length > 1
+            vars = step_indexes.map { |index| query_vars[index][q] }
+            vars.each_cons(2) do |var1, var2|
+              model.addConstr((var1 * 1 + var2 * -1) == 0)
+            end
           end
         end
 
@@ -76,7 +84,7 @@ module Sadvisor
       min_cost = (0...query_vars.length).to_a \
         .product((0...@workload.queries.length).to_a).map do |i, q|
         next if costs[q][i].nil?
-        query_vars[i][q] * (costs[q][i] * 1.0)
+        query_vars[i][q] * (costs[q][i].last * 1.0)
       end.compact.reduce(&:+)
 
       model.setObjective(min_cost, Gurobi::MINIMIZE)
@@ -112,7 +120,7 @@ module Sadvisor
 
       # Ensure we found a valid solution
       status = model.get_int(Gurobi::IntAttr::STATUS)
-      fail 'Solution not found' if status != Gurobi::OPTIMAL
+      fail NoSolutionException if status != Gurobi::OPTIMAL
 
       # Return the selected indices
       indexes.select.with_index do |_, i|
@@ -125,27 +133,51 @@ module Sadvisor
       planner = Planner.new @workload, indexes
       costs = Array.new(@workload.queries.length) { |_| {} }
 
-      @workload.queries.each_with_index do |query, i|
+      @workload.queries.each_with_index do |query, q|
         planner.find_plans_for_query(query).each do |plan|
           steps_by_index = []
           plan.each do |step|
             if step.is_a? IndexLookupPlanStep
+              # If the current step is just a lookup on a single entity,
+              # then we should bundle it together with the last step
+              last_step = steps_by_index.last.last unless steps_by_index.empty?
+              if last_step.is_a?(IndexLookupPlanStep) &&
+                 step.index.path == [last_step.index.path.last]
+                steps_by_index.last.push step
+                next
+              end
+
               steps_by_index.push [step]
             else
               steps_by_index.last.push step
             end
           end
 
-          # Store the costs for this plan in a nested hash where
+          # Store the costs and indexes for this plan in a nested hash where
+          # the first key is the number of the query and the second is the
+          # number of the index
+          #
+          # The value is a two-element array with the numbers of the indices
+          # which are jointly used to answer a step in the query plan along
+          # with the cost of all plan steps for the part of the query path
           steps_by_index.each do |steps|
-            index = steps.first.index
+            step_indexes = steps.select do |step|
+              step.is_a? IndexLookupPlanStep
+            end.map(&:index)
+            step_indexes.map! { |index| indexes.index index }
+
             cost = steps.map(&:cost).inject(0, &:+)
-            costs[i][indexes.index index] = cost
+            costs[q][step_indexes.first] = [step_indexes, cost]
+
           end
         end
       end
 
       costs
     end
+  end
+
+  # Thrown when no solution can be found to the ILP
+  class NoSolutionException < StandardError
   end
 end
