@@ -39,27 +39,21 @@ module Sadvisor
       workload.add_query order_query
     end
 
-    it 'has zero size when empty' do
-      expect(Index.new([], [], [], []).hash_fields).to be_empty
-      expect(Index.new([], [], [], []).order_fields).to be_empty
-      expect(Index.new([], [], [], []).entry_size).to eq 0
-      expect(Index.new([], [], [], []).size).to eq 0
-    end
-
     it 'contains fields' do
-      index = Index.new([workload['Foo']['Id']], [], [], [])
+      index = Index.new([workload['Foo']['Id']], [], [], [workload['Foo']])
       expect(index.contains_field? workload['Foo']['Id']).to be true
     end
 
     it 'can store additional fields' do
-      index = Index.new([], [], [workload['Foo']['Id']], [])
-      expect(index.contains_field? workload['Foo']['Id']).to be true
+      index = Index.new [workload['Foo']['Id']], [], [workload['Foo']['Bar']],
+                        [workload['Foo']]
+      expect(index.contains_field? workload['Foo']['Bar']).to be true
     end
 
     it 'can calculate its size' do
       big_id_field = IDField.new('Id') * 10
       workload['Foo'] << big_id_field
-      index = Index.new([big_id_field], [], [], [])
+      index = Index.new([big_id_field], [], [], [workload['Foo']])
       expect(index.entry_size).to eq(big_id_field.size)
       expect(index.size).to eq(workload['Foo']['Id'].size * 10)
     end
@@ -93,7 +87,7 @@ module Sadvisor
     end
 
     it 'can tell if it maps identities for a field' do
-      index = Index.new([workload['Foo']['Id']], [], [], [])
+      index = Index.new([workload['Foo']['Id']], [], [], [workload['Foo']])
       expect(index.identity_for? workload['Foo']).to be true
     end
 
@@ -106,6 +100,28 @@ module Sadvisor
         workload['Foo']['Corge']
       ].to_set)
       expect(index.key).to eq 'Foo'
+    end
+
+    context 'when checking validity' do
+      it 'cannot have empty hash fields' do
+        expect do
+          Index.new [], [], [workload['Foo']['Id']], [workload['Foo']]
+        end.to raise_error
+      end
+
+      it 'must have fields at the start of the path' do
+        expect do
+          Index.new [workload['Foo']['Id']], [], [],
+                    [workload['Corge'], workload['Foo']]
+        end.to raise_error InvalidIndexException
+      end
+
+      it 'must have fields at the end of the path' do
+        expect do
+          Index.new [workload['Corge']['Quux']], [], [],
+                    [workload['Corge'], workload['Foo']]
+        end.to raise_error InvalidIndexException
+      end
     end
   end
 end
