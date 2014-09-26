@@ -148,66 +148,26 @@ module Sadvisor
     # Check if this step can be applied for the given index, returning an array
     # of possible applications of the step
     def self.apply(parent, index, state)
-      # Check for the case where only a simple lookup is needed
-      if state.path.length == 0 && state.fields.count > 0
-        if index == state.fields.first.parent.simple_index
-          return [IndexLookupPlanStep.new(index, state, parent)]
-        else
-          return []
-        end
-      end
-
-      # We have the fields that have already been looked up,
-      # plus what was given in equality predidcates
-      given_fields = parent.fields + state.given_fields
-
-      # If we have the IDs for the first step, we can skip that in the index
-      index_path = index.path
-      if (index_path.first.id_fields.to_set - given_fields).empty? &&
-          index_path.length > 1 && state.path.length > 1
-        index_path = index.path[1..-1]
-      end
-
       # Check that this index is a valid jump in the path
-      return [] unless state.path[0..index_path.length - 1] == index_path
+      return [] unless state.path[0..index.path.length - 1] == index.path
 
-      # Check that all required fields are included in the index
-      path_fields = state.eq + state.order_by
-      path_fields << state.range unless state.range.nil?
+      # Get fields in the query relevant to this index
+      path_fields = state.fields_for_entities index.path
+      return [] unless path_fields.all?(&index.all_fields.method(:include?))
 
-      last_fields = path_fields.select do |field|
-        field.parent == index_path.last
-      end
-      path_fields = path_fields.select do |field|
-        next if field.parent == index_path.last
-        index_path.include? field.parent
-      end
+      # Get the possible fields we need to select
+      # This always includes the ID of the last and next entities
+      # as well as the selected fields if we're at the end of the path
+      last_choices = [index.path.last.id_fields]
+      next_entity = state.path[index.path.length]
+      last_choices << next_entity.id_fields unless next_entity.nil?
+      last_choices << state.fields if (state.path - index.path).empty?
 
-      index_includes = index.all_fields.method(:include?)
-      has_last_ids = index_path.last.id_fields.map do |field|
-        state.fields.include? field
-      end.all?
-
-      if !has_last_ids && last_fields.all?(&index_includes) && \
-         (state.path - index_path).empty?
-        return [IndexLookupPlanStep.new(index, state, parent)]
+      has_last_fields = last_choices.any? do |fields|
+        fields.all?(&index.all_fields.method(:include?))
       end
 
-      next_entity = state.path[index_path.length]
-      unless next_entity.nil?
-        return [] unless index.all_fields.any? do |field|
-          field.foreign_key_to? next_entity
-        end
-      end
-
-      # Make sure we have the final required fields in the index
-      if path_fields.all?(&index_includes) &&
-         (last_fields.all?(&index_includes) ||
-          index_path.last.id_fields.all?(&index_includes))
-        # TODO: Check that fields are usable for predicates
-        return [IndexLookupPlanStep.new(index, state, parent)]
-      end
-
+      return [IndexLookupPlanStep.new(index, state, parent)] if has_last_fields
       []
     end
 
@@ -217,32 +177,37 @@ module Sadvisor
     def update_state(parent)
       # Find fields which are filtered by the index
       eq_filter = @state.eq & (@index.hash_fields + @index.order_fields).to_set
-      if @index.order_fields.include?(state.range)
-        range_filter = state.range
+      if @index.order_fields.include?(@state.range)
+        range_filter = @state.range
+        @state.range = nil
       else
         range_filter = nil
       end
 
+      # Remove fields resolved by this index
       @state.fields -= @index.all_fields
       @state.eq -= eq_filter
-      @state.range = nil if @index.order_fields.include?(@state.range)
       @state.order_by -= @index.order_fields
 
-      index_path = index.path
-      cardinality = @state.cardinality
-      if (index.path.first.id_fields.to_set - parent.fields - @state.eq).empty?
-        index_path = index.path[1..-1] if index.path.length > 1
-        cardinality = index.path[0].count if parent.is_a? RootPlanStep
+      # Strip the path for this index, but if we haven't fetched all
+      # fields, leave the last one so we can perform a separate ID lookup
+      path_fields = @state.fields_for_entities @index.path, select: true
+      if @state.answered?
+        @state.path = @state.path[index.path.length..-1]
+      else
+        @state.path = @state.path[index.path.length - 1..-1]
       end
+
+      # XXX What is this?
+      # index_path = index.path
+      # cardinality = @state.cardinality
+      # if (index.path.first.id_fields.to_set - parent.fields - @state.eq).empty?
+      #   index_path = index.path[1..-1] if index.path.length > 1
+      #   cardinality = index.path[0].count if parent.is_a? RootPlanStep
+      # end
+      cardinality = @state.cardinality
 
       @state.cardinality = new_cardinality cardinality, eq_filter, range_filter
-
-      if index_path.length == 1
-        @state.path = @state.path[1..-1]
-      elsif state.path.length > 0
-        @state.path = @state.path[index_path.length - 1..-1]
-      end
-      @state.path = [] if @state.path.nil?
     end
 
     # Update the cardinality based on filtering implicit to the index
@@ -380,12 +345,8 @@ module Sadvisor
 
     # Check if filtering can be done (we have all the necessary fields)
     def self.apply(parent, state)
-      # In case we try to filter at the first step in the chain
-      # before fetching any data
-      return nil if parent.is_a? RootPlanStep
-
       # Get fields and check for possible filtering
-      filter_fields, eq_filter, range_filter = filter_fields state
+      filter_fields, eq_filter, range_filter = filter_fields parent, state
       return nil if filter_fields.empty?
 
       # Check that we have all the fields we are filtering
@@ -407,10 +368,10 @@ module Sadvisor
     end
 
     # Get the fields we can possibly filter on
-    def self.filter_fields(state)
-      eq_filter = state.eq.select { |field| !state.path.member? field.parent }
+    def self.filter_fields(parent, state)
+      eq_filter = state.eq.select { |field| parent.fields.include? field }
       filter_fields = eq_filter.dup
-      if state.range && !state.path.member?(state.range.parent)
+      if state.range && parent.fields.include?(state.range)
         range_filter = state.range
         filter_fields << range_filter
       else
@@ -467,7 +428,7 @@ module Sadvisor
 
     # :nocov:
     def to_color
-      @query.text_value +
+      @query.query +
         "\n  fields: " + @fields.map { |field| field.to_color }.to_a.to_color +
         "\n      eq: " + @eq.map { |field| field.to_color }.to_a.to_color +
         "\n   range: " + (@range.nil? ? '(nil)' : @range.name) +
@@ -482,6 +443,16 @@ module Sadvisor
     # @return [Boolean]
     def answered?
       @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
+    end
+
+    # Get all fields relevant for filtering in the query for entities in the
+    # given list, optionally including selected fields
+    # @return [Array<Field>]
+    def fields_for_entities(entities, select: false)
+      path_fields = @eq + @order_by
+      path_fields += @fields if select
+      path_fields << @range unless @range.nil?
+      path_fields.select { |field| entities.include? field.parent }
     end
 
     private
@@ -627,6 +598,7 @@ module Sadvisor
     # @return [Array<PlanStep>]
     def find_nonindexed_steps(parent, state)
       steps = []
+      return steps if parent.is_a? RootPlanStep
 
       [SortPlanStep, FilterPlanStep].each \
         { |step| steps.push step.apply(parent, state) }
