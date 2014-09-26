@@ -611,6 +611,12 @@ module Sadvisor
             used_indexes << child_step.index
           end
           find_plans_for_step child_step, indexes_by_path, used_indexes
+
+          # Remove this step if finding a plan from here failed
+          if child_step.children.length == 0 and not child_step.state.answered?
+            steps -= [child_step]
+            step.children = steps
+          end
         end
       else
         return if step.is_a?(RootPlanStep) || prune_plan(step.parent)
