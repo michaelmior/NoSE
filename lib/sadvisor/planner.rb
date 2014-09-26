@@ -98,6 +98,7 @@ module Sadvisor
     def initialize(state)
       super()
       @state = state
+      @fields += state.given_fields
     end
   end
 
@@ -191,8 +192,7 @@ module Sadvisor
 
       # Strip the path for this index, but if we haven't fetched all
       # fields, leave the last one so we can perform a separate ID lookup
-      path_fields = @state.fields_for_entities @index.path, select: true
-      if @state.answered?
+      if @state.fields_for_entities(@index.path, select: true).empty?
         @state.path = @state.path[index.path.length..-1]
       else
         @state.path = @state.path[index.path.length - 1..-1]
