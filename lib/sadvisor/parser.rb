@@ -87,6 +87,9 @@ module Sadvisor
       populate_fields tree, workload
       populate_conditions tree[:where], workload
 
+      fail InvalidQueryException, 'must have at least one equality predicate' \
+        if @conditions.empty? || @conditions.all?(&:is_range)
+
       @limit = tree[:limit].to_i if tree[:limit]
 
       find_longest_path tree, workload
@@ -168,6 +171,10 @@ module Sadvisor
         end
       end
     end
+  end
+
+  # Thrown when something tries to parse an invalid query
+  class InvalidQueryException < StandardError
   end
 end
 

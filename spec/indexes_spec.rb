@@ -13,28 +13,20 @@ module Sadvisor
         end) * 100
       end
     end
-    let(:simple_query) do
-      Statement.new('SELECT Id FROM Foo', workload)
-    end
     let(:equality_query) do
       Statement.new('SELECT Id FROM Foo WHERE Foo.Id = ?', workload)
-    end
-    let(:range_query) do
-      Statement.new 'SELECT Id FROM Foo WHERE Foo.Id > ?', workload
     end
     let(:combo_query) do
       Statement.new 'SELECT Id FROM Foo WHERE Foo.Id > ? AND Foo.Bar = ?',
                     workload
     end
     let(:order_query) do
-      Statement.new 'SELECT Id FROM Foo ORDER BY Foo.Id', workload
+      Statement.new 'SELECT Id FROM Foo WHERE Foo.Id = ? ORDER BY Foo.Id',
+                    workload
     end
 
     before(:each) do
-      workload.add_query simple_query
       workload.add_query equality_query
-      workload.add_query range_query
-      workload.add_query range_query
       workload.add_query combo_query
       workload.add_query order_query
     end
@@ -59,18 +51,13 @@ module Sadvisor
     end
 
     context 'when materializing views' do
-      it 'supports simple lookups' do
-        index = simple_query.materialize_view
-        expect(index.extra).to eq([workload['Foo']['Id']].to_set)
-      end
-
       it 'supports equality predicates' do
         index = equality_query.materialize_view
         expect(index.hash_fields).to eq([workload['Foo']['Id']].to_set)
       end
 
       it 'support range queries' do
-        index = range_query.materialize_view
+        index = combo_query.materialize_view
         expect(index.order_fields).to eq([workload['Foo']['Id']])
       end
 

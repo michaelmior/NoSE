@@ -5,7 +5,8 @@ module Sadvisor
     it 'can look up fields by key' do
       index = tweet.simple_index
       planner = Planner.new(workload, [index])
-      query = Statement.new 'SELECT Body FROM Tweet', workload
+      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
+                            workload
 
       tree = planner.find_plans_for_query query
       expect(tree.first).to eq([IndexLookupPlanStep.new(index)])
@@ -16,8 +17,8 @@ module Sadvisor
     it 'can perform an external sort if an index does not exist' do
       index = tweet.simple_index
       planner = Planner.new(workload, [index])
-      query = Statement.new 'SELECT Body FROM Tweet ORDER BY ' \
-                            'Tweet.Timestamp', workload
+      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ? ' \
+                            'ORDER BY Tweet.Timestamp', workload
 
       tree = planner.find_plans_for_query query
       steps = [
@@ -30,7 +31,8 @@ module Sadvisor
 
     it 'raises an exception if there is no plan' do
       planner = Planner.new workload, []
-      query = Statement.new 'SELECT Body FROM Tweet', workload
+      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
+                            workload
       expect { planner.find_plans_for_query query }.to \
           raise_error NoPlanException
     end
@@ -58,7 +60,8 @@ module Sadvisor
       index = Index.new [tweet['TweetId']], [], [tweet['Body'],
                         tweet['Timestamp']], [tweet]
       planner = Planner.new workload, [index]
-      query = Statement.new 'SELECT Body FROM Tweet', workload
+      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
+                            workload
 
       plan = planner.find_plans_for_query(query).first
       expect(plan.last.fields).to include(tweet['TweetId'], tweet['Body'],
@@ -66,10 +69,11 @@ module Sadvisor
     end
 
     it 'can apply external filtering' do
-      index = Index.new [tweet['TweetId']], [], [tweet['Body'],
-                        tweet['Timestamp']], [tweet]
+      index = Index.new [tweet['TweetId']], [],
+                        [tweet['Body'], tweet['Timestamp']], [tweet]
       planner = Planner.new workload, [index]
-      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.Timestamp > ?',
+      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?' \
+                            ' AND Tweet.Timestamp > ?',
                             workload
 
       tree = planner.find_plans_for_query(query)

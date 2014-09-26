@@ -15,7 +15,8 @@ module Sadvisor
       end
 
       it 'automatically parses queries' do
-        valid_query = Statement.new 'SELECT Id FROM Foo', workload
+        valid_query = Statement.new 'SELECT Id FROM Foo WHERE Foo.Id = ?',
+                                    workload
         workload.add_query(valid_query)
 
         expect(workload.queries).to have(1).item
