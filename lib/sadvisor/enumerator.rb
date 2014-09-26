@@ -133,7 +133,12 @@ module Sadvisor
           index_extra = extra - (index + order)
           next if order.empty? && index_extra.empty?
 
-          indexes << Index.new(index, order, index_extra, path)
+          begin
+            indexes << Index.new(index, order, index_extra, path)
+          rescue InvalidIndexException
+            # This combination of fields is not valid, that's ok
+            nil
+          end
 
           # Partition into the ordering portion
           if index.length == max_eq_fields

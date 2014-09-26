@@ -36,12 +36,13 @@ module Sadvisor
     end
 
     it 'can find multiple plans' do
-      index1 = Index.new [], [tweet['Timestamp']], [tweet['Body']], [tweet]
-      index2 = Index.new [tweet['TweetId']], [], [tweet['Timestamp'],
-                         tweet['Body']], [tweet]
+      index1 = Index.new [tweet['User']], [tweet['Timestamp']],
+                         [tweet['Body']], [tweet]
+      index2 = Index.new [tweet['User']], [],
+                         [tweet['Timestamp'], tweet['Body']], [tweet]
       planner = Planner.new(workload, [index1, index2])
-      query = Statement.new 'SELECT Body FROM Tweet ORDER BY Tweet.Timestamp',
-                            workload
+      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.User = ? ' \
+                            'ORDER BY Tweet.Timestamp', workload
 
       tree = planner.find_plans_for_query query
       expect(tree.to_a).to match_array [

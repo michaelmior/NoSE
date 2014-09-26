@@ -13,6 +13,13 @@ module Sadvisor
       @path = path
       @key = saved_key
 
+      fail InvalidIndexException, 'hash fields cannot be empty' \
+        if @hash_fields.empty?
+
+      entities = @all_fields.map(&:parent).to_set
+      fail InvalidIndexException, 'invalid path for index fields' \
+        unless entities.include?(path.first) && entities.include?(path.last)
+
       # Initialize the hash function and freeze ourselves
       hash
       key
@@ -93,6 +100,10 @@ module Sadvisor
     end
   end
 
+  # Thrown when something tries to create an invalid index
+  class InvalidIndexException < StandardError
+  end
+
   # Allow entities to create their own indices
   class Entity
     # Create a simple index which maps entity keys to other fields
@@ -112,7 +123,12 @@ module Sadvisor
         order_fields << @range_field
       end
 
-      Sadvisor::Index.new(@eq_fields, order_fields,
+      # We must have hash fields, so if there are no equality
+      # predicates, use the ID at the end of the query path instead
+      eq = @eq_fields
+      eq = @longest_entity_path.last.id_fields if @eq_fields.empty?
+
+      Sadvisor::Index.new(eq, order_fields,
                           all_fields - (@eq_fields + @order).to_set,
                           @longest_entity_path.reverse)
     end
