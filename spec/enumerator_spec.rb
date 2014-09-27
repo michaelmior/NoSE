@@ -32,7 +32,7 @@ module Sadvisor
 
       expect(indexes).to include \
         Index.new([workload['Foo']['Baz']], [], [workload['Bar']['Baz']],
-                  [workload['Bar'], workload['Foo']])
+                  [workload['Foo'], workload['Bar']])
     end
 
     it 'produces a simple index for a filter within a workload' do

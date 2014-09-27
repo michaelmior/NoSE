@@ -20,7 +20,8 @@ module Sadvisor
       range = range.group_by(&:parent)
       range.default_proc = ->(*) { [] }
 
-      indexes_for_path query.longest_entity_path, query.select, eq, range
+      indexes_for_path query.longest_entity_path.reverse, query.select,
+                       eq, range
     end
 
     # Produce all possible indices for a given workload
