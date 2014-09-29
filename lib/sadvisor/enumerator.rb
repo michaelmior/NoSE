@@ -87,8 +87,8 @@ module Sadvisor
     def index_choices(path, eq)
       eq_fields = path.map { |entity| eq[entity] }.compact.flatten
 
-      # If we have no filtering on the first entity, add the ID fields
-      eq_fields += path[0].id_fields if eq[path[0]].nil?
+      # Add the ID fields of the entity on the head of the path
+      eq_fields += path.first.id_fields
 
       eq_choices = 1.upto(eq_fields.count).map do |n|
         eq_fields.permutation(n).to_a
