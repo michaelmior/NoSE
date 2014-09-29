@@ -60,13 +60,17 @@ module Sadvisor
     def add_foreign_keys
       @neighbours.each_with_index do |other_nodes, node|
         other_nodes.each do |other_node|
-          @entities[node] << ForeignKeyField.new(
-            'FK' + @entities[other_node].name + 'ID',
-            @entities[other_node])
+          if rand > 0.5
+            from_node = node
+            to_node = other_node
+          else
+            from_node = other_node
+            to_node = node
+          end
 
-          @entities[other_node] << ForeignKeyField.new(
-            'FK' + @entities[node].name + 'ID',
-            @entities[node])
+          @entities[from_node] << ForeignKeyField.new(
+            'FK' + @entities[to_node].name + 'ID',
+            @entities[to_node])
         end
       end
     end
