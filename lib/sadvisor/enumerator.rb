@@ -139,8 +139,13 @@ module Sadvisor
           # Partition into the ordering portion
           if index.length == max_eq_fields
             index.partitions.each do |index_prefix, order_prefix|
-              indexes << Index.new(index_prefix, order_prefix + order,
-                                   extra, path)
+              begin
+                indexes << Index.new(index_prefix, order_prefix + order,
+                                     extra, path)
+              rescue InvalidIndexException
+                # This combination of fields is not valid, that's ok
+                nil
+              end
             end
           end
         end
