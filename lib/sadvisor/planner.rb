@@ -143,7 +143,10 @@ module Sadvisor
     # Rough cost estimate as the size of data returned
     # @return [Numeric]
     def cost
-      @state.cardinality * @fields.map(&:size).inject(0, :+)
+      # XXX We must always select the ordered fields
+      #     (column names in Cassandra)
+      select_fields = @fields + @index.order_fields
+      @state.cardinality * select_fields.map(&:size).inject(0, :+)
     end
 
     # Check if this step can be applied for the given index, returning an array
