@@ -172,5 +172,17 @@ module Sadvisor
         IndexLookupPlanStep.new(indexes[1])
       ]
     end
+
+    it 'can create plans which visit each entity' do
+      query = Statement.new 'SELECT URL FROM Link ' \
+                            'WHERE Link.Tweet.User.Username = ?', workload
+      workload.add_query query
+
+      indexes = IndexEnumerator.new(workload).indexes_for_workload
+      planner = Planner.new workload, indexes
+
+      max_steps = planner.find_plans_for_query(query).map(&:length).length
+      expect(max_steps).to be >= query.longest_entity_path.length
+    end
   end
 end

@@ -195,7 +195,8 @@ module Sadvisor
 
       # Strip the path for this index, but if we haven't fetched all
       # fields, leave the last one so we can perform a separate ID lookup
-      if @state.fields_for_entities(@index.path, select: true).empty?
+      if @state.fields_for_entities(@index.path, select: true).empty? &&
+         @state.path == index.path
         @state.path = @state.path[index.path.length..-1]
       else
         @state.path = @state.path[index.path.length - 1..-1]
