@@ -131,9 +131,10 @@ module Sadvisor
     # Get the cost of using each index for each query in a workload
     def costs(indexes)
       planner = Planner.new @workload, indexes
-      costs = Array.new(@workload.queries.length) { |_| {} }
 
-      @workload.queries.each_with_index do |query, q|
+      costs = Parallel.map(@workload.queries) do |query|
+        query_costs = {}
+
         planner.find_plans_for_query(query).each do |plan|
           steps_by_index = []
           plan.each do |step|
@@ -167,10 +168,12 @@ module Sadvisor
             step_indexes.map! { |index| indexes.index index }
 
             cost = steps.map(&:cost).inject(0, &:+)
-            costs[q][step_indexes.first] = [step_indexes, cost]
+            query_costs[step_indexes.first] = [step_indexes, cost]
 
           end
         end
+
+        query_costs
       end
 
       costs
