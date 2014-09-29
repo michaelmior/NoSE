@@ -27,7 +27,7 @@ module Sadvisor
     # Produce all possible indices for a given workload
     # @return [Array<Index>]
     def indexes_for_workload
-      indexes = @workload.queries.map do |query|
+      indexes = Parallel.map(@workload.queries) do |query|
         indexes_for_query(query).to_a << query.materialize_view
       end.inject([], &:+)
 
