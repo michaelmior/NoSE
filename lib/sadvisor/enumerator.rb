@@ -75,7 +75,7 @@ module Sadvisor
 
       path.each_with_index do |_, i|
         path[i..-1].each_with_index do |_, j|
-          j += i + 1
+          j += i
           indexes += indexes_for_step path[i..j], select, eq, range
         end
       end
