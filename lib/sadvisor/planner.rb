@@ -254,13 +254,8 @@ module Sadvisor
     # Get the estimated cardinality of the set of samples of m items with
     # replacement from a set of cardinality n
     def sample(m, n)
-      samples = [1.0]
-
-      1.upto(m - 1).each do
-        samples << ((n - 1) * samples[-1] + n) / n
-      end
-
-      samples[-1]
+      # http://math.stackexchange.com/a/32816/130124
+      n * (1 - (1 - (1 / n))**m)
     end
   end
 
