@@ -132,15 +132,19 @@ module Sadvisor
     def costs(indexes)
       planner = Planner.new @workload, indexes
 
+      # Create a hash to allow efficient lookup of the numerical index
+      # of a particular index within the array of indexes
+      index_pos = Hash[indexes.each_with_index.to_a]
+
       costs = Parallel.map(@workload.queries) do |query|
-        query_cost planner, indexes, query
+        query_cost planner, index_pos, query
       end
 
       costs
     end
 
     # Get the cost for indices for an individual query
-    def query_cost(planner, indexes, query)
+    def query_cost(planner, index_pos, query)
       query_costs = {}
 
       planner.find_plans_for_query(query).each do |plan|
@@ -162,14 +166,14 @@ module Sadvisor
           end
         end
 
-        populate_query_costs query_costs, indexes, steps_by_index
+        populate_query_costs query_costs, index_pos, steps_by_index
       end
 
       query_costs
     end
 
     # Store the costs and indexes for this plan in a nested hash
-    def populate_query_costs(query_costs, indexes, steps_by_index)
+    def populate_query_costs(query_costs, index_pos, steps_by_index)
       # The first key is the number of the query and the second is the
       # number of the index
       #
@@ -180,7 +184,7 @@ module Sadvisor
         step_indexes = steps.select do |step|
           step.is_a? IndexLookupPlanStep
         end.map(&:index)
-        step_indexes.map! { |index| indexes.index index }
+        step_indexes.map! { |index| index_pos[index] }
 
         cost = steps.map(&:cost).inject(0, &:+)
         query_costs[step_indexes.first] = [step_indexes, cost]
