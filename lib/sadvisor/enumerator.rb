@@ -32,27 +32,19 @@ module Sadvisor
       end.inject([], &:+)
 
       # Combine the data of indices based on matching hash fields
-      indexes.select do |index|
+      no_order_indexes = indexes.select do |index|
         index.order_fields.empty?
-      end.group_by(&:hash_fields).each do |hash_fields, hash_indexes|
-        extra_choices = hash_indexes.map do |index|
-          [index.extra, index.path]
-        end.uniq
+      end.group_by { |index| [index.hash_fields, index.path] }
+
+      no_order_indexes.each do |(hash_fields, path), hash_indexes|
+        extra_choices = hash_indexes.map(&:extra).uniq
 
         # XXX More combos?
-        combos = extra_choices.combination(2).to_a
+        combos = extra_choices.combination(2)
 
         combos.map do |combo|
-          extra = combo.map(&:first)
-          paths = combo.map(&:last)
-
-          # Check that the paths have a common prefix
-          next unless paths.sort_by(&:length).reverse.inject do |a, b|
-            a && a.prefixes.member?(b) && b
-          end
-
-          indexes << Index.new(hash_fields, [], extra.inject(Set.new, &:+),
-                               paths.sort_by(&:length).last)
+          indexes << Index.new(hash_fields, [], combo.inject(Set.new, &:+),
+                               path)
         end
       end
 
