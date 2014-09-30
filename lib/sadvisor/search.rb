@@ -133,50 +133,58 @@ module Sadvisor
       planner = Planner.new @workload, indexes
 
       costs = Parallel.map(@workload.queries) do |query|
-        query_costs = {}
-
-        planner.find_plans_for_query(query).each do |plan|
-          steps_by_index = []
-          plan.each do |step|
-            if step.is_a? IndexLookupPlanStep
-              # If the current step is just a lookup on a single entity,
-              # then we should bundle it together with the last step
-              last_step = steps_by_index.last.last unless steps_by_index.empty?
-              if last_step.is_a?(IndexLookupPlanStep) &&
-                 step.index.path == [last_step.index.path.last]
-                steps_by_index.last.push step
-                next
-              end
-
-              steps_by_index.push [step]
-            else
-              steps_by_index.last.push step
-            end
-          end
-
-          # Store the costs and indexes for this plan in a nested hash where
-          # the first key is the number of the query and the second is the
-          # number of the index
-          #
-          # The value is a two-element array with the numbers of the indices
-          # which are jointly used to answer a step in the query plan along
-          # with the cost of all plan steps for the part of the query path
-          steps_by_index.each do |steps|
-            step_indexes = steps.select do |step|
-              step.is_a? IndexLookupPlanStep
-            end.map(&:index)
-            step_indexes.map! { |index| indexes.index index }
-
-            cost = steps.map(&:cost).inject(0, &:+)
-            query_costs[step_indexes.first] = [step_indexes, cost]
-
-          end
-        end
-
-        query_costs
+        query_cost planner, indexes, query
       end
 
       costs
+    end
+
+    # Get the cost for indices for an individual query
+    def query_cost(planner, indexes, query)
+      query_costs = {}
+
+      planner.find_plans_for_query(query).each do |plan|
+        steps_by_index = []
+        plan.each do |step|
+          if step.is_a? IndexLookupPlanStep
+            # If the current step is just a lookup on a single entity,
+            # then we should bundle it together with the last step
+            last_step = steps_by_index.last.last unless steps_by_index.empty?
+            if last_step.is_a?(IndexLookupPlanStep) &&
+              step.index.path == [last_step.index.path.last]
+              steps_by_index.last.push step
+              next
+            end
+
+            steps_by_index.push [step]
+          else
+            steps_by_index.last.push step
+          end
+        end
+
+        populate_query_costs query_costs, indexes, steps_by_index
+      end
+
+      query_costs
+    end
+
+    # Store the costs and indexes for this plan in a nested hash
+    def populate_query_costs(query_costs, indexes, steps_by_index)
+      # The first key is the number of the query and the second is the
+      # number of the index
+      #
+      # The value is a two-element array with the numbers of the indices
+      # which are jointly used to answer a step in the query plan along
+      # with the cost of all plan steps for the part of the query path
+      steps_by_index.each do |steps|
+        step_indexes = steps.select do |step|
+          step.is_a? IndexLookupPlanStep
+        end.map(&:index)
+        step_indexes.map! { |index| indexes.index index }
+
+        cost = steps.map(&:cost).inject(0, &:+)
+        query_costs[step_indexes.first] = [step_indexes, cost]
+      end
     end
   end
 
