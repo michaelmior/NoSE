@@ -1,5 +1,3 @@
-require 'hashids'
-
 module Sadvisor
   # A representation of materialized views over fields in an entity
   class Index
@@ -28,7 +26,7 @@ module Sadvisor
 
     # A simple key which uniquely identifies the index
     def key
-      @key ||= Hashids.new.encrypt(Zlib.crc32 to_s)
+      @key ||= "I#{Zlib.crc32 to_s}"
     end
 
     def state
