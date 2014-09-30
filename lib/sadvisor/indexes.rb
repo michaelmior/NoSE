@@ -1,7 +1,8 @@
 module Sadvisor
   # A representation of materialized views over fields in an entity
   class Index
-    attr_reader :hash_fields, :order_fields, :extra, :all_fields, :path
+    attr_reader :hash_fields, :order_fields, :extra, :all_fields, :path,
+                :entry_size, :size
 
     def initialize(hash_fields, order_fields, extra, path, saved_key = nil)
       @hash_fields = hash_fields.to_set
@@ -21,6 +22,7 @@ module Sadvisor
       # Initialize the hash function and freeze ourselves
       hash
       key
+      calculate_size
       freeze
     end
 
@@ -63,6 +65,13 @@ module Sadvisor
       @hash ||= [@hash_fields, @order_fields, @extra.to_set, @path].hash
     end
 
+    # Precalculate the size of the index
+    def calculate_size
+      @entry_size = @all_fields.map(&:size).inject(0, :+)
+      @size = (@hash_fields + @order_fields).map(&:cardinality) \
+        .inject(1, :*) * @entry_size
+    end
+
     # Check if this index is a mapping from the key of the given entity
     # @see Entity#id_fields
     # @return [Boolean]
@@ -74,19 +83,6 @@ module Sadvisor
     # @return [Boolean]
     def contains_field?(field)
       @all_fields.include? field
-    end
-
-    # The size of a single entry in the index
-    # @return [Fixnum]
-    def entry_size
-      @all_fields.map(&:size).inject(0, :+)
-    end
-
-    # The total size of this index
-    # @return [Fixnum]
-    def size
-      (@hash_fields + @order_fields).map(&:cardinality) \
-        .inject(1, :*) * entry_size
     end
 
     # Create a new range over the entities traversed by an index using
