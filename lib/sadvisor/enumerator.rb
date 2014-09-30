@@ -25,13 +25,22 @@ module Sadvisor
     end
 
     # Produce all possible indices for a given workload
-    # @return [Array<Index>]
+    # @return [Set<Index>]
     def indexes_for_workload
       indexes = Parallel.map(@workload.queries) do |query|
         indexes_for_query(query).to_a << query.materialize_view
       end.inject([], &:+)
 
-      # Combine the data of indices based on matching hash fields
+      combine_indexes indexes
+      remove_base_indexes indexes
+
+      indexes.to_set
+    end
+
+    private
+
+    # Combine the data of indices based on matching hash fields
+    def combine_indexes(indexes)
       no_order_indexes = indexes.select do |index|
         index.order_fields.empty?
       end.group_by { |index| [index.hash_fields, index.path] }
@@ -47,18 +56,16 @@ module Sadvisor
                                path)
         end
       end
+    end
 
-      # Exclude things covered by the base indices
-      indexes.reject do |index|
+    # Exclude things covered by the base indices
+    def remove_base_indexes(indexes)
+      indexes.reject! do |index|
         index.path.length == 1 &&
         index.hash_fields.to_set == index.path.first.id_fields.to_set &&
         index.order_fields.empty?
       end
-
-      indexes.to_set
     end
-
-    private
 
     # Produce all possible indices for a given path through the entity graph
     # which select the given fields and possibly allow equality/range filtering
