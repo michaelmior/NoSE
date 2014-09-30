@@ -153,14 +153,14 @@ module Sadvisor
     # of possible applications of the step
     def self.apply(parent, index, state)
       # Check that this index is a valid jump in the path
-      return [] unless state.path[0..index.path.length - 1] == index.path
+      return nil unless state.path[0..index.path.length - 1] == index.path
 
       # Get fields in the query relevant to this index
       path_fields = state.fields_for_entities index.path
-      return [] unless path_fields.all?(&index.all_fields.method(:include?))
+      return nil unless path_fields.all?(&index.all_fields.method(:include?))
 
       # We need all hash fields to perform the lookup
-      return [] unless index.hash_fields.all?(&parent.fields.method(:include?))
+      return nil unless index.hash_fields.all?(&parent.fields.method(:include?))
 
       # Get the possible fields we need to select
       # This always includes the ID of the last and next entities
@@ -174,8 +174,9 @@ module Sadvisor
         fields.all?(&index.all_fields.method(:include?))
       end
 
-      return [IndexLookupPlanStep.new(index, state, parent)] if has_last_fields
-      []
+      return IndexLookupPlanStep.new(index, state, parent) if has_last_fields
+
+      nil
     end
 
     private
@@ -617,14 +618,14 @@ module Sadvisor
       entities << parent.parent.state.path.first unless parent.parent.nil?
       indexes = indexes_by_path.values_at(*entities).compact.flatten
       (indexes - used_indexes).each do |index|
-        new_steps = IndexLookupPlanStep.apply parent, index, state
-        new_steps.each do |new_step|
+        new_step = IndexLookupPlanStep.apply parent, index, state
+        unless new_step.nil?
           new_step.add_fields_from_index index
           used_indexes << index
+          steps.push new_step
         end
-        steps.push new_steps
       end
-      steps.flatten.compact
+      steps
     end
   end
 end
