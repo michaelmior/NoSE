@@ -6,8 +6,8 @@ module Sadvisor
 
     def initialize(hash_fields, order_fields, extra, path, saved_key = nil)
       @hash_fields = hash_fields.to_set
-      @order_fields = order_fields
-      @extra = extra.to_set
+      @order_fields = order_fields - hash_fields.to_a
+      @extra = extra.to_set - @hash_fields - @order_fields.to_set
       @all_fields = @hash_fields + order_fields.to_set + @extra
       @path = path
       @key = saved_key
