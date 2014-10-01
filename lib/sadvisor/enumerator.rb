@@ -32,7 +32,6 @@ module Sadvisor
       end.inject([], &:+)
 
       combine_indexes indexes
-      remove_base_indexes indexes
 
       indexes.to_set
     end
@@ -55,15 +54,6 @@ module Sadvisor
           indexes << Index.new(hash_fields, [], combo.inject(Set.new, &:+),
                                path)
         end
-      end
-    end
-
-    # Exclude things covered by the base indices
-    def remove_base_indexes(indexes)
-      indexes.reject! do |index|
-        index.path.length == 1 &&
-        index.hash_fields.to_set == index.path.first.id_fields.to_set &&
-        index.order_fields.empty?
       end
     end
 
