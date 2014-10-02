@@ -190,3 +190,13 @@ module Sadvisor
   class NoSolutionException < StandardError
   end
 end
+
+Gurobi::LinExpr.class_eval do
+  def inspect
+    0.upto(size - 1).map do |i|
+      coeff = getCoeff(i)
+      var = getVar(i).get_string(Gurobi::StringAttr::VAR_NAME)
+      "#{coeff} * #{var}"
+    end.join ' + '
+  end
+end
