@@ -19,10 +19,9 @@ module Sadvisor
       query = Statement.new 'SELECT Bar FROM Foo WHERE Foo.Baz = ?', workload
       indexes = enum.indexes_for_query query
 
-      expect(indexes.to_a).to match_array [
+      expect(indexes.to_a).to include \
         Index.new([workload['Foo']['Baz']], [], [workload['Foo']['Bar']],
                   [workload['Foo']])
-      ]
     end
 
     it 'produces a simple index for a foreign key join' do
@@ -40,10 +39,9 @@ module Sadvisor
       workload.add_query query
       indexes = enum.indexes_for_workload
 
-      expect(indexes.to_a).to match_array [
+      expect(indexes.to_a).to include \
         Index.new([workload['Foo']['Baz']], [], [workload['Foo']['Bar']],
                   [workload['Foo']])
-      ]
     end
 
     it 'does not produce empty indexes' do
