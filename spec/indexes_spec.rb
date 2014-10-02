@@ -21,7 +21,7 @@ module Sadvisor
                     workload
     end
     let(:order_query) do
-      Statement.new 'SELECT Id FROM Foo WHERE Foo.Id = ? ORDER BY Foo.Id',
+      Statement.new 'SELECT Id FROM Foo WHERE Foo.Id = ? ORDER BY Foo.Bar',
                     workload
     end
 
@@ -69,7 +69,7 @@ module Sadvisor
 
       it 'supports order by' do
         index = order_query.materialize_view
-        expect(index.order_fields).to eq([workload['Foo']['Id']])
+        expect(index.order_fields).to eq([workload['Foo']['Bar']])
       end
     end
 
