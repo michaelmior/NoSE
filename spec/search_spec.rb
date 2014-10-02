@@ -4,7 +4,8 @@ module Sadvisor
 
     it 'raises an exception if there is no space' do
       workload.add_query 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?'
-      expect { Search.new(workload).search_overlap(1) }.to raise_error
+      indexes = IndexEnumerator.new(workload).indexes_for_workload.to_a
+      expect { Search.new(workload).search_overlap(indexes, 1) }.to raise_error
     end
 
     it 'produces a materialized view with sufficient space' do
@@ -12,7 +13,8 @@ module Sadvisor
                             'ORDER BY User.Username', workload
       workload.add_query query
 
-      indexes = Search.new(workload).search_overlap
+      indexes = IndexEnumerator.new(workload).indexes_for_workload.to_a
+      indexes = Search.new(workload).search_overlap indexes
       expect(indexes).to include query.materialize_view
     end
 
@@ -27,7 +29,7 @@ module Sadvisor
       ]
       search = Search.new(workload)
       expect do
-        search.search_overlap(indexes.first.size, indexes: indexes).to_set
+        search.search_overlap(indexes, indexes.first.size).to_set
       end.to raise_error NoSolutionException
     end
   end
