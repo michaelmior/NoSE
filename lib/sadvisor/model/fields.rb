@@ -211,10 +211,8 @@ module Sadvisor
     # Get the common prefix of two paths
     # return [Array<Field>]
     def &(other)
-      fail TypeError unless other.is_a? KeyPath
-      each_with_index do |field, i|
-        return self[0..i] if field != other[i]
-      end
+      @key_fields.longest_common_prefix \
+        other.instance_variable_get(:@key_fields)
     end
   end
 end

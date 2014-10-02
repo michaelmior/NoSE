@@ -25,6 +25,13 @@ module Enumerable
   end
 end
 
+class Array
+  def longest_common_prefix(other)
+    fail TypeError unless other.is_a? Array
+    (prefixes.to_a & other.prefixes.to_a).max_by(&:length) || []
+  end
+end
+
 class Integer
   def finite?
     true
