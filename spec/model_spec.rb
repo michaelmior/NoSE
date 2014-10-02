@@ -120,7 +120,7 @@ module Sadvisor
     it 'can find a common prefix of fields' do
       path1 = KeyPath.new %w(C Baz Bar), @entity_c
       path2 = KeyPath.new %w(C Baz), @entity_c
-      expect(path1 & path2).to match_array [@entity_c['Baz'], @entity_b['Bar']]
+      expect(path1 & path2).to match_array [@entity_c['Baz']]
     end
 
     it 'finds fields along the path' do
