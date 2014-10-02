@@ -111,10 +111,7 @@ module Sadvisor
         indexes = []
 
         order_choices.each do |order|
-          # Skip indices which will be in the base schema
-          next if path.length == 1 && index == path[0].id_fields \
-                                   && order.length == 0
-
+          # Skip indices with only a hash component
           index_extra = extra - (index + order)
           next if order.empty? && index_extra.empty?
 
