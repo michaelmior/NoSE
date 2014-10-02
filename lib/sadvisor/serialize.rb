@@ -65,6 +65,8 @@ module Sadvisor
     collection :order_fields, decorator: FieldRepresenter
     collection :extra, decorator: FieldRepresenter
 
+    property :size
+
     property :path, exec_context: :decorator
     def path
       represented.path.map(&:name)
