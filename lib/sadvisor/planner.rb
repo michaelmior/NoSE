@@ -45,7 +45,8 @@ module Sadvisor
 
     # :nocov:
     def to_color
-      self.class.name.split('::').last.split(/(?=[A-Z])/)[0..-2] \
+      # Split on capital letters and remove the last two parts (PlanStep)
+      self.class.name.split('::').last.split(/(?=[A-Z])/)[0..-3] \
           .map(&:downcase).join(' ').capitalize
     end
     # :nocov:
