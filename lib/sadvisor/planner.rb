@@ -196,7 +196,15 @@ module Sadvisor
       # Remove fields resolved by this index
       @state.fields -= @index.all_fields
       @state.eq -= eq_filter
-      @state.order_by -= @index.order_fields
+
+      # We can't resolve ordering if we're doing an ID lookup
+      # since only one record exists per row
+      # We also need to have the fields used in order
+      indexed_by_id = @index.path.first.id_fields.all? do |field|
+        @index.hash_fields.include? field
+      end
+      order_prefix = @state.order_by.longest_common_prefix @index.order_fields
+      @state.order_by -= order_prefix unless indexed_by_id
 
       # Strip the path for this index, but if we haven't fetched all
       # fields, leave the last one so we can perform a separate ID lookup
