@@ -252,6 +252,9 @@ module Sadvisor
     collection :indexes, decorator: FullIndexRepresenter,
                          class: Object,
                          deserialize: IndexBuilder.new
+    collection :enumerated_indexes, decorator: FullIndexRepresenter,
+                                    class: Object,
+                                    deserialize: IndexBuilder.new
     collection :plans, decorator: QueryPlanRepresenter,
                        class: Object,
                        deserialize: QueryPlanBuilder.new

@@ -16,12 +16,14 @@ module Sadvisor
 
       require_relative "../../workloads/#{name}"
 
-      indexes = Sadvisor::IndexEnumerator.new($workload) \
+      enumerated_indexes = Sadvisor::IndexEnumerator.new($workload) \
         .indexes_for_workload.to_a
 
       if options[:max_space].finite?
         indexes = Sadvisor::Search.new($workload) \
-          .search_overlap(indexes, options[:max_space])
+          .search_overlap(enumerated_indexes, options[:max_space])
+      else
+        indexes = enumerated_indexes.clone
       end
 
       planner = Sadvisor::Planner.new $workload, indexes
@@ -56,6 +58,7 @@ module Sadvisor
       if options[:format] == 'json'
         result = OpenStruct.new(
           workload: $workload,
+          enumerated_indexes: enumerated_indexes,
           indexes: indexes.to_set,
           plans: plans.values,
           total_size: total_size,
