@@ -16,13 +16,12 @@ module Sadvisor
 
       require_relative "../../workloads/#{name}"
 
+      indexes = Sadvisor::IndexEnumerator.new($workload) \
+        .indexes_for_workload.to_a
+
       if options[:max_space].finite?
         indexes = Sadvisor::Search.new($workload) \
-          .search_overlap(options[:max_space])
-      else
-        # No need to search here, we'll prune to the used indices later
-        indexes = Sadvisor::IndexEnumerator.new($workload) \
-          .indexes_for_workload.to_a
+          .search_overlap(indexes, options[:max_space])
       end
 
       planner = Sadvisor::Planner.new $workload, indexes
