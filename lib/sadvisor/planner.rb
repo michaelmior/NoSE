@@ -501,6 +501,10 @@ module Sadvisor
         if node.children.length > 0
           nodes.concat node.children
         else
+          # This is just an extra check to make absolutely
+          # sure we never consider invalid query plans
+          fail unless node.state.answered?
+
           yield node.parent_steps
         end
       end
