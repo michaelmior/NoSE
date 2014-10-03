@@ -74,6 +74,11 @@ module Sadvisor
           model.addConstr(constraint == 1)
         end
       end
+
+      @logger.debug do
+        model.update
+        "Added #{model.getConstrs.count} constraints to model"
+      end
     end
 
     # Set the objective function on the Gurobi model
@@ -83,6 +88,8 @@ module Sadvisor
         next if costs[q][i].nil?
         query_vars[i][q] * (costs[q][i].last * 1.0)
       end.compact.reduce(&:+)
+
+      @logger.info { "Objective function is #{min_cost.inspect}" }
 
       model.setObjective(min_cost, Gurobi::MINIMIZE)
     end
@@ -128,6 +135,9 @@ module Sadvisor
       # Ensure we found a valid solution
       status = model.get_int(Gurobi::IntAttr::STATUS)
       fail NoSolutionException if status != Gurobi::OPTIMAL
+
+      obj_val = model.get_double(Gurobi::DoubleAttr::OBJ_VAL)
+      @logger.debug "Found solution with total cost #{obj_val}"
 
       # Return the selected indices
       indexes.select.with_index do |_, i|
