@@ -22,6 +22,13 @@ module Sadvisor
       # Get the cost of all queries
       costs = costs indexes
 
+      @logger.debug do
+        "Search with queries:\n" + \
+        @workload.queries.each_with_index.map do |query, i|
+          "#{i} #{query.inspect}"
+        end.join("\n")
+      end
+
       # Solve the LP using Gurobi
       solve_gurobi indexes,
                    max_space: max_space,
