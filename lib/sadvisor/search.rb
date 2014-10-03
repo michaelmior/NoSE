@@ -210,7 +210,26 @@ module Sadvisor
         step_indexes.map! { |index| index_pos[index] }
 
         cost = steps.map(&:cost).inject(0, &:+)
-        query_costs[step_indexes.first] = [step_indexes, cost]
+
+        fail 'No more than two indexes per step' if step_indexes.length > 2
+
+        if query_costs.key? step_indexes.first
+          current_cost = query_costs[step_indexes.first].last
+          current_steps = query_costs[step_indexes.first].first
+
+          if step_indexes.length == 1 && (current_steps != step_indexes ||
+                                          current_cost != cost)
+            # We should only have one step if there exists a step with length 1
+            fail 'Invalid query plan found when calculating cost'
+          else
+            # Take the minimum cost index for the second step
+            if current_steps.length > 1 && cost < current_cost
+              query_costs[step_indexes.first] = [step_indexes, cost]
+            end
+          end
+        else
+          query_costs[step_indexes.first] = [step_indexes, cost]
+        end
       end
     end
   end
