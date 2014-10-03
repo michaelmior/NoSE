@@ -38,8 +38,15 @@ module Sadvisor
       end.inject([], &:+)
 
       combine_indexes indexes
+      indexes.uniq!
 
-      indexes.to_set
+      @logger.debug do
+        "Indexes for workload:\n" + indexes.each_with_index.map do |index, i|
+          "#{i} #{index.inspect}"
+        end.join("\n")
+      end
+
+      indexes
     end
 
     private
