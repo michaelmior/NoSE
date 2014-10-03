@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+# Optionally enable debug logging
+ENV['SADVISOR_LOG'] = 'debug' if ARGV.include? '--debug'
+
 $LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
 
 require 'sadvisor'

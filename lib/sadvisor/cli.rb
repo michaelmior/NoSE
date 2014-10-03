@@ -6,6 +6,8 @@ require 'yaml'
 
 module Sadvisor
   class SadvisorCLI < Thor
+    class_option :debug, type: :boolean
+
     desc 'workload NAME', 'run the workload NAME'
     option :max_space, type: :numeric, default: Float::INFINITY
     option :format, type: :string, default: 'text'

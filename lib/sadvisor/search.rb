@@ -1,4 +1,5 @@
 require 'gurobi'
+require 'logging'
 require 'ostruct'
 require 'tempfile'
 
@@ -6,6 +7,8 @@ module Sadvisor
   # Searches for the optimal indices for a given workload
   class Search
     def initialize(workload)
+      @logger = Logging.logger['sadvisor::search']
+
       @workload = workload
     end
 
@@ -108,8 +111,18 @@ module Sadvisor
       # Set the objective function
       gurobi_set_objective model, query_vars, data[:costs]
 
-      # Run the optimizer
+      # Final update to the model
       model.update
+
+      # Optionally output the model to a temporary file
+      @logger.debug do
+        tmpfile = Tempfile.new ['model', '.lp']
+        ObjectSpace.undefine_finalizer tmpfile
+        model.write(tmpfile.path)
+        "Model written to #{tmpfile.path}"
+      end
+
+      # Run the optimization
       model.optimize
 
       # Ensure we found a valid solution

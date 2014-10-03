@@ -16,3 +16,12 @@ require_relative 'sadvisor/timing'
 require_relative 'sadvisor/workload'
 
 require_relative 'sadvisor/serialize'
+
+if ENV['SADVISOR_LOG']
+  require 'logging'
+
+  logger = Logging.logger['sadvisor']
+  logger.level = ENV['SADVISOR_LOG'].downcase.to_sym
+  logger.add_appenders Logging.appenders.stderr
+  logger = nil # rubocop:disable Lint/UselessAssignment
+end
