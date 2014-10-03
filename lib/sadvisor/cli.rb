@@ -1,12 +1,22 @@
 require 'formatador'
 require 'json'
 require 'ostruct'
+require 'parallel'
 require 'thor'
 require 'yaml'
 
 module Sadvisor
   class SadvisorCLI < Thor
     class_option :debug, type: :boolean
+    class_option :parallel, type: :boolean, default: true
+
+    def initialize(*args)
+      super
+
+      # Disable parallel processing if desired
+      Parallel.instance_variable_set(:@processor_count, 0) \
+        unless options[:parallel]
+    end
 
     desc 'workload NAME', 'run the workload NAME'
     option :max_space, type: :numeric, default: Float::INFINITY
