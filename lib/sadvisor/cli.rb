@@ -9,9 +9,18 @@ module Sadvisor
   class SadvisorCLI < Thor
     class_option :debug, type: :boolean
     class_option :parallel, type: :boolean, default: true
+    class_option :colour, type: :boolean, default: nil, aliases: :C
 
     def initialize(*args)
       super
+
+      # Enable forcing the colour or no colour for output
+      # We just lie to Formatador about whether or not $stdout is a tty
+      unless options[:colour].nil?
+        stdout_metaclass = class << $stdout; self; end
+        method = options[:colour] ? ->() { true } : ->() { false }
+        stdout_metaclass.send(:define_method, :tty?, &method)
+      end
 
       # Disable parallel processing if desired
       Parallel.instance_variable_set(:@processor_count, 0) \
