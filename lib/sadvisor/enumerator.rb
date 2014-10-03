@@ -1,13 +1,19 @@
+require 'logging'
+
 module Sadvisor
   # Produces potential indices to be used in schemas
   class IndexEnumerator
     def initialize(workload)
+      @logger = Logging.logger['sadvisor::enumerator']
+
       @workload = workload
     end
 
     # Produce all possible indices for a given query
     # @return [Array<Index>]
     def indexes_for_query(query)
+      @logger.debug "Enumerating indexes for query #{query.query}"
+
       if query.range_field.nil?
         range = query.order
       else
@@ -53,6 +59,7 @@ module Sadvisor
         combos.map do |combo|
           indexes << Index.new(hash_fields, [], combo.inject(Set.new, &:+),
                                path)
+          @logger.debug "Enumerated combined index #{indexes.last.inspect}"
         end
       end
     end
@@ -97,6 +104,8 @@ module Sadvisor
 
     # Get all possible indices which jump a given section in a query path
     def indexes_for_step(path, select, eq, range)
+      @logger.debug "Enumerating indexes on path step #{path.map &:name}"
+
       index_choices = index_choices path, eq
       max_eq_fields = index_choices.map(&:length).max
 
@@ -117,6 +126,7 @@ module Sadvisor
 
           begin
             indexes << Index.new(index, order, index_extra, path)
+            @logger.debug "Enumerated #{indexes.last.inspect}"
           rescue InvalidIndexException
             # This combination of fields is not valid, that's ok
             nil
@@ -128,6 +138,7 @@ module Sadvisor
               begin
                 indexes << Index.new(index_prefix, order_prefix + order,
                                      extra, path)
+                @logger.debug "Enumerated #{indexes.last.inspect}"
               rescue InvalidIndexException
                 # This combination of fields is not valid, that's ok
                 nil
