@@ -533,6 +533,8 @@ module Sadvisor
   # A query planner which can construct a tree of query plans
   class Planner
     def initialize(workload, indexes)
+      @logger = Logging.logger['sadvisor::planner']
+
       @workload = workload
       @indexes = indexes
     end
@@ -551,9 +553,11 @@ module Sadvisor
         index.entity_range(entities) != (nil..nil)
       end
 
-      indexes_by_path = indexes.group_by { |index| index.path.first }
+      indexes_by_path = indexes.to_set.group_by { |index| index.path.first }
       find_plans_for_step tree.root, indexes_by_path
       fail NoPlanException, query.query if tree.root.children.empty?
+
+      @logger.debug { "Plans for #{query.query}: #{tree.inspect}" }
 
       tree
     end
