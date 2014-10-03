@@ -7,7 +7,7 @@ require 'yaml'
 
 module Sadvisor
   class SadvisorCLI < Thor
-    class_option :debug, type: :boolean
+    class_option :debug, type: :boolean, aliases: :d
     class_option :parallel, type: :boolean, default: true
     class_option :colour, type: :boolean, default: nil, aliases: :C
 
