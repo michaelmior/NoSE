@@ -153,9 +153,22 @@ module Sadvisor
       @logger.debug "Found solution with total cost #{obj_val}"
 
       # Return the selected indices
-      indexes.select.with_index do |_, i|
-        index_vars[i].get_double(Gurobi::DoubleAttr::X) == 1.0
+      selected_indexes = indexes.select.with_index do |_, i|
+        # Even though we specifed the variables as binary, rounding
+        # error means the value won't be exactly one
+        # (the check exists to catch weird values if they arise)
+        val = index_vars[i].get_double(Gurobi::DoubleAttr::X)
+        fail if (val > 0 && val < 0.99)
+        val > 0.99
       end
+
+      @logger.debug do
+        "Selected indexes:\n" + selected_indexes.map do |index|
+          "#{indexes.index index} #{index.inspect}"
+        end.join("\n")
+      end
+
+      selected_indexes
     end
 
     # Get the cost of using each index for each query in a workload
