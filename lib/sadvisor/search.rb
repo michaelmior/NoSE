@@ -36,7 +36,13 @@ module Sadvisor
       # Add constraint for indices being present
       (0...indexes.length).each do |i|
         (0...@workload.queries.length).each do |q|
-          model.addConstr(query_vars[i][q] + index_vars[i] * -1 <= 0)
+          if data[:costs][q][i].nil?
+            # Ensure we don't use indexes which are invalid for this query
+            # (this is not strictly necessary since they will not be selected)
+            model.addConstr(query_vars[i][q] * 1 == 0)
+          else
+            model.addConstr(query_vars[i][q] + index_vars[i] * -1 <= 0)
+          end
         end
       end
 
