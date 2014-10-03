@@ -588,7 +588,7 @@ module Sadvisor
     end
 
     # Find possible query plans for a query strating at the given step
-    def find_plans_for_step(step, indexes_by_path, used_indexes = [])
+    def find_plans_for_step(step, indexes_by_path, used_indexes = Set.new)
       return if step.state.answered?
 
       steps = find_steps_for_state step, step.state,
@@ -596,8 +596,9 @@ module Sadvisor
 
       if steps.length > 0
         step.children = steps
+        new_used = used_indexes.clone
         steps.each do |child_step|
-          find_plans_for_step child_step, indexes_by_path, used_indexes.clone
+          find_plans_for_step child_step, indexes_by_path, new_used
 
           # Remove this step if finding a plan from here failed
           if child_step.children.length == 0 and not child_step.state.answered?
@@ -633,7 +634,7 @@ module Sadvisor
       # Don't allow indices to be used multiple times
       entities = [state.path.first]
       entities << parent.parent.state.path.first unless parent.parent.nil?
-      indexes = indexes_by_path.values_at(*entities).compact.flatten
+      indexes = indexes_by_path.values_at(*entities).compact.flatten.to_set
       (indexes - used_indexes).each do |index|
         new_step = IndexLookupPlanStep.apply parent, index, state
         unless new_step.nil?
