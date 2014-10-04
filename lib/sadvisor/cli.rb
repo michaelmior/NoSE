@@ -4,6 +4,7 @@ require 'thor'
 require 'yaml'
 
 module Sadvisor
+  # A command-line interface to running the advisor tool
   class SadvisorCLI < Thor
     class_option :debug, type: :boolean, aliases: :d
     class_option :parallel, type: :boolean, default: true

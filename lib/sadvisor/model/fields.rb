@@ -61,6 +61,11 @@ module Sadvisor
       false
     end
 
+    # @abstract Subclasses should produce a typed value from a string
+    def self.value_from_string(string)
+      fail NotImplementedError
+    end
+
     # Populate a helper DSL object with all subclasses of Field
     def self.inherited(child_class)
       # Add convenience methods for all field types for an entity DSL
@@ -84,6 +89,7 @@ module Sadvisor
       super(name, 8, **options)
     end
 
+    # Parse an Integer from the provided parameter
     def self.value_from_string(string)
       string.to_i
     end
@@ -97,6 +103,7 @@ module Sadvisor
       super(name, 8, **options)
     end
 
+    # Parse a Float from the provided parameter
     def self.value_from_string(string)
       string.to_f
     end
@@ -110,6 +117,7 @@ module Sadvisor
       super(name, length, **options)
     end
 
+    # Return the String parameter as-is
     def self.value_from_string(string)
       string
     end
@@ -121,6 +129,7 @@ module Sadvisor
       super(name, 8, **options)
     end
 
+    # Parse a DateTime from the provided parameter
     def self.value_from_string(string)
       DateTime.parse(string).to_time
     end
@@ -132,6 +141,7 @@ module Sadvisor
       super(name, 16, **options)
     end
 
+    # Return the String parameter as-is
     def self.value_from_string(string)
       string
     end

@@ -3,6 +3,7 @@
 require 'formatador'
 require 'parallel'
 
+# Reopen to add utility methods
 module Enumerable
   # Enumerate all non-empty prefixes of the enumerable
   def prefixes
@@ -26,12 +27,14 @@ module Enumerable
 end
 
 class Array
+  # Find the longest common prefix of two arrays
   def longest_common_prefix(other)
     fail TypeError unless other.is_a? Array
     (prefixes.to_a & other.prefixes.to_a).max_by(&:length) || []
   end
 end
 
+# Reopen to present as finite as with Float
 class Integer
   def finite?
     true
@@ -50,11 +53,15 @@ class Object
   end
 end
 
+# Allow a supertype to look up a class given the
+# name of a subtype inheriting from this class
 module Supertype
+  # Add class methods when this module is included
   def self.included(base)
     base.extend ClassMethods
   end
 
+  # Add a single method to get a class given the subtype name
   module ClassMethods
     # Get the class given the name of a subtype
     def subtype_class(name)
@@ -71,18 +78,24 @@ module Supertype
   end
 end
 
+# Allow subclasses to return a string representing of the
+# class, minus a common suffix also used in the superclass
 module Subtype
+  # Add instance and class methods when this module is included
   def self.included(base)
     base.send :include, InstanceMethods
     base.extend ClassMethods
   end
 
+  # Mirror the subtype method on class instances
   module InstanceMethods
+    # A mirror of {Subtype::ClassMethods#subtype_name}
     def subtype_name
       self.class.subtype_name
     end
   end
 
+  # Add a single method to retrieve the subtype name
   module ClassMethods
     # Get a unique string identify this subclass amongst sibling classes
     # @return String
