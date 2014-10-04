@@ -46,9 +46,11 @@ module Sadvisor
           if data[:costs][q][i].nil?
             # Ensure we don't use indexes which are invalid for this query
             # (this is not strictly necessary since they will not be selected)
-            model.addConstr(query_vars[i][q] * 1 == 0)
+            model.addConstr query_vars[i][q] * 1 == 0,
+                            "i#{i}q#{q}_unusable"
           else
-            model.addConstr(query_vars[i][q] + index_vars[i] * -1 <= 0)
+            model.addConstr query_vars[i][q] + index_vars[i] * -1 <= 0,
+                            "i#{i}q#{q}_avail"
           end
         end
       end
@@ -58,7 +60,7 @@ module Sadvisor
         space = indexes.each_with_index.map do |index, i|
           index_vars[i] * (index.size * 1.0)
         end.reduce(&:+)
-        model.addConstr(space <= data[:max_space] * 1.0)
+        model.addConstr space <= data[:max_space] * 1.0, 'max_space'
       end
 
       # Add complete query plan constraints
