@@ -109,7 +109,13 @@ module Sadvisor
 
     # Solve the index selection problem using Gurobi
     def solve_gurobi(indexes, data)
-      model = Gurobi::Model.new(Gurobi::Env.new)
+      # Set up solver environment
+      env = Gurobi::Env.new
+      env.set_int Gurobi::IntParam::METHOD,
+                  Gurobi::METHOD_DETERMINISTIC_CONCURRENT
+      env.set_int Gurobi::IntParam::THREADS, Parallel.processor_count
+
+      model = Gurobi::Model.new env
       model.getEnv.set_int(Gurobi::IntParam::OUTPUT_FLAG, 0)
 
       # Initialize query and index variables
