@@ -16,7 +16,7 @@ module Sadvisor
       WorkloadDSL.new(self).instance_eval(&block) if block_given?
     end
 
-    # Add a new {Entity} or {CQL::Statement} to the workload
+    # Add a new {Entity} or {Statement} to the workload
     def <<(other)
       if other.is_a? Entity
         add_entity other.freeze
@@ -42,7 +42,7 @@ module Sadvisor
     end
 
     # Strip the weights from the query dictionary and return a list of queries
-    # @return [Array<CQL::Statement>]
+    # @return [Array<Statement>]
     def queries
       @query_weights.keys
     end
@@ -103,22 +103,6 @@ module Sadvisor
 
       graph.output png: filename
     end
-
-    private
-
-    # Iterative helper for {#find_field_keys}
-    def find_field_keys_each(field, keys = [])
-      if field.count >= 2
-        field = field.dup
-        key_field = @entities[field[0]].fields[field[1]]
-        keys << (key_field ? [key_field] : @entities[field[0]].id_fields)
-        field[0..1] = key_field ? key_field.entity.name : field[1]
-        keys += find_field_keys_each(field)
-        keys
-      else
-        [@entities[field[0]].id_fields]
-      end
-    end
   end
 
   private
@@ -136,7 +120,7 @@ module Sadvisor
       @workload.add_entity Entity.new(*args, &block)
     end
 
-    # Shortcut to add a new {CQL::Statement} to the workload
+    # Shortcut to add a new {Statement} to the workload
     def Q(query, weight = 1.0)
       @workload.add_query query, weight
     end

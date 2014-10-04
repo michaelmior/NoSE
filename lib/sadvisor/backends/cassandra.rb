@@ -117,10 +117,12 @@ module Sadvisor
       end
     end
 
+    # Lookup values from an index selecting the given
+    # fields and filtering on the given conditions
     def index_lookup(index, select, conditions)
       query = "SELECT #{select.map { |field| field_name field }.join ', '} " \
               "FROM \"#{index.key}\""
-      query += " WHERE " if conditions.length > 0
+      query += ' WHERE ' if conditions.length > 0
       query += conditions.map do |condition|
         "#{field_name condition.field} #{condition.operator} ?"
       end.join ', '
