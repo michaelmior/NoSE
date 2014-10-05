@@ -102,6 +102,7 @@ module Sadvisor
         .product((0...@workload.queries.length).to_a).map do |i, q|
         next if costs[q][i].nil?
         query_vars[i][q] * (costs[q][i].last * 1.0)
+        # XXX add weight
       end.compact.reduce(&:+)
 
       @logger.info { "Objective function is #{min_cost.inspect}" }
@@ -187,15 +188,15 @@ module Sadvisor
       # of a particular index within the array of indexes
       index_pos = Hash[indexes.each_with_index.to_a]
 
-      costs = Parallel.map(@workload.queries) do |query|
-        query_cost planner, index_pos, query
+      costs = Parallel.map(@workload.query_weights) do |query, weight|
+        query_cost planner, index_pos, query, weight
       end
 
       costs
     end
 
     # Get the cost for indices for an individual query
-    def query_cost(planner, index_pos, query)
+    def query_cost(planner, index_pos, query, weight)
       query_costs = {}
 
       planner.find_plans_for_query(query).each do |plan|
@@ -217,14 +218,14 @@ module Sadvisor
           end
         end
 
-        populate_query_costs query_costs, index_pos, steps_by_index
+        populate_query_costs query_costs, index_pos, steps_by_index, weight
       end
 
       query_costs
     end
 
     # Store the costs and indexes for this plan in a nested hash
-    def populate_query_costs(query_costs, index_pos, steps_by_index)
+    def populate_query_costs(query_costs, index_pos, steps_by_index, weight)
       # The first key is the number of the query and the second is the
       # number of the index
       #
@@ -237,7 +238,7 @@ module Sadvisor
         end.map(&:index)
         step_indexes.map! { |index| index_pos[index] }
 
-        cost = steps.map(&:cost).inject(0, &:+)
+        cost = steps.map(&:cost).inject(0, &:+) * weight
 
         fail 'No more than two indexes per step' if step_indexes.length > 2
 
