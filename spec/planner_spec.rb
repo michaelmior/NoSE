@@ -29,6 +29,34 @@ module Sadvisor
       expect(tree).to have(1).plan
     end
 
+    it 'can apply a limit directly' do
+      index = tweet.simple_index
+      planner = Planner.new(workload, [index])
+      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ? ' \
+                            'LIMIT 5', workload
+
+      tree = planner.find_plans_for_query query
+      expect(tree.first).to eq([IndexLookupPlanStep.new(index)])
+      expect(tree).to have(1).plan
+      expect(tree.first.last.state.cardinality).to eq 5
+    end
+
+    it 'can perform an external sort followed by a limit' do
+      index = tweet.simple_index
+      planner = Planner.new(workload, [index])
+      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ? ' \
+        'ORDER BY Tweet.Timestamp LIMIT 5', workload
+
+      tree = planner.find_plans_for_query query
+      steps = [
+        IndexLookupPlanStep.new(index),
+        SortPlanStep.new([tweet['Timestamp']]),
+        LimitPlanStep.new(5)
+      ]
+      expect(tree.first).to eq steps
+      expect(tree).to have(1).plan
+    end
+
     it 'raises an exception if there is no plan' do
       planner = Planner.new workload, []
       query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',

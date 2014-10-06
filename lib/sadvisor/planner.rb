@@ -150,8 +150,8 @@ module Sadvisor
       @state.cardinality * select_fields.map(&:size).inject(0, :+)
     end
 
-    # Check if this step can be applied for the given index, returning an array
-    # of possible applications of the step
+    # Check if this step can be applied for the given index,
+    # returning a possible application of the step
     def self.apply(parent, index, state)
       # Check that this index is a valid jump in the path
       return nil unless state.path[0..index.path.length - 1] == index.path
@@ -215,16 +215,13 @@ module Sadvisor
         @state.path = @state.path[index.path.length - 1..-1]
       end
 
-      # XXX What is this?
-      # index_path = index.path
-      # cardinality = @state.cardinality
-      # if (index.path.first.id_fields.to_set - parent.fields - @state.eq).empty?
-      #   index_path = index.path[1..-1] if index.path.length > 1
-      #   cardinality = index.path[0].count if parent.is_a? RootPlanStep
-      # end
-      cardinality = @state.cardinality
-
-      @state.cardinality = new_cardinality cardinality, eq_filter, range_filter
+      # Check if we can apply the limit from the query
+      if @state.answered?(check_limit: false) && !@state.query.limit.nil?
+        @state.cardinality = @state.query.limit
+      else
+        @state.cardinality = new_cardinality @state.cardinality,
+                                             eq_filter, range_filter
+      end
     end
 
     # Update the cardinality based on filtering implicit to the index
@@ -410,6 +407,39 @@ module Sadvisor
     end
   end
 
+  # Limit results from a previous lookup
+  # This should only ever occur at the end of a plan
+  class LimitPlanStep < PlanStep
+    attr_reader :limit
+
+    def initialize(limit, state = nil)
+      super()
+      @limit = limit
+
+      return if state.nil?
+      @state = state.dup
+      @state.cardinality = @limit
+    end
+
+    # Two limit steps are equal if they have the same value for the limit
+    def ==(other)
+      other.instance_of?(self.class) && @limit == other.limit
+    end
+
+    def cost
+      # This is basically free, but this step still needs to exist
+      0
+    end
+
+    # Check if we can apply a limit
+    def self.apply(_parent, state)
+      return nil if state.query.limit.nil?
+      return nil unless state.answered? check_limit: false
+
+      LimitPlanStep.new state.query.limit, state
+    end
+  end
+
   # Ongoing state of a query throughout the execution plan
   class QueryState
     attr_accessor :from, :fields, :eq, :range, :order_by, :path, :cardinality,
@@ -453,8 +483,12 @@ module Sadvisor
 
     # Check if the query has been fully answered
     # @return [Boolean]
-    def answered?
-      @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
+    def answered?(check_limit: true)
+      done = @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
+      done &&= @cardinality == @query.limit unless @query.limit.nil? ||
+                                                   !check_limit
+
+      done
     end
 
     # Get all fields relevant for filtering in the query for entities in the
@@ -617,7 +651,7 @@ module Sadvisor
       steps = []
       return steps if parent.is_a? RootPlanStep
 
-      [SortPlanStep, FilterPlanStep].each \
+      [SortPlanStep, FilterPlanStep, LimitPlanStep].each \
         { |step| steps.push step.apply(parent, state) }
       steps.flatten!
       steps.compact!
