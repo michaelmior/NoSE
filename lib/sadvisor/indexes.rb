@@ -28,7 +28,13 @@ module Sadvisor
 
     # A simple key which uniquely identifies the index
     def key
-      @key ||= "I#{Zlib.crc32 to_s}"
+      # Temporarily set an empty key
+      if @key.nil?
+        @key = ''
+        @key = "I#{Zlib.crc32 inspect}"
+      end
+
+      @key
     end
 
     def state
