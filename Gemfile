@@ -2,7 +2,6 @@ source 'https://rubygems.org'
 source 'https://gem.fury.io/michaelmior/'
 
 gem 'binding_of_caller'
-gem 'gurobi', '=0.0.2.mmior.1'
 gem 'formatador'
 gem 'logging'
 gem 'parallel'
@@ -12,6 +11,10 @@ gem 'representable'
 gem 'ruby-graphviz'
 gem 'smarter_csv'
 gem 'thor', require: false
+
+group :gurobi do
+  gem 'gurobi', '=0.0.2.mmior.1'
+end
 
 group :test do
   gem 'rspec'
