@@ -1,5 +1,7 @@
 # Schema Advisor
 
+[![Build Status](https://magnum.travis-ci.com/michaelmior/sadvisor.svg?token=rM4RuzPrnmeRRxXcrK4C&branch=master)](https://magnum.travis-ci.com/michaelmior/sadvisor)
+
 This is a work in progress tool to provide automated physical schema design for NoSQL data stores.
 
 This project is written in Ruby and uses [GLPK](https://www.gnu.org/software/glpk/) as a solver for linear programming problems.
