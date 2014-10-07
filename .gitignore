@@ -30,3 +30,4 @@
 
 ## Configuration files
 *.yml
+!.travis.yml

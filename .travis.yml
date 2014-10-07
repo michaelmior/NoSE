@@ -1,0 +1,5 @@
+language: ruby
+rvm:
+  - 2.1.2
+install: bundle install --without=gurobi
+script: bundle exec rspec --tag ~gurobi
