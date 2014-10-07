@@ -43,15 +43,8 @@ module Sadvisor
       # Add constraint for indices being present
       (0...indexes.length).each do |i|
         (0...@workload.queries.length).each do |q|
-          if data[:costs][q][i].nil?
-            # Ensure we don't use indexes which are invalid for this query
-            # (this is not strictly necessary since they will not be selected)
-            model.addConstr query_vars[i][q] * 1 == 0,
-                            "i#{i}q#{q}_unusable"
-          else
-            model.addConstr query_vars[i][q] + index_vars[i] * -1 <= 0,
-                            "i#{i}q#{q}_avail"
-          end
+          model.addConstr query_vars[i][q] + index_vars[i] * -1 <= 0,
+                          "i#{i}q#{q}_avail"
         end
       end
 
@@ -78,9 +71,7 @@ module Sadvisor
           # All indices used at this step must either all be used, or none used
           if step_indexes.length > 1
             vars = step_indexes.map { |index| query_vars[index][q] }
-            vars.each_cons(2) do |var1, var2|
-              model.addConstr((var1 * 1 + var2 * -1) == 0)
-            end
+            model.addConstr(vars.last * 1 >= vars.first * 1)
           end
         end
 
