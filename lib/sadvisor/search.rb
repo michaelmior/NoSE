@@ -38,6 +38,16 @@ module Sadvisor
 
     private
 
+    # Write a model to a temporary file and log the file name
+    def log_model(model, type, extension)
+      @logger.debug do
+        tmpfile = Tempfile.new ['model', extension]
+        ObjectSpace.undefine_finalizer tmpfile
+        model.write(tmpfile.path)
+        "#{type} written to #{tmpfile.path}"
+      end
+    end
+
     # Add all necessary constraints to the Gurobi model
     def gurobi_add_constraints(model, index_vars, query_vars, indexes, data)
       # Add constraint for indices being present
@@ -135,18 +145,18 @@ module Sadvisor
       model.update
 
       # Optionally output the model to a temporary file
-      @logger.debug do
-        tmpfile = Tempfile.new ['model', '.lp']
-        ObjectSpace.undefine_finalizer tmpfile
-        model.write(tmpfile.path)
-        "Model written to #{tmpfile.path}"
-      end
+      log_model model, 'Model', '.lp'
 
       # Run the optimization
       model.optimize
 
       # Ensure we found a valid solution
       status = model.get_int(Gurobi::IntAttr::STATUS)
+      if status == Gurobi::INFEASIBLE
+        model.computeIIS
+        log_model model, 'IIS', '.ilp'
+      end
+
       fail NoSolutionException if status != Gurobi::OPTIMAL
 
       obj_val = model.get_double(Gurobi::DoubleAttr::OBJ_VAL)
