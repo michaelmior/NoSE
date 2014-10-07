@@ -157,6 +157,11 @@ module Sadvisor
     collection :sort_fields, decorator: FieldRepresenter
   end
 
+  # Represent the limit for limit plan steps
+  class LimitStepRepresenter < PlanStepRepresenter
+    property :limit
+  end
+
   # Represent a query plan as a sequence of steps
   class QueryPlanRepresenter < Representable::Decorator
     include Representable::JSON
@@ -167,7 +172,8 @@ module Sadvisor
       {
         index_lookup: IndexLookupStepRepresenter,
         filter: FilterStepRepresenter,
-        sort: SortStepRepresenter
+        sort: SortStepRepresenter,
+        limit: LimitStepRepresenter
       }[step.class.subtype_name.to_sym] || PlanStepRepresenter
     end)
   end
@@ -231,9 +237,12 @@ module Sadvisor
           eq = step_hash['eq'].map(&f)
           range = f.call(step_hash['range']) if step_hash['range']
           step = step_class.new eq, range, parent.state
-        elsif step_class == Sadvisor::SortPlanStep
+        elsif step_class == SortPlanStep
           sort_fields = step_hash['sort_fields'].map(&f)
           step = step_class.new sort_fields
+        elsif step_class == LimitPlanStep
+          limit = step_hash['limit'].to_i
+          step = step_class.new limit
         end
 
         plan << step
