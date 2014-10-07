@@ -8,7 +8,7 @@ module Sadvisor
       expect { Search.new(workload).search_overlap(indexes, 1) }.to raise_error
     end
 
-    it 'produces a materialized view with sufficient space' do
+    it 'produces a materialized view with sufficient space', gurobi: true do
       query = Statement.new 'SELECT UserId FROM User WHERE User.City = ? ' \
                             'ORDER BY User.Username', workload
       workload.add_query query
@@ -18,7 +18,7 @@ module Sadvisor
       expect(indexes).to include query.materialize_view
     end
 
-    it 'can allow for multiple index lookups on one path segment' do
+    it 'can perform multiple index lookups on a path segment', gurobi: true do
       query = Statement.new 'SELECT Username FROM User WHERE User.City = ?',
                             workload
       workload.add_query query

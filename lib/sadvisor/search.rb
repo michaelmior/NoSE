@@ -1,4 +1,10 @@
-require 'gurobi'
+begin
+  require 'gurobi'
+rescue LoadError
+  # We can't use most search functionality, but it won't explode
+  nil
+end
+
 require 'logging'
 require 'ostruct'
 require 'tempfile'
@@ -269,12 +275,15 @@ module Sadvisor
   end
 end
 
-Gurobi::LinExpr.class_eval do
-  def inspect
-    0.upto(size - 1).map do |i|
-      coeff = getCoeff(i)
-      var = getVar(i).get_string(Gurobi::StringAttr::VAR_NAME)
-      "#{coeff} * #{var}"
-    end.join ' + '
+# Only do this if Gurobi is available
+if Object.const_defined?('Gurobi')
+  Gurobi::LinExpr.class_eval do
+    def inspect
+      0.upto(size - 1).map do |i|
+        coeff = getCoeff(i)
+        var = getVar(i).get_string(Gurobi::StringAttr::VAR_NAME)
+        "#{coeff} * #{var}"
+      end.join ' + '
+    end
   end
 end
