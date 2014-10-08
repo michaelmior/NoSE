@@ -1,5 +1,6 @@
 language: ruby
+cache: bundler
+bundler_args: --without=development gurobi
 rvm:
   - 2.1.2
-install: bundle install --without=gurobi
 script: bundle exec rspec --tag ~gurobi
