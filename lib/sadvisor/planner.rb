@@ -172,6 +172,11 @@ module Sadvisor
         fields.all?(&index.all_fields.method(:include?))
       end
 
+      # If we're looking up from a previous step, only allow lookup by ID
+      if parent.is_a?(IndexLookupPlanStep) && index.path.length == 1
+        return nil unless index.hash_fields == index.path.last.id_fields.to_set
+      end
+
       return IndexLookupPlanStep.new(index, state, parent) if has_last_fields
 
       nil
