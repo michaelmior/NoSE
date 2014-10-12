@@ -67,7 +67,8 @@ module Supertype
     def subtype_class(name)
       class_name = self.name.split('::')[0..-2]
       class_name << (name.split('_').map do |name_part|
-        name_part.capitalize.sub 'Id', 'ID'
+        name_part = name_part[0].upcase + name_part[1..-1]
+        name_part.sub 'Id', 'ID'
       end.join)
       class_name[-1] = class_name[-1] + self.name.split('::').last
 
@@ -90,8 +91,8 @@ module Subtype
   # Mirror the subtype method on class instances
   module InstanceMethods
     # A mirror of {Subtype::ClassMethods#subtype_name}
-    def subtype_name
-      self.class.subtype_name
+    def subtype_name(**args)
+      self.class.subtype_name(**args)
     end
   end
 
@@ -99,14 +100,21 @@ module Subtype
   module ClassMethods
     # Get a unique string identify this subclass amongst sibling classes
     # @return String
-    def subtype_name
+    def subtype_name(name_case: :snake)
       super_name = name_array superclass
       self_name = name_array self
       self_name = self_name.reverse.drop_while do |part|
         super_name.include? part
       end.reverse
 
-      self_name.join '_'
+      if name_case == :snake
+        name = self_name.join '_'
+      elsif name_case == :camel
+        name = self_name.map { |part| part[0].upcase + part[1..-1] }.join ''
+        name.sub! 'Id', 'ID'
+      end
+
+      name
     end
 
     private

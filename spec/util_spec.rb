@@ -72,4 +72,50 @@ describe Object do
       expect(obj.to_color).to eq 'foo'
     end
   end
+
+  describe 'Subtype' do
+    subject(:obj) do
+      class Foo
+      end
+
+      class BarBazFoo < Foo
+        include Subtype
+      end
+
+      BarBazFoo.new
+    end
+
+    it 'can produce its name in snake case' do
+      expect(obj.subtype_name).to eq 'bar_baz'
+    end
+
+    it 'can produce its name in camel case' do
+      expect(obj.subtype_name(name_case: :camel)).to eq 'BarBaz'
+    end
+  end
+
+  describe 'Supertype' do
+    subject(:cls) do
+      class Foo
+        include Supertype
+      end
+
+      class BarBazFoo < Foo
+      end
+
+      Foo
+    end
+
+    it 'can produce a subclass from a name in snake case' do
+      subclass = cls.subtype_class 'bar_baz'
+      expect(subclass).to be_a Class
+      expect(subclass.name).to eq 'BarBazFoo'
+    end
+
+    it 'can produce a subclass from a name in camel case' do
+      subclass = cls.subtype_class 'BarBaz'
+      expect(subclass).to be_a Class
+      expect(subclass.name).to eq 'BarBazFoo'
+    end
+  end
 end
