@@ -103,6 +103,14 @@ module Sadvisor
 
       graph.output png: filename
     end
+
+    # Write the workload
+    def output_rb(filename)
+      ns = OpenStruct.new(workload: self)
+      tmpl = File.read File.join(File.dirname(__FILE__), 'workload.erb')
+      out = ERB.new(tmpl, nil, '>').result(ns.instance_eval { binding })
+      File.open(filename, 'w') { |file| file.write out }
+    end
   end
 
   private
