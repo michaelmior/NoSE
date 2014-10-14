@@ -120,6 +120,12 @@ module Sadvisor
       @workload.add_entity Entity.new(*args, &block)
     end
 
+    # Separate function for foreign keys to avoid circular dependencies
+    def ForeignKey(name, parent, entity, count: nil)
+      @workload[parent] << ForeignKeyField.new(name, @workload[entity],
+                                               count: count)
+    end
+
     # Shortcut to add a new {Statement} to the workload
     def Q(query, weight = 1.0)
       @workload.add_query query, weight
