@@ -1,4 +1,5 @@
 require 'forwardable'
+require 'ostruct'
 
 module Sadvisor
   # A single plan for a query
@@ -91,6 +92,13 @@ module Sadvisor
     # Add the Subtype module to all step classes
     def self.inherited(child_class)
       child_class.send(:include, Subtype)
+    end
+  end
+
+  # A dummy step used to inspect failed query plans
+  class PrunedPlanStep < PlanStep
+    def state
+      OpenStruct.new answered?: true
     end
   end
 
@@ -591,9 +599,14 @@ module Sadvisor
 
       indexes_by_path = indexes.to_set.group_by { |index| index.path.first }
       find_plans_for_step tree.root, indexes_by_path
-      fail NoPlanException, query.query if tree.root.children.empty?
 
-      @logger.debug { "Plans for #{query.query}: #{tree.inspect}" }
+      if tree.root.children.empty?
+        tree = QueryPlanTree.new(state)
+        find_plans_for_step tree.root, indexes_by_path, prune: false
+        fail NoPlanException, "#{query.inspect} #{tree.inspect}"
+      end
+
+      @logger.debug { "Plans for #{query.inspect}: #{tree.inspect}" }
 
       tree
     end
@@ -624,7 +637,8 @@ module Sadvisor
     end
 
     # Find possible query plans for a query strating at the given step
-    def find_plans_for_step(step, indexes_by_path, used_indexes = Set.new)
+    def find_plans_for_step(step, indexes_by_path, used_indexes = Set.new,
+                            prune: true)
       return if step.state.answered?
 
       steps = find_steps_for_state step, step.state,
@@ -637,13 +651,17 @@ module Sadvisor
           find_plans_for_step child_step, indexes_by_path, new_used
 
           # Remove this step if finding a plan from here failed
-          if child_step.children.length == 0 and not child_step.state.answered?
+          if child_step.children.length == 0 && !child_step.state.answered?
             steps -= [child_step]
             step.children = steps
           end
         end
       else
-        return if step.is_a?(RootPlanStep) || prune_plan(step.parent)
+        if prune
+          return if step.is_a?(RootPlanStep) || prune_plan(step.parent)
+        else
+          step.children = [PrunedPlanStep.new]
+        end
       end
     end
 
