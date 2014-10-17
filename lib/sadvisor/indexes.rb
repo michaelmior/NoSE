@@ -51,11 +51,12 @@ module Sadvisor
       hash_names = @hash_fields.map(&:inspect)
       order_names = @order_fields.map(&:inspect)
       extra_names = @extra.map(&:inspect)
-      '[magenta]' + @key + '[/] ' + \
-      '[' + hash_names.join(', ') + ']' + \
-        '[' + order_names.join(', ') + '] ' + \
-        '→ [' + extra_names.join(', ') + ']' + \
-        " [yellow]$#{size}[/]"
+      '[magenta]' + @key + '[/] ' \
+      '[' + hash_names.join(', ') + ']' \
+        '[' + order_names.join(', ') + '] ' \
+        '→ [' + extra_names.join(', ') + ']' \
+        " [yellow]$#{size}[/]" \
+        " [magenta]#{@path.map(&:name).join(', ')}[/]"
     end
     # :nocov:
 

@@ -74,10 +74,7 @@ module Sadvisor
   class Statement
     attr_reader :select, :from, :conditions, :order, :limit,
                 :eq_fields, :range_field,
-                :longest_entity_path
-
-    attr_reader :query
-    alias_method :inspect, :query
+                :longest_entity_path, :query
 
     def initialize(query, workload)
       @query = query
@@ -101,6 +98,12 @@ module Sadvisor
 
       freeze
     end
+
+    # :nocov:
+    def to_color
+      "#{@query} [magenta]#{@longest_entity_path.map(&:name).join ', '}[/]"
+    end
+    # :nocov:
 
     # All fields referenced anywhere in the query
     def all_fields
