@@ -467,8 +467,6 @@ module Sadvisor
       @path = query.longest_entity_path.reverse
       @cardinality = @path.first.count
       @given_fields = @eq.dup
-
-      check_first_path
     end
 
     # All the fields referenced anywhere in the query
@@ -509,20 +507,6 @@ module Sadvisor
       path_fields += @fields if select
       path_fields << @range unless @range.nil?
       path_fields.select { |field| entities.include? field.parent }
-    end
-
-    private
-
-    # Remove the first element from the path if we only have the ID
-    def check_first_path
-      first_fields = @eq + (@range ? [@range] : [])
-      first_fields = first_fields.select do |field|
-        field.parent == @path.first
-      end
-
-      return unless first_fields == @path.first.id_fields && @path.length > 1
-
-      @path.shift
     end
   end
 
