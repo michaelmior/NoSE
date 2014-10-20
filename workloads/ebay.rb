@@ -29,7 +29,7 @@ $workload = Sadvisor::Workload.new do
   # Define queries and their relative weights
   Q 'SELECT * FROM User WHERE User.UserID = ?'
   Q 'SELECT * FROM Item WHERE Item.ItemID = ?'
-  # Q 'SELECT * FROM Item WHERE Item.Like.ItemID = ?'
+  Q 'SELECT * FROM User WHERE User.Like.ItemID = ? ORDER BY User.Like.LikedAt'
   Q 'SELECT * FROM Item WHERE Item.Like.UserID = ? ORDER BY Item.Like.LikedAt'
 end
 
