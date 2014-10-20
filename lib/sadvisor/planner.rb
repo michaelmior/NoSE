@@ -180,9 +180,15 @@ module Sadvisor
         fields.all?(&index.all_fields.method(:include?))
       end
 
-      # If we're looking up from a previous step, only allow lookup by ID
-      if parent.is_a?(IndexLookupPlanStep) && index.path.length == 1
-        return nil unless index.hash_fields == index.path.last.id_fields.to_set
+      if parent.is_a?(IndexLookupPlanStep)
+        # If the last step gave an ID, we must use it
+        # XXX This doesn't cover all cases
+        return nil if parent.index.extra == parent.index.path.last.id_fields &&
+                      index.hash_fields.to_set != parent.index.extra
+
+        # If we're looking up from a previous step, only allow lookup by ID
+        return nil unless index.path.length == 1 ||
+                          index.hash_fields == index.path.last.id_fields.to_set
       end
 
       return IndexLookupPlanStep.new(index, state, parent) if has_last_fields
