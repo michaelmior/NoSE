@@ -271,7 +271,7 @@ module Sadvisor
         cardinality *= filter_cardinality eq_filter, range_filter, next_entity
       end
 
-      cardinality.ceil
+      [1, cardinality.ceil].max
     end
 
     # Get the estimated cardinality of the set of samples of m items with
