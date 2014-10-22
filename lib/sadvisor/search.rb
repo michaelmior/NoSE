@@ -225,14 +225,14 @@ module Sadvisor
           end
         end
 
-        populate_query_costs query_costs, index_pos, steps_by_index, weight
+        populate_query_costs query_costs, index_pos, steps_by_index, weight, plan
       end
 
       query_costs
     end
 
     # Store the costs and indexes for this plan in a nested hash
-    def populate_query_costs(query_costs, index_pos, steps_by_index, weight)
+    def populate_query_costs(query_costs, index_pos, steps_by_index, weight, plan)
       # The first key is the number of the query and the second is the
       # number of the index
       #
@@ -256,7 +256,8 @@ module Sadvisor
           if step_indexes.length == 1 && (current_steps != step_indexes ||
                                           current_cost != cost)
             # We should only have one step if there exists a step with length 1
-            fail 'Invalid query plan found when calculating cost'
+            fail 'Invalid query plan found when calculating cost: ' +
+              plan.inspect.to_s
           else
             # Take the minimum cost index for the second step
             if current_steps.length > 1 && cost < current_cost
