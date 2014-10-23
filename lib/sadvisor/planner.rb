@@ -187,7 +187,8 @@ module Sadvisor
                       index.hash_fields.to_set != parent.index.extra
 
         # If we're looking up from a previous step, only allow lookup by ID
-        return nil unless index.path.length == 1 ||
+        return nil unless (index.path.length == 1 &&
+                           parent.index.path != index.path) ||
                           index.hash_fields == index.path.last.id_fields.to_set
       end
 
