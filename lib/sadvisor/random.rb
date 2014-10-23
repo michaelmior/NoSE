@@ -167,7 +167,11 @@ module Sadvisor
       while path.length < max_length
         keys = path.last.foreign_keys - path
         break if keys.empty?
-        path << keys.sample.entity
+
+        # Ensure we don't have cycles on the path
+        next_entity = keys.sample.entity
+        break if path.include? next_entity
+        path << next_entity
       end
 
       path
