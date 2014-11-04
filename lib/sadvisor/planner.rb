@@ -161,12 +161,24 @@ module Sadvisor
       # Check that this index is a valid jump in the path
       return nil unless state.path[0..index.path.length - 1] == index.path
 
-      # Get fields in the query relevant to this index
-      path_fields = state.fields_for_entities index.path
-      return nil unless path_fields.all?(&index.all_fields.method(:include?))
+      if parent.is_a?(IndexLookupPlanStep)
+        # If the last step gave an ID, we must use it
+        # XXX This doesn't cover all cases
+        return nil if parent.index.extra == parent.index.path.last.id_fields &&
+          index.hash_fields.to_set != parent.index.extra
+
+        # If we're looking up from a previous step, only allow lookup by ID
+        return nil unless (index.path.length == 1 &&
+                           parent.index.path != index.path) ||
+                           index.hash_fields == index.path.last.id_fields.to_set
+      end
 
       # We need all hash fields to perform the lookup
       return nil unless index.hash_fields.all?(&parent.fields.method(:include?))
+
+      # Get fields in the query relevant to this index
+      path_fields = state.fields_for_entities index.path
+      return nil unless path_fields.all?(&index.all_fields.method(:include?))
 
       # Get the possible fields we need to select
       # This always includes the ID of the last and next entities
@@ -178,18 +190,6 @@ module Sadvisor
 
       has_last_fields = last_choices.any? do |fields|
         fields.all?(&index.all_fields.method(:include?))
-      end
-
-      if parent.is_a?(IndexLookupPlanStep)
-        # If the last step gave an ID, we must use it
-        # XXX This doesn't cover all cases
-        return nil if parent.index.extra == parent.index.path.last.id_fields &&
-                      index.hash_fields.to_set != parent.index.extra
-
-        # If we're looking up from a previous step, only allow lookup by ID
-        return nil unless (index.path.length == 1 &&
-                           parent.index.path != index.path) ||
-                          index.hash_fields == index.path.last.id_fields.to_set
       end
 
       return IndexLookupPlanStep.new(index, state, parent) if has_last_fields
