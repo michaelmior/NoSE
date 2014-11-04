@@ -677,9 +677,7 @@ module Sadvisor
       return steps if steps.length > 0
 
       # Don't allow indices to be used multiple times
-      entities = [state.path.first]
-      entities << parent.parent.state.path.first unless parent.parent.nil?
-      indexes = indexes_by_path.values_at(*entities).compact.flatten.to_set
+      indexes = indexes_by_path[state.path.first].to_set
       (indexes - used_indexes).each do |index|
         new_step = IndexLookupPlanStep.apply parent, index, state
         unless new_step.nil?
