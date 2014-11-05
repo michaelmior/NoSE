@@ -214,7 +214,7 @@ module Sadvisor
       elsif key_field.is_a? ForeignKeyField
         [key_field] + key_field.entity.key_fields(path[1..-1])
       else
-        entity.id_fields
+        entity.id_fields.to_a
       end
     end
 
