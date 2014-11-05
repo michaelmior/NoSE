@@ -614,13 +614,14 @@ module Sadvisor
     # @return[Boolean] true if pruning resulted in an empty tree
     def prune_plan(prune_step)
       # Walk up the tree and remove the branch for the failed plan
-      while prune_step.children.length <= 1 && !prune_step.is_a?(RootPlanStep)
+      while prune_step.children.length <= 1 &&
+            !prune_step.instance_of?(RootPlanStep)
         prune_step = prune_step.parent
         prev_step = prune_step
       end
 
       # If we reached the root, we have no plan
-      return true if prune_step.is_a? RootPlanStep
+      return true if prune_step.instance_of? RootPlanStep
 
       prune_step.children.delete prev_step
 
@@ -649,7 +650,7 @@ module Sadvisor
         end
       else
         if prune
-          return if step.is_a?(RootPlanStep) || prune_plan(step.parent)
+          return if step.instance_of?(RootPlanStep) || prune_plan(step.parent)
         else
           step.children = [PrunedPlanStep.new]
         end
@@ -660,7 +661,7 @@ module Sadvisor
     # @return [Array<PlanStep>]
     def find_nonindexed_steps(parent, state)
       steps = []
-      return steps if parent.is_a? RootPlanStep
+      return steps if parent.instance_of? RootPlanStep
 
       [SortPlanStep, FilterPlanStep, LimitPlanStep].each \
         { |step| steps.push step.apply(parent, state) }
