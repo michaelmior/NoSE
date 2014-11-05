@@ -3,7 +3,7 @@ require 'binding_of_caller'
 module Sadvisor
   # A representation of an object in the conceptual data model
   class Entity
-    attr_reader :fields, :name
+    attr_reader :id_fields, :fields, :name
     attr_accessor :count
 
     alias_method :state, :name
@@ -12,6 +12,7 @@ module Sadvisor
       @name = name
       @fields = {}
       @count = 1
+      @id_fields = Set.new
 
       # Precompute the hash
       hash
@@ -39,12 +40,6 @@ module Sadvisor
       @hash ||= @name.hash
     end
 
-    # Get the key fields for the entity
-    # @return [Array<Field>]
-    def id_fields
-      fields.values.select { |field| field.instance_of? IDField }
-    end
-
     # Get all foreign key fields on the entity
     # @return [Array<ForeignKeyField>]
     def foreign_keys
@@ -63,6 +58,7 @@ module Sadvisor
     def <<(field)
       @fields[field.name] = field
       field.instance_variable_set(:@parent, self)
+      @id_fields.add field if field.instance_of? IDField
 
       field.hash
       field.freeze

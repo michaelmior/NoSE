@@ -91,7 +91,7 @@ module Sadvisor
       eq_fields = path.map { |entity| eq[entity] }.compact.flatten
 
       # Add the ID fields of the entity on the head of the path
-      eq_fields += path.first.id_fields
+      eq_fields += path.first.id_fields.to_a
 
       eq_choices = 1.upto(eq_fields.count).map do |n|
         eq_fields.permutation(n).to_a
