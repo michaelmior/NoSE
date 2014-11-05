@@ -28,3 +28,6 @@ RSpec.configure do |config|
 end
 
 require 'sadvisor'
+
+# Disable parallelism for tests
+Parallel.instance_variable_set(:@processor_count, 0)
