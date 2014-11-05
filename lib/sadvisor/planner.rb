@@ -39,7 +39,7 @@ module Sadvisor
     attr_reader :children, :fields
 
     def initialize
-      @children = []
+      @children = Set.new
       @parent = nil
       @fields = Set.new
     end
@@ -53,7 +53,7 @@ module Sadvisor
     # :nocov:
 
     def children=(children)
-      @children = children
+      @children = children.to_set
 
       # Track the parent step of each step
       children.each do |child|
@@ -534,7 +534,7 @@ module Sadvisor
       while nodes.length > 0
         node = nodes.pop
         if node.children.length > 0
-          nodes.concat node.children
+          nodes.concat node.children.to_a
         else
           # This is just an extra check to make absolutely
           # sure we never consider invalid query plans
@@ -644,8 +644,7 @@ module Sadvisor
 
           # Remove this step if finding a plan from here failed
           if child_step.children.length == 0 && !child_step.state.answered?
-            steps -= [child_step]
-            step.children = steps
+            step.children.delete child_step
           end
         end
       else
