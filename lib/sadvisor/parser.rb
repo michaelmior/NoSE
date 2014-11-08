@@ -19,8 +19,7 @@ module Sadvisor
     rule(:identifier)  { match('[A-z]').repeat(1).as(:identifier) }
     rule(:identifiers) { identifier >> (comma >> identifier).repeat }
 
-    rule(:field)       {
-      (identifier >> (str('.') >> identifier).repeat(1)).as_array(:field) }
+    rule(:field)       { identifier >> (str('.') >> identifier).repeat(1) }
     rule(:fields)      { field >> (comma >> field).repeat }
 
     rule(:condition)   {
@@ -38,7 +37,7 @@ module Sadvisor
     rule(:statement)   {
       str('SELECT') >> space >> (identifiers.as_array(:select) | str('*')) >> \
       space >> str('FROM') >> space >> identifier.as(:entity) >> \
-      where.maybe.as_array(:where) >> order.maybe.as(:order) >> \
+      where.maybe.as(:where) >> order.maybe.as(:order) >> \
       limit.maybe.capture(:limit) }
     root :statement
   end
