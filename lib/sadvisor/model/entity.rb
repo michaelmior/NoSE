@@ -1,5 +1,3 @@
-require 'binding_of_caller'
-
 module Sadvisor
   # A representation of an object in the conceptual data model
   class Entity

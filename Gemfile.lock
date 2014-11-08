@@ -81,7 +81,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  binding_of_caller
   cql-rb
   formatador
   gurobi (= 0.0.2.mmior.1)
