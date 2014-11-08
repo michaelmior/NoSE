@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
 source 'https://gem.fury.io/michaelmior/'
 
-gem 'binding_of_caller'
 gem 'formatador'
 gem 'logging'
 gem 'parallel'

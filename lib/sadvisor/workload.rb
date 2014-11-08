@@ -7,13 +7,18 @@ module Sadvisor
   # A representation of a query workload over a given set of entities
   class Workload
     attr_reader :entities, :query_weights
+    thread_local_accessor :current
 
     def initialize(&block)
       @query_weights = {}
       @entities = {}
 
       # Apply the DSL
+      # XXX We use a hack here to track the enclosing workload
+      #     which is used elsewhere to pretty up the DSL
+      Workload.current = self
       WorkloadDSL.new(self).instance_eval(&block) if block_given?
+      Workload.current = nil
     end
 
     # Add a new {Entity} or {Statement} to the workload
