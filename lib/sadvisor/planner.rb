@@ -217,13 +217,14 @@ module Sadvisor
       @state.eq -= eq_filter
 
       # We can't resolve ordering if we're doing an ID lookup
-      # since only one record exists per row
+      # since only one record exists per row (if it's the same entity)
       # We also need to have the fields used in order
       indexed_by_id = @index.path.first.id_fields.all? do |field|
         @index.hash_fields.include? field
       end
       order_prefix = @state.order_by.longest_common_prefix @index.order_fields
-      @state.order_by -= order_prefix unless indexed_by_id
+      @state.order_by -= order_prefix unless indexed_by_id &&
+        order_prefix.map(&:parent).to_set == Set.new([index.path.first])
 
       # Strip the path for this index, but if we haven't fetched all
       # fields, leave the last one so we can perform a separate ID lookup
