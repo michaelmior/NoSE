@@ -268,7 +268,7 @@ module Sadvisor
         if tail
           cardinality = cardinality * 1.0 * next_entity.count / entity.count
         else
-          cardinality = sample 1.0 * cardinality, next_entity.count
+          cardinality = sample cardinality, next_entity.count
         end
 
         # Update cardinality via the filtering implicit to the index
@@ -282,7 +282,7 @@ module Sadvisor
     # replacement from a set of cardinality n
     def sample(m, n)
       # http://math.stackexchange.com/a/32816/130124
-      n * (1 - (1 - (1 / n))**m)
+      n * (1 - (1 - (1.0 / n))**m)
     end
   end
 
