@@ -107,7 +107,6 @@ module Sadvisor
     def initialize(state)
       super()
       @state = state
-      @fields += state.given_fields
     end
   end
 
@@ -176,7 +175,9 @@ module Sadvisor
       end
 
       # We need all hash fields to perform the lookup
-      return nil unless index.hash_fields.all?(&parent.fields.method(:include?))
+      return nil unless index.hash_fields.all? do |field|
+        (parent.fields + parent.state.given_fields).include? field
+      end
 
       # Get fields in the query relevant to this index
       path_fields = state.fields_for_entities index.path
