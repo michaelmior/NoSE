@@ -182,6 +182,8 @@ module Sadvisor
       # Get fields in the query relevant to this index
       path_fields = state.fields_for_entities index.path
       return nil unless path_fields.all?(&index.all_fields.method(:include?))
+      return nil if !path_fields.empty? &&
+                    path_fields.all?(&parent.fields.method(:include?))
 
       # Get the possible fields we need to select
       # This always includes the ID of the last and next entities
