@@ -156,4 +156,49 @@ class Class
   end
 end
 
+# Simple helper class to facilitate cardinality estimates
+class Cardinality
+  # Update the cardinality after traversing the index
+  def self.new_cardinality(cardinality, eq_filter, range_filter, path)
+    eq_filter = eq_filter.group_by(&:parent)
+    path = path.reverse
+
+    # Update cardinality via predicates for first (last) entity in path
+    cardinality *= filter_cardinality eq_filter, range_filter, path.first
+
+    path.each_cons(2) do |entity, next_entity|
+      tail = entity.foreign_key_for(next_entity).nil?
+      if tail
+        cardinality = cardinality * 1.0 * next_entity.count / entity.count
+      else
+        cardinality = sample cardinality, next_entity.count
+      end
+
+      # Update cardinality via the filtering implicit to the index
+      cardinality *= filter_cardinality eq_filter, range_filter, next_entity
+    end
+
+    [1, cardinality.ceil].max
+  end
+
+  private
+
+  # Update the cardinality based on filtering implicit to the index
+  def self.filter_cardinality(eq_filter, range_filter, entity)
+    filter = range_filter && range_filter.parent == entity ? 0.1 : 1.0
+    filter *= (eq_filter[entity] || []).map do |field|
+      1.0 / field.cardinality
+    end.inject(1.0, &:*)
+
+    filter
+  end
+
+  # Get the estimated cardinality of the set of samples of m items with
+  # replacement from a set of cardinality n
+  def self.sample(m, n)
+    # http://math.stackexchange.com/a/32816/130124
+    n * (1 - (1 - (1.0 / n))**m)
+  end
+end
+
 # rubocop:enable Documentation
