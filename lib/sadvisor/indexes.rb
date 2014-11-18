@@ -76,7 +76,11 @@ module Sadvisor
     # Precalculate the size of the index
     def calculate_size
       @entry_size = @all_fields.map(&:size).inject(0, :+)
-      @size = @all_fields.map(&:cardinality).inject(1, :*) * @entry_size
+      @size =  Cardinality.new_cardinality(@path.first.count,
+                                           @hash_fields,
+                                           nil,
+                                           @path) *
+                                           @entry_size * @path.last.count
     end
 
     # Check if this index is a mapping from the key of the given entity
