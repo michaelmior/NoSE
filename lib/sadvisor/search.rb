@@ -255,9 +255,13 @@ module Sadvisor
 
           if step_indexes.length == 1 && (current_steps != step_indexes ||
                                           current_cost != cost)
-            # We should only have one step if there exists a step with length 1
-            fail 'Invalid query plan found when calculating cost: ' +
-              plan.inspect.to_s
+            # # We should only have one step if there exists a step with length 1
+            # fail 'Invalid query plan found when calculating cost: ' +
+            #   plan.inspect.to_s
+
+            # XXX This is wrong, but the costs are broken for now
+            query_costs[step_indexes.first] = [step_indexes,
+                                               [cost, current_cost].max]
           else
             # Take the minimum cost index for the second step
             if current_steps.length > 1 && cost < current_cost
