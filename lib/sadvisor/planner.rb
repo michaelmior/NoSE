@@ -151,7 +151,16 @@ module Sadvisor
     # Rough cost estimate as the size of data returned
     # @return [Numeric]
     def cost
-      @state.cardinality * @index.all_fields.map(&:size).inject(0, :+)
+      if @state.answered?
+        # If we have an answer to the query, we only need
+        # to fetch the data fields which are selected
+        fields = @index.hash_fields + @index.order_fields +
+          @index.extra & @state.query.select
+      else
+        fields = @index.all_fields
+      end
+
+      @state.cardinality * fields.map(&:size).inject(0, :+)
     end
 
     # Check if this step can be applied for the given index,
