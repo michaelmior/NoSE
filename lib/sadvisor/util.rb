@@ -2,6 +2,8 @@
 
 require 'formatador'
 require 'parallel'
+require 'pp'
+require 'stringio'
 
 # Reopen to add utility methods
 module Enumerable
@@ -199,6 +201,19 @@ class Cardinality
     # http://math.stackexchange.com/a/32816/130124
     n * (1 - (1 - (1.0 / n))**m)
   end
+end
+
+module Kernel
+  private
+
+  def pp_s(*objs)
+      s = StringIO.new
+      objs.each { |obj| PP.pp(obj, s) }
+      s.rewind
+      s.read
+  end
+
+  module_function :pp_s
 end
 
 # rubocop:enable Documentation
