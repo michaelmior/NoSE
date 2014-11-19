@@ -29,6 +29,7 @@ module Sadvisor
       costs = costs indexes
 
       @logger.debug do
+        "Costs: \n" + pp_s(costs) + "\n" \
         "Search with queries:\n" + \
         @workload.queries.each_with_index.map do |query, i|
           "#{i} #{query.inspect}"
