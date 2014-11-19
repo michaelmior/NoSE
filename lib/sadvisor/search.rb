@@ -87,8 +87,23 @@ module Sadvisor
 
           # All indices used at this step must either all be used, or none used
           if step_indexes.length > 1
-            vars = step_indexes.map { |index| query_vars[index][q] }
-            model.addConstr(vars.last * 1 >= vars.first * 1)
+            if step_indexes.last.is_a? Array
+              # We have multiple possible last steps, so add an auxiliary
+              # variable which allows us to select between them
+              first_var = query_vars[step_indexes.first][q]
+              step_var = model.addVar(0, 1, 0, Gurobi::BINARY,
+                                      "s#{step_indexes.first}")
+              model.update
+              model.addConstr(step_var * 1 >= first_var * 1)
+
+              # Force exactly one of the indexes for the last step to be chosen
+              vars = step_indexes.last.map { |index| query_vars[index][q] }
+              model.addConstr(vars.inject(Gurobi::LinExpr.new, &:+) ==
+                              step_var)
+            else
+              vars = step_indexes.map { |index| query_vars[index][q] }
+              model.addConstr(vars.last * 1 >= vars.first * 1)
+            end
           end
         end
 
@@ -265,8 +280,22 @@ module Sadvisor
                                                [cost, current_cost].max]
           else
             # Take the minimum cost index for the second step
-            if current_steps.length > 1 && cost < current_cost
-              query_costs[step_indexes.first] = [step_indexes, cost]
+            if current_steps.length > 1
+              if cost < current_cost
+                query_costs[step_indexes.first] = [step_indexes, cost]
+              elsif cost == current_cost
+                # Cost is the same, so keep track of multiple possible last
+                # steps by making the second element an array
+                if current_steps.last.is_a? Array
+                  new_steps = current_steps.clone
+                  new_steps.last.push step_indexes.last
+                  step_indexes = new_steps
+                else
+                  step_indexes = [step_indexes.first,
+                                  [current_steps.last, step_indexes.last]]
+                end
+                query_costs[step_indexes.first] = [step_indexes, cost]
+              end
             end
           end
         else
