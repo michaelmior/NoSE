@@ -43,11 +43,9 @@ module Sadvisor
     end
 
     it 'can calculate its size' do
-      big_id_field = IDField.new('Id') * 10
-      workload['Foo'] << big_id_field
-      index = Index.new([big_id_field], [], [], [workload['Foo']])
-      expect(index.entry_size).to eq(big_id_field.size)
-      expect(index.size).to eq(workload['Foo']['Id'].size * 10)
+      index = Index.new([workload['Foo']['Id']], [], [], [workload['Foo']])
+      expect(index.entry_size).to eq(workload['Foo']['Id'].size)
+      expect(index.size).to eq(workload['Foo']['Id'].size * workload['Foo'].count)
     end
 
     context 'when materializing views' do
