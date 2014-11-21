@@ -435,6 +435,9 @@ module Sadvisor
 
     # Check if we can apply a limit
     def self.apply(_parent, state)
+      # TODO Apply if have IDs of the last entity set
+      #      with no filter/sort needed
+
       return nil if state.query.limit.nil?
       return nil unless state.answered? check_limit: false
 
