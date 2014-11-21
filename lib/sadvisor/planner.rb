@@ -181,9 +181,9 @@ module Sadvisor
       unless parent_index.nil?
         # If the last step gave an ID, we must use it
         # XXX This doesn't cover all cases
-        return nil if parent_index.extra.to_set ==
-                      parent_index.path.last.id_fields &&
-                      index.hash_fields.to_set != parent_index.extra
+        return nil if parent_index.path.last.id_fields \
+          .all?(&parent_index.extra.method(:include?)) &&
+          index.hash_fields.to_set != parent_index.extra
 
         # If we're looking up from a previous step, only allow lookup by ID
         return nil unless (index.path.length == 1 &&
