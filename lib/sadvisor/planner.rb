@@ -83,6 +83,14 @@ module Sadvisor
       steps
     end
 
+    # Find the closest index to this step
+    def parent_index
+      step = parent_steps.to_a.reverse.find do |step|
+        step.is_a? IndexLookupPlanStep
+      end
+      step.index unless step.nil?
+    end
+
     # The cost of executing this step in the plan
     # @return [Numeric]
     def cost
@@ -169,18 +177,19 @@ module Sadvisor
       # Check that this index is a valid jump in the path
       return nil unless state.path[0..index.path.length - 1] == index.path
 
-      if parent.is_a?(IndexLookupPlanStep)
+      parent_index = parent.parent_index
+      unless parent_index.nil?
         # If the last step gave an ID, we must use it
         # XXX This doesn't cover all cases
-        return nil if parent.index.extra.to_set ==
-                      parent.index.path.last.id_fields &&
-                      index.hash_fields.to_set != parent.index.extra
+        return nil if parent_index.extra.to_set ==
+                      parent_index.path.last.id_fields &&
+                      index.hash_fields.to_set != parent_index.extra
 
         # If we're looking up from a previous step, only allow lookup by ID
         return nil unless (index.path.length == 1 &&
-                           parent.index.path != index.path) ||
+                           parent_index.path != index.path) ||
                            index.hash_fields ==
-                           parent.index.path.last.id_fields.to_set
+                           parent_index.path.last.id_fields.to_set
       end
 
       # We need all hash fields to perform the lookup
