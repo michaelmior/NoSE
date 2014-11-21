@@ -92,7 +92,7 @@ module Sadvisor
               # variable which allows us to select between them
               first_var = query_vars[step_indexes.first][q]
               step_var = model.addVar(0, 1, 0, Gurobi::BINARY,
-                                      "s#{step_indexes.first}")
+                                      "q#{q}s#{step_indexes.first}")
               model.update
               model.addConstr(step_var * 1 >= first_var * 1)
 
