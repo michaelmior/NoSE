@@ -102,7 +102,9 @@ module Sadvisor
                               step_var)
             else
               vars = step_indexes.map { |index| query_vars[index][q] }
-              model.addConstr(vars.last * 1 >= vars.first * 1)
+              vars.reverse.each_cons(2).each do |first_var, last_var|
+                model.addConstr(last_var * 1 == first_var * 1)
+              end
             end
           end
         end
@@ -226,11 +228,12 @@ module Sadvisor
         steps_by_index = []
         plan.each do |step|
           if step.is_a? IndexLookupPlanStep
-            # If the current step is just a lookup on a single entity,
-            # then we should bundle it together with the last step
+            # If one of two adjacent steps is just a lookup on
+            # a single entity, we should bundle them together
             last_step = steps_by_index.last.last unless steps_by_index.empty?
             if last_step.is_a?(IndexLookupPlanStep) &&
-              step.index.path == [last_step.index.path.last]
+               (step.index.path == [last_step.index.path.last] ||
+                last_step.index.path == [step.index.path.first])
               steps_by_index.last.push step
               next
             end
@@ -263,7 +266,7 @@ module Sadvisor
 
         cost = steps.map(&:cost).inject(0, &:+) * weight
 
-        fail 'No more than two indexes per step' if step_indexes.length > 2
+        fail 'No more than three indexes per step' if step_indexes.length > 3
 
         if query_costs.key? step_indexes.first
           current_cost = query_costs[step_indexes.first].last
