@@ -183,7 +183,7 @@ module Sadvisor
         # XXX This doesn't cover all cases
         return nil if parent_index.path.last.id_fields \
           .all?(&parent_index.extra.method(:include?)) &&
-          index.hash_fields.to_set != parent_index.extra
+          index.hash_fields.to_set != parent_index.path.last.id_fields.to_set
 
         # If we're looking up from a previous step, only allow lookup by ID
         return nil unless (index.path.length == 1 &&
@@ -194,11 +194,12 @@ module Sadvisor
 
       # We need all hash fields to perform the lookup
       return nil unless index.hash_fields.all? do |field|
-        (parent.fields + parent.state.given_fields).include? field
+        (parent.fields + state.given_fields).include? field
       end
 
       # Get fields in the query relevant to this index
-      path_fields = state.fields_for_entities index.path
+      path_fields = state.fields_for_entities(index.path).to_set
+      path_fields -= parent.fields  # exclude fields already fetched
       return nil unless path_fields.all?(&index.all_fields.method(:include?))
       return nil if !path_fields.empty? &&
                     path_fields.all?(&parent.fields.method(:include?))
