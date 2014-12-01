@@ -63,7 +63,7 @@ $workload = Sadvisor::Workload.new do
   (Entity 'bids' do
     ID         'id'
     ForeignKey 'user', 'users', count: 993655
-    ForeignKey 'item', 'items', count: 426931
+    ForeignKey 'item_id', 'items', count: 426931
     Integer    'qty', count: 10
     Float      'bid', count: 5121
     Date       'date', count: 52913
@@ -73,7 +73,7 @@ $workload = Sadvisor::Workload.new do
     ID         'id'
      ForeignKey 'from_user_id', 'users', count: 413603
     #ForeignKey 'to_user_id', 'users'
-    ForeignKey 'item', 'items', count: 443798
+    ForeignKey 'item_id', 'items', count: 443798
     Integer    'rating', count: 5
     Date       'date', count: 51399
     String     'comment', 255, count: 533426
@@ -89,7 +89,7 @@ $workload = Sadvisor::Workload.new do
 
   # Define queries and their relative weights
 
-  Q 'SELECT from_user_id, date, comment FROM comments WHERE comments.item = ? ORDER BY comments.date'
+  Q 'SELECT from_user_id, date, comment FROM comments WHERE comments.item_id = ? ORDER BY comments.date'
   # 1. SELECT item_id as E_item, date as O_date, from_user_id, date, comment FROM comments;
   # I2227598752
 
@@ -101,15 +101,15 @@ $workload = Sadvisor::Workload.new do
   # 3. SELECT region as E_region, items.id, name, description, max_bid FROM items join users on items.seller=users.id WHERE items.seller.region;
   # I4186334592
 
-  Q 'SELECT from_user_id, date, comment FROM comments WHERE comments.item.category = ? AND comments.item.seller.region = ?'
+  Q 'SELECT from_user_id, date, comment FROM comments WHERE comments.item_id.category = ? AND comments.item_id.seller.region = ?'
   # 4. SELECT category AS E_category, region as E_region, from_user_id, date, comment FROM comments join items on comments.item_id=items.id join users on items.seller=users.id;
   # I3254083673
 
-  Q 'SELECT bid, date FROM bids WHERE bids.item.seller.region = ? AND bids.item.category = ? AND bids.item.end_date < ?'
+  Q 'SELECT bid, date FROM bids WHERE bids.item_id.seller.region = ? AND bids.item_id.category = ? AND bids.item_id.end_date < ?'
   # 5. SELECT region as E_region, category as E_category, end_date as O_end_date, bids.id as O_id, bid, date FROM bids join items on bids.item_id=items.id join users on items.seller=users.id
   # I1184534160
 
-  Q 'SELECT from_user_id, comment, date FROM comments WHERE comments.item.seller = ?'
+  Q 'SELECT from_user_id, comment, date FROM comments WHERE comments.item_id.seller = ?'
   # 6. SELECT seller AS E_seller, comments.id AS O_id, from_user_id, comment, date FROM comments join items on comments.item_id=items.id;
   # I638854407
 
@@ -117,7 +117,7 @@ $workload = Sadvisor::Workload.new do
   # 7. SELECT category as E_category, id, name FROM items;
   # I3358488952
 
-  Q 'SELECT comment FROM comments WHERE comments.items.category = ? ORDER BY comments.date'
+  Q 'SELECT comment FROM comments WHERE comments.item_id.category = ? ORDER BY comments.date'
   # 8. SELECT category AS E_category, date AS O_date, comment FROM comments join items ON comments.item_id=items.id;
   # I127205473
 end
