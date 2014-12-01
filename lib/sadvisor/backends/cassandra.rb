@@ -20,19 +20,17 @@ module Sadvisor
       Enumerator.new do |enum|
         @indexes.map do |index|
           # Add the ID of the last entity if necessary
+          fields = index_insert_fields index
           extra_id = []
           extra_id += index.path.last.id_fields \
-            unless (index.path.last.id_fields -
-                    (index.hash_fields.to_a + index.order_fields)).empty?
-          fields = index.all_fields.to_a
-          fields += extra_id unless (index.path.last.id_fields - fields).empty?
+            if fields.length > index.all_fields.size
 
           ddl = "CREATE COLUMNFAMILY \"#{index.key}\" (" \
           "#{field_names fields, true}, " \
           "PRIMARY KEY((#{field_names index.hash_fields})" \
 
-          ddl += ", #{field_names(index.order_fields + extra_id)}" \
-            unless index.order_fields.empty?
+          cluster_key = index.order_fields + extra_id
+          ddl += ", #{field_names cluster_key}" unless cluster_key.empty?
           ddl += '));'
 
           enum.yield ddl
@@ -43,15 +41,17 @@ module Sadvisor
 
     # Inset a chunk of rows into an index
     def index_insert_chunk(index, chunk)
+      fields = index_insert_fields index
       prepared = "INSERT INTO \"#{index.key}\" (" \
-                 "#{field_names index.all_fields}" \
-                 ") VALUES (#{(['?'] * index.all_fields.length).join ', '})"
+                 "#{field_names fields}" \
+                 ") VALUES (#{(['?'] * fields.length).join ', '})"
       prepared = client.prepare prepared
 
       client.batch do |batch|
         chunk.each do |row|
-          index_row = index.all_fields.map do |field|
-            row["#{field.parent.name}_#{field.name}"]
+          index_row = fields.map do |field|
+            cassandra_value row["#{field.parent.name}_#{field.name}"],
+                            field.class
           end
           batch.add prepared, *index_row
         end
@@ -77,6 +77,21 @@ module Sadvisor
     end
 
     private
+
+    # Add the ID of the last entity if necessary
+    def index_insert_fields(index)
+      extra_id = []
+      extra_id += index.path.last.id_fields \
+        unless (index.path.last.id_fields -
+                (index.hash_fields.to_a + index.order_fields)).empty?
+      fields = index.all_fields.to_a
+
+      if (index.path.last.id_fields - fields).empty?
+        fields
+      else
+        fields + extra_id
+      end
+    end
 
     # Get a comma-separated list of field names with optional types
     def field_names(fields, types = false)
@@ -118,7 +133,7 @@ module Sadvisor
     # Get the value as used by Cassandra for a given field
     def cassandra_value(value, field_class)
       case [field_class]
-      when [IDField], [ForeignKeyField], [ToOneKeyField] [ToManyKeyField]
+      when [IDField], [ForeignKeyField], [ToOneKeyField], [ToManyKeyField]
         Cql::Uuid.new Zlib.crc32(value.to_s)
       else
         value
