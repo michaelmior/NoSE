@@ -11,8 +11,10 @@ gem 'ruby-graphviz'
 gem 'smarter_csv'
 gem 'thor', require: false
 
-group :gurobi do
-  gem 'gurobi', '=0.0.2.mmior.1'
+platform :ruby do
+  group :gurobi do
+    gem 'gurobi', '=0.0.2.mmior.1'
+  end
 end
 
 group :test do
@@ -21,13 +23,15 @@ group :test do
   gem 'simplecov'
 end
 
-group :development do
-  gem 'ruby-prof'
-  gem 'pry'
-  gem 'pry-byebug'
-  gem 'pry-rescue'
-  gem 'pry-stack_explorer'
-  gem 'yard'
+platform :ruby do
+  group :development do
+    gem 'ruby-prof'
+    gem 'pry'
+    gem 'pry-byebug'
+    gem 'pry-rescue'
+    gem 'pry-stack_explorer'
+    gem 'yard'
+  end
 end
 
 group :cassandra do
