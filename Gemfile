@@ -37,3 +37,7 @@ end
 group :cassandra do
   gem 'cql-rb'
 end
+
+group :mysql do
+  gem 'mysql2'
+end

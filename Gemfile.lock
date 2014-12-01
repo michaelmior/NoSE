@@ -28,6 +28,7 @@ GEM
     method_source (0.8.2)
     mini_portile (0.6.1)
     multi_json (1.10.1)
+    mysql2 (0.3.17)
     nokogiri (1.6.5)
       mini_portile (~> 0.6.0)
     nokogiri (1.6.5-java)
@@ -88,6 +89,7 @@ DEPENDENCIES
   formatador
   gurobi (= 0.0.2.mmior.1)
   logging
+  mysql2
   parallel
   parslet (= 1.7.0.mmior.1)
   pry
