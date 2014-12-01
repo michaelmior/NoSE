@@ -7,7 +7,6 @@ module Sadvisor
   class CSVLoader < Loader
     # Load data for all the indexes
     def load(indexes, config, show_progress = false)
-      p config
       simple_indexes = indexes.select { |index| index.path.length == 1 }
       simple_indexes = simple_indexes.group_by { |index| index.path.first }
       simple_indexes.each do |entity, simple_index_list|
