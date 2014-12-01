@@ -30,8 +30,16 @@ module Sadvisor
     def key
       # Temporarily set an empty key
       if @key.nil?
-        @key = ''
-        @key = "I#{Zlib.crc32 inspect}"
+        join_fields = lambda do |fields|
+          fields.map { |field| "#{field.parent.name}.#{field.name}" }.join ', '
+        end
+
+        keystr = join_fields.call @hash_fields
+        keystr += ' ' + join_fields.call(@order_fields)
+        keystr += ' ' + join_fields.call(@extra)
+        keystr += ' ' + @path.map(&:name).join(', ')
+
+        @key = "i#{Zlib.crc32 keystr}"
       end
 
       @key

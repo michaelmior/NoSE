@@ -69,6 +69,11 @@ module Sadvisor
         index = order_query.materialize_view
         expect(index.order_fields).to eq([workload['Foo']['Bar']])
       end
+
+      it 'keeps a static key' do
+        index = combo_query.materialize_view
+        expect(index.key).to eq 'i835299498'
+      end
     end
 
     it 'can tell if it maps identities for a field' do
