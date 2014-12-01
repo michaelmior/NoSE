@@ -19,11 +19,19 @@ module Sadvisor
     def indexes_ddl(execute = false)
       Enumerator.new do |enum|
         @indexes.map do |index|
+          # Add the ID of the last entity if necessary
+          extra_id = []
+          extra_id += index.path.last.id_fields \
+            unless (index.path.last.id_fields -
+                    (index.hash_fields.to_a + index.order_fields)).empty?
+          fields = index.all_fields.to_a
+          fields += extra_id unless (index.path.last.id_fields - fields).empty?
+
           ddl = "CREATE COLUMNFAMILY \"#{index.key}\" (" \
-          "#{field_names index.all_fields, true}, " \
+          "#{field_names fields, true}, " \
           "PRIMARY KEY((#{field_names index.hash_fields})" \
 
-          ddl += ", #{field_names index.order_fields}" \
+          ddl += ", #{field_names(index.order_fields + extra_id)}" \
             unless index.order_fields.empty?
           ddl += '));'
 
