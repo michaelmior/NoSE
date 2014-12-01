@@ -216,4 +216,20 @@ module Kernel
   module_function :pp_s
 end
 
+class Object
+  def deep_symbolize_keys
+    return inject({}) do |memo, (k, v)|
+      memo[k.to_sym] = v.deep_symbolize_keys
+      memo
+    end if self.is_a? Hash
+
+    return inject([]) do |memo, v|
+      memo << v.deep_symbolize_keys
+      memo
+    end if self.is_a? Array
+
+    self
+  end
+end
+
 # rubocop:enable Documentation
