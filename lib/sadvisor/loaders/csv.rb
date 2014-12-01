@@ -15,7 +15,7 @@ module Sadvisor
         File.foreach(filename) { total_rows += 1 }
 
         if show_progress
-          puts "Loading simple indexes for #{entity.name}" if show_progress
+          puts "Loading simple indexes for #{entity.name}"
           puts "#{simple_index_list.map(&:key).join ', '}"
 
           Formatador.new.redisplay_progressbar 0, total_rows
