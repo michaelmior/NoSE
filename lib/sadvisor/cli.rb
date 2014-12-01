@@ -40,7 +40,7 @@ module Sadvisor
       be_class_name = ['Sadvisor', config[:database].capitalize + 'Backend']
       be_class_name.reduce(Object) do |mod, name_part|
         mod.const_get name_part
-      end.new(result.workload, result.indexes, result.plans, **config)
+      end.new(result.workload, result.indexes, result.plans, config[:backend])
     end
 
     # Load results of a previous search operation
