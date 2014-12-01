@@ -31,7 +31,7 @@ module Sadvisor
     # Load the configuration to use for a backend
     def load_config
       config = YAML.load_file File.join(Dir.pwd, 'sadvisor.yml')
-      Hash[config.map { |k, v| [k.to_sym, v] }]
+      config.deep_symbolize_keys
     end
 
     # Get a backend instance for a given configuration and dataset
