@@ -4,14 +4,14 @@ require 'zlib'
 module Sadvisor
   # A backend which communicates with Cassandra via CQL
   class CassandraBackend
-    def initialize(workload, indexes, plans, **options)
+    def initialize(workload, indexes, plans, config)
       @workload = workload
       @indexes = indexes
       @plans = plans
 
-      @hosts = options[:backend]['hosts']
-      @port = options[:backend]['port']
-      @keyspace = options[:backend]['keyspace']
+      @hosts = config[:hosts]
+      @port = config[:port]
+      @keyspace = config[:keyspace]
     end
 
     # Produce the DDL necessary for column families for the given indexes
