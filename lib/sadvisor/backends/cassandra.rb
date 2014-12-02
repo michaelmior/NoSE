@@ -64,7 +64,7 @@ module Sadvisor
 
       plan.each do |step|
         if step.is_a? IndexLookupPlanStep
-          return index_lookup step.index, query.select, query.conditions
+          return index_lookup step.index, query.select, [query.conditions]
         elsif step.is_a? FilterStep
           fail NotImplementedError, 'Filtering is not yet implemented'
         elsif step.is_a? SortStep
@@ -135,19 +135,26 @@ module Sadvisor
 
     # Lookup values from an index selecting the given
     # fields and filtering on the given conditions
-    def index_lookup(index, select, conditions)
+    def index_lookup(index, select, condition_list)
       query = "SELECT #{select.map { |field| field_name field }.join ', '} " \
               "FROM \"#{index.key}\""
-      query += ' WHERE ' if conditions.length > 0
-      query += conditions.map do |condition|
+      query += ' WHERE ' if condition_list.first.length > 0
+      query += condition_list.first.map do |condition|
         "#{field_name condition.field} #{condition.operator} ?"
       end.join ', '
+      statement = client.prepare query
 
-      values = conditions.map do |condition|
-        cassandra_value condition.value, condition.field.class
+      # TODO Chain enumerables of results instead
+      result = []
+      condition_list.each do |conditions|
+        values = conditions.map do |condition|
+          cassandra_value condition.value, condition.field.class
+        end
+
+        result += statement.execute(*values, consistency: :one).to_a
       end
 
-      client.execute query, *values, consistency: :one
+      result
     end
   end
 end
