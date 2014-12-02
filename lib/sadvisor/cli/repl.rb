@@ -15,7 +15,14 @@ module Sadvisor
         query = Statement.new line, result.workload
 
         # Execute the query
-        Formatador.display_compact_table backend.query(query)
+        begin
+          result = backend.query(query)
+        rescue NotImplementedError => e
+          puts '! ' + e.message
+        else
+          Formatador.display_compact_table result
+        end
+
       end
     end
 
