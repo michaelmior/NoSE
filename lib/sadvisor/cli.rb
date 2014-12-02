@@ -55,5 +55,6 @@ end
 # Require the various subcommands
 require_relative 'cli/create'
 require_relative 'cli/load'
+require_relative 'cli/graph'
 require_relative 'cli/repl'
 require_relative 'cli/workload'
