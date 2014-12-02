@@ -50,8 +50,6 @@ module Sadvisor
         row.keys.each do |key|
           field_class = entity[key.to_s].class
           value = field_class.value_from_string row[key]
-          value = Cql::Uuid.new Zlib.crc32(value) \
-            if field_class.ancestors.include? IDField
           index_row["#{entity.name}_#{key}"] = value
         end
 
