@@ -6,12 +6,14 @@
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
 require 'rspec/collection_matchers'
-require 'simplecov'
 
 Dir['./spec/support/**/*.rb'].sort.each { |f| require f }
 
-SimpleCov.add_filter '/spec/'
-SimpleCov.start
+unless RUBY_PLATFORM == "java"
+  require 'simplecov'
+  SimpleCov.add_filter '/spec/'
+  SimpleCov.start unless RUBY_PLATFORM == "java"
+end
 
 RSpec.configure do |config|
   config.expect_with :rspec do |c|
