@@ -21,7 +21,7 @@ module Sadvisor
         rescue NotImplementedError => e
           puts '! ' + e.message
         else
-          Formatador.display_compact_table result
+          Formatador.display_compact_table result unless result.empty?
         end
 
       end
