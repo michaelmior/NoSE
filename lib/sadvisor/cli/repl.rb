@@ -9,10 +9,16 @@ module Sadvisor
       backend = get_backend(config, result)
 
       loop do
-        line = get_line
+        begin
+          line = get_line
+        rescue Interrupt
+          line = nil
+        end
         break if line.nil?
+
         line.chomp!
         next if line.empty?
+
         query = Statement.new line, result.workload
 
         # Execute the query
