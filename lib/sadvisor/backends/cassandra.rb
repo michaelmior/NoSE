@@ -59,18 +59,39 @@ module Sadvisor
     def query(query)
       plan = @plans.find { |possible_plan| possible_plan.query == query }
 
-      fail NotImplementedError, 'Only plans of length one are supported' \
-        if plan.length > 1
-
-      plan.each do |step|
+      results = nil
+      ([nil] + plan.to_a + [nil]).each_cons(3) do |_prev_step, step, next_step|
         if step.is_a? IndexLookupPlanStep
-          return index_lookup step.index, query.select, [query.conditions]
+          if results.nil?
+            condition_list = [query.conditions]
+          else
+            # Get conditions based on hash keys of the next index
+            # TODO: Support range queries and column name lookups
+            condition_list = results.map do |result|
+              step.index.hash_fields.map do |field|
+                Condition.new field, :'=',
+                              result["#{field.parent.name}_#{field.name}"]
+              end
+            end
+          end
+
+          if next_step.nil?
+            select = query.select
+          else
+            # TODO: Select only necessary fields
+            select = step.index.all_fields
+          end
+
+          results = index_lookup step.index, select, condition_list
+          return [] if results.empty?
         elsif step.is_a? FilterStep
           fail NotImplementedError, 'Filtering is not yet implemented'
         elsif step.is_a? SortStep
           fail NotImplementedError, 'Sorting is not yet implemented'
         end
       end
+
+      results
     end
 
     private
@@ -148,7 +169,7 @@ module Sadvisor
       end.join ', '
       statement = client.prepare query
 
-      # TODO Chain enumerables of results instead
+      # TODO: Chain enumerables of results instead
       result = []
       condition_list.each do |conditions|
         values = conditions.map do |condition|
