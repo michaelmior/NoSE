@@ -17,11 +17,11 @@ module Sadvisor
 
         # Execute the query
         begin
-          result = backend.query(query)
+          results = backend.query(query)
         rescue NotImplementedError => e
           puts '! ' + e.message
         else
-          Formatador.display_compact_table result unless result.empty?
+          Formatador.display_compact_table results unless results.empty?
         end
 
       end
