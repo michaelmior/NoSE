@@ -12,6 +12,7 @@ module Sadvisor
         line = get_line
         break if line.nil?
         line.chomp!
+        next if line.empty?
         query = Statement.new line, result.workload
 
         # Execute the query
