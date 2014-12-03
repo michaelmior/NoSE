@@ -47,8 +47,7 @@ module Sadvisor
       client.batch do |batch|
         chunk.each do |row|
           index_row = fields.map do |field|
-            cassandra_value row["#{field.parent.name}_#{field.name}"],
-                            field.class
+            row["#{field.parent.name}_#{field.name}"]
           end
           batch.add prepared, *index_row
         end
@@ -60,39 +59,10 @@ module Sadvisor
       plan = @plans.find { |possible_plan| possible_plan.query == query }
 
       results = nil
-      ([nil] + plan.to_a + [nil]).each_cons(3) do |_prev_step, step, next_step|
-        if step.is_a? IndexLookupPlanStep
-          if results.nil?
-            condition_list = [query.conditions]
-          else
-            # Get conditions based on hash keys of the next index
-            # TODO: Support range queries and column name lookups
-            condition_list = results.map do |result|
-              step.index.hash_fields.map do |field|
-                Condition.new field, :'=',
-                              result["#{field.parent.name}_#{field.name}"]
-              end
-            end
-          end
-
-          if next_step.nil?
-            select = query.select
-          else
-            # TODO: Select only necessary fields
-            select = step.index.all_fields
-          end
-
-          results = index_lookup step.index, select, condition_list
-          return [] if results.empty?
-        elsif step.is_a? FilterPlanStep
-          fail NotImplementedError, 'Filtering is not yet implemented'
-        elsif step.is_a? SortPlanStep
-          results.sort_by! do |row|
-            sort = step.sort_fields.map do |field|
-              row["#{field.parent.name}_#{field.name}"]
-            end
-          end
-        end
+      ([nil] + plan.to_a + [nil]).each_cons(3) do |prev_step, step, next_step|
+        step_class = Cassandra::QueryStep.subtype_class step.subtype_name
+        results = step_class.process client, query, results,
+                                     step, prev_step, next_step
       end
 
       results
@@ -114,15 +84,10 @@ module Sadvisor
     # Get a comma-separated list of field names with optional types
     def field_names(fields, types = false)
       fields.map do |field|
-        name = "\"#{field_name field}\""
+        name = "\"#{field.id}\""
         name += ' ' + cassandra_type(field.class).to_s if types
         name
       end.join ', '
-    end
-
-    # Get the name of the field as used in Cassandra
-    def field_name(field)
-      "#{field.parent.name}_#{field.name}"
     end
 
     # Get a Cassandra client, connecting if not done already
@@ -148,42 +113,78 @@ module Sadvisor
         :int
       end
     end
+  end
 
-    # Get the value as used by Cassandra for a given field
-    def cassandra_value(value, field_class)
-      # case [field_class]
-      # when [IDField], [ForeignKeyField], [ToOneKeyField], [ToManyKeyField]
-      #   Cql::Uuid.new Zlib.crc32(value.to_s)
-      # else
-      #   value
-      # end
-
-      # TODO: Decide on the use of UUID
-      value
+  module Cassandra
+    class QueryStep
+      include Supertype
     end
 
-    # Lookup values from an index selecting the given
-    # fields and filtering on the given conditions
-    def index_lookup(index, select, condition_list)
-      query = "SELECT #{select.map { |field| field_name field }.join ', '} " \
-              "FROM \"#{index.key}\""
-      query += ' WHERE ' if condition_list.first.length > 0
-      query += condition_list.first.map do |condition|
-        "#{field_name condition.field} #{condition.operator} ?"
-      end.join ', '
-      statement = client.prepare query
-
-      # TODO: Chain enumerables of results instead
-      result = []
-      condition_list.each do |conditions|
-        values = conditions.map do |condition|
-          cassandra_value condition.value, condition.field.class
+    class IndexLookupQueryStep < QueryStep
+      def self.process(client, query, results, step, prev_step, next_step)
+        if results.nil?
+          condition_list = [query.conditions]
+        else
+          # Get conditions based on hash keys of the next index
+          # TODO: Support range queries and column name lookups
+          condition_list = results.map do |result|
+            step.index.hash_fields.map do |field|
+              Condition.new field, :'=',
+                result["#{field.parent.name}_#{field.name}"]
+            end
+          end
         end
 
-        result += statement.execute(*values, consistency: :one).to_a
+        if next_step.nil?
+          select = query.select
+        else
+          # TODO: Select only necessary fields
+          select = step.index.all_fields
+        end
+
+        results = index_lookup client, step.index, select, condition_list
+        return [] if results.empty?
+
+        results
       end
 
-      result
+      private
+
+      # Lookup values from an index selecting the given
+      # fields and filtering on the given conditions
+      def self.index_lookup(client, index, select, condition_list)
+        query = "SELECT #{select.map(&:id).join ', '} FROM \"#{index.key}\""
+        query += ' WHERE ' if condition_list.first.length > 0
+        query += condition_list.first.map do |condition|
+          "#{condition.field.id} #{condition.operator} ?"
+        end.join ', '
+        statement = client.prepare query
+
+        # TODO: Chain enumerables of results instead
+        result = []
+        condition_list.each do |conditions|
+          values = conditions.map(&:value)
+          result += statement.execute(*values, consistency: :one).to_a
+        end
+
+        result
+      end
+    end
+
+    class FilterQueryStep < QueryStep
+      def self.process(client, query, results, step, prev_step, next_step)
+        fail NotImplementedError, 'Filtering is not yet implemented'
+      end
+    end
+
+    class SortQueryStep < QueryStep
+      def self.process(client, query, results, step, prev_step, next_step)
+        results.sort_by! do |row|
+          sort = step.sort_fields.map do |field|
+            row["#{field.parent.name}_#{field.name}"]
+          end
+        end
+      end
     end
   end
 end
