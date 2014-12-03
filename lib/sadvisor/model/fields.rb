@@ -36,6 +36,11 @@ module Sadvisor
     end
     # :nocov:
 
+    # A simple string representing the field
+    def id
+      "#{parent.name}_#{name}"
+    end
+
     # Set the estimated cardinality of the field
     # @return [Field]
     def *(other)
