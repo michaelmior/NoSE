@@ -23,4 +23,4 @@ If you do not have a copy of Gurobi available, you can exclude these tests with 
 
 ## Publications
 
-Michael J. Mior. 2014. [Automated schema design for NoSQL databases](http://doi.acm.org/10.1145/2602622.2602624). In Proceedings of the 2014 SIGMOD PhD symposium (SIGMOD'14 PhD Symposium). ACM, New York, NY, USA, 41-45.
+![ACM DL Author-ize service](http://dl.acm.org/images/oa.gif) Michael J. Mior. 2014. [Automated schema design for NoSQL databases](http://dl.acm.org/authorize?N71145). In Proceedings of the 2014 SIGMOD PhD symposium (SIGMOD'14 PhD Symposium). ACM, New York, NY, USA, 41-45.
