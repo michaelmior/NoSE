@@ -119,18 +119,22 @@ module Sadvisor
       when [DateField]
         :timestamp
       when [IDField], [ForeignKeyField], [ToOneKeyField], [ToManyKeyField]
-        :uuid
+        # TODO: Decide on UUID
+        :int
       end
     end
 
     # Get the value as used by Cassandra for a given field
     def cassandra_value(value, field_class)
-      case [field_class]
-      when [IDField], [ForeignKeyField], [ToOneKeyField], [ToManyKeyField]
-        Cql::Uuid.new Zlib.crc32(value.to_s)
-      else
-        value
-      end
+      # case [field_class]
+      # when [IDField], [ForeignKeyField], [ToOneKeyField], [ToManyKeyField]
+      #   Cql::Uuid.new Zlib.crc32(value.to_s)
+      # else
+      #   value
+      # end
+
+      # TODO: Decide on the use of UUID
+      value
     end
 
     # Lookup values from an index selecting the given
