@@ -84,10 +84,14 @@ module Sadvisor
 
           results = index_lookup step.index, select, condition_list
           return [] if results.empty?
-        elsif step.is_a? FilterStep
+        elsif step.is_a? FilterPlanStep
           fail NotImplementedError, 'Filtering is not yet implemented'
-        elsif step.is_a? SortStep
-          fail NotImplementedError, 'Sorting is not yet implemented'
+        elsif step.is_a? SortPlanStep
+          results.sort_by! do |row|
+            sort = step.sort_fields.map do |field|
+              row["#{field.parent.name}_#{field.name}"]
+            end
+          end
         end
       end
 
