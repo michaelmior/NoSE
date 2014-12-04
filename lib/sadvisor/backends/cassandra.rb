@@ -142,6 +142,17 @@ module Sadvisor
           select = step.index.all_fields
         end
 
+        # Decide which fields should be selected
+        # We just pick whatever is contained in the index that is either
+        # mentioned in the query or required for the next lookup
+        # TODO: Potentially try query.all_fields for those not required
+        #       It should be sufficient to check what is needed for subsequent
+        #       filtering and sorting and use only those + query.select
+        select = query.all_fields
+        select += next_step.index.hash_fields \
+          unless next_step.nil? || !next_step.is_a?(IndexLookupPlanStep)
+        select &= step.index.all_fields
+
         results = index_lookup client, step.index, select, condition_list
         return [] if results.empty?
 
