@@ -23,11 +23,14 @@ module Sadvisor
 
         # Execute the query
         begin
+          start_time = Time.now
           results = backend.query(query)
+          elapsed = Time.now - start_time
         rescue NotImplementedError => e
           puts '! ' + e.message
         else
           Formatador.display_compact_table results unless results.empty?
+          puts "(%d rows in %.2fs)" % [results.length, elapsed]
         end
 
       end
