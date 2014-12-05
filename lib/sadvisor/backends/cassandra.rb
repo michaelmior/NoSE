@@ -59,7 +59,9 @@ module Sadvisor
       plan = @plans.find { |possible_plan| possible_plan.query == query }
 
       results = nil
-      ([nil] + plan.to_a + [nil]).each_cons(3) do |prev_step, step, next_step|
+      first_step = RootPlanStep.new QueryState.new(query, @workload)
+      steps = [first_step] + plan.to_a + [nil]
+      steps.each_cons(3) do |prev_step, step, next_step|
         step_class = Cassandra::QueryStep.subtype_class step.subtype_name
         results = step_class.process client, query, results,
                                      step, prev_step, next_step
@@ -122,24 +124,32 @@ module Sadvisor
 
     class IndexLookupQueryStep < QueryStep
       def self.process(client, query, results, step, prev_step, next_step)
+        # Get the fields which are used for lookups at this step
+        # TODO: Check if we can apply the next filter via ALLOW FILTERING
+        eq_fields = (prev_step.state.eq - step.state.eq).to_set
+        eq_fields += step.index.hash_fields
+        range_field = prev_step.state.range if step.state.range.nil?
+
+        # If this is the first lookup, get the lookup values from the query
         if results.nil?
-          condition_list = [query.conditions]
-        else
-          # Get conditions based on hash keys of the next index
-          # TODO: Support range queries and column name lookups
-          condition_list = results.map do |result|
-            step.index.hash_fields.map do |field|
-              Condition.new field, :'=',
-                result["#{field.parent.name}_#{field.name}"]
-            end
-          end
+          results = [Hash[query.conditions.map do |condition|
+            [condition.field.id, condition.value]
+          end]]
         end
 
-        if next_step.nil?
-          select = query.select
-        else
-          # TODO: Select only necessary fields
-          select = step.index.all_fields
+        # Construct a list of conditions from the results
+        condition_list = results.map do |result|
+          conditions = eq_fields.map do |field|
+            Condition.new field, :'=', result[field.id]
+          end
+
+          unless range_field.nil?
+            conditions << Condition.new(range_field,
+                                        query.range_field.operator,
+                                        result[range_field.id])
+          end
+
+          conditions
         end
 
         # Decide which fields should be selected
