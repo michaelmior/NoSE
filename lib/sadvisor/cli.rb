@@ -43,6 +43,17 @@ module Sadvisor
       end.new(result.workload, result.indexes, result.plans, config[:backend])
     end
 
+    # Find the appropriate loader class based on the config
+    def get_loader_class(config)
+      require_relative "loaders/#{config[:loader][:name]}"
+      loaders = ObjectSpace.each_object(Sadvisor::Loader.singleton_class)
+      loaders.find do |klass|
+        path = klass.instance_method(:load).source_location
+        next if path.nil?
+        !/\b#{config[:loader][:name]}\.rb/.match(path.first).nil?
+      end
+    end
+
     # Load results of a previous search operation
     def load_results(plan_file)
       representer = Sadvisor::SearchResultRepresenter.represent(OpenStruct.new)
@@ -55,6 +66,7 @@ end
 # Require the various subcommands
 require_relative 'cli/create'
 require_relative 'cli/load'
+require_relative 'cli/genworkload'
 require_relative 'cli/graph'
 require_relative 'cli/repl'
 require_relative 'cli/workload'
