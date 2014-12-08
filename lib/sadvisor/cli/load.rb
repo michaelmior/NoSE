@@ -8,14 +8,8 @@ module Sadvisor
       backend = get_backend(config, result)
 
       # Create a new instance of the loader class
-      require_relative "../loaders/#{config[:loader][:name]}"
-      loaders = ObjectSpace.each_object(Sadvisor::Loader.singleton_class)
-      loader = loaders.find do |klass|
-        path = klass.instance_method(:load).source_location
-        next if path.nil?
-        !/\b#{config[:loader][:name]}\.rb/.match(path.first).nil?
-      end
-      loader = loader.new result.workload, backend
+      loader_class = get_loader_class config
+      loader = loader_class.new result.workload, backend
 
       # Remove the name from the config and execute the loader
       config.delete :name

@@ -2,7 +2,7 @@ require 'mysql2'
 
 module Sadvisor
   class MySQLLoader < Loader
-    def initialize(workload, backend)
+    def initialize(workload=nil, backend=nil)
       @workload = workload
       @backend = backend
     end
@@ -33,6 +33,46 @@ module Sadvisor
           end
         end
       end
+    end
+
+    def workload(config)
+      client = Mysql2::Client.new config
+
+      workload = Workload.new
+      client.query('SHOW TABLES').each do |table|
+        table = table.values.first
+        entity = Entity.new table
+        entity.count = client.query("SELECT COUNT(*) FROM #{table}") \
+          .first.values.first
+
+        client.query("DESCRIBE #{table}").each do |field|
+          if field['Key'] == 'PRI'
+            field_class = IDField
+          else
+            case field['Type']
+            when /datetime/
+              field_class = DateField
+            when /float/
+              field_class = FloatField
+            when /text/
+              # TODO: Get length
+              field_class = StringField
+            when /varchar\(([0-9]+)\)/
+              # TODO: Use length
+              field_class = StringField
+            when /(tiny)?int/
+              field_class = IntegerField
+            end
+          end
+
+          entity << field_class.new(field['Field'])
+        end
+
+        workload << entity
+        # TODO: Handle foreign keys
+      end
+
+      workload
     end
 
     private
