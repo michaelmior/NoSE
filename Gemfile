@@ -39,5 +39,5 @@ group :cassandra do
 end
 
 group :mysql do
-  gem 'mysql2'
+  gem 'ruby-mysql'
 end

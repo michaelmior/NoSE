@@ -1,4 +1,4 @@
-require 'mysql2'
+require 'mysql'
 
 module Sadvisor
   class MySQLLoader < Loader
@@ -8,10 +8,12 @@ module Sadvisor
     end
 
     def load(indexes, config, show_progress = false)
-      client = Mysql2::Client.new config
+      client = new_client config
+
       indexes.each_with_index do |index, i|
         sql = index_sql index
-        results = client.query(sql)
+        query = Mysql::Stmt.new client.protocol, Mysql::Charset.by_name('utf8')
+        results = query.prepare(sql).execute
 
         if show_progress
           puts "Loading index #{i + 1}/#{indexes.count} #{index.inspect}"
@@ -23,33 +25,38 @@ module Sadvisor
           progress = nil
         end
 
-        results.each_slice(1000) do |chunk|
+        results.each_hash.each_slice(1000) do |chunk|
           Parallel.each(chunk.each_slice(100),
                         finish: (lambda do |_, _, _|
-                          inc = [progress.total - progress.current, 100].min
-                          progress.increment inc if progress
+                          # Update the progress bar
+                          if progress
+                            inc = [progress.total - progress.current, 100].min
+                            progress.increment inc
+                          end
                         end)) do |minichunk|
             @backend.index_insert_chunk index, minichunk
           end
         end
+
+        # Add a blank line to separate progress bars
+        puts if progress
       end
     end
 
     def workload(config)
-      client = Mysql2::Client.new config
+      client = new_client config
 
       workload = Workload.new
-      client.query('SHOW TABLES').each do |table|
-        table = table.values.first
+      client.query('SHOW TABLES').each do |table, |
         entity = Entity.new table
         entity.count = client.query("SELECT COUNT(*) FROM #{table}") \
-          .first.values.first
+            .first.first
 
-        client.query("DESCRIBE #{table}").each do |field|
-          if field['Key'] == 'PRI'
+        client.query("DESCRIBE #{table}").each do |name, type, _, key, _, _|
+          if key == 'PRI'
             field_class = IDField
           else
-            case field['Type']
+            case type
             when /datetime/
               field_class = DateField
             when /float/
@@ -65,7 +72,7 @@ module Sadvisor
             end
           end
 
-          entity << field_class.new(field['Field'])
+          entity << field_class.new(name)
         end
 
         workload << entity
@@ -76,6 +83,14 @@ module Sadvisor
     end
 
     private
+
+    # Create a new client from the given configuration
+    def new_client(config)
+       Mysql.connect config[:host],
+                     config[:username],
+                     config[:password],
+                     config[:database]
+    end
 
     # Construct a SQL statement to fetch the data to populate this index
     def index_sql(index)
@@ -101,6 +116,15 @@ module Sadvisor
       end
 
       "SELECT #{fields.join ', '} FROM #{tables}"
+    end
+  end
+end
+
+class Mysql
+  # Simple addition of to_f for value serialization
+  class Time
+    def to_f
+      ::Time.new(@year, @month, @day, @hour, @minute, @second).to_f
     end
   end
 end
