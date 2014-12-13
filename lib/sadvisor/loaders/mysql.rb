@@ -18,9 +18,11 @@ module Sadvisor
         if show_progress
           puts "Loading index #{i + 1}/#{indexes.count} #{index.inspect}"
 
-          Formatador.new.redisplay_progressbar 0, results.count
-          progress = Formatador::ProgressBar.new results.count,
-                                                 started_at: Time.now
+          Formatador.new.redisplay_progressbar 0, results.size
+          width = 50 - results.size.to_s.length * 2
+          progress = Formatador::ProgressBar.new results.size,
+                                                 started_at: Time.now,
+                                                 width: width
         else
           progress = nil
         end
