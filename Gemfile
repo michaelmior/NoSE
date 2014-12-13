@@ -8,6 +8,7 @@ gem 'parslet', '=1.7.0.mmior.1'
 gem 'rake', require: false
 gem 'representable'
 gem 'ruby-graphviz'
+gem 'ruby-mysql'
 gem 'smarter_csv'
 gem 'thor', require: false
 
@@ -36,8 +37,4 @@ end
 
 group :cassandra do
   gem 'cql-rb'
-end
-
-group :mysql do
-  gem 'ruby-mysql'
 end

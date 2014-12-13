@@ -1,7 +1,7 @@
 language: ruby
 cache: bundler
 before_install: gem install bundler
-bundler_args: --without=development gurobi mysql
+bundler_args: --without=development gurobi
 env: JRUBY_OPTS=--2.0
 rvm:
   - 2.1.2
