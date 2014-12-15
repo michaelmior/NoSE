@@ -45,12 +45,23 @@ module Sadvisor
 
     # Find the appropriate loader class based on the config
     def get_loader_class(config)
-      require_relative "loaders/#{config[:loader][:name]}"
-      loaders = ObjectSpace.each_object(Sadvisor::Loader.singleton_class)
+      get_class 'loaders', Sadvisor::Loader, :load, config[:loader][:name]
+    end
+
+    # Find the appropriate proxy class based on the config
+    def get_proxy_class(config)
+      get_class 'proxy', Sadvisor::Proxy, :handle_connection,
+                config[:proxy][:name]
+    end
+
+    # Find the appropriate loader class based on the config
+    def get_class(path, parent_class, method, name)
+      require_relative "#{path}/#{name}"
+      loaders = ObjectSpace.each_object(parent_class.singleton_class)
       loaders.find do |klass|
-        path = klass.instance_method(:load).source_location
+        path = klass.instance_method(method).source_location
         next if path.nil?
-        !/\b#{config[:loader][:name]}\.rb/.match(path.first).nil?
+        !/\b#{name}\.rb/.match(path.first).nil?
       end
     end
 
@@ -68,5 +79,6 @@ require_relative 'cli/create'
 require_relative 'cli/load'
 require_relative 'cli/genworkload'
 require_relative 'cli/graph'
+require_relative 'cli/proxy'
 require_relative 'cli/repl'
 require_relative 'cli/workload'
