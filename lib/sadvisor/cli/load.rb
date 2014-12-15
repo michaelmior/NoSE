@@ -12,7 +12,6 @@ module Sadvisor
       loader = loader_class.new result.workload, backend
 
       # Remove the name from the config and execute the loader
-      config.delete :name
       loader.load result.indexes, config[:loader], options[:progress]
     end
   end
