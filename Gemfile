@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 source 'https://gem.fury.io/michaelmior/'
 
+gem 'eventmachine'
 gem 'formatador'
 gem 'logging'
 gem 'parallel'
