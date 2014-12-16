@@ -7,7 +7,15 @@ module Sadvisor
       protocol = Mysql::ServerProtocol.new socket
       protocol.authenticate
       protocol.process_queries do |query|
-        @backend.query(query)
+        begin
+          query = Statement.new query, @result.workload
+          result = @backend.query(query)
+        rescue
+          # TODO: Proper error handling
+          result = []
+        end
+
+        result
       end
     end
   end
@@ -54,20 +62,27 @@ class Mysql
 
     # Handle an individual query
     def process_query(query, &block)
-      # XXX: Do something with this
-      # result = block.call query
+      # Execute the query on the backend
+      result = block.call query
 
-      # XXX: Test data - return 1 field named 1 with the string 1
-      write ResultPacket.serialize 1
-      write FieldPacket.serialize '', '', '', '1', '', 1,
-        Field::TYPE_VAR_STRING,
-        Field::NOT_NULL_FLAG, 0, ''
+      # Return the list of fields in the result
+      field_names = result.size > 0 ? result.first.keys : []
+      write ResultPacket.serialize field_names.count
+      field_names.each do |field_name|
+        # TODO: Use proper types
+        # type, _ = Protocol.value2net result.first[field_name]
+
+        write FieldPacket.serialize '', '', '', field_name, '', 1,
+          Field::TYPE_VAR_STRING, Field::NOT_NULL_FLAG, 0, ''
+        end
       write "\xFE\x00\x00\x00\x00"
 
-      values = ['1']
-      write(values.map do |v|
-        Protocol.value2net(v).last
-      end.inject('', &:+))
+      result.each do |row|
+        values = field_names.map { |field_name| row[field_name] }
+        write(values.map do |value|
+          Protocol.value2net(value.to_s).last
+        end.inject('', &:+))
+      end
       write "\xFE\x00\x00\x00\x00"
     end
   end
