@@ -8,6 +8,8 @@ module Sadvisor
       protocol.authenticate
       protocol.process_queries do |query|
         begin
+          @logger.debug { "Got query #{query}" }
+
           query = Statement.new query, @result.workload
           result = @backend.query(query)
         rescue
