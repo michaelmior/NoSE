@@ -73,11 +73,10 @@ class Mysql
       field_names = result.size > 0 ? result.first.keys : []
       write ResultPacket.serialize field_names.count
       field_names.each do |field_name|
-        # TODO: Use proper types
-        # type, _ = Protocol.value2net result.first[field_name]
+        type, _ = Protocol.value2net result.first[field_name]
 
-        write FieldPacket.serialize '', '', '', field_name, '', 1,
-          Field::TYPE_VAR_STRING, Field::NOT_NULL_FLAG, 0, ''
+        write FieldPacket.serialize '', '', '', field_name, '', 1, type,
+                                    Field::NOT_NULL_FLAG, 0, ''
         end
       write "\xFE\x00\x00\x00\x00"
 
