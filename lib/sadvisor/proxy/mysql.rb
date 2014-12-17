@@ -99,7 +99,7 @@ class Mysql
         'AAAAAAAA',
         0,
         CLIENT_PROTOCOL_41,
-        8,  # latin1
+        33,  # utf8_general_ci
         SERVER_STATUS_AUTOCOMMIT,
         'AAAAAAAAAAAA'
       ].pack('CZ*Va8CvCvx13Z*')
@@ -135,7 +135,7 @@ class Mysql
         Packet.lcs(org_name) +
         [
           0x0c,
-          8,  # latin1
+          33,  # utf8_general_ci
           length,
           type,
           flags,
