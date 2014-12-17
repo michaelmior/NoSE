@@ -12,6 +12,8 @@ module Sadvisor
 
           query = Statement.new query, @result.workload
           result = @backend.query(query)
+
+          @logger.debug "Executed query with #{result.size} results"
         rescue
           # TODO: Proper error handling
           result = []
