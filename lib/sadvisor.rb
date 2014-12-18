@@ -19,6 +19,7 @@ require_relative 'sadvisor/workload'
 
 require_relative 'sadvisor/serialize'
 
+# :nocov:
 if ENV['SADVISOR_LOG']
   require 'logging'
 
@@ -27,3 +28,4 @@ if ENV['SADVISOR_LOG']
   logger.add_appenders Logging.appenders.stderr
   logger = nil # rubocop:disable Lint/UselessAssignment
 end
+# :nocov:
