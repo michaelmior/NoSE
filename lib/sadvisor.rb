@@ -4,6 +4,7 @@ end
 
 require_relative 'sadvisor/util'
 
+require_relative 'sadvisor/backend'
 require_relative 'sadvisor/enumerator'
 require_relative 'sadvisor/indexes'
 require_relative 'sadvisor/loaders'

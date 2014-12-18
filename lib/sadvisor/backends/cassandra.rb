@@ -3,7 +3,7 @@ require 'zlib'
 
 module Sadvisor
   # A backend which communicates with Cassandra via CQL
-  class CassandraBackend
+  class CassandraBackend < Backend
     def initialize(workload, indexes, plans, config)
       @workload = workload
       @indexes = indexes
@@ -54,22 +54,6 @@ module Sadvisor
       end
     end
 
-    # Execute a query with the stored plans
-    def query(query)
-      plan = @plans.find { |possible_plan| possible_plan.query == query }
-
-      results = nil
-      first_step = RootPlanStep.new QueryState.new(query, @workload)
-      steps = [first_step] + plan.to_a + [nil]
-      steps.each_cons(3) do |prev_step, step, next_step|
-        step_class = Cassandra::QueryStep.subtype_class step.subtype_name
-        results = step_class.process client, query, results,
-                                     step, prev_step, next_step
-      end
-
-      results
-    end
-
     private
 
     # Add the ID of the last entity if necessary
@@ -114,12 +98,6 @@ module Sadvisor
         # TODO: Decide on UUID
         :int
       end
-    end
-  end
-
-  module Cassandra
-    class QueryStep
-      include Supertype
     end
 
     class IndexLookupQueryStep < QueryStep
@@ -189,22 +167,6 @@ module Sadvisor
         end
 
         result
-      end
-    end
-
-    class FilterQueryStep < QueryStep
-      def self.process(client, query, results, step, prev_step, next_step)
-        fail NotImplementedError, 'Filtering is not yet implemented'
-      end
-    end
-
-    class SortQueryStep < QueryStep
-      def self.process(client, query, results, step, prev_step, next_step)
-        results.sort_by! do |row|
-          sort = step.sort_fields.map do |field|
-            row["#{field.parent.name}_#{field.name}"]
-          end
-        end
       end
     end
   end
