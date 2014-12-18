@@ -1,12 +1,14 @@
 require 'mysql'
 
 module Sadvisor
+  # Load data from a MySQL database into a backend
   class MySQLLoader < Loader
     def initialize(workload=nil, backend=nil)
       @workload = workload
       @backend = backend
     end
 
+    # Load a generated set of indexes with data from MySQL
     def load(indexes, config, show_progress = false)
       client = new_client config
 
@@ -45,6 +47,7 @@ module Sadvisor
       end
     end
 
+    # Read all tables in the database and construct a workload object
     def workload(config)
       client = new_client config
 
@@ -125,6 +128,7 @@ end
 class Mysql
   # Simple addition of to_f for value serialization
   class Time
+    # Return the time as milliseconds since the epoch
     def to_f
       ::Time.new(@year, @month, @day, @hour, @minute, @second).to_f
     end

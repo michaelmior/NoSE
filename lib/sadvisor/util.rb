@@ -206,6 +206,7 @@ end
 module Kernel
   private
 
+  # Pretty print to a string
   def pp_s(*objs)
     s = StringIO.new
     objs.each { |obj| PP.pp(obj, s) }
@@ -217,6 +218,7 @@ module Kernel
 end
 
 class Object
+  # Convert all the keys of a hash to symbols
   def deep_symbolize_keys
     return inject({}) do |memo, (k, v)|
       memo[k.to_sym] = v.deep_symbolize_keys

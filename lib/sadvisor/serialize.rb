@@ -9,6 +9,7 @@ module Sadvisor
     def call(_object, _fragment, instance, **options)
       field_class = Sadvisor::Field.subtype_class instance['type']
 
+      # Extract the correct parameters and create a new field instance
       if field_class == Sadvisor::StringField && !instance['size'].nil?
         field = field_class.new instance['name'], instance['size']
       elsif field_class.ancestors.include? Sadvisor::ForeignKeyField
@@ -41,11 +42,14 @@ module Sadvisor
     include Uber::Callable
 
     def call(object, _fragment, instance, **_options)
+      # Extract the entities from the workload
       workload = object.workload
+      path = instance['path'].map { |name| workload[name] }
+
+      # Pull the fields from each entity
       f = lambda do |fields|
         instance[fields].map { |dict| workload[dict['parent']][dict['name']] }
       end
-      path = instance['path'].map { |name| workload[name] }
 
       Index.new f.call('hash_fields'), f.call('order_fields'), f.call('extra'),
                 path, instance['key']
@@ -95,10 +99,14 @@ module Sadvisor
     include Uber::Callable
 
     def call(_object, _fragment, instance, **options)
+      # Pull the field from the map of all entities
       entity = options[:entity_map][instance['name']]
+
+      # Add all fields from the entity
       fields = Sadvisor::EntityFieldRepresenter.represent([]) \
         .from_hash(instance['fields'], entity_map: options[:entity_map])
       fields.each { |field| entity << field }
+
       entity
     end
   end
@@ -197,17 +205,21 @@ module Sadvisor
 
     def call(_object, fragment, instance, **_options)
       workload = fragment.represented
+
+      # Recreate all the entities
       entity_map = {}
       instance['entities'].each do |entity_hash|
         entity_map[entity_hash['name']] = \
           Sadvisor::Entity.new entity_hash['name']
       end
+
+      # Populate the entities and add them to the workload
       entities = Sadvisor::EntityRepresenter.represent([]) \
         .from_hash(instance['entities'], entity_map: entity_map)
       entities.each { |entity| workload << entity }
-      instance['queries'].each do |query|
-        workload.add_query query
-      end
+
+      # Add all queries to the workload
+      instance['queries'].each { |query| workload.add_query query }
 
       workload
     end
@@ -227,6 +239,7 @@ module Sadvisor
 
       f = ->(field) { workload[field['parent']][field['name']] }
 
+      # Loop over all steps in the plan and reconstruct them
       instance['steps'].each do |step_hash|
         step_class = Sadvisor::PlanStep.subtype_class step_hash['type']
         if step_class == IndexLookupPlanStep

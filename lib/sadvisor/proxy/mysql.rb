@@ -1,7 +1,9 @@
 require 'mysql'
 
 module Sadvisor
+  # A proxy which speaks the MySQL protocol and executes queries
   class MySQLProxy < Proxy
+    # Authenticate the client and process queries
     def handle_connection(socket)
       # Auth the client and begin query processsing
       protocol = Mysql::ServerProtocol.new socket
@@ -25,6 +27,7 @@ module Sadvisor
   end
 end
 
+# Extend the client library with necessary server code
 class Mysql
   # Simple class which doesn't do connection setup
   class ServerProtocol < Protocol
@@ -92,6 +95,7 @@ class Mysql
 
   # Add serialization of the initial packet
   class InitialPacket
+    # Serialize the initial server hello
     def self.serialize
       [
         Mysql::Protocol::VERSION,
@@ -109,6 +113,7 @@ class Mysql
 
   # Add serialization of result packets
   class ResultPacket
+    # Serialize a simple OK response
     def self.serialize(field_count, affected_rows = 0, insert_id = 0,
                        server_status = 0, warning_count = 0, message = '')
       return Packet.lcb(field_count) unless field_count.zero?
@@ -126,6 +131,7 @@ class Mysql
 
   # Add serialization of field packets
   class FieldPacket
+    # Serialize all the data for a field
     def self.serialize(db, table, org_table, name, org_name, length, type,
                        flags, decimals, default)
         Packet.lcs('def') +  # catalog
@@ -148,6 +154,7 @@ class Mysql
 
   # Add parsing of auth packets
   class AuthenticationPacket
+    # Parse the incoming authentication packet
     def self.parse(_pkt)
       # XXX: Unneeded for now since we don't handle auth
       # client_flags = pkt.ulong
