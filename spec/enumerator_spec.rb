@@ -1,4 +1,4 @@
-module Sadvisor
+module NoSE
   describe IndexEnumerator do
     subject(:enum) { IndexEnumerator.new workload }
     let(:workload) do

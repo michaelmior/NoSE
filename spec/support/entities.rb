@@ -1,4 +1,4 @@
-module Sadvisor
+module NoSE
   RSpec.shared_examples 'entities' do
     let(:workload) do
       Workload.new do

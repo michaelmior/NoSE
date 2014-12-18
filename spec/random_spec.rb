@@ -1,4 +1,4 @@
-module Sadvisor
+module NoSE
   describe Network do
     subject(:network) { Network.new }
 
