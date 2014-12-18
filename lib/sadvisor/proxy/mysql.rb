@@ -99,7 +99,7 @@ class Mysql
         0,
         'AAAAAAAA',
         0,
-        CLIENT_PROTOCOL_41,
+        CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION,
         33,  # utf8_general_ci
         SERVER_STATUS_AUTOCOMMIT,
         'AAAAAAAAAAAA'
