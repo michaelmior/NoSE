@@ -10,6 +10,7 @@ module NoSE
     # Execute a query with the stored plans
     def query(query)
       plan = @plans.find { |possible_plan| possible_plan.query == query }
+      fail PlanNotFound if plan.nil?
 
       results = nil
       first_step = RootPlanStep.new QueryState.new(query, @workload)
@@ -63,5 +64,9 @@ module NoSE
         end
       end
     end
+  end
+
+  # Raised when a query is executed that we have no plan for
+  class PlanNotFound < StandardError
   end
 end

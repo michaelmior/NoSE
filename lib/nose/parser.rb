@@ -77,7 +77,16 @@ module NoSE
 
     def initialize(query, workload)
       @query = query
-      tree = CQLT.new.apply(CQLP.new.parse query)
+
+      # If parsing fails, re-raise as our custom exception
+      begin
+        tree = CQLT.new.apply(CQLP.new.parse query)
+      rescue Parslet::ParseFailed => exc
+        new_exc = ParseFailed.new exc.message
+        new_exc.set_backtrace exc.backtrace
+        fail new_exc
+      end
+
       @from = workload[tree[:entity].to_s]
 
       populate_fields tree, workload
@@ -177,6 +186,9 @@ module NoSE
 
   # Thrown when something tries to parse an invalid query
   class InvalidQueryException < StandardError
+  end
+
+  class ParseFailed < StandardError
   end
 end
 

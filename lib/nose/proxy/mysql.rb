@@ -16,9 +16,11 @@ module NoSE
           result = @backend.query(query)
 
           @logger.debug "Executed query with #{result.size} results"
-        rescue
-          # TODO: Proper error handling
-          result = []
+        rescue ParseFailed => exc
+          protocol.error Mysql::ServerError::ER_PARSE_ERROR, exc.message
+        rescue PlanNotFound => exc
+          protocol.error Mysql::ServerError::ER_UNKNOWN_STMT_HANDLER,
+                         exc.message
         end
 
         result
@@ -44,6 +46,10 @@ class Mysql
       write ResultPacket.serialize 0
     end
 
+    def error(errno, message)
+      write ErrorPacket.serialize errno, message
+    end
+
     # Loop and process incoming queries
     def process_queries(&block)
       loop do
@@ -60,7 +66,9 @@ class Mysql
         when COM_PING
           write ResultPacket.serialize 0
         else
-          # TODO: Return error for invalid commands
+          # Return error for invalid commands
+          protocol.error Mysql::ServerError::ER_NOT_SUPPORTED_YET,
+                         'Command not supported'
         end
       end
     end
@@ -71,6 +79,7 @@ class Mysql
     def process_query(query, &block)
       # Execute the query on the backend
       result = block.call query
+      return if result.nil?
 
       # Return the list of fields in the result
       field_names = result.size > 0 ? result.first.keys : []
@@ -164,6 +173,20 @@ class Mysql
       # username = pkt.string
       # scrambled_password = pkt.lcs
       # databasename = pkt.string
+    end
+  end
+
+  # Serialize an error message
+  class ErrorPacket
+    # Generate a packet with a given error number and message
+    def self.serialize(errno, message)
+      [
+        0xff,
+        errno,
+        '#',
+        @sqlstate,
+        message
+      ].pack('Cvaa5a*')
     end
   end
 end
