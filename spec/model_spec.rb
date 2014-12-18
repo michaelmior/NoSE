@@ -77,6 +77,25 @@ module Sadvisor
     end
   end
 
+  describe Field do
+    subject(:field) do
+      IDField.new 'Bar'
+    end
+
+    it 'has an ID based on the entity and name' do
+      Entity.new('Foo') << field
+      expect(field.id).to eq 'Foo_Bar'
+    end
+
+    it 'can have its cardinality updated by multiplication' do
+      expect((field * 5).cardinality).to eq 5
+    end
+
+    it 'is never a foreign key' do
+      expect(field.foreign_key_to? Entity.new('Baz')).to be_falsy
+    end
+  end
+
   describe IntegerField do
     it 'can convert string literals' do
       expect(IntegerField.value_from_string '299792458').to eq 299792458
@@ -99,6 +118,14 @@ module Sadvisor
     it 'can convert string literals' do
       expect(DateField.value_from_string '2001-02-03T04:05:06+07:00').to eq \
         DateTime.new(2001, 2, 3, 4, 5, 6, '+7').to_time
+    end
+  end
+
+  describe ForeignKeyField do
+    include_context 'entities'
+
+    it 'can check if it points to an entity' do
+      expect(tweet['User'].foreign_key_to? user).to be_truthy
     end
   end
 

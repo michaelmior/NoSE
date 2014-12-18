@@ -44,12 +44,7 @@ module Sadvisor
     # Set the estimated cardinality of the field
     # @return [Field]
     def *(other)
-      if other.is_a? Integer
-        @cardinality = other
-      else
-        fail TypeError.new 'cardinality must be an integer'
-      end
-
+      @cardinality = other
       self
     end
 
