@@ -90,7 +90,7 @@ class Mysql
         write FieldPacket.serialize '', '', '', field_name, '', 1, type,
                                     Field::NOT_NULL_FLAG, 0, ''
         end
-      write "\xFE\x00\x00\x00\x00"
+      write EOFPacket.serialize
 
       result.each do |row|
         values = field_names.map { |field_name| row[field_name] }
@@ -98,7 +98,7 @@ class Mysql
           Protocol.value2net(value.to_s).last
         end.inject('', &:+))
       end
-      write "\xFE\x00\x00\x00\x00"
+      write EOFPacket.serialize
     end
   end
 
@@ -173,6 +173,14 @@ class Mysql
       # username = pkt.string
       # scrambled_password = pkt.lcs
       # databasename = pkt.string
+    end
+  end
+
+  # Simple EOF packet
+  class EOFPacket
+    # Static string to indicate EOF
+    def self.serialize
+      "\xfe\x00\x00\x00\x00"
     end
   end
 
