@@ -1,6 +1,20 @@
+GIT
+  remote: https://github.com/michaelmior/gurobi.git
+  revision: 57e0e588345b9f5856a87484960e125cf95463d8
+  ref: 57e0e58
+  specs:
+    gurobi (0.0.2.mmior.1)
+
+GIT
+  remote: https://github.com/michaelmior/parslet.git
+  revision: 5d7bb709803f849533e672c3760600f82827e3e9
+  ref: 5d7bb70
+  specs:
+    parslet (1.7.0.mmior.1)
+      blankslate (~> 2.0)
+
 GEM
   remote: https://rubygems.org/
-  remote: https://gem.fury.io/michaelmior/
   specs:
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
@@ -20,7 +34,6 @@ GEM
     eventmachine (1.0.3)
     eventmachine (1.0.3-java)
     formatador (0.2.5)
-    gurobi (0.0.2.mmior.1)
     interception (0.5)
     ione (1.2.0)
     little-plugger (1.1.3)
@@ -34,8 +47,6 @@ GEM
       mini_portile (~> 0.6.0)
     nokogiri (1.6.5-java)
     parallel (1.3.3)
-    parslet (1.7.0.mmior.1)
-      blankslate (~> 2.0)
     pry (0.10.1)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
@@ -90,10 +101,10 @@ DEPENDENCIES
   cql-rb
   eventmachine
   formatador
-  gurobi (= 0.0.2.mmior.1)
+  gurobi!
   logging
   parallel
-  parslet (= 1.7.0.mmior.1)
+  parslet!
   pry
   pry-byebug
   pry-rescue

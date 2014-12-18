@@ -1,11 +1,11 @@
 source 'https://rubygems.org'
-source 'https://gem.fury.io/michaelmior/'
 
 gem 'eventmachine'
 gem 'formatador'
 gem 'logging'
 gem 'parallel'
-gem 'parslet', '=1.7.0.mmior.1'
+gem 'parslet', git: 'https://github.com/michaelmior/parslet.git',
+               ref: '5d7bb70'
 gem 'rake', require: false
 gem 'representable'
 gem 'ruby-graphviz'
@@ -15,7 +15,8 @@ gem 'thor', require: false
 
 platform :ruby do
   group :gurobi do
-    gem 'gurobi', '=0.0.2.mmior.1'
+    gem 'gurobi', git: 'https://github.com/michaelmior/gurobi.git',
+                  ref: '57e0e58'
   end
 end
 
