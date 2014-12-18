@@ -31,8 +31,6 @@ GEM
     debugger-linecache (1.2.0)
     diff-lcs (1.2.5)
     docile (1.1.5)
-    eventmachine (1.0.3)
-    eventmachine (1.0.3-java)
     formatador (0.2.5)
     interception (0.5)
     ione (1.2.0)
@@ -99,7 +97,6 @@ PLATFORMS
 
 DEPENDENCIES
   cql-rb
-  eventmachine
   formatador
   gurobi!
   logging

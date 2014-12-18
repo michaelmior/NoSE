@@ -1,6 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'eventmachine'
 gem 'formatador'
 gem 'logging'
 gem 'parallel'

@@ -3,28 +3,67 @@ require 'mysql'
 module NoSE
   # A proxy which speaks the MySQL protocol and executes queries
   class MySQLProxy < Proxy
+    def initialize(*args)
+      super
+
+      # Initialize a hash for the state of sockets
+      @state = {}
+    end
+
     # Authenticate the client and process queries
     def handle_connection(socket)
-      # Auth the client and begin query processsing
-      protocol = Mysql::ServerProtocol.new socket
-      protocol.authenticate
-      protocol.process_queries do |query|
+      if @state[socket].nil?
+        # Auth the client and begin query processsing
+        protocol = Mysql::ServerProtocol.new socket
+
+        # Try to authenticate
         begin
-          @logger.debug { "Got query #{query}" }
-
-          query = Statement.new query, @result.workload
-          result = @backend.query(query)
-
-          @logger.debug "Executed query with #{result.size} results"
-        rescue ParseFailed => exc
-          protocol.error Mysql::ServerError::ER_PARSE_ERROR, exc.message
-        rescue PlanNotFound => exc
-          protocol.error Mysql::ServerError::ER_UNKNOWN_STMT_HANDLER,
-                         exc.message
+          protocol.authenticate
+        rescue
+          remove_connection socket
+          return false
         end
 
-        result
+        @state[socket] = protocol
+      else
+        # Retrieve the saved state of the socket
+        protocol = @state[socket]
+
+        process_query = lambda do |query|
+          begin
+            @logger.debug { "Got query #{query}" }
+
+            query = Statement.new query, @result.workload
+            result = @backend.query(query)
+
+            @logger.debug "Executed query with #{result.size} results"
+          rescue ParseFailed => exc
+            protocol.error Mysql::ServerError::ER_PARSE_ERROR, exc.message
+          rescue PlanNotFound => exc
+            protocol.error Mysql::ServerError::ER_UNKNOWN_STMT_HANDLER,
+                           exc.message
+          end
+
+          result
+        end
+
+        begin
+          protocol.process_command &process_query
+        rescue Mysql::ClientError::ServerGoneError
+          # Ensure the socket is closed and remove the state
+          remove_connection socket
+          return false
+        end
+
+        # Keep this socket around
+        true
       end
+    end
+
+    # Remove the state of the socket
+    def remove_connection(socket)
+      socket.close rescue nil
+      @state.delete socket
     end
   end
 end
@@ -50,26 +89,29 @@ class Mysql
       write ErrorPacket.serialize errno, message
     end
 
-    # Loop and process incoming queries
-    def process_queries(&block)
-      loop do
-        reset
-        pkt = read
-        command = pkt.utiny
+    # Process a single incoming command
+    def process_command(&block)
+      # Check if we can actually read or go away
+      readable, _, _ = IO.select [@sock], nil, nil, 0
+      return if readable.nil?
 
-        case command
-        when COM_QUIT
-          # Stop processing because the client left
-          break
-        when COM_QUERY
-          process_query pkt.to_s, &block
-        when COM_PING
-          write ResultPacket.serialize 0
-        else
-          # Return error for invalid commands
-          protocol.error Mysql::ServerError::ER_NOT_SUPPORTED_YET,
-                         'Command not supported'
-        end
+      reset
+      pkt = read
+
+      command = pkt.utiny
+
+      case command
+      when COM_QUIT
+        # Stop processing because the client left
+        return
+      when COM_QUERY
+        process_query pkt.to_s, &block
+      when COM_PING
+        write ResultPacket.serialize 0
+      else
+        # Return error for invalid commands
+        protocol.error Mysql::ServerError::ER_NOT_SUPPORTED_YET,
+                       'Command not supported'
       end
     end
 
