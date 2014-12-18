@@ -1,4 +1,4 @@
-# Schema Advisor
+# NoSQL Schema Evaluator (NoSE)
 
 [![Build Status](https://magnum.travis-ci.com/michaelmior/sadvisor.svg?token=rM4RuzPrnmeRRxXcrK4C&branch=master)](https://magnum.travis-ci.com/michaelmior/sadvisor)
 
@@ -14,9 +14,9 @@ Note that this project depends on forks of several gems.
 Examples of the workload input format is given in the `workloads/` directory.
 To run the schema advisor, simply execute the command below
 
-    bundle exec sadvisor workload rubis
+    bundle exec nose workload rubis
 
-All source code is documented and more details on the command line tool can be retrieved with `bundle exec sadvisor help`.
+All source code is documented and more details on the command line tool can be retrieved with `bundle exec nose help`.
 You can view complete documentation by running `bundle exec rake doc` and viewing the output in the `doc/` directory.
 Tests are written using [RSpec](http://rspec.info/) and can be executed with `bundle exec rspec`.
 If you do not have a copy of Gurobi available, you can exclude these tests with `--tag ~gurobi`.

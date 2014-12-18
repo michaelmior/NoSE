@@ -29,7 +29,7 @@ RSpec.configure do |config|
   config.order = 'random'
 end
 
-require 'sadvisor'
+require 'nose'
 
 # Disable parallelism for tests
 Parallel.instance_variable_set(:@processor_count, 0)

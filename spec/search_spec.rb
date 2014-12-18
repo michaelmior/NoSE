@@ -1,4 +1,4 @@
-module Sadvisor
+module NoSE
   describe Search do
     include_context 'entities'
 

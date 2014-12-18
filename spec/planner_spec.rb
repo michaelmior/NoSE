@@ -1,4 +1,4 @@
-module Sadvisor
+module NoSE
   describe Planner do
     include_context 'entities'
 

@@ -1,4 +1,4 @@
-module Sadvisor
+module NoSE
   describe Workload do
     subject(:workload) { Workload.new}
     let(:entity)      { Entity.new('Foo') << field }

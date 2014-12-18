@@ -1,4 +1,4 @@
-module Sadvisor
+module NoSE
   describe Entity do
     subject(:entity) { Entity.new('Foo') }
 

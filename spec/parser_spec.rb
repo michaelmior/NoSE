@@ -1,4 +1,4 @@
-module Sadvisor
+module NoSE
   describe Statement do
     let(:workload) do
       Workload.new do
