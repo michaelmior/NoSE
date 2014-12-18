@@ -1,5 +1,3 @@
-require 'eventmachine'
-
 module NoSE
   # A proxy server to interpret our query language and implement query plans
   class Proxy
@@ -18,55 +16,49 @@ module NoSE
     def start
       @logger.info "Starting server on port #{@config[:port]}"
 
-      socket = TCPServer.new('127.0.0.1', @config[:port])
-      socket.listen(100)
-      EventMachine.epoll
+      server_socket = TCPServer.new('127.0.0.1', @config[:port])
+      server_socket.listen(100)
 
-      EventMachine::run do
-        # Check when we need to shut down
-        EM.add_periodic_timer(4) do
-          unless @continue
-            @logger.info 'Shutting down'
-            EM.stop_event_loop
-          end
+      sockets = [server_socket]
+      loop do
+        read, write, error = IO.select sockets, sockets, sockets, 5
+        break unless @continue
+        next if read.nil? || write.nil? || error.nil?
+
+        # Check if we have a new incoming connection
+        if read.include? server_socket
+          socket, _ = server_socket.accept
+          sockets << socket
+          read.delete server_socket
+        elsif error.include? server_socket
+          @logger.error 'Server socket died'
+          break
         end
 
-        # Start a new server
-        EM.watch(socket, ProxyServer, self) do |conn|
-          conn.proxy = self
-          conn.notify_readable = true
+        # Remove all sockets which have errors
+        error.each { |socket| remove_connection socket }
+        sockets -= error
+
+        # Handle connections on each available socket
+        (read + write).each do |socket|
+          sockets.delete socket unless handle_connection socket
         end
       end
     end
 
-    # Implemented by subclasses
+    # @abstract Implemented by subclasses
     def handle_connection(_socket)
+      raise NotImplementedError
+    end
+
+    # @abstract Implemented by subclasses
+    def remove_connection(_socket)
       raise NotImplementedError
     end
 
     # Stop accepting connections
     def stop
       @continue = false
-    end
-
-    private
-
-    # Simple connection subclass to pass things back up to the proxy
-    class ProxyServer < EM::Connection
-      attr_accessor :proxy
-
-      def notify_readable
-        while socket = @io.accept_nonblock
-          @proxy.logger.debug 'Accepted new connection'
-          @proxy.handle_connection socket
-        end
-      rescue Errno::EAGAIN, Errno::ECONNABORTED
-      end
-
-      def unbind
-        detach
-        @io.close
-      end
     end
   end
 end
