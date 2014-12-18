@@ -91,13 +91,8 @@ class Mysql
 
     # Process a single incoming command
     def process_command(&block)
-      # Check if we can actually read or go away
-      readable, _, _ = IO.select [@sock], nil, nil, 0
-      return if readable.nil?
-
       reset
       pkt = read
-
       command = pkt.utiny
 
       case command
