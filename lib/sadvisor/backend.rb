@@ -1,4 +1,5 @@
 module Sadvisor
+  # Superclass of all database backends
   class Backend
     def initialize(workload, indexes, plans, config)
       @workload = workload
@@ -30,26 +31,33 @@ module Sadvisor
 
     private
 
+    # Superclass for all query execution steps
     class QueryStep
       include Supertype
     end
 
+    # Look up data on an index in the backend
     class IndexLookupQueryStep < QueryStep
+      # This is implemented by subclasses
       def self.process(client, query, results, step, prev_step, next_step)
         fail NotImplementedError.new('Must be provided by a subclass')
       end
     end
 
+    # Perform filtering external to the backend
     class FilterQueryStep < QueryStep
+      # Filter results by a list of fields given in the step
       def self.process(client, query, results, step, prev_step, next_step)
         fail NotImplementedError, 'Filtering is not yet implemented'
       end
     end
 
+    # Perform sorting external to the backend
     class SortQueryStep < QueryStep
+      # Sort results by a list of fields given in the step
       def self.process(client, query, results, step, prev_step, next_step)
         results.sort_by! do |row|
-          sort = step.sort_fields.map do |field|
+          step.sort_fields.map do |field|
             row["#{field.parent.name}_#{field.name}"]
           end
         end

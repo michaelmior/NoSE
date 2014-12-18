@@ -429,8 +429,8 @@ module Sadvisor
       other.instance_of?(self.class) && @limit == other.limit
     end
 
+    # This is basically free since we just discard data
     def cost
-      # This is basically free, but this step still needs to exist
       0
     end
 
