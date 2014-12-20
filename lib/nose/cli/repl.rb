@@ -1,6 +1,7 @@
 require 'formatador'
 
 module NoSE
+  # Add a command to run a REPL which evaluates queries
   class NoSECLI < Thor
     desc 'repl PLAN_FILE', 'start the REPL with the given PLAN_FILE'
     def repl(plan_file)
@@ -10,7 +11,7 @@ module NoSE
 
       loop do
         begin
-          line = get_line
+          line = read_line
         rescue Interrupt
           line = nil
         end
@@ -30,16 +31,15 @@ module NoSE
           puts '! ' + e.message
         else
           Formatador.display_compact_table results unless results.empty?
-          puts "(%d rows in %.2fs)" % [results.length, elapsed]
+          puts '(%d rows in %.2fs)' % [results.length, elapsed]
         end
-
       end
     end
 
     private
 
     # Get the next inputted line in the REPL
-    def get_line
+    def read_line
       prefix = '>> '
 
       begin

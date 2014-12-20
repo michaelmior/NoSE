@@ -85,8 +85,8 @@ module NoSE
 
     # Find the closest index to this step
     def parent_index
-      step = parent_steps.to_a.reverse.find do |step|
-        step.is_a? IndexLookupPlanStep
+      step = parent_steps.to_a.reverse.find do |parent_step|
+        parent_step.is_a? IndexLookupPlanStep
       end
       step.index unless step.nil?
     end
@@ -224,7 +224,7 @@ module NoSE
     private
 
     # Modify the state to reflect the fields looked up by the index
-    def update_state(parent)
+    def update_state(_parent)
       # Find fields which are filtered by the index
       eq_filter = @state.eq & (@index.hash_fields + @index.order_fields).to_set
       if @index.order_fields.include?(@state.range)
@@ -436,8 +436,8 @@ module NoSE
 
     # Check if we can apply a limit
     def self.apply(_parent, state)
-      # TODO Apply if have IDs of the last entity set
-      #      with no filter/sort needed
+      # TODO: Apply if have IDs of the last entity set
+      #       with no filter/sort needed
 
       return nil if state.query.limit.nil?
       return nil unless state.answered? check_limit: false

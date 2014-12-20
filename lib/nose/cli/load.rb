@@ -1,4 +1,5 @@
 module NoSE
+  # Add a command to load index data into a backend from a configured loader
   class NoSECLI < Thor
     desc 'load PLAN_FILE', 'create indexes from the given PLAN_FILE'
     option :progress, type: :boolean, default: true

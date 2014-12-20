@@ -136,7 +136,9 @@ class Class
   def thread_local_accessor(name, options = {})
     m = Module.new
     m.module_eval do
-      class_variable_set :"@@#{name}", Hash.new {|h,k| h[k] = options[:default] }
+      class_variable_set :"@@#{name}", Hash.new do
+        |h, k| h[k] = options[:default]
+      end
     end
     m.module_eval %{
       FINALIZER = lambda {|id| @@#{name}.delete id }
@@ -146,7 +148,8 @@ class Class
       end
 
       def #{name}=(val)
-        ObjectSpace.define_finalizer Thread.current, FINALIZER  unless @@#{name}.has_key? Thread.current.object_id
+        ObjectSpace.define_finalizer Thread.current, FINALIZER \
+          unless @@#{name}.has_key? Thread.current.object_id
         @@#{name}[Thread.current.object_id] = val
       end
     }
@@ -182,8 +185,6 @@ class Cardinality
 
     [1, cardinality.ceil].max
   end
-
-  private
 
   # Update the cardinality based on filtering implicit to the index
   def self.filter_cardinality(eq_filter, range_filter, entity)

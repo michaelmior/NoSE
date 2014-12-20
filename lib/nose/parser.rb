@@ -84,7 +84,7 @@ module NoSE
       rescue Parslet::ParseFailed => exc
         new_exc = ParseFailed.new exc.message
         new_exc.set_backtrace exc.backtrace
-        fail new_exc
+        raise new_exc
       end
 
       @from = workload[tree[:entity].to_s]

@@ -111,7 +111,7 @@ module NoSE
 
     # Get all possible indices which jump a given section in a query path
     def indexes_for_step(path, select, eq, range)
-      @logger.debug "Enumerating indexes on path step #{path.map &:name}"
+      @logger.debug "Enumerating indexes on path step #{path.map(&:name)}"
 
       index_choices = index_choices path, eq
       max_eq_fields = index_choices.map(&:length).max

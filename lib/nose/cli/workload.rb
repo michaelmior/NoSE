@@ -3,6 +3,7 @@ require 'ostruct'
 require 'json'
 
 module NoSE
+  # Add a command to run the advisor for a given workload
   class NoSECLI < Thor
     desc 'workload NAME', 'run the workload NAME'
     option :max_space, type: :numeric, default: Float::INFINITY

@@ -192,7 +192,7 @@ module NoSE
         # error means the value won't be exactly one
         # (the check exists to catch weird values if they arise)
         val = index_vars[i].get_double(Gurobi::DoubleAttr::X)
-        fail if (val > 0.01 && val < 0.99)
+        fail if val > 0.01 && val < 0.99
         val > 0.99
       end
 

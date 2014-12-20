@@ -1,6 +1,6 @@
 module NoSE
   describe Workload do
-    subject(:workload) { Workload.new}
+    subject(:workload) { Workload.new }
     let(:entity)      { Entity.new('Foo') << field }
     let(:field)       { IDField.new('Id') }
 
