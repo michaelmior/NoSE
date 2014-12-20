@@ -98,7 +98,7 @@ module NoSE
 
   describe IntegerField do
     it 'can convert string literals' do
-      expect(IntegerField.value_from_string '299792458').to eq 299792458
+      expect(IntegerField.value_from_string '299792458').to eq 299_792_458
     end
   end
 

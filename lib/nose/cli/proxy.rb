@@ -1,4 +1,5 @@
 module NoSE
+  # Add a command to run a proxy server capable of executing queries
   class NoSECLI < Thor
     desc 'proxy PLAN_FILE', 'start a proxy with the given PLAN_FILE'
     def proxy(plan_file)

@@ -85,8 +85,8 @@ module NoSE
     end
 
     it 'knows which fields are available at a given step' do
-      index = Index.new [tweet['TweetId']], [], [tweet['Body'],
-                        tweet['Timestamp']], [tweet]
+      index = Index.new [tweet['TweetId']], [],
+                        [tweet['Body'], tweet['Timestamp']], [tweet]
       planner = Planner.new workload, [index]
       query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
                             workload

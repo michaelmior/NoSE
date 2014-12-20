@@ -55,12 +55,12 @@ module NoSE
     end
 
     # Check if this field is a foreign key to the given entity
-    def foreign_key_to?(entity)
+    def foreign_key_to?(_entity)
       false
     end
 
     # @abstract Subclasses should produce a typed value from a string
-    def self.value_from_string(string)
+    def self.value_from_string(_string)
       fail NotImplementedError
     end
 
@@ -186,7 +186,7 @@ module NoSE
 
     # An estimated number of entities on the other side of the relationship
     def cardinality
-      # TODO Properly calculation probably based on IndexLookupPlanStep#sample
+      # TODO: Properly calculation probably based on IndexLookupPlanStep#sample
       super
     end
   end

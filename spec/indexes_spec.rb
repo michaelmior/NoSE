@@ -45,7 +45,8 @@ module NoSE
     it 'can calculate its size' do
       index = Index.new([workload['Foo']['Id']], [], [], [workload['Foo']])
       expect(index.entry_size).to eq(workload['Foo']['Id'].size)
-      expect(index.size).to eq(workload['Foo']['Id'].size * workload['Foo'].count)
+      expect(index.size).to eq(workload['Foo']['Id'].size *
+                               workload['Foo'].count)
     end
 
     context 'when materializing views' do

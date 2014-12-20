@@ -142,8 +142,8 @@ module NoSE
       eq = @longest_entity_path.last.id_fields if @eq_fields.empty?
 
       NoSE::Index.new(eq, order_fields,
-                          all_fields - (@eq_fields + @order).to_set,
-                          @longest_entity_path.reverse)
+                      all_fields - (@eq_fields + @order).to_set,
+                      @longest_entity_path.reverse)
     end
   end
 end

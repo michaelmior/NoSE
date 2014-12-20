@@ -1,4 +1,5 @@
 module NoSE
+  # Add a command to generate a workload file from a given loader
   class NoSECLI < Thor
     desc 'genworkload NAME',
          'generate a workload called NAME from the configured loader'

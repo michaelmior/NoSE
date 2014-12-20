@@ -3,7 +3,7 @@ require 'mysql'
 module NoSE
   # Load data from a MySQL database into a backend
   class MySQLLoader < Loader
-    def initialize(workload=nil, backend=nil)
+    def initialize(workload = nil, backend = nil)
       @workload = workload
       @backend = backend
     end

@@ -9,10 +9,10 @@ require 'rspec/collection_matchers'
 
 Dir['./spec/support/**/*.rb'].sort.each { |f| require f }
 
-unless RUBY_PLATFORM == "java"
+unless RUBY_PLATFORM == 'java'
   require 'simplecov'
   SimpleCov.add_filter '/spec/'
-  SimpleCov.start unless RUBY_PLATFORM == "java"
+  SimpleCov.start
 end
 
 RSpec.configure do |config|

@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
 
 # Optionally enable debug logging
-ENV['NOSE_LOG'] = 'debug' if ARGV.include?('--debug') ||
-                                 ARGV.include?('-d')
+ENV['NOSE_LOG'] = 'debug' if ARGV.include?('--debug') || ARGV.include?('-d')
 
 $LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
 

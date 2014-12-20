@@ -1,7 +1,7 @@
 module NoSE
   # Superclass of all database backends
   class Backend
-    def initialize(workload, indexes, plans, config)
+    def initialize(workload, indexes, plans, _config)
       @workload = workload
       @indexes = indexes
       @plans = plans
@@ -30,8 +30,6 @@ module NoSE
       results
     end
 
-    private
-
     # Superclass for all query execution steps
     class QueryStep
       include Supertype
@@ -39,16 +37,18 @@ module NoSE
 
     # Look up data on an index in the backend
     class IndexLookupQueryStep < QueryStep
-      # This is implemented by subclasses
-      def self.process(client, query, results, step, prev_step, next_step)
-        fail NotImplementedError.new('Must be provided by a subclass')
+      # @abstract Subclasses should return an array of row hashes
+      def self.process(_client, _query, _results, _step,
+                       _prev_step, _next_step)
+        fail NotImplementedError, 'Must be provided by a subclass'
       end
     end
 
     # Perform filtering external to the backend
     class FilterQueryStep < QueryStep
       # Filter results by a list of fields given in the step
-      def self.process(client, query, results, step, prev_step, next_step)
+      def self.process(_client, _query, _results, _step,
+                       _prev_step, _next_step)
         fail NotImplementedError, 'Filtering is not yet implemented'
       end
     end
@@ -56,7 +56,7 @@ module NoSE
     # Perform sorting external to the backend
     class SortQueryStep < QueryStep
       # Sort results by a list of fields given in the step
-      def self.process(client, query, results, step, prev_step, next_step)
+      def self.process(_client, _query, results, step, _prev_step, _next_step)
         results.sort_by! do |row|
           step.sort_fields.map do |field|
             row["#{field.parent.name}_#{field.name}"]

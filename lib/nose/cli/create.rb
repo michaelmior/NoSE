@@ -1,4 +1,5 @@
 module NoSE
+  # Add a command for creating the index data structures in a backend
   class NoSECLI < Thor
     desc 'create PLAN_FILE', 'create indexes from the given PLAN_FILE'
     option :dry_run, type: :boolean, default: false
