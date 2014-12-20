@@ -12,58 +12,65 @@ module NoSE
 
     # Authenticate the client and process queries
     def handle_connection(socket)
-      if @state[socket].nil?
-        # Auth the client and begin query processsing
-        protocol = Mysql::ServerProtocol.new socket
+      return authenticate socket if @state[socket].nil?
 
-        # Try to authenticate
-        begin
-          protocol.authenticate
-        rescue
-          remove_connection socket
-          return false
-        end
+      # Retrieve the saved state of the socket
+      protocol = @state[socket]
 
-        @state[socket] = protocol
-      else
-        # Retrieve the saved state of the socket
-        protocol = @state[socket]
-
-        process_query = lambda do |query|
-          begin
-            @logger.debug { "Got query #{query}" }
-
-            query = Statement.new query, @result.workload
-            result = @backend.query(query)
-
-            @logger.debug "Executed query with #{result.size} results"
-          rescue ParseFailed => exc
-            protocol.error Mysql::ServerError::ER_PARSE_ERROR, exc.message
-          rescue PlanNotFound => exc
-            protocol.error Mysql::ServerError::ER_UNKNOWN_STMT_HANDLER,
-                           exc.message
-          end
-
-          result
-        end
-
-        begin
-          protocol.process_command &process_query
-        rescue Mysql::ClientError::ServerGoneError
-          # Ensure the socket is closed and remove the state
-          remove_connection socket
-          return false
-        end
-
-        # Keep this socket around
-        true
+      begin
+        protocol.process_command(&method(:process_query))
+      rescue Mysql::ClientError::ServerGoneError
+        # Ensure the socket is closed and remove the state
+        remove_connection socket
+        return false
       end
+
+      # Keep this socket around
+      true
     end
 
     # Remove the state of the socket
     def remove_connection(socket)
-      socket.close rescue nil
+      socket.close
       @state.delete socket
+    end
+
+    private
+
+    # Auth the client and prepare for query processsing
+    def authenticate(socket)
+      protocol = Mysql::ServerProtocol.new socket
+
+      # Try to authenticate
+      begin
+        protocol.authenticate
+      rescue
+        remove_connection socket
+        return false
+      end
+
+      @state[socket] = protocol
+
+      true
+    end
+
+    # Execute the query on the backend and return the result
+    def process_query(protocol, query)
+      begin
+        @logger.debug { "Got query #{query}" }
+
+        query = Statement.new query, @result.workload
+        result = @backend.query(query)
+
+        @logger.debug "Executed query with #{result.size} results"
+      rescue ParseFailed => exc
+        protocol.error Mysql::ServerError::ER_PARSE_ERROR, exc.message
+      rescue PlanNotFound => exc
+        protocol.error Mysql::ServerError::ER_UNKNOWN_STMT_HANDLER,
+          exc.message
+      end
+
+      result
     end
   end
 end
@@ -115,20 +122,29 @@ class Mysql
     # Handle an individual query
     def process_query(query, &block)
       # Execute the query on the backend
-      result = block.call query
+      result = block.call self, query
       return if result.nil?
 
       # Return the list of fields in the result
       field_names = result.size > 0 ? result.first.keys : []
+      write_fields result, field_names
+      write_rows result, field_names
+    end
+
+    # Write the list of fields for the resulting rows
+    def write_fields(result, field_names)
       write ResultPacket.serialize field_names.count
       field_names.each do |field_name|
         type, _ = Protocol.value2net result.first[field_name]
 
         write FieldPacket.serialize '', '', '', field_name, '', 1, type,
                                     Field::NOT_NULL_FLAG, 0, ''
-        end
+      end
       write EOFPacket.serialize
+    end
 
+    # Write a packet for each row in the results
+    def write_rows(result, field_names)
       result.each do |row|
         values = field_names.map { |field_name| row[field_name] }
         write(values.map do |value|
@@ -180,21 +196,21 @@ class Mysql
     # Serialize all the data for a field
     def self.serialize(db, table, org_table, name, org_name, length, type,
                        flags, decimals, default)
-        Packet.lcs('def') +  # catalog
-        Packet.lcs(db) +
-        Packet.lcs(table) +
-        Packet.lcs(org_table) +
-        Packet.lcs(name) +
-        Packet.lcs(org_name) +
-        [
-          0x0c,
-          33,  # utf8_general_ci
-          length,
-          type,
-          flags,
-          decimals,
-          0
-        ].pack('CvVCvCv') + Packet.lcs(default)
+      Packet.lcs('def') +  # catalog
+      Packet.lcs(db) +
+      Packet.lcs(table) +
+      Packet.lcs(org_table) +
+      Packet.lcs(name) +
+      Packet.lcs(org_name) +
+      [
+        0x0c,
+        33,  # utf8_general_ci
+        length,
+        type,
+        flags,
+        decimals,
+        0
+      ].pack('CvVCvCv') + Packet.lcs(default)
     end
   end
 
