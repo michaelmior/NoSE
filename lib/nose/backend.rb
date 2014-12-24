@@ -59,7 +59,7 @@ module NoSE
       def self.process(_client, _query, results, step, _prev_step, _next_step)
         results.sort_by! do |row|
           step.sort_fields.map do |field|
-            row["#{field.parent.name}_#{field.name}"]
+            row[field.id]
           end
         end
       end

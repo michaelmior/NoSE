@@ -19,4 +19,23 @@ module NoSE
       ]
     end
   end
+
+  describe Backend::SortQueryStep do
+    include_context 'entities'
+
+    it 'can sort a list of results' do
+      results = [
+        {'User_Username' => 'Bob'},
+        {'User_Username' => 'Alice'}
+      ]
+      step = SortPlanStep.new [user['Username']]
+
+      Backend::SortQueryStep.process nil, nil, results, step, nil, nil
+
+      expect(results).to eq [
+        {'User_Username' => 'Alice'},
+        {'User_Username' => 'Bob'}
+      ]
+    end
+  end
 end
