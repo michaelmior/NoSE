@@ -47,9 +47,29 @@ module NoSE
     # Perform filtering external to the backend
     class FilterQueryStep < QueryStep
       # Filter results by a list of fields given in the step
-      def self.process(_client, _query, _results, _step,
+      def self.process(_client, query, results, step,
                        _prev_step, _next_step)
-        fail NotImplementedError, 'Filtering is not yet implemented'
+        # Extract the equality conditions
+        eq_conditions = query.conditions.select do |condition|
+          !condition.range? && step.eq.include?(condition.field)
+        end
+
+        # XXX: This assumes that the range filter step is the same as
+        #      the one in the query, which is always true for now
+        range = step.range && query.conditions.find(&:range?)
+
+        results.select! do |row|
+          select = eq_conditions.all? do |condition|
+            row[condition.field.id] == condition.value
+          end
+
+          if range
+            range_check = row[range.field.id].method(range.operator)
+            select &&= range_check.call range.value
+          end
+
+          select
+        end
       end
     end
 
