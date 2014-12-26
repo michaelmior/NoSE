@@ -4,7 +4,7 @@ module NoSE
       Workload.new do
         (Entity 'User' do
           ID     'UserId'
-          String 'Username'
+          String 'Username', 10
           String 'City'
         end) * 10
 
