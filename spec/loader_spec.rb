@@ -2,29 +2,31 @@ require 'nose/loaders/mysql'
 
 module NoSE
   describe MySQLLoader do
-    it 'can generate a workload from a database' do
+    # Mock the client of a loader to return canned responses to SQL queries
+    def mock_loader(responses, count)
       loader = MySQLLoader.new
 
-      # Mock SQL query responses
       allow(loader).to receive(:new_client) do
         client = double('client')
         expect(client).to receive(:query) do |query|
-          case query
-          when 'SHOW TABLES'
-            [['Foo']]
-          when 'SELECT COUNT(*) FROM Foo'
-            [[10]]
-          when 'DESCRIBE Foo'
-            # Field, Type, Null, Key, Default, Extra
-            [['FooId', 'int(10) unsigned', 'NO', 'PRI', 'NULL', ''],
-             ['Bar', 'int(10) unsigned', 'NO', '', 'NULL', '']]
-          else
-            [[]]
-          end
-        end.exactly(3).times
+          responses.each_pair.find { |k, v| k == query }.last
+        end.exactly(count).times
 
         client
       end
+
+      loader
+    end
+
+    it 'can generate a workload from a database' do
+      loader = mock_loader({
+        'SHOW TABLES' => [['Foo']],
+        'SELECT COUNT(*) FROM Foo' => [[10]],
+        'DESCRIBE Foo' => [
+          ['FooId', 'int(10) unsigned', 'NO', 'PRI', 'NULL', ''],
+          ['Bar', 'int(10) unsigned', 'NO', '', 'NULL', '']
+        ]
+      }, 3)
 
       workload = loader.workload({})
       expect(workload.entities).to have(1).item
