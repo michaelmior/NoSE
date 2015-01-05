@@ -16,9 +16,9 @@ module NoSE
     end
 
     subject(:query) do
-      Statement.new 'SELECT bob FROM foo.baz WHERE ' \
-                    'foo.bar = ? AND foo.baz > ? AND baz.quux = ? ' \
-                    'ORDER BY foo.baz LIMIT 5', workload
+      Query.new 'SELECT bob FROM foo.baz WHERE ' \
+                'foo.bar = ? AND foo.baz > ? AND baz.quux = ? ' \
+                'ORDER BY foo.baz LIMIT 5', workload
     end
 
     it 'reports the entity being selected from' do
@@ -52,31 +52,31 @@ module NoSE
     end
 
     it 'can select all fields' do
-      stmt = Statement.new 'SELECT * FROM foo WHERE foo.bar = ?', workload
+      stmt = Query.new('SELECT * FROM foo WHERE foo.bar = ?', workload)
       expect(stmt.select).to match_array workload['foo'].fields.values
     end
 
     it 'compares equal regardless of constant values' do
-      stmt1 = Statement.new 'SELECT * FROM foo WHERE foo.quux = 3', workload
-      stmt2 = Statement.new 'SELECT * FROM foo WHERE foo.quux = 2', workload
+      stmt1 = Query.new 'SELECT * FROM foo WHERE foo.quux = 3', workload
+      stmt2 = Query.new 'SELECT * FROM foo WHERE foo.quux = 2', workload
 
       expect(stmt1).to eq stmt2
     end
 
     context 'when parsing literals' do
       it 'can find strings' do
-        stmt = Statement.new 'SELECT * FROM foo WHERE foo.bob = "ot"', workload
+        stmt = Query.new 'SELECT * FROM foo WHERE foo.bob = "ot"', workload
         expect(stmt.conditions.first.value).to eq 'ot'
       end
 
       it 'can find integers' do
-        stmt = Statement.new 'SELECT * FROM foo WHERE foo.quux = 3', workload
+        stmt = Query.new 'SELECT * FROM foo WHERE foo.quux = 3', workload
         expect(stmt.conditions.first.value).to eq 3
       end
 
       it 'fails if the value is the wrong type' do
         expect do
-          Statement.new 'SELECT * FROM foo WHERE foo.bob = 3', workload
+          Query.new 'SELECT * FROM foo WHERE foo.bob = 3', workload
         end.to raise_error TypeError
       end
     end

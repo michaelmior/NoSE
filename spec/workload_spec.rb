@@ -15,12 +15,12 @@ module NoSE
       end
 
       it 'automatically parses queries' do
-        valid_query = Statement.new 'SELECT Id FROM Foo WHERE Foo.Id = ?',
-                                    workload
+        valid_query = Query.new 'SELECT Id FROM Foo WHERE Foo.Id = ?',
+                                workload
         workload.add_query(valid_query)
 
         expect(workload.queries).to have(1).item
-        expect(workload.queries.first).to be_a Statement
+        expect(workload.queries.first).to be_a Query
       end
 
       it 'only accepts entities and queries' do

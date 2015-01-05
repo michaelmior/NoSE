@@ -42,7 +42,7 @@ module NoSE
 
     # Add a new {Statement} to the workload or parse a string
     def add_query(query, weight = 1)
-      query = Statement.new(query, self) if query.is_a? String
+      query = Statement.parse(query, self) if query.is_a? String
 
       @query_weights[query.freeze] = weight
     end

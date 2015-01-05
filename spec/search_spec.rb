@@ -9,8 +9,8 @@ module NoSE
     end
 
     it 'produces a materialized view with sufficient space', gurobi: true do
-      query = Statement.new 'SELECT UserId FROM User WHERE User.City = ? ' \
-                            'ORDER BY User.Username', workload
+      query = Query.new 'SELECT UserId FROM User WHERE User.City = ? ' \
+                        'ORDER BY User.Username', workload
       workload.add_query query
 
       indexes = IndexEnumerator.new(workload).indexes_for_workload.to_a
@@ -19,8 +19,8 @@ module NoSE
     end
 
     it 'can perform multiple index lookups on a path segment', gurobi: true do
-      query = Statement.new 'SELECT Username FROM User WHERE User.City = ?',
-                            workload
+      query = Query.new 'SELECT Username FROM User WHERE User.City = ?',
+                        workload
       workload.add_query query
 
       indexes = [
