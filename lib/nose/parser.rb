@@ -24,7 +24,7 @@ module NoSE
     rule(:path)        { identifier >> (str('.') >> identifier).repeat }
 
     rule(:condition)   {
-      field.as(:field) >> space >> operator.as(:op) >> space? >> \
+      field.as(:field) >> space? >> operator.as(:op) >> space? >> \
       (literal.as(:value) | str('?')) }
     rule(:expression)  {
       condition >> (space >> str('AND') >> space >> expression).repeat }
