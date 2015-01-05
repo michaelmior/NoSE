@@ -97,19 +97,19 @@ $workload = NoSE::Workload.new do
   # 2. SELECT region as E_region, rating as O_rating, id, nickname, rating FROM users;
   # I1083340549
 
-  Q 'SELECT id, name, description, max_bid FROM items WHERE items.seller.region = ?'
+  Q 'SELECT id, name, description, max_bid FROM items.seller WHERE seller.region = ?'
   # 3. SELECT region as E_region, items.id, name, description, max_bid FROM items join users on items.seller=users.id WHERE items.seller.region;
   # I4186334592
 
-  Q 'SELECT from_user_id, date, comment FROM comments WHERE comments.item_id.category = ? AND comments.item_id.seller.region = ?'
+  Q 'SELECT from_user_id, date, comment FROM comments.item_id.seller WHERE item_id.category = ? AND seller.region = ?'
   # 4. SELECT category AS E_category, region as E_region, from_user_id, date, comment FROM comments join items on comments.item_id=items.id join users on items.seller=users.id;
   # I3254083673
 
-  Q 'SELECT bid, date FROM bids WHERE bids.item_id.seller.region = ? AND bids.item_id.category = ? AND bids.item_id.end_date < ?'
+  Q 'SELECT bid, date FROM bids.item_id.seller WHERE seller.region = ? AND item_id.category = ? AND item_id.end_date < ?'
   # 5. SELECT region as E_region, category as E_category, end_date as O_end_date, bids.id as O_id, bid, date FROM bids join items on bids.item_id=items.id join users on items.seller=users.id
   # I1184534160
 
-  Q 'SELECT from_user_id, comment, date FROM comments WHERE comments.item_id.seller = ?'
+  Q 'SELECT from_user_id, comment, date FROM comments.item_id WHERE item_id.seller = ?'
   # 6. SELECT seller AS E_seller, comments.id AS O_id, from_user_id, comment, date FROM comments join items on comments.item_id=items.id;
   # I638854407
 
@@ -117,7 +117,7 @@ $workload = NoSE::Workload.new do
   # 7. SELECT category as E_category, id, name FROM items;
   # I3358488952
 
-  Q 'SELECT comment FROM comments WHERE comments.item_id.category = ? ORDER BY comments.date'
+  Q 'SELECT comment FROM comments.item_id WHERE item_id.category = ? ORDER BY comments.date'
   # 8. SELECT category AS E_category, date AS O_date, comment FROM comments join items ON comments.item_id=items.id;
   # I127205473
 end
