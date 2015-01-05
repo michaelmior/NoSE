@@ -19,8 +19,9 @@ module NoSE
     rule(:identifier)  { match('[A-z]').repeat(1).as(:identifier) }
     rule(:identifiers) { identifier >> (comma >> identifier).repeat }
 
-    rule(:field)       { identifier >> (str('.') >> identifier).repeat(1) }
+    rule(:field)       { identifier >> (str('.') >> identifier).repeat(1, 1) }
     rule(:fields)      { field >> (comma >> field).repeat }
+    rule(:path)        { identifier >> (str('.') >> identifier).repeat }
 
     rule(:condition)   {
       field.as(:field) >> space >> operator.as(:op) >> space? >> \
@@ -36,7 +37,7 @@ module NoSE
 
     rule(:statement)   {
       str('SELECT') >> space >> (identifiers.as_array(:select) | str('*')) >> \
-      space >> str('FROM') >> space >> identifier.as(:entity) >> \
+      space >> str('FROM') >> space >> path.as_array(:path) >> \
       where.maybe.as(:where) >> order.maybe.as(:order) >> \
       limit.maybe.capture(:limit) }
     root :statement
@@ -45,7 +46,8 @@ module NoSE
   # Simple transformations to clean up the CQL parse tree
   class CQLT < Parslet::Transform
     rule(identifier: simple(:identifier)) { identifier }
-    rule(field: sequence(:field)) { field.map(&:to_s) }
+    rule(field: sequence(:id)) { id.map(&:to_s) }
+    rule(path: sequence(:id)) { id.map(&:to_s) }
     rule(str: simple(:string)) { string.to_s }
     rule(int: simple(:integer)) { integer.to_i }
   end
@@ -87,10 +89,10 @@ module NoSE
         raise new_exc
       end
 
-      @from = workload[tree[:entity].to_s]
+      @from = workload[tree[:path].first.to_s]
 
       populate_fields tree, workload
-      populate_conditions tree[:where], workload
+      populate_conditions tree, workload
 
       fail InvalidQueryException, 'must have at least one equality predicate' \
         if @conditions.empty? || @conditions.all?(&:is_range)
@@ -125,11 +127,19 @@ module NoSE
 
     private
 
+    def find_field_with_prefix(workload, path, field)
+      field_path = field.map(&:to_s)
+      prefix_index = path.index(field_path.first)
+      field_path = path[0..prefix_index - 1] + field_path \
+        unless prefix_index == 0
+      workload.find_field field_path.map(&:to_s)
+    end
+
     # Populate the fields selected by this query
     def populate_fields(tree, workload)
       if tree[:select]
         @select = tree[:select].map do |field|
-          workload.find_field [tree[:entity].to_s, field.to_s]
+          workload.find_field [@from, field.to_s]
         end.to_set
       else
         @select = @from.fields.values.to_set
@@ -137,17 +147,18 @@ module NoSE
 
       return @order = [] if tree[:order].nil?
       @order = tree[:order][:fields].map do |field|
-        workload.find_field field.map(&:to_s)
+        find_field_with_prefix workload, tree[:path], field
       end
     end
 
     # Populate the list of condition objects
-    def populate_conditions(where, workload)
-      if where.nil?
+    def populate_conditions(tree, workload)
+      if tree[:where].nil?
         @conditions = []
       else
-        @conditions = where[:expression].map do |condition|
-          field = workload.find_field condition[:field].map(&:to_s)
+        @conditions = tree[:where][:expression].map do |condition|
+          field = find_field_with_prefix workload, tree[:path],
+                                         condition[:field]
           value = condition[:value]
 
           type = field.class.const_get 'TYPE'
@@ -164,14 +175,7 @@ module NoSE
 
     # Calculate the longest path of entities traversed by the query
     def find_longest_path(tree, workload)
-      return @longest_entity_path = [@from] if tree[:where].nil?
-      where = tree[:where][:expression]
-      return @longest_entity_path = [@from] if where.length == 0
-
-      fields = where.map { |condition| condition[:field].map(&:to_s) }
-      fields += tree[:order][:fields].map { |field| field.map(&:to_s) } \
-        unless tree[:order].nil?
-      path = fields.max_by(&:length)[1..-2]  # end is field
+      path = tree[:path].map(&:to_s)[1..-1]
       @longest_entity_path = path.reduce [@from] do |entities, key|
         if entities.last.send(:[], key, true)
           # Search through foreign keys
