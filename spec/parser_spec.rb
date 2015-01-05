@@ -16,8 +16,8 @@ module NoSE
     end
 
     subject(:statement) do
-      Statement.new 'SELECT bob FROM foo WHERE ' \
-                    'foo.bar = ? AND foo.baz > ? AND foo.baz.quux = ? ' \
+      Statement.new 'SELECT bob FROM foo.baz WHERE ' \
+                    'foo.bar = ? AND foo.baz > ? AND baz.quux = ? ' \
                     'ORDER BY foo.baz LIMIT 5', workload
     end
 
