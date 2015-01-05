@@ -15,37 +15,37 @@ module NoSE
       end
     end
 
-    subject(:statement) do
+    subject(:query) do
       Statement.new 'SELECT bob FROM foo.baz WHERE ' \
                     'foo.bar = ? AND foo.baz > ? AND baz.quux = ? ' \
                     'ORDER BY foo.baz LIMIT 5', workload
     end
 
     it 'reports the entity being selected from' do
-      expect(statement.from).to eq workload['foo']
+      expect(query.from).to eq workload['foo']
     end
 
     it 'knows its limits' do
-      expect(statement.limit).to eq 5
+      expect(query.limit).to eq 5
     end
 
     it 'keeps a list of selected fields' do
-      expect(statement.select).to match_array [workload['foo']['bob']]
+      expect(query.select).to match_array [workload['foo']['bob']]
     end
 
     it 'tracks the range field' do
-      expect(statement.range_field).to eq workload['foo']['baz']
+      expect(query.range_field).to eq workload['foo']['baz']
     end
 
     it 'tracks fields used in equality predicates' do
-      expect(statement.eq_fields).to match_array [
+      expect(query.eq_fields).to match_array [
         workload['foo']['bar'],
         workload['jane']['quux']
       ]
     end
 
     it 'can report the longest entity path' do
-      expect(statement.longest_entity_path).to match_array [
+      expect(query.longest_entity_path).to match_array [
         workload['foo'],
         workload['jane']
       ]
