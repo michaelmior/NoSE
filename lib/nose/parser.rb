@@ -24,7 +24,7 @@ module NoSE
     rule(:path)        { identifier >> (str('.') >> identifier).repeat }
 
     rule(:condition)   {
-      field.as(:field) >> space? >> operator.as(:op) >> space? >> \
+      field.as(:field) >> space? >> operator.as(:op) >> space? >>
       (literal.as(:value) | str('?')) }
     rule(:expression)  {
       condition >> (space >> str('AND') >> space >> expression).repeat }
@@ -36,9 +36,9 @@ module NoSE
       space >> str('ORDER BY') >> space >> fields.as_array(:fields) }
 
     rule(:query)   {
-      str('SELECT') >> space >> (identifiers.as_array(:select) | str('*')) >> \
-      space >> str('FROM') >> space >> path.as_array(:path) >> \
-      where.maybe.as(:where) >> order.maybe.as(:order) >> \
+      str('SELECT') >> space >> (identifiers.as_array(:select) | str('*')) >>
+      space >> str('FROM') >> space >> path.as_array(:path) >>
+      where.maybe.as(:where) >> order.maybe.as(:order) >>
       limit.maybe.capture(:limit) }
     rule(:statement) { query }
     root :statement
