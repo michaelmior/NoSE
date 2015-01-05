@@ -97,7 +97,7 @@ $workload = NoSE::Workload.new do
   Q 'SELECT name FROM items WHERE items.id = ?', 2.38 / 4
   Q 'SELECT name FROM olditems WHERE olditems.id = ?', 2.38 / 4
   Q 'SELECT id, user_id, item_id, qty, bid, date FROM bids WHERE bids.item_id = ? ORDER BY bids.date', 2.38 / 4
-  Q 'SELECT id, nickname FROM users WHERE users.bids.item_id = ?', 2.38 / 4
+  Q 'SELECT id, nickname FROM users.bids WHERE bids.item_id = ?', 2.38 / 4
 
   # ViewItem
   Q 'SELECT * FROM items WHERE items.id = ?', 22.95 / 4.0 * 0.75
@@ -111,7 +111,7 @@ $workload = NoSE::Workload.new do
 
   # XXX Not currently supported
   # # SearchItemsByRegion
-  # Q 'SELECT id, name, initial_price, max_bid, nb_of_bids, end_date FROM items WHERE items.users.region = ? AND items.category = ? AND items.end_date >= ?', 0.06
+  # Q 'SELECT id, name, initial_price, max_bid, nb_of_bids, end_date FROM items.users WHERE users.region = ? AND items.category = ? AND items.end_date >= ?', 0.06
   # # BrowseRegions
   # Q 'SELECT id, name FROM regions', (0.03 + 0.02)
 
