@@ -14,15 +14,14 @@ module NoSE
       end
     end
     let(:equality_query) do
-      Statement.new('SELECT Id FROM Foo WHERE Foo.Id = ?', workload)
+      Query.new 'SELECT Id FROM Foo WHERE Foo.Id = ?', workload
     end
     let(:combo_query) do
-      Statement.new 'SELECT Id FROM Foo WHERE Foo.Id > ? AND Foo.Bar = ?',
-                    workload
+      Query.new 'SELECT Id FROM Foo WHERE Foo.Id > ? AND Foo.Bar = ?', workload
     end
     let(:order_query) do
-      Statement.new 'SELECT Id FROM Foo WHERE Foo.Id = ? ORDER BY Foo.Bar',
-                    workload
+      Query.new 'SELECT Id FROM Foo WHERE Foo.Id = ? ORDER BY Foo.Bar',
+                workload
     end
 
     before(:each) do

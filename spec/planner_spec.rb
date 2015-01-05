@@ -5,8 +5,8 @@ module NoSE
     it 'can look up fields by key' do
       index = tweet.simple_index
       planner = Planner.new(workload, [index])
-      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
-                            workload
+      query = Query.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
+                        workload
 
       tree = planner.find_plans_for_query query
       expect(tree.first).to eq([IndexLookupPlanStep.new(index)])
@@ -17,8 +17,8 @@ module NoSE
     it 'can perform an external sort if an index does not exist' do
       index = tweet.simple_index
       planner = Planner.new(workload, [index])
-      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ? ' \
-                            'ORDER BY Tweet.Timestamp', workload
+      query = Query.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ? ' \
+                        'ORDER BY Tweet.Timestamp', workload
 
       tree = planner.find_plans_for_query query
       steps = [
@@ -32,8 +32,8 @@ module NoSE
     it 'can apply a limit directly' do
       index = tweet.simple_index
       planner = Planner.new(workload, [index])
-      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ? ' \
-                            'LIMIT 5', workload
+      query = Query.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ? ' \
+                        'LIMIT 5', workload
 
       tree = planner.find_plans_for_query query
       expect(tree.first).to eq([IndexLookupPlanStep.new(index)])
@@ -44,8 +44,8 @@ module NoSE
     it 'can perform an external sort followed by a limit' do
       index = tweet.simple_index
       planner = Planner.new(workload, [index])
-      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ? ' \
-        'ORDER BY Tweet.Timestamp LIMIT 5', workload
+      query = Query.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ? ' \
+                        'ORDER BY Tweet.Timestamp LIMIT 5', workload
 
       tree = planner.find_plans_for_query query
       steps = [
@@ -59,8 +59,8 @@ module NoSE
 
     it 'raises an exception if there is no plan' do
       planner = Planner.new workload, []
-      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
-                            workload
+      query = Query.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
+                        workload
       expect { planner.find_plans_for_query query }.to \
           raise_error NoPlanException
     end
@@ -71,8 +71,8 @@ module NoSE
       index2 = Index.new [tweet['User']], [],
                          [tweet['Timestamp'], tweet['Body']], [tweet]
       planner = Planner.new(workload, [index1, index2])
-      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.User = ? ' \
-                            'ORDER BY Tweet.Timestamp', workload
+      query = Query.new 'SELECT Body FROM Tweet WHERE Tweet.User = ? ' \
+                        'ORDER BY Tweet.Timestamp', workload
 
       tree = planner.find_plans_for_query query
       expect(tree.to_a).to match_array [
@@ -88,8 +88,8 @@ module NoSE
       index = Index.new [tweet['TweetId']], [],
                         [tweet['Body'], tweet['Timestamp']], [tweet]
       planner = Planner.new workload, [index]
-      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
-                            workload
+      query = Query.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
+                        workload
 
       plan = planner.find_plans_for_query(query).first
       expect(plan.last.fields).to include(tweet['TweetId'], tweet['Body'],
@@ -100,9 +100,8 @@ module NoSE
       index = Index.new [tweet['TweetId']], [],
                         [tweet['Body'], tweet['Timestamp']], [tweet]
       planner = Planner.new workload, [index]
-      query = Statement.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?' \
-                            ' AND Tweet.Timestamp > ?',
-                            workload
+      query = Query.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?' \
+                        ' AND Tweet.Timestamp > ?', workload
 
       tree = planner.find_plans_for_query(query)
       expect(tree).to have(1).plan
@@ -111,12 +110,12 @@ module NoSE
 
     context 'when updating cardinality' do
       before(:each) do
-        simple_query = Statement.new 'SELECT Body FROM Tweet ' \
-                                     'WHERE Tweet.TweetId = ?', workload
+        simple_query = Query.new 'SELECT Body FROM Tweet ' \
+                                 'WHERE Tweet.TweetId = ?', workload
         @simple_state = QueryState.new simple_query, workload
 
-        query = Statement.new 'SELECT Body FROM Tweet.User ' \
-                              'WHERE User.UserId = ?', workload
+        query = Query.new 'SELECT Body FROM Tweet.User ' \
+                          'WHERE User.UserId = ?', workload
         @state = QueryState.new query, workload
       end
 
@@ -163,15 +162,15 @@ module NoSE
                   [workload['Tweet']['Body']], [workload['Tweet']])
       ]
       planner = Planner.new(workload, indexes)
-      query = Statement.new 'SELECT Body FROM Tweet.User ' \
-                            'WHERE User.Username = ?', workload
+      query = Query.new 'SELECT Body FROM Tweet.User WHERE User.Username = ?',
+                        workload
       expect { planner.find_plans_for_query query }.to \
         raise_error NoPlanException
     end
 
     it 'can use materialized views which traverse multiple entities' do
-      query = Statement.new 'SELECT Body FROM Tweet.User ' \
-                            'WHERE User.Username = ?', workload
+      query = Query.new 'SELECT Body FROM Tweet.User WHERE User.Username = ?',
+                        workload
       workload.add_query query
       indexes = IndexEnumerator.new(workload).indexes_for_workload
 
@@ -185,8 +184,8 @@ module NoSE
     end
 
     it 'can use multiple indices for a query' do
-      query = Statement.new 'SELECT Body FROM Tweet.User ' \
-                            'WHERE User.Username = ?', workload
+      query = Query.new 'SELECT Body FROM Tweet.User WHERE User.Username = ?',
+                        workload
       workload.add_query query
 
       indexes = [
@@ -202,8 +201,8 @@ module NoSE
     end
 
     it 'can create plans which visit each entity' do
-      query = Statement.new 'SELECT URL FROM Link.Tweet.User ' \
-                            'WHERE User.Username = ?', workload
+      query = Query.new 'SELECT URL FROM Link.Tweet.User ' \
+                        'WHERE User.Username = ?', workload
       workload.add_query query
 
       indexes = IndexEnumerator.new(workload).indexes_for_workload

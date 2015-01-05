@@ -128,7 +128,7 @@ module NoSE
     end
 
     # Generate a new random query from entities in the workload
-    # @return Statement
+    # @return Query
     def random_query
       path = random_path(4)
       select = path.first.fields.values.sample 2
@@ -141,7 +141,7 @@ module NoSE
                 "#{condition_field_name field, path}.#{field.name} = ?"
               end.join ' AND '}"
 
-      Statement.new query, @workload
+      Query.new query, @workload
     end
 
     private

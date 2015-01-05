@@ -40,7 +40,13 @@ module NoSE
       space >> str('FROM') >> space >> path.as_array(:path) >>
       where.maybe.as(:where) >> order.maybe.as(:order) >>
       limit.maybe.capture(:limit) }
-    rule(:statement) { query }
+
+    rule(:update) {
+      str('UPDATE')
+    }
+
+    rule(:statement) { query | update }
+
     root :statement
   end
 
@@ -75,40 +81,27 @@ module NoSE
 
   # A CQL statement and its associated data
   class Statement
-    attr_reader :select, :from, :conditions, :order, :limit,
-                :eq_fields, :range_field,
-                :longest_entity_path, :query
+    attr_reader :from, :longest_entity_path, :query
+
+    def self.parse(query, workload)
+      klass = query.start_with?('SELECT ') ? Query : Update
+      klass.new query, workload
+    end
 
     def initialize(query, workload)
       @query = query
 
       # If parsing fails, re-raise as our custom exception
       begin
-        tree = CQLT.new.apply(CQLP.new.parse query)
+        @tree = CQLT.new.apply(CQLP.new.parse query)
       rescue Parslet::ParseFailed => exc
         new_exc = ParseFailed.new exc.message
         new_exc.set_backtrace exc.backtrace
         raise new_exc
       end
 
-      @from = workload[tree[:path].first.to_s]
-
-      populate_fields tree, workload
-      populate_conditions tree, workload
-
-      fail InvalidQueryException, 'must have at least one equality predicate' \
-        if @conditions.empty? || @conditions.all?(&:is_range)
-
-      @limit = tree[:limit].to_i if tree[:limit]
-
-      find_longest_path tree, workload
-
-      @tree = tree
-      if tree[:where]
-        tree[:where][:expression].each { |condition| condition.delete :value }
-      end
-
-      freeze
+      @from = workload[@tree[:path].first.to_s]
+      find_longest_path @tree, workload
     end
 
     # :nocov:
@@ -116,11 +109,6 @@ module NoSE
       "#{@query} [magenta]#{@longest_entity_path.map(&:name).join ', '}[/]"
     end
     # :nocov:
-
-    # All fields referenced anywhere in the query
-    def all_fields
-      (@select + @conditions.map(&:field) + @order).to_set
-    end
 
     # Compare statements as equal by their parse tree
     def ==(other)
@@ -136,6 +124,50 @@ module NoSE
         unless prefix_index == 0
       workload.find_field field_path.map(&:to_s)
     end
+
+    # Calculate the longest path of entities traversed by the query
+    def find_longest_path(tree, workload)
+      path = tree[:path].map(&:to_s)[1..-1]
+      @longest_entity_path = path.reduce [@from] do |entities, key|
+        if entities.last.send(:[], key, true)
+          # Search through foreign keys
+          entities + [entities.last[key].entity]
+        else
+          # Assume only one foreign key in the opposite direction
+          entities + [workload[key]]
+        end
+      end
+    end
+  end
+
+  class Query < Statement
+    attr_reader :select, :conditions, :order, :limit,
+                :eq_fields, :range_field
+
+    def initialize(query, workload)
+      super query, workload
+
+      populate_fields @tree, workload
+      populate_conditions @tree, workload
+
+      fail InvalidQueryException, 'must have at least one equality predicate' \
+        if @conditions.empty? || @conditions.all?(&:is_range)
+
+      @limit = @tree[:limit].to_i if @tree[:limit]
+
+      if @tree[:where]
+        @tree[:where][:expression].each { |condition| condition.delete :value }
+      end
+
+      freeze
+    end
+
+    # All fields referenced anywhere in the query
+    def all_fields
+      (@select + @conditions.map(&:field) + @order).to_set
+    end
+
+    private
 
     # Populate the fields selected by this query
     def populate_fields(tree, workload)
@@ -160,7 +192,7 @@ module NoSE
       else
         @conditions = tree[:where][:expression].map do |condition|
           field = find_field_with_prefix workload, tree[:path],
-                                         condition[:field]
+            condition[:field]
           value = condition[:value]
 
           type = field.class.const_get 'TYPE'
@@ -174,20 +206,9 @@ module NoSE
       @range_field = @conditions.find(&:range?)
       @range_field = @range_field.field unless @range_field.nil?
     end
+  end
 
-    # Calculate the longest path of entities traversed by the query
-    def find_longest_path(tree, workload)
-      path = tree[:path].map(&:to_s)[1..-1]
-      @longest_entity_path = path.reduce [@from] do |entities, key|
-        if entities.last.send(:[], key, true)
-          # Search through foreign keys
-          entities + [entities.last[key].entity]
-        else
-          # Assume only one foreign key in the opposite direction
-          entities + [workload[key]]
-        end
-      end
-    end
+  class Update < Statement
   end
 
   # Thrown when something tries to parse an invalid query
