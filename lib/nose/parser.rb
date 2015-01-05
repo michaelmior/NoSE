@@ -35,11 +35,12 @@ module NoSE
     rule(:order)       {
       space >> str('ORDER BY') >> space >> fields.as_array(:fields) }
 
-    rule(:statement)   {
+    rule(:query)   {
       str('SELECT') >> space >> (identifiers.as_array(:select) | str('*')) >> \
       space >> str('FROM') >> space >> path.as_array(:path) >> \
       where.maybe.as(:where) >> order.maybe.as(:order) >> \
       limit.maybe.capture(:limit) }
+    rule(:statement) { query }
     root :statement
   end
 
@@ -50,6 +51,7 @@ module NoSE
     rule(path: sequence(:id)) { id.map(&:to_s) }
     rule(str: simple(:string)) { string.to_s }
     rule(int: simple(:integer)) { integer.to_i }
+    rule(statement: subtree(:stmt)) { stmt.first.last }
   end
 
   # A single condition in a where clause
