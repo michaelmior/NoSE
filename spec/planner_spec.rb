@@ -115,8 +115,8 @@ module NoSE
                                      'WHERE Tweet.TweetId = ?', workload
         @simple_state = QueryState.new simple_query, workload
 
-        query = Statement.new 'SELECT Body FROM Tweet ' \
-                              'WHERE Tweet.User.UserId = ?', workload
+        query = Statement.new 'SELECT Body FROM Tweet.User ' \
+                              'WHERE User.UserId = ?', workload
         @state = QueryState.new query, workload
       end
 
@@ -163,15 +163,15 @@ module NoSE
                   [workload['Tweet']['Body']], [workload['Tweet']])
       ]
       planner = Planner.new(workload, indexes)
-      query = Statement.new 'SELECT Body FROM Tweet ' \
-                            'WHERE Tweet.User.Username = ?', workload
+      query = Statement.new 'SELECT Body FROM Tweet.User ' \
+                            'WHERE User.Username = ?', workload
       expect { planner.find_plans_for_query query }.to \
         raise_error NoPlanException
     end
 
     it 'can use materialized views which traverse multiple entities' do
-      query = Statement.new 'SELECT Body FROM Tweet ' \
-                            'WHERE Tweet.User.Username = ?', workload
+      query = Statement.new 'SELECT Body FROM Tweet.User ' \
+                            'WHERE User.Username = ?', workload
       workload.add_query query
       indexes = IndexEnumerator.new(workload).indexes_for_workload
 
@@ -185,8 +185,8 @@ module NoSE
     end
 
     it 'can use multiple indices for a query' do
-      query = Statement.new 'SELECT Body FROM Tweet ' \
-                            'WHERE Tweet.User.Username = ?', workload
+      query = Statement.new 'SELECT Body FROM Tweet.User ' \
+                            'WHERE User.Username = ?', workload
       workload.add_query query
 
       indexes = [
@@ -202,8 +202,8 @@ module NoSE
     end
 
     it 'can create plans which visit each entity' do
-      query = Statement.new 'SELECT URL FROM Link ' \
-                            'WHERE Link.Tweet.User.Username = ?', workload
+      query = Statement.new 'SELECT URL FROM Link.Tweet.User ' \
+                            'WHERE User.Username = ?', workload
       workload.add_query query
 
       indexes = IndexEnumerator.new(workload).indexes_for_workload

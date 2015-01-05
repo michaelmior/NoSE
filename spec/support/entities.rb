@@ -26,7 +26,7 @@ module NoSE
     let(:user) { workload['User'] }
     let(:link) { workload['Link'] }
     let(:query) do
-      Statement.new 'SELECT URL FROM Link WHERE Link.Tweet.User.Username = ?',
+      Statement.new 'SELECT URL FROM Link.Tweet.User WHERE User.Username = ?',
                     workload
     end
   end

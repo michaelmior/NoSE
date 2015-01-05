@@ -25,7 +25,7 @@ module NoSE
     end
 
     it 'produces a simple index for a foreign key join' do
-      query = Statement.new 'SELECT Baz FROM Bar WHERE Bar.Quux.Baz = ?',
+      query = Statement.new 'SELECT Baz FROM Bar.Quux WHERE Quux.Baz = ?',
                             workload
       indexes = enum.indexes_for_query query
 
@@ -45,7 +45,7 @@ module NoSE
     end
 
     it 'does not produce empty indexes' do
-      query = Statement.new 'SELECT Baz FROM Bar WHERE Bar.Quux.Baz = ?',
+      query = Statement.new 'SELECT Baz FROM Bar.Quux WHERE Quux.Baz = ?',
                             workload
       workload.add_query query
       indexes = enum.indexes_for_workload
@@ -55,8 +55,8 @@ module NoSE
     end
 
     it 'produces indices with multiple entities in the path' do
-      query = Statement.new 'SELECT Baz FROM Bar ' \
-                            'WHERE Bar.Quux.Baz = ?', workload
+      query = Statement.new 'SELECT Baz FROM Bar.Quux WHERE Quux.Baz = ?',
+                            workload
       workload.add_query query
       indexes = enum.indexes_for_workload
       expect(indexes).to include Index.new([workload['Foo']['Baz']], [],
