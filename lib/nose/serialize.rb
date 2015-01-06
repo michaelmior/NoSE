@@ -31,10 +31,11 @@ module NoSE
 
     property :name
 
-    property :parent, exec_context: :decorator
+    # The name of the parent entity
     def parent
       represented.parent.name
     end
+    property :parent, exec_context: :decorator
   end
 
   # Reconstruct indexes with fields from an existing workload
@@ -71,10 +72,11 @@ module NoSE
 
     property :size
 
-    property :path, exec_context: :decorator
+    # The names of entities along the path of the index
     def path
       represented.path.map(&:name)
     end
+    property :path, exec_context: :decorator
   end
 
   # Represents all data of a field
@@ -88,10 +90,11 @@ module NoSE
     property :cardinality
     property :subtype_name, as: :type
 
-    property :entity, exec_context: :decorator
+    # The entity name for foreign keys
     def entity
       represented.entity.name if represented.is_a? ForeignKeyField
     end
+    property :entity, exec_context: :decorator
   end
 
   # Reconstruct the fields of an entity
@@ -122,6 +125,7 @@ module NoSE
                         exec_context: :decorator
     property :count
 
+    # A simple array of the fields within the entity
     def fields
       represented.fields.values
     end
@@ -131,6 +135,7 @@ module NoSE
   class StatementRepresenter < Representable::Decorator
     include Representable::JSON
 
+    # Represent as the text of the statement
     def to_hash(*)
       represented.query
     end
@@ -143,10 +148,11 @@ module NoSE
     property :subtype_name, as: :type
     property :cost
 
-    property :cardinality, exec_context: :decorator
+    # The estimated cardinality at this step in the plan
     def cardinality
       represented.instance_variable_get(:@state).cardinality
     end
+    property :cardinality, exec_context: :decorator
   end
 
   # Represent the index for index lookup plan steps
@@ -192,11 +198,12 @@ module NoSE
 
     collection :queries, decorator: StatementRepresenter
 
-    collection :entities, decorator: EntityRepresenter,
-                          exec_context: :decorator
+    # A simple array of the entities in the workload
     def entities
       represented.entities.values
     end
+    collection :entities, decorator: EntityRepresenter,
+               exec_context: :decorator
   end
 
   # Construct a new workload from a parsed hash

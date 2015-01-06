@@ -94,6 +94,7 @@ class Mysql
       write ResultPacket.serialize 0
     end
 
+    # Send an error message with the given number and text
     def error(errno, message)
       write ErrorPacket.serialize errno, message
     end

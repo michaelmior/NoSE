@@ -98,7 +98,9 @@ module NoSE
       end
     end
 
+    # A query step to look up data from a particular column family
     class IndexLookupQueryStep < QueryStep
+      # Perform a column family lookup in Cassandra
       def self.process(client, query, results, step, prev_step, next_step)
         # Get the fields which are used for lookups at this step
         # TODO: Check if we can apply the next filter via ALLOW FILTERING

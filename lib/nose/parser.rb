@@ -93,6 +93,7 @@ module NoSE
     attr_reader :conditions, :from, :longest_entity_path, :query,
                 :eq_fields, :range_field
 
+    # Parse either a query or an update
     def self.parse(query, workload)
       klass = query.start_with?('SELECT ') ? Query : Update
       klass.new query, workload
@@ -129,6 +130,7 @@ module NoSE
 
     private
 
+    # A helper to look up a field based on the path specified in the statement
     def find_field_with_prefix(workload, path, field)
       field_path = field.map(&:to_s)
       prefix_index = path.index(field_path.first)
@@ -174,6 +176,7 @@ module NoSE
     end
   end
 
+  # A representation of a query in the workload
   class Query < Statement
     attr_reader :select, :order, :limit
 
@@ -218,6 +221,7 @@ module NoSE
     end
   end
 
+  # The setting of a field from an {Update} statement
   class FieldSetting
     attr_reader :field, :value
 
@@ -238,6 +242,7 @@ module NoSE
     end
   end
 
+  # A representation of an update the workload
   class Update < Statement
     attr_accessor :settings
 
@@ -267,6 +272,7 @@ module NoSE
   class InvalidQueryException < StandardError
   end
 
+  # Thrown when parsing a statement fails
   class ParseFailed < StandardError
   end
 end
