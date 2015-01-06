@@ -77,13 +77,19 @@ module NoSE
     include_context 'entities'
 
     let(:update) do
-      Update.new 'UPDATE FROM Tweet.User SET Tweet.Body = ? WHERE ' \
+      Update.new 'UPDATE Tweet.User SET Body = "foo" WHERE ' \
                  'Tweet.Link = ? AND Tweet.Timestamp > ? AND User.City = ?',
                  workload
     end
 
     it_behaves_like 'a statement' do
       let(:statement) { update }
+    end
+
+    it 'can parse field settings' do
+      expect(update.settings).to match_array [
+        FieldSetting.new(tweet['Body'], 'foo')
+      ]
     end
   end
 end

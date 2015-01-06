@@ -42,15 +42,16 @@ module NoSE
       limit.maybe.capture(:limit) }
 
     rule(:setting) {
-      field.as(:field) >> space? >> str('=') >> space? >>
+      identifier.as(:field) >> space? >> str('=') >> space? >>
       (literal.as(:value) | str('?'))
     }
     rule(:settings) {
       setting >> (space? >> str(',') >> space? >> setting).repeat
     }
     rule(:update) {
-      str('UPDATE FROM') >> space >> path.as_array(:path) >> space >>
-      str('SET') >> space >> settings.as(:settings) >> where.maybe.as(:where)
+      str('UPDATE') >> space >> path.as_array(:path) >> space >>
+      str('SET') >> space >> settings.as_array(:settings) >>
+      where.maybe.as(:where)
     }
 
     rule(:statement) { query | update }
@@ -217,11 +218,48 @@ module NoSE
     end
   end
 
+  class FieldSetting
+    attr_reader :field, :value
+
+    def initialize(field, value)
+      @field = field
+      @value = value
+
+      freeze
+    end
+
+    def inspect
+      "#{@field.inspect} = #{value}"
+    end
+
+    # Compare settings equal by their field and value
+    def ==(other)
+      other.field == @field && other.value == @value
+    end
+  end
+
   class Update < Statement
+    attr_accessor :settings
+
     def initialize(query, workload)
       super :update, query, workload
 
+      populate_settings workload
+
       freeze
+    end
+
+    # Populate all the variable settings
+    def populate_settings(workload)
+      @settings = @tree[:settings].map do |setting|
+        field = workload[@from][setting[:field].to_s]
+        value = setting[:value]
+
+        type = field.class.const_get 'TYPE'
+        fail TypeError unless type.nil? || value.nil? || value.is_a?(type)
+
+        FieldSetting.new field, value
+      end
     end
   end
 
