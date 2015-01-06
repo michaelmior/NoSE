@@ -34,6 +34,7 @@ platform :ruby do
     gem 'pry-rescue'
     gem 'pry-stack_explorer'
     gem 'yard'
+    gem 'yard-thor'
   end
 end
 
