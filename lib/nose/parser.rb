@@ -109,9 +109,9 @@ module NoSE
       end
 
       @from = workload[@tree[:path].first.to_s]
-      find_longest_path @tree, workload
+      find_longest_path workload
 
-      populate_conditions @tree, workload
+      populate_conditions workload
     end
 
     # :nocov:
@@ -136,8 +136,8 @@ module NoSE
     end
 
     # Calculate the longest path of entities traversed by the query
-    def find_longest_path(tree, workload)
-      path = tree[:path].map(&:to_s)[1..-1]
+    def find_longest_path(workload)
+      path = @tree[:path].map(&:to_s)[1..-1]
       @longest_entity_path = path.reduce [@from] do |entities, key|
         if entities.last.send(:[], key, true)
           # Search through foreign keys
@@ -150,12 +150,12 @@ module NoSE
     end
 
     # Populate the list of condition objects
-    def populate_conditions(tree, workload)
-      if tree[:where].nil?
+    def populate_conditions(workload)
+      if @tree[:where].nil?
         @conditions = []
       else
-        @conditions = tree[:where][:expression].map do |condition|
-          field = find_field_with_prefix workload, tree[:path],
+        @conditions = @tree[:where][:expression].map do |condition|
+          field = find_field_with_prefix workload, @tree[:path],
             condition[:field]
           value = condition[:value]
 
@@ -179,7 +179,7 @@ module NoSE
     def initialize(query, workload)
       super :query, query, workload
 
-      populate_fields @tree, workload
+      populate_fields workload
 
       fail InvalidQueryException, 'must have at least one equality predicate' \
         if @conditions.empty? || @conditions.all?(&:is_range)
@@ -201,18 +201,18 @@ module NoSE
     private
 
     # Populate the fields selected by this query
-    def populate_fields(tree, workload)
-      if tree[:select]
-        @select = tree[:select].map do |field|
+    def populate_fields(workload)
+      if @tree[:select]
+        @select = @tree[:select].map do |field|
           workload.find_field [@from, field.to_s]
         end.to_set
       else
         @select = @from.fields.values.to_set
       end
 
-      return @order = [] if tree[:order].nil?
-      @order = tree[:order][:fields].map do |field|
-        find_field_with_prefix workload, tree[:path], field
+      return @order = [] if @tree[:order].nil?
+      @order = @tree[:order][:fields].map do |field|
+        find_field_with_prefix workload, @tree[:path], field
       end
     end
   end
