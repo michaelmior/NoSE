@@ -117,6 +117,9 @@ GEM
       hitimes
     uber (0.0.11)
     yard (0.8.7.6)
+    yard-thor (0.0.1)
+      thor
+      yard
 
 PLATFORMS
   java
@@ -145,3 +148,4 @@ DEPENDENCIES
   smarter_csv
   thor
   yard
+  yard-thor
