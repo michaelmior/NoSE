@@ -21,6 +21,11 @@ module NoSE
                 'ORDER BY foo.baz LIMIT 5', workload
     end
 
+    subject(:update) do
+      Update.new 'UPDATE FROM foo.baz SET foo.bar = ? WHERE ' \
+                 'foo.baz > ? AND baz.quux = ?', workload
+    end
+
     it 'reports the entity being selected from' do
       expect(query.from).to eq workload['foo']
     end
@@ -79,6 +84,13 @@ module NoSE
           Query.new 'SELECT * FROM foo WHERE foo.bob = 3', workload
         end.to raise_error TypeError
       end
+    end
+
+    it 'can find the longest path in an update' do
+      expect(update.longest_entity_path).to match_array [
+        workload['foo'],
+        workload['jane']
+      ]
     end
   end
 end

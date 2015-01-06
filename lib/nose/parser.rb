@@ -41,8 +41,16 @@ module NoSE
       where.maybe.as(:where) >> order.maybe.as(:order) >>
       limit.maybe.capture(:limit) }
 
+    rule(:setting) {
+      field.as(:field) >> space? >> str('=') >> space? >>
+      (literal.as(:value) | str('?'))
+    }
+    rule(:settings) {
+      setting >> (space? >> str(',') >> space? >> setting).repeat
+    }
     rule(:update) {
-      str('UPDATE')
+      str('UPDATE FROM') >> space >> path.as_array(:path) >> space >>
+      str('SET') >> space >> settings.as(:settings) >> where.maybe.as(:where)
     }
 
     rule(:statement) { query | update }
@@ -88,12 +96,12 @@ module NoSE
       klass.new query, workload
     end
 
-    def initialize(query, workload)
+    def initialize(type, query, workload)
       @query = query
 
       # If parsing fails, re-raise as our custom exception
       begin
-        @tree = CQLT.new.apply(CQLP.new.parse query)
+        @tree = CQLT.new.apply(CQLP.new.method(type).call.parse query)
       rescue Parslet::ParseFailed => exc
         new_exc = ParseFailed.new exc.message
         new_exc.set_backtrace exc.backtrace
@@ -102,6 +110,8 @@ module NoSE
 
       @from = workload[@tree[:path].first.to_s]
       find_longest_path @tree, workload
+
+      populate_conditions @tree, workload
     end
 
     # :nocov:
@@ -138,6 +148,28 @@ module NoSE
         end
       end
     end
+
+    # Populate the list of condition objects
+    def populate_conditions(tree, workload)
+      if tree[:where].nil?
+        @conditions = []
+      else
+        @conditions = tree[:where][:expression].map do |condition|
+          field = find_field_with_prefix workload, tree[:path],
+            condition[:field]
+          value = condition[:value]
+
+          type = field.class.const_get 'TYPE'
+          fail TypeError unless type.nil? || value.nil? || value.is_a?(type)
+
+          Condition.new field, condition[:op].to_sym, value
+        end
+      end
+
+      @eq_fields = @conditions.reject(&:range?).map(&:field).to_set
+      @range_field = @conditions.find(&:range?)
+      @range_field = @range_field.field unless @range_field.nil?
+    end
   end
 
   class Query < Statement
@@ -145,10 +177,9 @@ module NoSE
                 :eq_fields, :range_field
 
     def initialize(query, workload)
-      super query, workload
+      super :query, query, workload
 
       populate_fields @tree, workload
-      populate_conditions @tree, workload
 
       fail InvalidQueryException, 'must have at least one equality predicate' \
         if @conditions.empty? || @conditions.all?(&:is_range)
@@ -184,31 +215,14 @@ module NoSE
         find_field_with_prefix workload, tree[:path], field
       end
     end
-
-    # Populate the list of condition objects
-    def populate_conditions(tree, workload)
-      if tree[:where].nil?
-        @conditions = []
-      else
-        @conditions = tree[:where][:expression].map do |condition|
-          field = find_field_with_prefix workload, tree[:path],
-            condition[:field]
-          value = condition[:value]
-
-          type = field.class.const_get 'TYPE'
-          fail TypeError unless type.nil? || value.nil? || value.is_a?(type)
-
-          Condition.new field, condition[:op].to_sym, value
-        end
-      end
-
-      @eq_fields = @conditions.reject(&:range?).map(&:field).to_set
-      @range_field = @conditions.find(&:range?)
-      @range_field = @range_field.field unless @range_field.nil?
-    end
   end
 
   class Update < Statement
+    def initialize(query, workload)
+      super :update, query, workload
+
+      freeze
+    end
   end
 
   # Thrown when something tries to parse an invalid query
