@@ -89,7 +89,8 @@ module NoSE
 
   # A CQL statement and its associated data
   class Statement
-    attr_reader :from, :longest_entity_path, :query
+    attr_reader :conditions, :from, :longest_entity_path, :query,
+                :eq_fields, :range_field
 
     def self.parse(query, workload)
       klass = query.start_with?('SELECT ') ? Query : Update
@@ -173,8 +174,7 @@ module NoSE
   end
 
   class Query < Statement
-    attr_reader :select, :conditions, :order, :limit,
-                :eq_fields, :range_field
+    attr_reader :select, :order, :limit
 
     def initialize(query, workload)
       super :query, query, workload
