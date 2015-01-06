@@ -1,5 +1,6 @@
 module NoSE
-  describe Statement do
+
+  shared_context 'statements' do
     let(:workload) do
       Workload.new do
         Entity 'jane' do
@@ -15,29 +16,19 @@ module NoSE
       end
     end
 
-    subject(:query) do
+    let(:query) do
       Query.new 'SELECT bob FROM foo.baz WHERE ' \
-                'foo.bar = ? AND foo.baz > ? AND baz.quux = ? ' \
-                'ORDER BY foo.baz LIMIT 5', workload
+        'foo.bar = ? AND foo.baz > ? AND baz.quux = ? ' \
+        'ORDER BY foo.baz LIMIT 5', workload
     end
 
-    subject(:update) do
+    let(:update) do
       Update.new 'UPDATE FROM foo.baz SET foo.bar = ? WHERE ' \
-                 'foo.baz > ? AND baz.quux = ?', workload
+        'foo.baz > ? AND baz.quux = ?', workload
     end
+  end
 
-    it 'reports the entity being selected from' do
-      expect(query.from).to eq workload['foo']
-    end
-
-    it 'knows its limits' do
-      expect(query.limit).to eq 5
-    end
-
-    it 'keeps a list of selected fields' do
-      expect(query.select).to match_array [workload['foo']['bob']]
-    end
-
+  shared_examples 'a statement' do
     it 'tracks the range field' do
       expect(query.range_field).to eq workload['foo']['baz']
     end
@@ -50,10 +41,30 @@ module NoSE
     end
 
     it 'can report the longest entity path' do
-      expect(query.longest_entity_path).to match_array [
+      expect(statement.longest_entity_path).to match_array [
         workload['foo'],
         workload['jane']
       ]
+    end
+  end
+
+  describe Query do
+    include_context 'statements'
+
+    it_behaves_like 'a statement' do
+      let(:statement) { query }
+    end
+
+    it 'reports the entity being selected from' do
+      expect(query.from).to eq workload['foo']
+    end
+
+    it 'knows its limits' do
+      expect(query.limit).to eq 5
+    end
+
+    it 'keeps a list of selected fields' do
+      expect(query.select).to match_array [workload['foo']['bob']]
     end
 
     it 'can select all fields' do
@@ -86,11 +97,13 @@ module NoSE
       end
     end
 
-    it 'can find the longest path in an update' do
-      expect(update.longest_entity_path).to match_array [
-        workload['foo'],
-        workload['jane']
-      ]
+  end
+
+  describe Update do
+    include_context 'statements'
+
+    it_behaves_like 'a statement' do
+      let(:statement) { update }
     end
   end
 end
