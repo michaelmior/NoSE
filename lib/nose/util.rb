@@ -28,6 +28,7 @@ module Enumerable
   end
 end
 
+# Extend with some convenience methods
 class Array
   # Find the longest common prefix of two arrays
   def longest_common_prefix(other)
@@ -43,6 +44,7 @@ class Integer
   end
 end
 
+# Extend Object to print coloured output
 class Object
   def inspect
     Formatador.parse(respond_to?(:to_color) ? to_color : to_s)
@@ -204,6 +206,7 @@ class Cardinality
   end
 end
 
+# Add a simple function for pretty printing strings
 module Kernel
   private
 
@@ -218,6 +221,7 @@ module Kernel
   module_function :pp_s
 end
 
+# Add simple convenience methods
 class Object
   # Convert all the keys of a hash to symbols
   def deep_symbolize_keys
