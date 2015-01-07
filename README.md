@@ -21,6 +21,9 @@ You can view complete documentation by running `bundle exec rake doc` and viewin
 Tests are written using [RSpec](http://rspec.info/) and can be executed with `bundle exec rspec`.
 If you do not have a copy of Gurobi available, you can exclude these tests with `--tag ~gurobi`.
 
+Some commands require a configuration file in lieu of command line options.
+An example configuration file for the different components of NoSE is given in [nose.yml.example](nose.yml.example).
+
 ## Publications
 
 ![ACM DL Author-ize service](http://dl.acm.org/images/oa.gif) Michael J. Mior. 2014. [Automated schema design for NoSQL databases](http://dl.acm.org/authorize?N71145). In Proceedings of the 2014 SIGMOD PhD symposium (SIGMOD'14 PhD Symposium). ACM, New York, NY, USA, 41-45.

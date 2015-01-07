@@ -1,0 +1,24 @@
+# The database being targeted, currently only cassandra is valid
+database: cassandra
+
+# Connection information for the backend database
+backend:
+  hosts:
+    - localhost
+  port: 9042
+  keyspace: Sadvisor
+
+# Loader-specific configuration
+# The mysql loader is recommended, but csv might work as well if
+# your generated indexes all have path length one
+loader:
+  name: mysql
+  host: 127.0.0.1
+  database: rubis
+  username: root
+  password: root
+
+# Query proxy
+proxy:
+  name: mysql
+  port: 3307
