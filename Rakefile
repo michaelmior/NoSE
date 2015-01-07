@@ -12,4 +12,12 @@ end
 RSpec::Core::RakeTask.new(:spec)
 YARD::Rake::YardocTask.new(:doc)
 
+task :console do
+  require 'irb'
+  require 'irb/completion'
+  require_relative './lib/nose'
+  ARGV.clear
+  IRB.start
+end
+
 task default: :spec
