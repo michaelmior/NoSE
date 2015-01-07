@@ -46,5 +46,20 @@ module NoSE
     it 'raises an exception for nonexistent entities' do
       expect { workload['Bar'] }.to raise_error EntityNotFound
     end
+
+    it 'can generate identity maps for updates' do
+      other_entity = Entity.new 'Bar'
+      other_entity << IDField.new('Quux')
+      other_entity << IntegerField.new('Corge')
+      other_entity << IntegerField.new('Grault')
+      workload.add_entity other_entity
+
+      workload << Update.new('UPDATE Bar SET Corge = ? WHERE Bar.Quux = ?',
+                              workload)
+      workload << Update.new('UPDATE Bar SET Grault = ? WHERE Bar.Quux = ?',
+                             workload)
+
+      expect(workload.identity_maps).to match_array [other_entity.simple_index]
+    end
   end
 end
