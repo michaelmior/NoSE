@@ -238,7 +238,7 @@ module NoSE
 
     def call(object, _fragment, instance, **_options)
       workload = object.workload
-      query = Statement.new instance['query'], workload
+      query = Statement.parse instance['query'], workload
 
       plan = NoSE::QueryPlan.new query
       state = NoSE::QueryState.new query, workload
