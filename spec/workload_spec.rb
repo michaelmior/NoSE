@@ -47,19 +47,41 @@ module NoSE
       expect { workload['Bar'] }.to raise_error EntityNotFound
     end
 
-    it 'can generate identity maps for updates' do
-      other_entity = Entity.new 'Bar'
-      other_entity << IDField.new('Quux')
-      other_entity << IntegerField.new('Corge')
-      other_entity << IntegerField.new('Grault')
-      workload.add_entity other_entity
+    context 'when generating identity maps' do
+      let(:other_entity) do
+        Entity.new 'Bar' do
+          ID      'Quux'
+          Integer 'Corge'
+          Integer 'Grault'
+        end
+      end
 
-      workload << Update.new('UPDATE Bar SET Corge = ? WHERE Bar.Quux = ?',
-                              workload)
-      workload << Update.new('UPDATE Bar SET Grault = ? WHERE Bar.Quux = ?',
-                             workload)
+      let(:index) do
+        Index.new [other_entity['Corge']], [], [other_entity['Grault']],
+                  [other_entity]
+      end
 
-      expect(workload.identity_maps).to match_array [other_entity.simple_index]
+      it 'produces nothing if there are no updates' do
+        workload.add_entity other_entity
+        expect(workload.identity_maps [index]).to be_empty
+      end
+
+      it 'produces nothing if there are no indexes' do
+        workload.add_entity other_entity
+        workload << Update.new('UPDATE Bar SET Corge = ? WHERE Bar.Quux = ?',
+                               workload)
+
+        expect(workload.identity_maps []).to be_empty
+      end
+
+      it 'can generate simple identity maps for updates' do
+        workload.add_entity other_entity
+        workload << Update.new('UPDATE Bar SET Corge = ? WHERE Bar.Quux = ?',
+                               workload)
+
+        expect(workload.identity_maps [index]).to match_array \
+          [other_entity.simple_index]
+      end
     end
   end
 end
