@@ -1,9 +1,9 @@
 require 'cql'
 require 'zlib'
 
-module NoSE
+module NoSE::Backends
   # A backend which communicates with Cassandra via CQL
-  class CassandraBackend < Backend
+  class CassandraBackend < NoSE::Backend
     def initialize(workload, indexes, plans, config)
       super
 
@@ -84,15 +84,18 @@ module NoSE
     # Return the datatype to use in Cassandra for a given field
     def cassandra_type(field_class)
       case [field_class]
-      when [IntegerField]
+      when [NoSE::Fields::IntegerField]
         :int
-      when [FloatField]
+      when [NoSE::Fields::FloatField]
         :float
-      when [StringField]
+      when [NoSE::Fields::StringField]
         :text
-      when [DateField]
+      when [NoSE::Fields::DateField]
         :timestamp
-      when [IDField], [ForeignKeyField], [ToOneKeyField], [ToManyKeyField]
+      when [NoSE::Fields::IDField],
+           [NoSE::Fields::ForeignKeyField],
+           [NoSE::Fields::ToOneKeyField],
+           [NoSE::Fields::ToManyKeyField]
         # TODO: Decide on UUID
         :int
       end

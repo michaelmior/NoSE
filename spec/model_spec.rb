@@ -3,15 +3,15 @@ module NoSE
     subject(:entity) { Entity.new('Foo') }
 
     it 'can store fields' do
-      entity << IntegerField.new('Bar')
-      entity << IntegerField.new('Baz')
+      entity << Fields::IntegerField.new('Bar')
+      entity << Fields::IntegerField.new('Baz')
 
       expect(entity.fields.keys).to match_array %w(Bar Baz)
     end
 
     it 'can have foreign keys' do
       other = entity * 100
-      field = ToOneKeyField.new('other', other)
+      field = Fields::ToOneKeyField.new('other', other)
       entity << field
 
       expect(field.entity).to be(other)
@@ -22,7 +22,7 @@ module NoSE
 
     it 'can have foreign keys with cardinality > 1' do
       others = entity * 100
-      field = ToManyKeyField.new('others', others)
+      field = Fields::ToManyKeyField.new('others', others)
       entity << field
 
       expect(field.entity).to be(others)
@@ -32,7 +32,7 @@ module NoSE
     end
 
     it 'can tell fields when they are added' do
-      field = IntegerField.new('Bar')
+      field = Fields::IntegerField.new('Bar')
 
       expect(field.parent).to be_nil
 
@@ -42,20 +42,20 @@ module NoSE
     end
 
     it 'can identify a list of key traversals for a field' do
-      field = IDField.new('Id')
+      field = Fields::IDField.new('Id')
       entity << field
 
       expect(entity.key_fields %w(Foo Id)).to eq [field]
     end
 
     it 'can identify a list of key traversals for foreign keys' do
-      field = IDField.new('Id')
+      field = Fields::IDField.new('Id')
       entity << field
 
       other_entity = Entity.new('Bar')
-      other_entity << IntegerField.new('Baz')
+      other_entity << Fields::IntegerField.new('Baz')
 
-      foreign_key = ForeignKeyField.new('Quux', other_entity)
+      foreign_key = Fields::ForeignKeyField.new('Quux', other_entity)
       entity << foreign_key
 
       expect(entity.key_fields %w(Foo Quux Baz)).to eq [foreign_key]
@@ -77,9 +77,9 @@ module NoSE
     end
   end
 
-  describe Field do
+  describe Fields::Field do
     subject(:field) do
-      IDField.new 'Bar'
+      Fields::IDField.new 'Bar'
     end
 
     it 'has an ID based on the entity and name' do
@@ -96,32 +96,32 @@ module NoSE
     end
   end
 
-  describe IntegerField do
+  describe Fields::IntegerField do
     it 'can convert string literals' do
-      expect(IntegerField.value_from_string '299792458').to eq 299_792_458
+      expect(Fields::IntegerField.value_from_string '42').to eq 42
     end
   end
 
-  describe FloatField do
+  describe Fields::FloatField do
     it 'can convert string literals' do
-      expect(FloatField.value_from_string '3.14159').to eq 3.14159
+      expect(Fields::FloatField.value_from_string '3.14159').to eq 3.14159
     end
   end
 
-  describe StringField do
+  describe Fields::StringField do
     it 'can convert string literals' do
-      expect(StringField.value_from_string 'pudding').to eq 'pudding'
+      expect(Fields::StringField.value_from_string 'pudding').to eq 'pudding'
     end
   end
 
-  describe DateField do
+  describe Fields::DateField do
     it 'can convert string literals' do
-      expect(DateField.value_from_string '2001-02-03T04:05:06+07:00').to eq \
-        DateTime.new(2001, 2, 3, 4, 5, 6, '+7').to_time
+      date = Fields::DateField.value_from_string '2001-02-03T04:05:06+07:00'
+      expect(date).to eq DateTime.new(2001, 2, 3, 4, 5, 6, '+7').to_time
     end
   end
 
-  describe ForeignKeyField do
+  describe Fields::ForeignKeyField do
     include_context 'entities'
 
     it 'can check if it points to an entity' do
@@ -129,7 +129,7 @@ module NoSE
     end
   end
 
-  describe KeyPath do
+  describe Fields::KeyPath do
     before(:each) do
       a = @entity_a = Entity.new 'A' do
         ID 'Foo'
@@ -145,13 +145,13 @@ module NoSE
     end
 
     it 'can find a common prefix of fields' do
-      path1 = KeyPath.new %w(C Baz Bar), @entity_c
-      path2 = KeyPath.new %w(C Baz), @entity_c
+      path1 = Fields::KeyPath.new %w(C Baz Bar), @entity_c
+      path2 = Fields::KeyPath.new %w(C Baz), @entity_c
       expect(path1 & path2).to match_array [@entity_c['Baz']]
     end
 
     it 'finds fields along the path' do
-      path = KeyPath.new %w(C Baz Bar), @entity_c
+      path = Fields::KeyPath.new %w(C Baz Bar), @entity_c
       expect(path).to match_array [
         @entity_c['Baz'],
         @entity_b['Bar'],

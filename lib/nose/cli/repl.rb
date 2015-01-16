@@ -1,6 +1,6 @@
 require 'formatador'
 
-module NoSE
+module NoSE::CLI
   # Add a command to run a REPL which evaluates queries
   class NoSECLI < Thor
     desc 'repl PLAN_FILE', 'start the REPL with the given PLAN_FILE'

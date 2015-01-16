@@ -3,7 +3,7 @@ require 'parallel'
 require 'thor'
 require 'yaml'
 
-module NoSE
+module NoSE::CLI
   # A command-line interface to running the advisor tool
   class NoSECLI < Thor
     class_option :debug, type: :boolean, aliases: :d
@@ -37,7 +37,8 @@ module NoSE
     # Get a backend instance for a given configuration and dataset
     def get_backend(config, result)
       require_relative "backends/#{config[:database]}"
-      be_class_name = ['NoSE', config[:database].capitalize + 'Backend']
+      be_class_name = ['NoSE', 'Backends',
+                       config[:database].capitalize + 'Backend']
       be_class_name.reduce(Object) do |mod, name_part|
         mod.const_get name_part
       end.new(result.workload, result.indexes, result.plans, config[:backend])

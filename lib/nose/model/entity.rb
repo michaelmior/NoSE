@@ -38,26 +38,26 @@ module NoSE
     end
 
     # Get the key fields for the entity
-    # @return [Array<Field>]
+    # @return [Array<Fields::Field>]
     def id_fields
-      fields.values.select { |field| field.instance_of? IDField }
+      fields.values.select { |field| field.instance_of? Fields::IDField }
     end
 
     # Get all foreign key fields on the entity
-    # @return [Array<ForeignKeyField>]
+    # @return [Array<Fields::ForeignKeyField>]
     def foreign_keys
-      fields.values.select { |field| field.is_a? ForeignKeyField }
+      fields.values.select { |field| field.is_a? Fields::ForeignKeyField }
     end
 
     # Find the foreign key to a particular entity
-    # @return [Field, nil]
+    # @return [Fields::Field, nil]
     def foreign_key_for(entity)
       fields.values.find do |field|
-        field.is_a?(ForeignKeyField) && field.entity == entity
+        field.is_a?(Fields::ForeignKeyField) && field.entity == entity
       end
     end
 
-    # Adds a {Field} to the entity
+    # Adds a {Fields::Field} to the entity
     def <<(field)
       @fields[field.name] = field
       field.instance_variable_set(:@parent, self)
@@ -88,9 +88,9 @@ module NoSE
     end
 
     # All the keys found when traversing foreign keys
-    # @return [KeyPath]
+    # @return [Fields::KeyPath]
     def key_fields(path)
-      KeyPath.new path, self
+      Fields::KeyPath.new path, self
     end
   end
 
