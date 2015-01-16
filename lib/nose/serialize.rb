@@ -45,11 +45,12 @@ module NoSE
     def call(object, _fragment, instance, **_options)
       # Extract the entities from the workload
       workload = object.workload
-      path = instance['path'].map { |name| workload[name] }
+      model = workload.model
+      path = instance['path'].map { |name| model[name] }
 
       # Pull the fields from each entity
       f = lambda do |fields|
-        instance[fields].map { |dict| workload[dict['parent']][dict['name']] }
+        instance[fields].map { |dict| model[dict['parent']][dict['name']] }
       end
 
       Index.new f.call('hash_fields'), f.call('order_fields'), f.call('extra'),
@@ -200,7 +201,7 @@ module NoSE
 
     # A simple array of the entities in the workload
     def entities
-      represented.entities.values
+      represented.model.entities.values
     end
     collection :entities, decorator: EntityRepresenter,
                exec_context: :decorator
@@ -238,7 +239,7 @@ module NoSE
 
     def call(object, _fragment, instance, **_options)
       workload = object.workload
-      query = Statement.parse instance['query'], workload
+      query = Statement.parse instance['query'], workload.model
 
       plan = NoSE::QueryPlan.new query
       state = NoSE::QueryState.new query, workload

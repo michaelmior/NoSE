@@ -49,7 +49,7 @@ module NoSE
       ]
       step = FilterPlanStep.new [user['Username']], nil
       query = Query.new 'SELECT * FROM User WHERE User.Username = "Bob"',
-                        workload
+                        workload.model
 
       Backend::FilterQueryStep.process nil, query, results, step, nil, nil
 
@@ -65,7 +65,7 @@ module NoSE
       ]
       step = FilterPlanStep.new [], [user['Username']]
       query = Query.new 'SELECT * FROM User WHERE User.Username < "B" ' \
-                        'AND User.City = "New York"', workload
+                        'AND User.City = "New York"', workload.model
 
       Backend::FilterQueryStep.process nil, query, results, step, nil, nil
 

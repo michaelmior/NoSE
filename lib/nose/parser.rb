@@ -124,12 +124,12 @@ module NoSE
                 :eq_fields, :range_field
 
     # Parse either a query or an update
-    def self.parse(query, workload)
+    def self.parse(query, model)
       klass = query.start_with?('SELECT ') ? Query : Update
-      klass.new query, workload
+      klass.new query, model
     end
 
-    def initialize(type, query, workload)
+    def initialize(type, query, model)
       @query = query
 
       # If parsing fails, re-raise as our custom exception
@@ -141,10 +141,10 @@ module NoSE
         raise new_exc
       end
 
-      @from = workload[@tree[:path].first.to_s]
-      find_longest_path workload
+      @from = model[@tree[:path].first.to_s]
+      find_longest_path model
 
-      populate_conditions workload
+      populate_conditions model
     end
 
     # :nocov:
@@ -161,16 +161,16 @@ module NoSE
     private
 
     # A helper to look up a field based on the path specified in the statement
-    def find_field_with_prefix(workload, path, field)
+    def find_field_with_prefix(model, path, field)
       field_path = field.map(&:to_s)
       prefix_index = path.index(field_path.first)
       field_path = path[0..prefix_index - 1] + field_path \
         unless prefix_index == 0
-      workload.find_field field_path.map(&:to_s)
+      model.find_field field_path.map(&:to_s)
     end
 
     # Calculate the longest path of entities traversed by the query
-    def find_longest_path(workload)
+    def find_longest_path(model)
       path = @tree[:path].map(&:to_s)[1..-1]
       @longest_entity_path = path.reduce [@from] do |entities, key|
         if entities.last.send(:[], key, true)
@@ -178,18 +178,18 @@ module NoSE
           entities + [entities.last[key].entity]
         else
           # Assume only one foreign key in the opposite direction
-          entities + [workload[key]]
+          entities + [model[key]]
         end
       end
     end
 
     # Populate the list of condition objects
-    def populate_conditions(workload)
+    def populate_conditions(model)
       if @tree[:where].nil?
         @conditions = []
       else
         @conditions = @tree[:where][:expression].map do |condition|
-          field = find_field_with_prefix workload, @tree[:path],
+          field = find_field_with_prefix model, @tree[:path],
             condition[:field]
           value = condition[:value]
 
@@ -210,10 +210,10 @@ module NoSE
   class Query < Statement
     attr_reader :select, :order, :limit
 
-    def initialize(query, workload)
-      super :query, query, workload
+    def initialize(query, model)
+      super :query, query, model
 
-      populate_fields workload
+      populate_fields model
 
       fail InvalidQueryException, 'must have at least one equality predicate' \
         if @conditions.empty? || @conditions.all?(&:is_range)
@@ -235,10 +235,10 @@ module NoSE
     private
 
     # Populate the fields selected by this query
-    def populate_fields(workload)
+    def populate_fields(model)
       if @tree[:select]
         @select = @tree[:select].map do |field|
-          workload.find_field [@from, field.to_s]
+          model.find_field [@from, field.to_s]
         end.to_set
       else
         @select = @from.fields.values.to_set
@@ -246,7 +246,7 @@ module NoSE
 
       return @order = [] if @tree[:order].nil?
       @order = @tree[:order][:fields].map do |field|
-        find_field_with_prefix workload, @tree[:path], field
+        find_field_with_prefix model, @tree[:path], field
       end
     end
   end
@@ -276,22 +276,22 @@ module NoSE
   class Update < Statement
     attr_accessor :settings
 
-    def initialize(query, workload)
-      super :update, query, workload
+    def initialize(query, model)
+      super :update, query, model
 
-      populate_settings workload
+      populate_settings model
 
       # Save the where clause so we can convert to a query later
-      @workload = workload
+      @model = model
       @where_source = @tree.delete(:where_source).strip
 
       freeze
     end
 
     # Populate all the variable settings
-    def populate_settings(workload)
+    def populate_settings(model)
       @settings = @tree[:settings].map do |setting|
-        field = workload[@from][setting[:field].to_s]
+        field = model[@from][setting[:field].to_s]
         value = setting[:value]
 
         type = field.class.const_get 'TYPE'
@@ -308,7 +308,7 @@ module NoSE
       query = "SELECT #{@settings.map(&:field).map(&:name).join ', '} " \
               "FROM #{path} #{@where_source}"
 
-      Query.new query.strip, @workload
+      Query.new query.strip, @model
     end
   end
 

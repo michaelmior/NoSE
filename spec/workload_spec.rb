@@ -5,18 +5,18 @@ module NoSE
     let(:field)       { IDField.new('Id') }
 
     before(:each) do
-      workload.add_entity entity
+      workload.model.add_entity entity
     end
 
     context 'when adding items' do
       it 'holds entities' do
-        expect(workload.entities).to have(1).item
-        expect(workload.entities['Foo']).to be entity
+        expect(workload.model.entities).to have(1).item
+        expect(workload.model['Foo']).to be entity
       end
 
       it 'automatically parses queries' do
         valid_query = Query.new 'SELECT Id FROM Foo WHERE Foo.Id = ?',
-                                workload
+                                workload.model
         workload.add_query(valid_query)
 
         expect(workload.queries).to have(1).item
@@ -29,22 +29,22 @@ module NoSE
     end
 
     it 'can find fields on entities from queries' do
-      expect(workload.find_field %w(Foo Id)).to be field
+      expect(workload.model.find_field %w(Foo Id)).to be field
     end
 
     it 'can find fields which traverse foreign keys' do
       other_entity = Entity.new 'Bar'
       other_field = IDField.new 'Quux'
       other_entity << other_field
-      workload.add_entity other_entity
+      workload.model.add_entity other_entity
 
       entity << ForeignKeyField.new('Baz', other_entity)
 
-      expect(workload.find_field %w(Foo Baz Quux)).to be other_field
+      expect(workload.model.find_field %w(Foo Baz Quux)).to be other_field
     end
 
     it 'raises an exception for nonexistent entities' do
-      expect { workload['Bar'] }.to raise_error EntityNotFound
+      expect { workload.model['Bar'] }.to raise_error EntityNotFound
     end
 
     context 'when generating identity maps' do
@@ -62,22 +62,22 @@ module NoSE
       end
 
       it 'produces nothing if there are no updates' do
-        workload.add_entity other_entity
+        workload.model.add_entity other_entity
         expect(workload.identity_maps [index]).to be_empty
       end
 
       it 'produces nothing if there are no indexes' do
-        workload.add_entity other_entity
+        workload.model.add_entity other_entity
         workload << Update.new('UPDATE Bar SET Corge = ? WHERE Bar.Quux = ?',
-                               workload)
+                               workload.model)
 
         expect(workload.identity_maps []).to be_empty
       end
 
       it 'can generate simple identity maps for updates' do
-        workload.add_entity other_entity
+        workload.model.add_entity other_entity
         workload << Update.new('UPDATE Bar SET Corge = ? WHERE Bar.Quux = ?',
-                               workload)
+                               workload.model)
 
         expect(workload.identity_maps [index]).to match_array \
           [other_entity.simple_index]

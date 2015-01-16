@@ -22,12 +22,12 @@ module NoSE
         end) * 1000
       end
     end
-    let(:tweet) { workload['Tweet'] }
-    let(:user) { workload['User'] }
-    let(:link) { workload['Link'] }
+    let(:tweet) { workload.model['Tweet'] }
+    let(:user) { workload.model['User'] }
+    let(:link) { workload.model['Link'] }
     let(:query) do
       Query.new 'SELECT URL FROM Link.Tweet.User ' \
-                'WHERE User.Username = ? LIMIT 5', workload
+                'WHERE User.Username = ? LIMIT 5', workload.model
     end
   end
 end

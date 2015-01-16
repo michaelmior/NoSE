@@ -7,11 +7,12 @@ require 'graphviz'
 module NoSE
   # A representation of a query workload over a given set of entities
   class Workload
-    attr_reader :entities, :query_weights
+    attr_reader :model, :query_weights
     thread_local_accessor :current
 
-    def initialize(&block)
+    def initialize(model=nil, &block)
       @query_weights = {}
+      @model = model || Model.new
       @entities = {}
 
       # Apply the DSL
@@ -25,7 +26,7 @@ module NoSE
     # Add a new {Entity} or {Statement} to the workload
     def <<(other)
       if other.is_a? Entity
-        add_entity other.freeze
+        @model.add_entity other.freeze
       elsif other.is_a? Statement
         add_query other.freeze
       else
@@ -33,16 +34,9 @@ module NoSE
       end
     end
 
-    # Retrieve an entity by name
-    # @return [Entity]
-    def [](name)
-      return @entities[name] if @entities.key? name
-      fail EntityNotFound
-    end
-
     # Add a new {Statement} to the workload or parse a string
     def add_query(query, weight = 1)
-      query = Statement.parse(query, self) if query.is_a? String
+      query = Statement.parse(query, @model) if query.is_a? String
 
       @query_weights[query.freeze] = weight
     end
@@ -59,25 +53,6 @@ module NoSE
       @query_weights.keys.select { |statement| statement.is_a? Update }
     end
 
-    # Add an {Entity} to the workload
-    def add_entity(entity)
-      @entities[entity.name] = entity
-    end
-
-    # Find a field given an +Enumerable+ of identifiers
-    # @return [Field]
-    def find_field(field)
-      if field.count > 2
-        # Do a foreign key lookup
-        field = field.dup
-        key_field = @entities[field[0]].fields[field[1]]
-        field[0..1] = key_field ? key_field.entity.name : field[1]
-        find_field field
-      else
-        @entities[field[0]].fields[field[1]]
-      end
-    end
-
     # Check if all the fields used by queries in the workload exist
     # @return [Boolean]
     def fields_exist?
@@ -85,7 +60,7 @@ module NoSE
         # Projected fields and fields in the where clause exist
         fields = query.where.map { |condition| condition.field } + query.fields
         fields.each do |field|
-          return false unless find_field field.value
+          return false unless @model.find_field field.value
         end
       end
 
@@ -124,30 +99,6 @@ module NoSE
       identity_maps
     end
 
-    # Output a PNG representation of entities in the workload
-    def output_png(filename, include_fields = false)
-      graph = GraphViz.new :G, type: :digraph
-      nodes = Hash[@entities.values.map do |entity|
-        label = "#{entity.name}\n"
-        if include_fields
-          label += entity.fields.values.map do |field|
-            type = field.class.name.sub(/^NoSE::(.*?)(Field)?$/, '\1')
-            "#{field.name}: #{type}"
-          end.join("\n")
-        end
-
-        [entity.name, graph.add_nodes(label)]
-      end]
-
-      entities.values.each do |entity|
-        entity.foreign_keys.each do |key|
-          graph.add_edges nodes[entity.name], nodes[key.entity.name]
-        end
-      end
-
-      graph.output png: filename
-    end
-
     # Write the workload
     def output_rb(filename)
       ns = OpenStruct.new(workload: self)
@@ -169,12 +120,12 @@ module NoSE
 
     # Shortcut to add a new {Entity} to the workload
     def Entity(*args, &block)
-      @workload.add_entity Entity.new(*args, &block)
+      @workload.model.add_entity Entity.new(*args, &block)
     end
 
     # Separate function for foreign keys to avoid circular dependencies
     def ForeignKey(name, parent, entity, count: nil)
-      @workload[parent] << ForeignKeyField.new(name, @workload[entity],
+      @workload[parent] << ForeignKeyField.new(name, @workload.model[entity],
                                                count: count)
     end
 
@@ -184,9 +135,5 @@ module NoSE
     end
 
     # rubocop:enable MethodName
-  end
-
-  # Raised when looking up an entity in the workload which does not exist
-  class EntityNotFound < StandardError
   end
 end
