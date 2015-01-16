@@ -1,5 +1,30 @@
 require 'parslet'
 
+# Parslet DSL extension for capturing the input source
+class CaptureSource < Parslet::Atoms::Capture
+  # Ugly hack to capture the source string that was parsed
+  def apply(source, context, consume_all)
+    before = source.instance_variable_get(:@str).rest
+    success, value = result = super(source, context, consume_all)
+    if success
+      # Save the portion of the source string
+      after = source.instance_variable_get(:@str).rest
+      source_str = before[0..(before.length - after.length - 1)]
+      value[(name.to_s + '_source').to_sym] = source_str
+    end
+
+    result
+  end
+end
+
+# Extend the DSL to support capturing the source
+module Parslet::Atoms::DSL
+  # Capture some output along with the source string
+  def capture_source(name)
+    CaptureSource.new(self, name)
+  end
+end
+
 # rubocop:disable Style/Blocks, Style/BlockEndNewline
 
 module NoSE
@@ -51,7 +76,7 @@ module NoSE
     rule(:update) {
       str('UPDATE') >> space >> path.as_array(:path) >> space >>
       str('SET') >> space >> settings.as_array(:settings) >>
-      where.maybe.as(:where)
+      where.maybe.as(:where).capture_source(:where)
     }
 
     rule(:statement) { query | update }
@@ -85,6 +110,11 @@ module NoSE
 
     def inspect
       "#{@field.inspect} #{@operator} #{value}"
+    end
+
+    # Compare conditions equal by their field and operator
+    def ==(other)
+      @field == other.field && @operator == other.operator
     end
   end
 
@@ -251,6 +281,10 @@ module NoSE
 
       populate_settings workload
 
+      # Save the where clause so we can convert to a query later
+      @workload = workload
+      @where_source = @tree.delete(:where_source).strip
+
       freeze
     end
 
@@ -265,6 +299,16 @@ module NoSE
 
         FieldSetting.new field, value
       end
+    end
+
+    # Create a {Query} which corresponds to this update
+    def to_query
+      # Extract the path from the original query
+      path = /UPDATE\s+(([A-z]+\.)*[A-z]+)\s+/.match(@query).captures.first
+      query = "SELECT #{@settings.map(&:field).map(&:name).join ', '} " \
+              "FROM #{path} #{@where_source}"
+
+      Query.new query.strip, @workload
     end
   end
 
