@@ -305,7 +305,7 @@ module NoSE
     def to_query
       # Extract the path from the original query
       path = /UPDATE\s+(([A-z]+\.)*[A-z]+)\s+/.match(@query).captures.first
-      query = "SELECT #{@settings.map(&:field).map(&:name).join ', '} " \
+      query = "SELECT #{@from.id_fields.map(&:name).join ', '} " \
               "FROM #{path} #{@where_source}"
 
       Query.new query.strip, @model
