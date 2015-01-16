@@ -59,7 +59,7 @@ module NoSE
       begin
         @logger.debug { "Got query #{query}" }
 
-        query = Statement.new query, @result.workload
+        query = Statement.parse query, @result.workload.model
         result = @backend.query(query).lazy.map do |row|
           Hash[query.select.map { |field| [field.name, row[field.id]] }]
         end
