@@ -1,3 +1,5 @@
+require_relative './search/constraints'
+
 begin
   require 'gurobi'
 rescue LoadError
@@ -57,62 +59,13 @@ module NoSE
 
     # Add all necessary constraints to the Gurobi model
     def gurobi_add_constraints(model, index_vars, query_vars, indexes, data)
-      # Add constraint for indices being present
-      (0...indexes.length).each do |i|
-        (0...@workload.queries.length).each do |q|
-          model.addConstr query_vars[i][q] + index_vars[i] * -1 <= 0,
-                          "i#{i}q#{q}_avail"
-        end
-      end
-
-      # Add space constraint if needed
-      if data[:max_space].finite?
-        space = indexes.each_with_index.map do |index, i|
-          index_vars[i] * (index.size * 1.0)
-        end.reduce(&:+)
-        model.addConstr space <= data[:max_space] * 1.0, 'max_space'
-      end
-
-      # Add complete query plan constraints
-      @workload.queries.each_with_index do |query, q|
-        entities = query.longest_entity_path
-        query_constraint = Array.new(entities.length) do |_|
-          Gurobi::LinExpr.new
-        end
-        data[:costs][q].each do |i, (step_indexes, _)|
-          indexes[i].entity_range(entities).each do |part|
-            index_var = query_vars[i][q]
-            query_constraint[part] += index_var
-          end
-
-          # All indices used at this step must either all be used, or none used
-          if step_indexes.length > 1
-            if step_indexes.last.is_a? Array
-              # We have multiple possible last steps, so add an auxiliary
-              # variable which allows us to select between them
-              first_var = query_vars[step_indexes.first][q]
-              step_var = model.addVar(0, 1, 0, Gurobi::BINARY,
-                                      "q#{q}s#{step_indexes.first}")
-              model.update
-              model.addConstr(step_var * 1 >= first_var * 1)
-
-              # Force exactly one of the indexes for the last step to be chosen
-              vars = step_indexes.last.map { |index| query_vars[index][q] }
-              model.addConstr(vars.inject(Gurobi::LinExpr.new, &:+) ==
-                              step_var)
-            else
-              vars = step_indexes.map { |index| query_vars[index][q] }
-              vars.reverse.each_cons(2).each do |first_var, last_var|
-                model.addConstr(last_var * 1 == first_var * 1)
-              end
-            end
-          end
-        end
-
-        # Ensure we have exactly one index on each component of the query path
-        query_constraint.each do |constraint|
-          model.addConstr(constraint == 1)
-        end
+      [
+        IndexPresenceConstraints,
+        SpaceConstraint,
+        CompletePlanConstraints
+      ].each do |constraint|
+        constraint.apply @workload, model, index_vars, query_vars,
+                         indexes, data
       end
 
       @logger.debug do
