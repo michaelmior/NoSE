@@ -106,7 +106,7 @@ module NoSE
       begin
         @tree = CQLT.new.apply(CQLP.new.method(type).call.parse query)
       rescue Parslet::ParseFailed => exc
-        new_exc = ParseFailed.new exc.message
+        new_exc = ParseFailed.new exc.cause.ascii_tree
         new_exc.set_backtrace exc.backtrace
         raise new_exc
       end
