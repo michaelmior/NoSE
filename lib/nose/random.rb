@@ -121,13 +121,13 @@ module NoSE
     end
   end
 
-  # Generates random queries over entities in a given workload
+  # Generates random queries over entities in a given model
   class QueryGenerator
-    def initialize(workload)
-      @workload = workload
+    def initialize(model)
+      @model = model
     end
 
-    # Generate a new random query from entities in the workload
+    # Generate a new random query from entities in the model
     # @return Query
     def random_query
       path = random_path(4)
@@ -141,7 +141,7 @@ module NoSE
                 "#{condition_field_name field, path}.#{field.name} = ?"
               end.join ' AND '}"
 
-      Query.new query, @workload
+      Query.new query, @model
     end
 
     private
@@ -163,7 +163,7 @@ module NoSE
     # Return a random path through the entity graph
     # @return [Array<Entity>]
     def random_path(max_length)
-      path = [@workload.entities.values.sample]
+      path = [@model.entities.values.sample]
       while path.length < max_length
         keys = path.last.foreign_keys - path
         break if keys.empty?

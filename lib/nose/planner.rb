@@ -450,11 +450,11 @@ module NoSE
   class QueryState
     attr_accessor :from, :fields, :eq, :range, :order_by, :path, :cardinality,
                   :given_fields
-    attr_reader :query, :entities, :workload
+    attr_reader :query, :entities, :model
 
-    def initialize(query, workload)
+    def initialize(query, model)
       @query = query
-      @workload = workload
+      @model = model
       @from = query.from
       @fields = query.select
       @eq = query.eq_fields
@@ -556,10 +556,10 @@ module NoSE
 
   # A query planner which can construct a tree of query plans
   class Planner
-    def initialize(workload, indexes)
+    def initialize(model, indexes)
       @logger = Logging.logger['nose::planner']
 
-      @workload = workload
+      @model = model
       @indexes = indexes
     end
 
@@ -567,7 +567,7 @@ module NoSE
     # @return [QueryPlanTree]
     # @raise [NoPlanException]
     def find_plans_for_query(query)
-      state = QueryState.new query, @workload
+      state = QueryState.new query, @model
       state.freeze
       tree = QueryPlanTree.new(state)
 

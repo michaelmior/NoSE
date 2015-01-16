@@ -9,7 +9,7 @@ module NoSE
       workload = $workload
       # rubocop:enable GlobalVars
 
-      workload.output_png png_file, options[:include_fields]
+      workload.model.output_png png_file, options[:include_fields]
     end
   end
 end

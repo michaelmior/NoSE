@@ -28,7 +28,7 @@ module NoSE
         end
       end
     end
-    subject(:qgen) { QueryGenerator.new(workload) }
+    subject(:qgen) { QueryGenerator.new(workload.model) }
 
     it 'generates valid queries' do
       expect(qgen.random_query).to be_a Query

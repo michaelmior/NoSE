@@ -6,7 +6,7 @@ module NoSE
 
     it 'produces a simple index for a filter' do
       query = Query.new 'SELECT Username FROM User WHERE User.City = ?',
-                        workload
+                        workload.model
       indexes = enum.indexes_for_query query
 
       expect(indexes.to_a).to include \
@@ -15,7 +15,7 @@ module NoSE
 
     it 'produces a simple index for a foreign key join' do
       query = Query.new 'SELECT Body FROM Tweet.User WHERE User.City = ?',
-                        workload
+                        workload.model
       indexes = enum.indexes_for_query query
 
       expect(indexes).to include \
@@ -24,7 +24,7 @@ module NoSE
 
     it 'produces a simple index for a filter within a workload' do
       query = Query.new 'SELECT Username FROM User WHERE User.City = ?',
-                        workload
+                        workload.model
       workload.add_query query
       indexes = enum.indexes_for_workload
 
@@ -34,7 +34,7 @@ module NoSE
 
     it 'does not produce empty indexes' do
       query = Query.new 'SELECT Body FROM Tweet.User WHERE User.City = ?',
-                        workload
+                        workload.model
       workload.add_query query
       indexes = enum.indexes_for_workload
       expect(indexes).to all(satisfy do |index|

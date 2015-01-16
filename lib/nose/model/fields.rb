@@ -157,7 +157,7 @@ module NoSE
       #      enclosing workload and the entity being referenced by the key
       if entity.is_a? String
         workload = Workload.current
-        entity = workload[entity] unless workload.nil?
+        entity = workload.model[entity] unless workload.nil?
       end
       @entity = entity
     end

@@ -29,9 +29,9 @@ module NoSE
       }, 3)
 
       workload = loader.workload({})
-      expect(workload.entities).to have(1).item
+      expect(workload.model.entities).to have(1).item
 
-      entity = workload.entities.values.first
+      entity = workload.model.entities.values.first
       expect(entity.name).to eq 'Foo'
       expect(entity.fields).to have(2).items
     end

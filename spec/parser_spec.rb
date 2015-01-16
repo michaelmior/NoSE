@@ -18,8 +18,8 @@ module NoSE
 
     let(:query) do
       Query.new 'SELECT Body FROM Tweet.User WHERE ' \
-        'Tweet.Link = ? AND Tweet.Timestamp > ? AND User.City = ? ' \
-        'ORDER BY Tweet.Timestamp LIMIT 5', workload
+                'Tweet.Link = ? AND Tweet.Timestamp > ? AND User.City = ? ' \
+                'ORDER BY Tweet.Timestamp LIMIT 5', workload.model
     end
 
     it_behaves_like 'a statement' do
@@ -39,34 +39,36 @@ module NoSE
     end
 
     it 'can select all fields' do
-      stmt = Query.new('SELECT * FROM Tweet WHERE Tweet.Body = ?', workload)
+      stmt = Query.new 'SELECT * FROM Tweet WHERE Tweet.Body = ?',
+                       workload.model
       expect(stmt.select).to match_array tweet.fields.values
     end
 
     it 'compares equal regardless of constant values' do
       stmt1 = Query.new 'SELECT * FROM Tweet WHERE Tweet.Timestamp = 3',
-                        workload
+                        workload.model
       stmt2 = Query.new 'SELECT * FROM Tweet WHERE Tweet.Timestamp = 2',
-                        workload
+                        workload.model
 
       expect(stmt1).to eq stmt2
     end
 
     context 'when parsing literals' do
       it 'can find strings' do
-        stmt = Query.new 'SELECT * FROM User WHERE User.City = "NY"', workload
+        stmt = Query.new 'SELECT * FROM User WHERE User.City = "NY"',
+                         workload.model
         expect(stmt.conditions.first.value).to eq 'NY'
       end
 
       it 'can find integers' do
         stmt = Query.new 'SELECT * FROM Tweet WHERE Tweet.Timestamp = 3',
-                         workload
+                         workload.model
         expect(stmt.conditions.first.value).to eq 3
       end
 
       it 'fails if the value is the wrong type' do
         expect do
-          Query.new 'SELECT * FROM User WHERE User.City = 3', workload
+          Query.new 'SELECT * FROM User WHERE User.City = 3', workload.model
         end.to raise_error TypeError
       end
     end
@@ -79,7 +81,7 @@ module NoSE
     let(:update) do
       Update.new 'UPDATE Tweet.User SET Body = "foo" WHERE ' \
                  'Tweet.Link = ? AND Tweet.Timestamp > ? AND User.City = ?',
-                 workload
+                 workload.model
     end
 
     it_behaves_like 'a statement' do
