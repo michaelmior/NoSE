@@ -35,10 +35,10 @@ module NoSE
 
     # Probabilities of selecting various field types
     FIELD_TYPES = [
-      [IntegerField, 0.45],
-      [StringField,  0.35],
-      [DateField,    0.1],
-      [FloatField,   0.1]
+      [NoSE::Fields::IntegerField, 0.45],
+      [NoSE::Fields::StringField,  0.35],
+      [NoSE::Fields::DateField,    0.1],
+      [NoSE::Fields::FloatField,   0.1]
     ]
 
     # Select random fields for each entity

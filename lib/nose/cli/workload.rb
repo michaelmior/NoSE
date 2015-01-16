@@ -2,7 +2,7 @@ require 'formatador'
 require 'ostruct'
 require 'json'
 
-module NoSE
+module NoSE::CLI
   # Add a command to run the advisor for a given workload
   class NoSECLI < Thor
     desc 'workload NAME', 'run the workload NAME'

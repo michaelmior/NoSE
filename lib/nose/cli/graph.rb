@@ -1,4 +1,4 @@
-module NoSE
+module NoSE::CLI
   # Add a command to generate a graphic of the schema from a workload
   class NoSECLI < Thor
     desc 'graph WORKLOAD PNG_FILE', 'output a PNG_FILE of the given WORKLOAD'

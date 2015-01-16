@@ -8,4 +8,4 @@ $LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
 require 'nose'
 require 'nose/cli'
 
-NoSE::NoSECLI.start ARGV
+NoSE::CLI::NoSECLI.start ARGV

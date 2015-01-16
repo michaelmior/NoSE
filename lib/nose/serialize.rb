@@ -7,12 +7,12 @@ module NoSE
     include Uber::Callable
 
     def call(_object, _fragment, instance, **options)
-      field_class = NoSE::Field.subtype_class instance['type']
+      field_class = Fields::Field.subtype_class instance['type']
 
       # Extract the correct parameters and create a new field instance
-      if field_class == NoSE::StringField && !instance['size'].nil?
+      if field_class == Fields::StringField && !instance['size'].nil?
         field = field_class.new instance['name'], instance['size']
-      elsif field_class.ancestors.include? NoSE::ForeignKeyField
+      elsif field_class.ancestors.include? Fields::ForeignKeyField
         field = field_class.new instance['name'],
                                 options[:entity_map][instance['entity']]
       else
@@ -93,7 +93,7 @@ module NoSE
 
     # The entity name for foreign keys
     def entity
-      represented.entity.name if represented.is_a? ForeignKeyField
+      represented.entity.name if represented.is_a? Fields::ForeignKeyField
     end
     property :entity, exec_context: :decorator
   end
@@ -107,7 +107,7 @@ module NoSE
       entity = options[:entity_map][instance['name']]
 
       # Add all fields from the entity
-      fields = NoSE::EntityFieldRepresenter.represent([]) \
+      fields = EntityFieldRepresenter.represent([]) \
         .from_hash(instance['fields'], entity_map: options[:entity_map])
       fields.each { |field| entity << field }
 
@@ -217,12 +217,11 @@ module NoSE
       # Recreate all the entities
       entity_map = {}
       instance['entities'].each do |entity_hash|
-        entity_map[entity_hash['name']] = \
-          NoSE::Entity.new entity_hash['name']
+        entity_map[entity_hash['name']] = NoSE::Entity.new entity_hash['name']
       end
 
       # Populate the entities and add them to the workload
-      entities = NoSE::EntityRepresenter.represent([]) \
+      entities = EntityRepresenter.represent([]) \
         .from_hash(instance['entities'], entity_map: entity_map)
       entities.each { |entity| workload << entity }
 
@@ -241,15 +240,15 @@ module NoSE
       workload = object.workload
       query = Statement.parse instance['query'], workload.model
 
-      plan = NoSE::QueryPlan.new query
-      state = NoSE::QueryState.new query, workload
-      parent = NoSE::RootPlanStep.new state
+      plan = QueryPlan.new query
+      state = QueryState.new query, workload
+      parent = RootPlanStep.new state
 
       f = ->(field) { workload[field['parent']][field['name']] }
 
       # Loop over all steps in the plan and reconstruct them
       instance['steps'].each do |step_hash|
-        step_class = NoSE::PlanStep.subtype_class step_hash['type']
+        step_class = PlanStep.subtype_class step_hash['type']
         if step_class == IndexLookupPlanStep
           index_key = step_hash['index']['key']
           step_index = object.indexes.find { |index| index.key == index_key }

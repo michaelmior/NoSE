@@ -1,4 +1,6 @@
-module NoSE
+require 'forwardable'
+
+module NoSE::Fields
   # A single field on an {Entity}
   class Field
     include Supertype
@@ -67,12 +69,12 @@ module NoSE
     # Populate a helper DSL object with all subclasses of Field
     def self.inherited(child_class)
       # Add convenience methods for all field types for an entity DSL
-      method_name = child_class.name.sub(/^NoSE::(.*?)(Field)?$/, '\1')
-      EntityDSL.send :define_method, method_name,
-                     (proc do |*args|
-                       send(:instance_variable_get, :@entity).send \
-                           :<<, child_class.new(*args)
-                     end)
+      method_name = child_class.name.sub(/^NoSE::Fields::(.*?)(Field)?$/, '\1')
+      NoSE::EntityDSL.send :define_method, method_name,
+                           (proc do |*args|
+                             send(:instance_variable_get, :@entity).send \
+                                 :<<, child_class.new(*args)
+                           end)
 
       child_class.send(:include, Subtype)
     end
@@ -156,7 +158,7 @@ module NoSE
       # XXX: This is a hack which allows us to look up the stack to find an
       #      enclosing workload and the entity being referenced by the key
       if entity.is_a? String
-        workload = Workload.current
+        workload = NoSE::Workload.current
         entity = workload.model[entity] unless workload.nil?
       end
       @entity = entity

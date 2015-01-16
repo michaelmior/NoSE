@@ -1,7 +1,7 @@
 require 'nose/backends/cassandra'
 
 module NoSE
-  describe CassandraBackend do
+  describe Backends::CassandraBackend do
     include_context 'entities'
     let(:index) do
       Index.new [user['Username']],
@@ -9,7 +9,7 @@ module NoSE
                 [tweet['Body']],
                 [user, tweet], 'TweetIndex'
     end
-    let(:backend) { CassandraBackend.new workload, [index], [], {} }
+    let(:backend) { Backends::CassandraBackend.new workload, [index], [], {} }
 
     it 'can generate DDL for a simple index' do
       expect(backend.indexes_ddl).to match_array [
