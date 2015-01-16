@@ -99,7 +99,7 @@ module NoSE
       expect(query.conditions).to eq update.conditions
       expect(query.from).to eq update.from
       expect(query.longest_entity_path).to eq update.longest_entity_path
-      expect(query.select.to_set).to eq update.settings.map(&:field).to_set
+      expect(query.select.to_set).to eq update.from.id_fields.to_set
     end
   end
 end
