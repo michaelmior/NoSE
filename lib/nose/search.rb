@@ -60,9 +60,9 @@ module NoSE
     # Add all necessary constraints to the Gurobi model
     def gurobi_add_constraints(model, index_vars, query_vars, indexes, data)
       [
-        IndexPresenceConstraints,
-        SpaceConstraint,
-        CompletePlanConstraints
+        Constraints::IndexPresenceConstraints,
+        Constraints::SpaceConstraint,
+        Constraints::CompletePlanConstraints
       ].each do |constraint|
         constraint.apply @workload, model, index_vars, query_vars,
                          indexes, data

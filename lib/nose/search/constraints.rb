@@ -1,4 +1,4 @@
-module NoSE
+module NoSE::Constraints
   # Base class for constraints
   class Constraint
     # If this is not overridden, apply query-specific constraints
