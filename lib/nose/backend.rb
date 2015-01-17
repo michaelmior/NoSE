@@ -7,11 +7,13 @@ module NoSE::Backend
       @plans = plans
     end
 
-    # Subclasses implement to allow inserting
-    # data into the backend database
+    # @abstract Subclasses implement to allow inserting
+    #           data into the backend database
+    # :nocov:
     def index_insert_chunk(index, chunk)
       raise NotImplementedError
     end
+    # :nocov:
 
     # Execute a query with the stored plans
     def query(query)
@@ -44,10 +46,12 @@ module NoSE::Backend
     # Look up data on an index in the backend
     class IndexLookupQueryStep < QueryStep
       # @abstract Subclasses should return an array of row hashes
+      # :nocov:
       def self.process(_client, _query, _results, _step,
                        _prev_step, _next_step)
         fail NotImplementedError, 'Must be provided by a subclass'
       end
+      # :nocov:
     end
 
     # Perform filtering external to the backend

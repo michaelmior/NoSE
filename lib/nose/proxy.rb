@@ -26,15 +26,19 @@ module NoSE::Proxy
       end
     end
 
-    # @abstract Implemented by subclasses
+    # @abstract Subclasses should process a new connection on the given socket
+    # :nocov:
     def handle_connection(_socket)
       fail NotImplementedError
     end
+    # :nocov:
 
-    # @abstract Implemented by subclasses
+    # @abstract Subclasses should dispose of state associated with the socket
+    # :nocov:
     def remove_connection(_socket)
       fail NotImplementedError
     end
+    # :nocov:
 
     # Stop accepting connections
     def stop

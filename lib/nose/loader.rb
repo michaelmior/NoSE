@@ -6,14 +6,18 @@ module NoSE::Loader
       @backend = backend
     end
 
-    # Implemented by subclasses to load data for the given list of indexes
+    # @abstract Subclasses should load data for the given list of indexes
+    # :nocov:
     def load(indexes, config, show_progress = false)
       raise NotImplementedError
     end
+    # :nocov:
 
-    # Implemented by subclasses to generate a model from the external source
+    # @abstract Subclasses should generate a model from the external source
+    # :nocov:
     def model(config)
       raise NotImplementedError
     end
+    # :nocov:
   end
 end
