@@ -62,7 +62,7 @@ module NoSE::Search
 
     # Get the cost of using each index for each query in a workload
     def costs(indexes)
-      planner = NoSE::Planner.new @workload, indexes
+      planner = NoSE::Plans::Planner.new @workload, indexes
 
       # Create a hash to allow efficient lookup of the numerical index
       # of a particular index within the array of indexes
@@ -82,11 +82,11 @@ module NoSE::Search
       planner.find_plans_for_query(query).each do |plan|
         steps_by_index = []
         plan.each do |step|
-          if step.is_a? NoSE::IndexLookupPlanStep
+          if step.is_a? NoSE::Plans::IndexLookupPlanStep
             # If one of two adjacent steps is just a lookup on
             # a single entity, we should bundle them together
             last_step = steps_by_index.last.last unless steps_by_index.empty?
-            if last_step.is_a?(NoSE::IndexLookupPlanStep) &&
+            if last_step.is_a?(NoSE::Plans::IndexLookupPlanStep) &&
                (step.index.path == [last_step.index.path.last] ||
                 last_step.index.path == [step.index.path.first])
               steps_by_index.last.push step
@@ -115,7 +115,7 @@ module NoSE::Search
       # with the cost of all plan steps for the part of the query path
       steps_by_index.each do |steps|
         step_indexes = steps.select do |step|
-          step.is_a? NoSE::IndexLookupPlanStep
+          step.is_a? NoSE::Plans::IndexLookupPlanStep
         end.map(&:index)
         step_indexes.map! { |index| index_pos[index] }
 

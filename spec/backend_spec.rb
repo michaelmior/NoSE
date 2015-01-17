@@ -28,7 +28,7 @@ module NoSE::Backend
         {'User_Username' => 'Bob'},
         {'User_Username' => 'Alice'}
       ]
-      step = NoSE::SortPlanStep.new [user['Username']]
+      step = NoSE::Plans::SortPlanStep.new [user['Username']]
 
       BackendBase::SortQueryStep.process nil, nil, results, step, nil, nil
 
@@ -47,7 +47,7 @@ module NoSE::Backend
         {'User_Username' => 'Alice'},
         {'User_Username' => 'Bob'}
       ]
-      step = NoSE::FilterPlanStep.new [user['Username']], nil
+      step = NoSE::Plans::FilterPlanStep.new [user['Username']], nil
       query = NoSE::Query.new 'SELECT * FROM User WHERE User.Username = "Bob"',
                               workload.model
 
@@ -63,7 +63,7 @@ module NoSE::Backend
         {'User_Username' => 'Alice'},
         {'User_Username' => 'Bob'}
       ]
-      step = NoSE::FilterPlanStep.new [], [user['Username']]
+      step = NoSE::Plans::FilterPlanStep.new [], [user['Username']]
       query = NoSE::Query.new 'SELECT * FROM User WHERE User.Username < "B" ' \
                               'AND User.City = "New York"', workload.model
 
