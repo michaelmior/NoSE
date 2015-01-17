@@ -1,6 +1,6 @@
-module NoSE
+module NoSE::Backend
   # Superclass of all database backends
-  class Backend
+  class BackendBase
     def initialize(workload, indexes, plans, _config)
       @workload = workload
       @indexes = indexes

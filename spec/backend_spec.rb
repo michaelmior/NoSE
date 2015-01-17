@@ -1,15 +1,15 @@
-require 'nose/backends/cassandra'
+require 'nose/backend/cassandra'
 
-module NoSE
-  describe Backends::CassandraBackend do
+module NoSE::Backend
+  describe CassandraBackend do
     include_context 'entities'
     let(:index) do
-      Index.new [user['Username']],
-                [tweet['Timestamp']],
-                [tweet['Body']],
-                [user, tweet], 'TweetIndex'
+      NoSE::Index.new [user['Username']],
+                      [tweet['Timestamp']],
+                      [tweet['Body']],
+                      [user, tweet], 'TweetIndex'
     end
-    let(:backend) { Backends::CassandraBackend.new workload, [index], [], {} }
+    let(:backend) { CassandraBackend.new workload, [index], [], {} }
 
     it 'can generate DDL for a simple index' do
       expect(backend.indexes_ddl).to match_array [
@@ -20,7 +20,7 @@ module NoSE
     end
   end
 
-  describe Backend::SortQueryStep do
+  describe BackendBase::SortQueryStep do
     include_context 'entities'
 
     it 'can sort a list of results' do
@@ -28,9 +28,9 @@ module NoSE
         {'User_Username' => 'Bob'},
         {'User_Username' => 'Alice'}
       ]
-      step = SortPlanStep.new [user['Username']]
+      step = NoSE::SortPlanStep.new [user['Username']]
 
-      Backend::SortQueryStep.process nil, nil, results, step, nil, nil
+      BackendBase::SortQueryStep.process nil, nil, results, step, nil, nil
 
       expect(results).to eq [
         {'User_Username' => 'Alice'},
@@ -39,7 +39,7 @@ module NoSE
     end
   end
 
-  describe Backend::FilterQueryStep do
+  describe BackendBase::FilterQueryStep do
     include_context 'entities'
 
     it 'can filter results by an equality predicate' do
@@ -47,11 +47,11 @@ module NoSE
         {'User_Username' => 'Alice'},
         {'User_Username' => 'Bob'}
       ]
-      step = FilterPlanStep.new [user['Username']], nil
-      query = Query.new 'SELECT * FROM User WHERE User.Username = "Bob"',
-                        workload.model
+      step = NoSE::FilterPlanStep.new [user['Username']], nil
+      query = NoSE::Query.new 'SELECT * FROM User WHERE User.Username = "Bob"',
+                              workload.model
 
-      Backend::FilterQueryStep.process nil, query, results, step, nil, nil
+      BackendBase::FilterQueryStep.process nil, query, results, step, nil, nil
 
       expect(results).to eq [
         {'User_Username' => 'Bob'}
@@ -63,11 +63,11 @@ module NoSE
         {'User_Username' => 'Alice'},
         {'User_Username' => 'Bob'}
       ]
-      step = FilterPlanStep.new [], [user['Username']]
-      query = Query.new 'SELECT * FROM User WHERE User.Username < "B" ' \
-                        'AND User.City = "New York"', workload.model
+      step = NoSE::FilterPlanStep.new [], [user['Username']]
+      query = NoSE::Query.new 'SELECT * FROM User WHERE User.Username < "B" ' \
+                              'AND User.City = "New York"', workload.model
 
-      Backend::FilterQueryStep.process nil, query, results, step, nil, nil
+      BackendBase::FilterQueryStep.process nil, query, results, step, nil, nil
 
       expect(results).to eq [
         {'User_Username' => 'Alice'}
