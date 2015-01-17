@@ -4,18 +4,18 @@
 $workload = NoSE::Workload.new do
   # Define entities along with the size and cardinality of their fields
   # as well as an estimated number of each entity
-  <% workload.entities.values.each do |entity| %>
+  <% workload.model.entities.values.each do |entity| %>
   (Entity '<%= entity.name %>' do
     <% entity.fields.values.each do |field| %>
       <%
-        if field.is_a? NoSE::ForeignKeyField
+        if field.is_a? NoSE::Fields::ForeignKeyField
           foreign_keys << field
           next
         end
       %>
       <%= field.subtype_name name_case: :camel %> '<%= field.name %>',<%=
       case [field.class]
-      when [NoSE::StringField]
+      when [NoSE::Fields::StringField]
         "#{field.size}, "
       else
         ''
