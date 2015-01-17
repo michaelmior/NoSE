@@ -227,7 +227,7 @@ module NoSE::Plans
   end
 
   # A query planner which can construct a tree of query plans
-  class Planner
+  class QueryPlanner
     def initialize(model, indexes)
       @logger = Logging.logger['nose::planner']
 
