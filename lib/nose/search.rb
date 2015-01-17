@@ -1,22 +1,14 @@
-require_relative './search/constraints'
-
-begin
-  require 'gurobi'
-rescue LoadError
-  # We can't use most search functionality, but it won't explode
-  nil
-end
+require_relative './search/problem'
 
 require 'logging'
 require 'ostruct'
 require 'tempfile'
 
-module NoSE
+module NoSE::Search
   # Searches for the optimal indices for a given workload
   class Search
     def initialize(workload)
       @logger = Logging.logger['nose::search']
-
       @workload = workload
     end
 
@@ -47,107 +39,17 @@ module NoSE
 
     private
 
-    # Write a model to a temporary file and log the file name
-    def log_model(model, type, extension)
-      @logger.debug do
-        tmpfile = Tempfile.new ['model', extension]
-        ObjectSpace.undefine_finalizer tmpfile
-        model.write(tmpfile.path)
-        "#{type} written to #{tmpfile.path}"
-      end
-    end
-
-    # Add all necessary constraints to the Gurobi model
-    def gurobi_add_constraints(model, index_vars, query_vars, indexes, data)
-      [
-        Constraints::IndexPresenceConstraints,
-        Constraints::SpaceConstraint,
-        Constraints::CompletePlanConstraints
-      ].each do |constraint|
-        constraint.apply @workload, model, index_vars, query_vars,
-                         indexes, data
-      end
-
-      @logger.debug do
-        model.update
-        "Added #{model.getConstrs.count} constraints to model"
-      end
-    end
-
-    # Set the objective function on the Gurobi model
-    def gurobi_set_objective(model, query_vars, costs)
-      min_cost = (0...query_vars.length).to_a \
-        .product((0...@workload.queries.length).to_a).map do |i, q|
-        next if costs[q][i].nil?
-        query_vars[i][q] * (costs[q][i].last * 1.0)
-        # XXX add weight
-      end.compact.reduce(&:+)
-
-      @logger.info { "Objective function is #{min_cost.inspect}" }
-
-      model.setObjective(min_cost, Gurobi::MINIMIZE)
-    end
-
     # Solve the index selection problem using Gurobi
     def solve_gurobi(indexes, data)
-      # Set up solver environment
-      env = Gurobi::Env.new
-      env.set_int Gurobi::IntParam::METHOD,
-                  Gurobi::METHOD_DETERMINISTIC_CONCURRENT
-      env.set_int Gurobi::IntParam::THREADS, Parallel.processor_count
+      # Construct and solve the ILP
+      problem = Problem.new @workload, indexes, data
+      problem.solve
 
-      model = Gurobi::Model.new env
-      model.getEnv.set_int(Gurobi::IntParam::OUTPUT_FLAG, 0)
-
-      # Initialize query and index variables
-      index_vars = []
-      query_vars = []
-      (0...indexes.length).each do |i|
-        index_vars[i] = model.addVar(0, 1, 0, Gurobi::BINARY, "i#{i}")
-        query_vars[i] = []
-        (0...@workload.queries.length).each do |q|
-          query_vars[i][q] = model.addVar(0, 1, 0, Gurobi::BINARY, "q#{q}i#{i}")
-
-        end
-      end
-
-      # Add all constraints to the model
-      model.update
-      gurobi_add_constraints model, index_vars, query_vars, indexes, data
-
-      # Set the objective function
-      gurobi_set_objective model, query_vars, data[:costs]
-
-      # Final update to the model
-      model.update
-
-      # Optionally output the model to a temporary file
-      log_model model, 'Model', '.lp'
-
-      # Run the optimization
-      model.optimize
-
-      # Ensure we found a valid solution
-      status = model.get_int(Gurobi::IntAttr::STATUS)
-      if status == Gurobi::INFEASIBLE
-        model.computeIIS
-        log_model model, 'IIS', '.ilp'
-      end
-
-      fail NoSolutionException if status != Gurobi::OPTIMAL
-
-      obj_val = model.get_double(Gurobi::DoubleAttr::OBJ_VAL)
-      @logger.debug "Found solution with total cost #{obj_val}"
+      # We won't get here if there's no valdi solution
+      @logger.debug "Found solution with total cost #{problem.objective_value}"
 
       # Return the selected indices
-      selected_indexes = indexes.select.with_index do |_, i|
-        # Even though we specifed the variables as binary, rounding
-        # error means the value won't be exactly one
-        # (the check exists to catch weird values if they arise)
-        val = index_vars[i].get_double(Gurobi::DoubleAttr::X)
-        fail if val > 0.01 && val < 0.99
-        val > 0.99
-      end
+      selected_indexes = problem.selected_indexes
 
       @logger.debug do
         "Selected indexes:\n" + selected_indexes.map do |index|
@@ -160,7 +62,7 @@ module NoSE
 
     # Get the cost of using each index for each query in a workload
     def costs(indexes)
-      planner = Planner.new @workload, indexes
+      planner = NoSE::Planner.new @workload, indexes
 
       # Create a hash to allow efficient lookup of the numerical index
       # of a particular index within the array of indexes
@@ -180,11 +82,11 @@ module NoSE
       planner.find_plans_for_query(query).each do |plan|
         steps_by_index = []
         plan.each do |step|
-          if step.is_a? IndexLookupPlanStep
+          if step.is_a? NoSE::IndexLookupPlanStep
             # If one of two adjacent steps is just a lookup on
             # a single entity, we should bundle them together
             last_step = steps_by_index.last.last unless steps_by_index.empty?
-            if last_step.is_a?(IndexLookupPlanStep) &&
+            if last_step.is_a?(NoSE::IndexLookupPlanStep) &&
                (step.index.path == [last_step.index.path.last] ||
                 last_step.index.path == [step.index.path.first])
               steps_by_index.last.push step
@@ -213,7 +115,7 @@ module NoSE
       # with the cost of all plan steps for the part of the query path
       steps_by_index.each do |steps|
         step_indexes = steps.select do |step|
-          step.is_a? IndexLookupPlanStep
+          step.is_a? NoSE::IndexLookupPlanStep
         end.map(&:index)
         step_indexes.map! { |index| index_pos[index] }
 
@@ -258,23 +160,6 @@ module NoSE
           query_costs[step_indexes.first] = [step_indexes, cost]
         end
       end
-    end
-  end
-
-  # Thrown when no solution can be found to the ILP
-  class NoSolutionException < StandardError
-  end
-end
-
-# Only do this if Gurobi is available
-if Object.const_defined?('Gurobi')
-  Gurobi::LinExpr.class_eval do
-    def inspect
-      0.upto(size - 1).map do |i|
-        coeff = getCoeff(i)
-        var = getVar(i).get_string(Gurobi::StringAttr::VAR_NAME)
-        "#{coeff} * #{var}"
-      end.join ' + '
     end
   end
 end

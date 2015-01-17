@@ -18,7 +18,7 @@ module NoSE::CLI
         .indexes_for_workload.to_a
 
       if options[:max_space].finite?
-        indexes = NoSE::Search.new(workload) \
+        indexes = NoSE::Search::Search.new(workload) \
           .search_overlap(enumerated_indexes, options[:max_space])
       else
         indexes = enumerated_indexes.clone
