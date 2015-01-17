@@ -25,7 +25,7 @@ module NoSE::CLI
       end
 
       # Find the final plans for each query
-      planner = NoSE::Planner.new workload, indexes
+      planner = NoSE::Plans::Planner.new workload, indexes
       plans = {}
       workload.queries.map do |query|
         plans[query] = planner.min_plan query
@@ -33,7 +33,7 @@ module NoSE::CLI
 
       # Get the indexes which are actually used
       indexes = plans.map(&:to_a).flatten.select do |step|
-        step.is_a? NoSE::IndexLookupPlanStep
+        step.is_a? NoSE::Plans::IndexLookupPlanStep
       end.map(&:index).to_set
 
       result = OpenStruct.new(

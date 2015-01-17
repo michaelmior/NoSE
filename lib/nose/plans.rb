@@ -1,7 +1,7 @@
 require 'forwardable'
 require 'ostruct'
 
-module NoSE
+module NoSE::Plans
   # A single plan for a query
   class QueryPlan
     attr_accessor :query
