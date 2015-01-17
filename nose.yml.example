@@ -4,7 +4,7 @@ backend:
   hosts:
     - localhost
   port: 9042
-  keyspace: Sadvisor
+  keyspace: nose
 
 # Loader-specific configuration
 # The mysql loader is recommended, but csv might work as well if
