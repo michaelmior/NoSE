@@ -59,21 +59,21 @@ module NoSE
 
         client.query("DESCRIBE #{table}").each do |name, type, _, key, _, _|
           if key == 'PRI'
-            field_class = IDField
+            field_class = Fields::IDField
           else
             case type
             when /datetime/
-              field_class = DateField
+              field_class = Fields::DateField
             when /float/
-              field_class = FloatField
+              field_class = Fields::FloatField
             when /text/
               # TODO: Get length
-              field_class = StringField
+              field_class = Fields::StringField
             when /varchar\(([0-9]+)\)/
               # TODO: Use length
-              field_class = StringField
+              field_class = Fields::StringField
             when /(tiny)?int/
-              field_class = IntegerField
+              field_class = Fields::IntegerField
             end
           end
 

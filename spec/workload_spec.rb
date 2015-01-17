@@ -2,7 +2,7 @@ module NoSE
   describe Workload do
     subject(:workload) { Workload.new }
     let(:entity)      { Entity.new('Foo') << field }
-    let(:field)       { IDField.new('Id') }
+    let(:field)       { Fields::IDField.new('Id') }
 
     before(:each) do
       workload.model.add_entity entity
@@ -34,11 +34,11 @@ module NoSE
 
     it 'can find fields which traverse foreign keys' do
       other_entity = Entity.new 'Bar'
-      other_field = IDField.new 'Quux'
+      other_field = Fields::IDField.new 'Quux'
       other_entity << other_field
       workload.model.add_entity other_entity
 
-      entity << ForeignKeyField.new('Baz', other_entity)
+      entity << Fields::ForeignKeyField.new('Baz', other_entity)
 
       expect(workload.model.find_field %w(Foo Baz Quux)).to be other_field
     end

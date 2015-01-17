@@ -35,16 +35,16 @@ module NoSE
 
     # Probabilities of selecting various field types
     FIELD_TYPES = [
-      [NoSE::Fields::IntegerField, 0.45],
-      [NoSE::Fields::StringField,  0.35],
-      [NoSE::Fields::DateField,    0.1],
-      [NoSE::Fields::FloatField,   0.1]
+      [Fields::IntegerField, 0.45],
+      [Fields::StringField,  0.35],
+      [Fields::DateField,    0.1],
+      [Fields::FloatField,   0.1]
     ]
 
     # Select random fields for each entity
     def pick_fields
       @nodes.each do |node|
-        @entities[node] << IDField.new(@entities[node].name + 'ID')
+        @entities[node] << Fields::IDField.new(@entities[node].name + 'ID')
         0.upto(@field_count.rand).each do |field_index|
           type_rand = rand
           field = FIELD_TYPES.find do |_, threshold|
@@ -68,7 +68,7 @@ module NoSE
             to_node = node
           end
 
-          @entities[from_node] << ForeignKeyField.new(
+          @entities[from_node] << Fields::ForeignKeyField.new(
             'FK' + @entities[to_node].name + 'ID',
             @entities[to_node])
         end
