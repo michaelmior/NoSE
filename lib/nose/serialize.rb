@@ -1,18 +1,18 @@
 require 'representable'
 require 'representable/json'
 
-module NoSE
+module NoSE::Serialize
   # Construct a field from a parsed hash
   class FieldBuilder
     include Uber::Callable
 
     def call(_object, _fragment, instance, **options)
-      field_class = Fields::Field.subtype_class instance['type']
+      field_class = NoSE::Fields::Field.subtype_class instance['type']
 
       # Extract the correct parameters and create a new field instance
-      if field_class == Fields::StringField && !instance['size'].nil?
+      if field_class == NoSE::Fields::StringField && !instance['size'].nil?
         field = field_class.new instance['name'], instance['size']
-      elsif field_class.ancestors.include? Fields::ForeignKeyField
+      elsif field_class.ancestors.include? NoSE::Fields::ForeignKeyField
         field = field_class.new instance['name'],
                                 options[:entity_map][instance['entity']]
       else
@@ -53,8 +53,8 @@ module NoSE
         instance[fields].map { |dict| model[dict['parent']][dict['name']] }
       end
 
-      Index.new f.call('hash_fields'), f.call('order_fields'), f.call('extra'),
-                path, instance['key']
+      NoSE::Index.new f.call('hash_fields'), f.call('order_fields'),
+                      f.call('extra'), path, instance['key']
     end
   end
 
@@ -93,7 +93,8 @@ module NoSE
 
     # The entity name for foreign keys
     def entity
-      represented.entity.name if represented.is_a? Fields::ForeignKeyField
+      represented.entity.name \
+        if represented.is_a? NoSE::Fields::ForeignKeyField
     end
     property :entity, exec_context: :decorator
   end
@@ -238,29 +239,29 @@ module NoSE
 
     def call(object, _fragment, instance, **_options)
       workload = object.workload
-      query = Statement.parse instance['query'], workload.model
+      query = NoSE::Statement.parse instance['query'], workload.model
 
-      plan = QueryPlan.new query
-      state = QueryState.new query, workload
-      parent = RootPlanStep.new state
+      plan = NoSE::Plans::QueryPlan.new query
+      state = NoSE::Plans::QueryState.new query, workload
+      parent = NoSE::Plans::RootPlanStep.new state
 
       f = ->(field) { workload[field['parent']][field['name']] }
 
       # Loop over all steps in the plan and reconstruct them
       instance['steps'].each do |step_hash|
-        step_class = PlanStep.subtype_class step_hash['type']
-        if step_class == IndexLookupPlanStep
+        step_class = NoSE::Plans::PlanStep.subtype_class step_hash['type']
+        if step_class == NoSE::Plans::IndexLookupPlanStep
           index_key = step_hash['index']['key']
           step_index = object.indexes.find { |index| index.key == index_key }
           step = step_class.new step_index, state, parent.state
-        elsif step_class == FilterPlanStep
+        elsif step_class == NoSE::Plans::FilterPlanStep
           eq = step_hash['eq'].map(&f)
           range = f.call(step_hash['range']) if step_hash['range']
           step = step_class.new eq, range, parent.state
-        elsif step_class == SortPlanStep
+        elsif step_class == NoSE::Plans::SortPlanStep
           sort_fields = step_hash['sort_fields'].map(&f)
           step = step_class.new sort_fields
-        elsif step_class == LimitPlanStep
+        elsif step_class == NoSE::Plans::LimitPlanStep
           limit = step_hash['limit'].to_i
           step = step_class.new limit
         end
@@ -278,7 +279,7 @@ module NoSE
     include Representable::JSON
 
     property :workload, decorator: WorkloadRepresenter,
-                        class: Workload,
+                        class: NoSE::Workload,
                         deserialize: WorkloadBuilder.new
     collection :indexes, decorator: FullIndexRepresenter,
                          class: Object,
