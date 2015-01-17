@@ -11,7 +11,8 @@ end
 
 module NoSE::Search
   class Problem
-    attr_reader :model, :status
+    attr_reader :model, :status, :workload, :index_vars, :query_vars,
+                :indexes, :data
 
     def initialize(workload, indexes, data)
       @workload = workload
@@ -109,10 +110,7 @@ module NoSE::Search
         IndexPresenceConstraints,
         SpaceConstraint,
         CompletePlanConstraints
-      ].each do |constraint|
-        constraint.apply @workload, @model, @index_vars, @query_vars,
-                         @indexes, @data
-      end
+      ].each { |constraint| constraint.apply self }
 
       @logger.debug { "Added #{@model.getConstrs.count} constraints to model" }
     end
