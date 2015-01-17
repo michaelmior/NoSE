@@ -2,9 +2,9 @@ require 'formatador'
 require 'smarter_csv'
 require 'zlib'
 
-module NoSE
+module NoSE::Loader
   # Load data into an index from a set of CSV files
-  class CSVLoader < Loader
+  class CsvLoader < LoaderBase
     # Load data for all the indexes
     def load(indexes, config, show_progress = false)
       simple_indexes = indexes.select { |index| index.path.length == 1 }

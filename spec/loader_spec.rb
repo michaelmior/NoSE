@@ -1,10 +1,10 @@
-require 'nose/loaders/mysql'
+require 'nose/loader/mysql'
 
-module NoSE
-  describe MySQLLoader do
+module NoSE::Loader
+  describe MysqlLoader do
     # Mock the client of a loader to return canned responses to SQL queries
     def mock_loader(responses, count)
-      loader = MySQLLoader.new
+      loader = MysqlLoader.new
 
       allow(loader).to receive(:new_client) do
         client = double('client')

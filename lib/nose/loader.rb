@@ -1,6 +1,6 @@
-module NoSE
+module NoSE::Loader
   # Superclass for all data loaders
-  class Loader
+  class LoaderBase
     def initialize(workload, backend)
       @workload = workload
       @backend = backend
