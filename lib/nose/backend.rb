@@ -7,6 +7,12 @@ module NoSE::Backend
       @plans = plans
     end
 
+    # Subclasses implement to allow inserting
+    # data into the backend database
+    def index_insert_chunk(index, chunk)
+      raise NotImplementedError
+    end
+
     # Execute a query with the stored plans
     def query(query)
       plan = @plans.find { |possible_plan| possible_plan.query == query }

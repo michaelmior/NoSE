@@ -12,7 +12,7 @@ module NoSE::Loader
       simple_indexes.each do |entity, simple_index_list|
         filename = File.join config[:directory], "#{entity.name}.csv"
         total_rows = -1  # account for header row
-        File.foreach(filename) { total_rows += 1 }
+        File.open(filename) { |file| file.each_line { total_rows += 1 } }
 
         if show_progress
           puts "Loading simple indexes for #{entity.name}"
@@ -26,6 +26,7 @@ module NoSE::Loader
         end
 
         SmarterCSV.process(filename,
+                           downcase_header: false,
                            chunk_size: 1000,
                            convert_values_to_numeric: false) do |chunk|
           Parallel.each(chunk.each_slice(100),

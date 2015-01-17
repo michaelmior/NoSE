@@ -20,6 +20,7 @@ platform :ruby do
 end
 
 group :test do
+  gem 'fakefs', require: 'fakefs/safe'
   gem 'rspec'
   gem 'rspec-collection_matchers'
   gem 'simplecov'

@@ -33,6 +33,7 @@ GEM
     debugger-linecache (1.2.0)
     diff-lcs (1.2.5)
     docile (1.1.5)
+    fakefs (0.6.4)
     ffi (1.9.6)
     formatador (0.2.5)
     guard (2.10.5)
@@ -127,6 +128,7 @@ PLATFORMS
 
 DEPENDENCIES
   cql-rb
+  fakefs
   formatador
   guard-rspec
   gurobi!
