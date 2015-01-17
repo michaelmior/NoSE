@@ -34,7 +34,7 @@ module NoSE::Backend
       end
     end
 
-    # Inset a chunk of rows into an index
+    # Insert a chunk of rows into an index
     def index_insert_chunk(index, chunk)
       fields, _ = index_insert_fields index
       prepared = "INSERT INTO \"#{index.key}\" (" \
