@@ -1,6 +1,6 @@
 # NoSQL Schema Evaluator (NoSE)
 
-[![Build Status](https://magnum.travis-ci.com/michaelmior/sadvisor.svg?token=rM4RuzPrnmeRRxXcrK4C&branch=master)](https://magnum.travis-ci.com/michaelmior/sadvisor)
+[![Build Status](https://magnum.travis-ci.com/michaelmior/NoSE.svg?token=rM4RuzPrnmeRRxXcrK4C&branch=master)](https://magnum.travis-ci.com/michaelmior/NoSE)
 
 This is a work in progress tool to provide automated physical schema design for NoSQL data stores.
 
