@@ -2,10 +2,9 @@ module NoSE::Search
   # Base class for constraints
   class Constraint
     # If this is not overridden, apply query-specific constraints
-    def self.apply(workload, model, index_vars, query_vars, indexes, data)
-      workload.queries.each_with_index do |query, q|
-        self.apply_query query, q, workload, model, index_vars, query_vars,
-                         indexes, data
+    def self.apply(problem)
+      problem.workload.queries.each_with_index do |query, q|
+        self.apply_query query, q, problem
       end
     end
 
@@ -19,11 +18,12 @@ module NoSE::Search
   # Constraints which force indexes to be present to be used
   class IndexPresenceConstraints < Constraint
     # Add constraint for indices being present
-    def self.apply(workload, model, index_vars, query_vars, indexes, data)
-      (0...indexes.length).each do |i|
-        (0...workload.queries.length).each do |q|
-          model.addConstr query_vars[i][q] + index_vars[i] * -1 <= 0,
-            "i#{i}q#{q}_avail"
+    def self.apply(problem)
+      (0...problem.indexes.length).each do |i|
+        (0...problem.workload.queries.length).each do |q|
+          problem.model.addConstr problem.query_vars[i][q] +
+                                  problem.index_vars[i] * -1 <= 0,
+                                  "i#{i}q#{q}_avail"
         end
       end
     end
@@ -32,13 +32,14 @@ module NoSE::Search
   # The single constraint used to enforce a maximum storage cost
   class SpaceConstraint < Constraint
     # Add space constraint if needed
-    def self.apply(workload, model, index_vars, query_vars, indexes, data)
-      return unless data[:max_space].finite?
+    def self.apply(problem)
+      return unless problem.data[:max_space].finite?
 
-      space = indexes.each_with_index.map do |index, i|
-        index_vars[i] * (index.size * 1.0)
+      space = problem.indexes.each_with_index.map do |index, i|
+        problem.index_vars[i] * (index.size * 1.0)
       end.reduce(&:+)
-      model.addConstr space <= data[:max_space] * 1.0, 'max_space'
+      problem.model.addConstr space <= problem.data[:max_space] * 1.0,
+                              'max_space'
     end
   end
 
@@ -47,14 +48,13 @@ module NoSE::Search
     private
 
     # Add complete query plan constraints
-    def self.apply_query(query, q, workload, model, index_vars, query_vars,
-                         indexes, data)
+    def self.apply_query(query, q, problem)
       entities = query.longest_entity_path
       query_constraint = Array.new(entities.length) { Gurobi::LinExpr.new }
 
-      data[:costs][q].each do |i, (step_indexes, _)|
-        indexes[i].entity_range(entities).each do |part|
-          index_var = query_vars[i][q]
+      problem.data[:costs][q].each do |i, (step_indexes, _)|
+        problem.indexes[i].entity_range(entities).each do |part|
+          index_var = problem.query_vars[i][q]
           query_constraint[part] += index_var
         end
 
@@ -63,20 +63,22 @@ module NoSE::Search
           if step_indexes.last.is_a? Array
             # We have multiple possible last steps, so add an auxiliary
             # variable which allows us to select between them
-            first_var = query_vars[step_indexes.first][q]
-            step_var = model.addVar(0, 1, 0, Gurobi::BINARY,
-                                    "q#{q}s#{step_indexes.first}")
-            model.update
-            model.addConstr(step_var * 1 >= first_var * 1)
+            first_var = problem.query_vars[step_indexes.first][q]
+            step_var = problem.model.addVar 0, 1, 0, Gurobi::BINARY,
+                                            "q#{q}s#{step_indexes.first}"
+            problem.model.update
+            problem.model.addConstr(step_var * 1 >= first_var * 1)
 
             # Force exactly one of the indexes for the last step to be chosen
-            vars = step_indexes.last.map { |index| query_vars[index][q] }
-            model.addConstr(vars.inject(Gurobi::LinExpr.new, &:+) ==
-                            step_var)
+            vars = step_indexes.last.map do |index|
+              problem.query_vars[index][q]
+            end
+            problem.model.addConstr(vars.inject(Gurobi::LinExpr.new, &:+) ==
+                                                step_var)
           else
-            vars = step_indexes.map { |index| query_vars[index][q] }
+            vars = step_indexes.map { |index| problem.query_vars[index][q] }
             vars.reverse.each_cons(2).each do |first_var, last_var|
-              model.addConstr(last_var * 1 == first_var * 1)
+              problem.model.addConstr(last_var * 1 == first_var * 1)
             end
           end
         end
@@ -84,7 +86,7 @@ module NoSE::Search
 
       # Ensure we have exactly one index on each component of the query path
       query_constraint.each do |constraint|
-        model.addConstr(constraint == 1)
+        problem.model.addConstr(constraint == 1)
       end
     end
   end
