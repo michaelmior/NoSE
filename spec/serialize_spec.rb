@@ -1,4 +1,4 @@
-module NoSE
+module NoSE::Serialize
   describe EntityFieldRepresenter do
     include_context 'entities'
 
@@ -26,8 +26,8 @@ module NoSE
     include_context 'entities'
 
     it 'serializes an index to a key' do
-      index = Index.new [user['Username']], [], [user['UserId']],
-                        [user], 'IndexKey'
+      index = NoSE::Index.new [user['Username']], [], [user['UserId']],
+                              [user], 'IndexKey'
       hash = IndexRepresenter.represent(index).to_hash
       expect(hash).to eq({'key' => 'IndexKey'})
     end
@@ -35,7 +35,7 @@ module NoSE
 
   describe EntityRepresenter do
     it 'serializes an empty entity' do
-      entity = Entity.new('Foo') * 10
+      entity = NoSE::Entity.new('Foo') * 10
       hash = EntityRepresenter.represent(entity).to_hash
       expect(hash).to eq({'name' => 'Foo', 'count' => 10, 'fields' => []})
 

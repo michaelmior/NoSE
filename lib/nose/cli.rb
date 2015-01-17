@@ -54,7 +54,8 @@ module NoSE::CLI
 
     # Load results of a previous search operation
     def load_results(plan_file)
-      representer = NoSE::SearchResultRepresenter.represent(OpenStruct.new)
+      representer = NoSE::Serialize::SearchResultRepresenter.represent \
+        OpenStruct.new
       json = File.read(plan_file)
       representer.from_json(json)
     end

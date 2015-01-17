@@ -78,7 +78,7 @@ module NoSE::CLI
     # Output the results of advising as JSON
     def output_json(result)
       puts JSON.pretty_generate \
-        NoSE::SearchResultRepresenter.represent(result).to_hash
+        NoSE::Serialize::SearchResultRepresenter.represent(result).to_hash
     end
   end
 end
