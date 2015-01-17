@@ -1,5 +1,3 @@
-require_relative './constraints'
-
 require 'logging'
 
 begin

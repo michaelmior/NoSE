@@ -1,4 +1,5 @@
-require_relative './search/problem'
+require_relative 'search/constraints'
+require_relative 'search/problem'
 
 require 'logging'
 require 'ostruct'

@@ -1,5 +1,5 @@
-require_relative './model'
-require_relative './parser'
+require_relative 'model'
+require_relative 'parser'
 
 require 'erb'
 require 'graphviz'
