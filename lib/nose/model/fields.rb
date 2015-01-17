@@ -62,9 +62,11 @@ module NoSE::Fields
     end
 
     # @abstract Subclasses should produce a typed value from a string
+    # :nocov:
     def self.value_from_string(_string)
       fail NotImplementedError
     end
+    # :nocov:
 
     # Populate a helper DSL object with all subclasses of Field
     def self.inherited(child_class)
