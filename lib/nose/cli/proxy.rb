@@ -8,7 +8,7 @@ module NoSE::CLI
       backend = get_backend(config, result)
 
       # Create a new instance of the proxy class
-      proxy_class = get_proxy_class config
+      proxy_class = get_class 'proxy', config
       proxy = proxy_class.new config[:proxy], result, backend
 
       # Start the proxy server

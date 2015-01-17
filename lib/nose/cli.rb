@@ -36,33 +36,19 @@ module NoSE::CLI
 
     # Get a backend instance for a given configuration and dataset
     def get_backend(config, result)
-      require_relative "backend/#{config[:database]}"
-      be_class_name = ['NoSE', 'Backend',
-                       config[:database].capitalize + 'Backend']
-      be_class_name.reduce(Object) do |mod, name_part|
+      be_class = get_class 'backend', config
+      be_class.new result.workload, result.indexes, result.plans,
+                   config[:backend]
+    end
+
+    # Get a
+    def get_class(class_name, config)
+      name = config[class_name.to_sym][:name]
+      require_relative "#{class_name}/#{name}"
+      full_class_name = ['NoSE', class_name.capitalize,
+                         name.capitalize + class_name.capitalize]
+      full_class_name.reduce(Object) do |mod, name_part|
         mod.const_get name_part
-      end.new(result.workload, result.indexes, result.plans, config[:backend])
-    end
-
-    # Find the appropriate loader class based on the config
-    def get_loader_class(config)
-      get_class 'loaders', NoSE::Loader, :load, config[:loader][:name]
-    end
-
-    # Find the appropriate proxy class based on the config
-    def get_proxy_class(config)
-      get_class 'proxy', NoSE::Proxy, :handle_connection,
-                config[:proxy][:name]
-    end
-
-    # Find the appropriate loader class based on the config
-    def get_class(path, parent_class, method, name)
-      require_relative "#{path}/#{name}"
-      loaders = ObjectSpace.each_object(parent_class.singleton_class)
-      loaders.find do |klass|
-        path = klass.instance_method(method).source_location
-        next if path.nil?
-        !/\b#{name}\.rb/.match(path.first).nil?
       end
     end
 

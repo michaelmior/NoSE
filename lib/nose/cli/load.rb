@@ -9,7 +9,7 @@ module NoSE::CLI
       backend = get_backend(config, result)
 
       # Create a new instance of the loader class
-      loader_class = get_loader_class config
+      loader_class = get_class 'loader', config
       loader = loader_class.new result.workload, backend
 
       # Remove the name from the config and execute the loader

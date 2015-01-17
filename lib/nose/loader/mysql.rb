@@ -1,8 +1,8 @@
 require 'mysql'
 
-module NoSE
+module NoSE::Loader
   # Load data from a MySQL database into a backend
-  class MySQLLoader < Loader
+  class MysqlLoader < LoaderBase
     def initialize(workload = nil, backend = nil)
       @workload = workload
       @backend = backend
@@ -51,29 +51,29 @@ module NoSE
     def workload(config)
       client = new_client config
 
-      workload = Workload.new
+      workload = NoSE::Workload.new
       client.query('SHOW TABLES').each do |table, |
-        entity = Entity.new table
+        entity = NoSE::Entity.new table
         entity.count = client.query("SELECT COUNT(*) FROM #{table}") \
             .first.first
 
         client.query("DESCRIBE #{table}").each do |name, type, _, key, _, _|
           if key == 'PRI'
-            field_class = Fields::IDField
+            field_class = NoSE::Fields::IDField
           else
             case type
             when /datetime/
-              field_class = Fields::DateField
+              field_class = NoSE::Fields::DateField
             when /float/
-              field_class = Fields::FloatField
+              field_class = NoSE::Fields::FloatField
             when /text/
               # TODO: Get length
-              field_class = Fields::StringField
+              field_class = NoSE::Fields::StringField
             when /varchar\(([0-9]+)\)/
               # TODO: Use length
-              field_class = Fields::StringField
+              field_class = NoSE::Fields::StringField
             when /(tiny)?int/
-              field_class = Fields::IntegerField
+              field_class = NoSE::Fields::IntegerField
             end
           end
 

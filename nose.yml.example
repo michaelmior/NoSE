@@ -1,8 +1,6 @@
-# The database being targeted, currently only cassandra is valid
-database: cassandra
-
-# Connection information for the backend database
+# Connection to the backend database being targeted, currently only Cassandra
 backend:
+  name: cassandra
   hosts:
     - localhost
   port: 9042

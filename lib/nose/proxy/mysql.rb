@@ -2,7 +2,7 @@ require 'mysql'
 
 module NoSE::Proxy
   # A proxy which speaks the MySQL protocol and executes queries
-  class MySQLProxy < ProxyBase
+  class MysqlProxy < ProxyBase
     def initialize(*args)
       super
 
