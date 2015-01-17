@@ -63,7 +63,7 @@ module NoSE::Search
 
     # Get the cost of using each index for each query in a workload
     def costs(indexes)
-      planner = NoSE::Plans::Planner.new @workload, indexes
+      planner = NoSE::Plans::QueryPlanner.new @workload, indexes
 
       # Create a hash to allow efficient lookup of the numerical index
       # of a particular index within the array of indexes

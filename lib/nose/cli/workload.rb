@@ -25,7 +25,7 @@ module NoSE::CLI
       end
 
       # Find the final plans for each query
-      planner = NoSE::Plans::Planner.new workload, indexes
+      planner = NoSE::Plans::QueryPlanner.new workload, indexes
       plans = {}
       workload.queries.map do |query|
         plans[query] = planner.min_plan query
