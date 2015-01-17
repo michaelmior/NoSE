@@ -36,8 +36,8 @@ module NoSE::CLI
 
     # Get a backend instance for a given configuration and dataset
     def get_backend(config, result)
-      require_relative "backends/#{config[:database]}"
-      be_class_name = ['NoSE', 'Backends',
+      require_relative "backend/#{config[:database]}"
+      be_class_name = ['NoSE', 'Backend',
                        config[:database].capitalize + 'Backend']
       be_class_name.reduce(Object) do |mod, name_part|
         mod.const_get name_part

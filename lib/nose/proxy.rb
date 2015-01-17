@@ -1,6 +1,6 @@
-module NoSE
+module NoSE::Proxy
   # A proxy server to interpret our query language and implement query plans
-  class Proxy
+  class ProxyBase
     attr_reader :logger
     def initialize(config, result, backend)
       @logger = Logging.logger['nose::proxy']

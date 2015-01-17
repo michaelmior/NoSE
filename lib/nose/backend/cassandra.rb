@@ -1,9 +1,9 @@
 require 'cql'
 require 'zlib'
 
-module NoSE::Backends
+module NoSE::Backend
   # A backend which communicates with Cassandra via CQL
-  class CassandraBackend < NoSE::Backend
+  class CassandraBackend < BackendBase
     def initialize(workload, indexes, plans, config)
       super
 
