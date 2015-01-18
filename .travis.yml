@@ -9,3 +9,6 @@ rvm:
   - 2.0.0
   - jruby-head
 script: bundle exec rspec --tag ~gurobi
+addons:
+  code_climate:
+    repo_token: 805451e02a4b10cdf4ac9db17a3783edc8e8dab907bb040ff45877f5fa22b3a3

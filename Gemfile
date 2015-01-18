@@ -20,6 +20,7 @@ platform :ruby do
 end
 
 group :test do
+  gem 'codeclimate-test-reporter', require: false
   gem 'fakefs', require: 'fakefs/safe'
   gem 'rspec'
   gem 'rspec-collection_matchers'
