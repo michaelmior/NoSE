@@ -41,5 +41,5 @@ platform :ruby do
 end
 
 group :cassandra do
-  gem 'cql-rb'
+  gem 'cassandra-driver'
 end

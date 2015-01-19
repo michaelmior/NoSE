@@ -23,14 +23,16 @@ GEM
       columnize (~> 0.8)
       debugger-linecache (~> 1.2)
       slop (~> 3.6)
+    cassandra-driver (1.1.1)
+      ione (~> 1.2)
+    cassandra-driver (1.1.1-java)
+      ione (~> 1.2)
     celluloid (0.16.0)
       timers (~> 4.0.0)
     codeclimate-test-reporter (0.4.5)
       simplecov (>= 0.7.1, < 1.0.0)
     coderay (1.1.0)
     columnize (0.8.9)
-    cql-rb (2.0.4)
-      ione (~> 1)
     debug_inspector (0.0.2)
     debugger-linecache (1.2.0)
     diff-lcs (1.2.5)
@@ -129,8 +131,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  cassandra-driver
   codeclimate-test-reporter
-  cql-rb
   fakefs
   formatador
   guard-rspec
