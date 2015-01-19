@@ -151,12 +151,12 @@ module NoSE
     private
 
     # Populate the list of condition objects
-    def populate_conditions(model)
+    def populate_conditions
       if @tree[:where].nil?
         @conditions = []
       else
         @conditions = @tree[:where][:expression].map do |condition|
-          field = find_field_with_prefix model, @tree[:path],
+          field = find_field_with_prefix @tree[:path],
             condition[:field]
           value = condition[:value]
 
@@ -196,10 +196,11 @@ module NoSE
         raise new_exc
       end
 
+      @model = model
       @from = model[@tree[:path].first.to_s]
-      find_longest_path model
+      find_longest_path
 
-      populate_conditions model
+      populate_conditions
     end
 
     # :nocov:
@@ -216,16 +217,16 @@ module NoSE
     private
 
     # A helper to look up a field based on the path specified in the statement
-    def find_field_with_prefix(model, path, field)
+    def find_field_with_prefix(path, field)
       field_path = field.map(&:to_s)
       prefix_index = path.index(field_path.first)
       field_path = path[0..prefix_index - 1] + field_path \
         unless prefix_index == 0
-      model.find_field field_path.map(&:to_s)
+      @model.find_field field_path.map(&:to_s)
     end
 
     # Calculate the longest path of entities traversed by the query
-    def find_longest_path(model)
+    def find_longest_path
       path = @tree[:path].map(&:to_s)[1..-1]
       @longest_entity_path = path.reduce [@from] do |entities, key|
         if entities.last.send(:[], key, true)
@@ -233,7 +234,7 @@ module NoSE
           entities + [entities.last[key].entity]
         else
           # Assume only one foreign key in the opposite direction
-          entities + [model[key]]
+          entities + [@model[key]]
         end
       end
     end
@@ -248,7 +249,7 @@ module NoSE
     def initialize(query, model)
       super :query, query, model
 
-      populate_fields model
+      populate_fields
 
       fail InvalidQueryException, 'must have at least one equality predicate' \
         if @conditions.empty? || @conditions.all?(&:is_range)
@@ -270,10 +271,10 @@ module NoSE
     private
 
     # Populate the fields selected by this query
-    def populate_fields(model)
+    def populate_fields
       if @tree[:select]
         @select = @tree[:select].map do |field|
-          model.find_field [@from, field.to_s]
+          @model.find_field [@from, field.to_s]
         end.to_set
       else
         @select = @from.fields.values.to_set
@@ -281,7 +282,7 @@ module NoSE
 
       return @order = [] if @tree[:order].nil?
       @order = @tree[:order][:fields].map do |field|
-        find_field_with_prefix model, @tree[:path], field
+        find_field_with_prefix @tree[:path], field
       end
     end
   end
@@ -314,9 +315,9 @@ module NoSE
     private
 
     # Populate all the variable settings
-    def populate_settings(model)
+    def populate_settings
       @settings = @tree[:settings].map do |setting|
-        field = model[@from][setting[:field].to_s]
+        field = @model[@from][setting[:field].to_s]
         value = setting[:value]
 
         type = field.class.const_get 'TYPE'
@@ -335,10 +336,9 @@ module NoSE
     def initialize(query, model)
       super :update, query, model
 
-      populate_settings model
+      populate_settings
 
       # Save the where clause so we can convert to a query later
-      @model = model
       @where_source = @tree.delete(:where_source).strip
 
       freeze
