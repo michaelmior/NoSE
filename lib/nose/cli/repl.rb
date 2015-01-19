@@ -20,19 +20,7 @@ module NoSE::CLI
         line.chomp!
         next if line.empty?
 
-        query = Statement.new line, result.workload
-
-        # Execute the query
-        begin
-          start_time = Time.now
-          results = backend.query(query)
-          elapsed = Time.now - start_time
-        rescue NotImplementedError => e
-          puts '! ' + e.message
-        else
-          Formatador.display_compact_table results unless results.empty?
-          puts '(%d rows in %.2fs)' % [results.length, elapsed]
-        end
+        execute_query line, result, backend
       end
     end
 
@@ -54,6 +42,27 @@ module NoSE::CLI
       end
 
       line
+    end
+
+    # Try to execute a query read from the REPL
+    def execute_query(line, result, backend)
+      begin
+        query = NoSE::Statement.parse line, result.workload
+      rescue NoSE::ParseFailed => e
+        puts '! ' + e.message
+        return
+      end
+
+      begin
+        start_time = Time.now
+        results = backend.query(query)
+        elapsed = Time.now - start_time
+      rescue NotImplementedError => e
+        puts '! ' + e.message
+      else
+        Formatador.display_compact_table results unless results.empty?
+        puts '(%d rows in %.2fs)' % [results.length, elapsed]
+      end
     end
   end
 end
