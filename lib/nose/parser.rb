@@ -196,6 +196,10 @@ module NoSE
         raise new_exc
       end
 
+      # XXX Save the where clause so we can convert to a query later
+      #     Ideally this would be in {StatementToQuery}
+      @where_source = (@tree.delete(:where_source) || '').strip
+
       @model = model
       @from = model[@tree[:path].first.to_s]
       find_longest_path
@@ -268,6 +272,11 @@ module NoSE
       (@select + @conditions.map(&:field) + @order).to_set
     end
 
+    # This is already a query, no conversion necessary
+    def to_query
+      self
+    end
+
     private
 
     # Populate the fields selected by this query
@@ -328,22 +337,8 @@ module NoSE
     end
   end
 
-  # A representation of an update the workload
-  class Update < Statement
-    include StatementConditions
-    include StatementSettings
-
-    def initialize(query, model)
-      super :update, query, model
-
-      populate_settings
-
-      # Save the where clause so we can convert to a query later
-      @where_source = @tree.delete(:where_source).strip
-
-      freeze
-    end
-
+  # Extend {Statement} objects to allow them to be converted to queries
+  module StatementToQuery
     # Create a {Query} which corresponds to this update
     def to_query
       # We don't need a query if we're only checking
@@ -354,11 +349,39 @@ module NoSE
       return unless needs_query
 
       # Extract the path from the original query
-      path = /UPDATE\s+(([A-z]+\.)*[A-z]+)\s+/.match(@query).captures.first
       query = "SELECT #{@from.id_fields.map(&:name).join ', '} " \
-              "FROM #{path} #{@where_source}"
+        "FROM #{path_from_query} #{@where_source}"
 
       Query.new query.strip, @model
+    end
+
+    private
+
+    # Subclasses implement to return the path string from the query text
+    def path_from_query
+      raise NotImplementedError
+    end
+  end
+
+  # A representation of an update the workload
+  class Update < Statement
+    include StatementConditions
+    include StatementSettings
+    include StatementToQuery
+
+    def initialize(query, model)
+      super :update, query, model
+
+      populate_settings
+
+      freeze
+    end
+
+    private
+
+    # Extract the path from the original query
+    def path_from_query
+      /UPDATE\s+(([A-z]+\.)*[A-z]+)\s+/.match(@query).captures.first
     end
   end
 
