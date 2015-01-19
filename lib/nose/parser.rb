@@ -144,9 +144,38 @@ module NoSE
     end
   end
 
+  # Used to add a list of conditions to a {Statement}
+  module StatementConditions
+    attr_reader :conditions
+
+    private
+
+    # Populate the list of condition objects
+    def populate_conditions(model)
+      if @tree[:where].nil?
+        @conditions = []
+      else
+        @conditions = @tree[:where][:expression].map do |condition|
+          field = find_field_with_prefix model, @tree[:path],
+            condition[:field]
+          value = condition[:value]
+
+          type = field.class.const_get 'TYPE'
+          fail TypeError unless type.nil? || value.nil? || value.is_a?(type)
+
+          Condition.new field, condition[:op].to_sym, value
+        end
+      end
+
+      @eq_fields = @conditions.reject(&:range?).map(&:field).to_set
+      @range_field = @conditions.find(&:range?)
+      @range_field = @range_field.field unless @range_field.nil?
+    end
+  end
+
   # A CQL statement and its associated data
   class Statement
-    attr_reader :conditions, :from, :longest_entity_path, :query,
+    attr_reader :from, :longest_entity_path, :query,
                 :eq_fields, :range_field
 
     # Parse either a query or an update
@@ -208,32 +237,12 @@ module NoSE
         end
       end
     end
-
-    # Populate the list of condition objects
-    def populate_conditions(model)
-      if @tree[:where].nil?
-        @conditions = []
-      else
-        @conditions = @tree[:where][:expression].map do |condition|
-          field = find_field_with_prefix model, @tree[:path],
-            condition[:field]
-          value = condition[:value]
-
-          type = field.class.const_get 'TYPE'
-          fail TypeError unless type.nil? || value.nil? || value.is_a?(type)
-
-          Condition.new field, condition[:op].to_sym, value
-        end
-      end
-
-      @eq_fields = @conditions.reject(&:range?).map(&:field).to_set
-      @range_field = @conditions.find(&:range?)
-      @range_field = @range_field.field unless @range_field.nil?
-    end
   end
 
   # A representation of a query in the workload
   class Query < Statement
+    include StatementConditions
+
     attr_reader :select, :order, :limit
 
     def initialize(query, model)
@@ -300,6 +309,8 @@ module NoSE
 
   # A representation of an update the workload
   class Update < Statement
+    include StatementConditions
+
     attr_accessor :settings
 
     def initialize(query, model)
