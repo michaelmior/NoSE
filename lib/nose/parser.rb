@@ -162,19 +162,16 @@ module NoSE
 
     # Populate the list of condition objects
     def populate_conditions
-      if @tree[:where].nil?
-        @conditions = []
-      else
-        @conditions = @tree[:where][:expression].map do |condition|
-          field = find_field_with_prefix @tree[:path],
-            condition[:field]
-          value = condition[:value]
+      @conditions = @tree[:where].nil? ? [] : @tree[:where][:expression]
+      @conditions = @conditions.map do |condition|
+        field = find_field_with_prefix @tree[:path],
+                                       condition[:field]
+        value = condition[:value]
 
-          type = field.class.const_get 'TYPE'
-          fail TypeError unless type.nil? || value.nil? || value.is_a?(type)
+        type = field.class.const_get 'TYPE'
+        fail TypeError unless type.nil? || value.nil? || value.is_a?(type)
 
-          Condition.new field, condition[:op].to_sym, value
-        end
+        Condition.new field, condition[:op].to_sym, value
       end
 
       @eq_fields = @conditions.reject(&:range?).map(&:field).to_set
