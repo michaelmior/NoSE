@@ -99,6 +99,10 @@ module NoSE
     def initialize(entity)
       @entity = entity
     end
+
+    def etc(size = 1)
+      @entity << Fields::HashField.new('**', size)
+    end
   end
 
   # Raised when looking up a field on an entity which does not exist

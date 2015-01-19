@@ -86,6 +86,11 @@ module NoSE
       end
     end
 
+    it 'can select additional hash fields' do
+      query = Query.new 'SELECT ** FROM User WHERE User.UserId = ?',
+                        workload.model
+      expect(query.select).to match_array [user['**']]
+    end
   end
 
   describe Update do

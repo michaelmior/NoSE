@@ -6,6 +6,8 @@ module NoSE
           ID     'UserId'
           String 'Username', 10
           String 'City'
+
+          etc
         end) * 10
 
         Entity 'Link' do
