@@ -28,26 +28,23 @@ end
 # rubocop:disable Style/Blocks, Style/BlockEndNewline
 
 module NoSE
-  # Parser for a simple CQL-like grammar
-  class CQLP < Parslet::Parser
-    rule(:operator)    {
-      str('=') | str('!=') | str('<=') | str('>=') | str('<') | str('>') }
-    rule(:space)       { match('\s').repeat(1) }
-    rule(:space?)      { space.maybe }
-    rule(:comma)       { str(',') >> space? }
+  # Literals used in queries and updates
+  module Literals
+    include Parslet
+
     rule(:integer)     { match('[0-9]').repeat(1).as(:int) }
     rule(:quote)       { str('"') }
     rule(:nonquote)    { quote.absent? >> any }
     rule(:string)      { quote >> nonquote.repeat(1).as(:str) >> quote }
     rule(:literal)     { integer | string }
+  end
 
-    rule(:identifier)  { match('[A-z]').repeat(1).as(:identifier) }
-    rule(:identifiers) { identifier >> (comma >> identifier).repeat }
+  # Predicates used in queries and updates
+  module Predicates
+    include Parslet
 
-    rule(:field)       { identifier >> (str('.') >> identifier).repeat(1, 1) }
-    rule(:fields)      { field >> (comma >> field).repeat }
-    rule(:path)        { identifier >> (str('.') >> identifier).repeat }
-
+    rule(:operator)    {
+      str('=') | str('!=') | str('<=') | str('>=') | str('<') | str('>') }
     rule(:condition)   {
       field.as(:field) >> space? >> operator.as(:op) >> space? >>
       (literal.as(:value) | str('?')) }
@@ -55,6 +52,42 @@ module NoSE
       condition >> (space >> str('AND') >> space >> expression).repeat }
     rule(:where)       {
       space >> str('WHERE') >> space >> expression.as_array(:expression) }
+  end
+
+  # Identifiers and combinations of them used in queries and updates
+  module Identifiers
+    include Parslet
+
+    rule(:identifier)  { match('[A-z]').repeat(1).as(:identifier) }
+    rule(:identifiers) { identifier >> (comma >> identifier).repeat }
+
+    rule(:field)       { identifier >> (str('.') >> identifier).repeat(1, 1) }
+    rule(:fields)      { field >> (comma >> field).repeat }
+    rule(:path)        { identifier >> (str('.') >> identifier).repeat }
+  end
+
+  module UpdateSettings
+    include Parslet
+
+    rule(:setting) {
+      identifier.as(:field) >> space? >> str('=') >> space? >>
+      (literal.as(:value) | str('?'))
+    }
+    rule(:settings) {
+      setting >> (space? >> str(',') >> space? >> setting).repeat
+    }
+  end
+
+  # Parser for a simple CQL-like grammar
+  class CQLP < Parslet::Parser
+    include Literals
+    include Identifiers
+    include Predicates
+    include UpdateSettings
+
+    rule(:space)       { match('\s').repeat(1) }
+    rule(:space?)      { space.maybe }
+    rule(:comma)       { str(',') >> space? }
 
     rule(:limit)       { space >> str('LIMIT') >> space >> integer.as(:limit) }
     rule(:order)       {
@@ -66,13 +99,6 @@ module NoSE
       where.maybe.as(:where) >> order.maybe.as(:order) >>
       limit.maybe.capture(:limit) }
 
-    rule(:setting) {
-      identifier.as(:field) >> space? >> str('=') >> space? >>
-      (literal.as(:value) | str('?'))
-    }
-    rule(:settings) {
-      setting >> (space? >> str(',') >> space? >> setting).repeat
-    }
     rule(:update) {
       str('UPDATE') >> space >> path.as_array(:path) >> space >>
       str('SET') >> space >> settings.as_array(:settings) >>
