@@ -27,12 +27,15 @@ module NoSE
     include_context 'entities'
 
     let(:query) do
-      Query.new 'SELECT Body FROM Tweet.User WHERE ' \
+      Query.new 'SELECT TweetId FROM Tweet.User WHERE ' \
                 'Tweet.Link = ? AND Tweet.Timestamp > ? AND User.City = ? ' \
                 'ORDER BY Tweet.Timestamp LIMIT 5', workload.model
     end
 
     it_behaves_like 'a statement' do
+      let(:statement) { query }
+    end
+    include_examples 'converts to a query' do
       let(:statement) { query }
     end
 
@@ -45,7 +48,7 @@ module NoSE
     end
 
     it 'keeps a list of selected fields' do
-      expect(query.select).to match_array [tweet['Body']]
+      expect(query.select).to match_array [tweet['TweetId']]
     end
 
     it 'can select all fields' do
