@@ -1,4 +1,4 @@
-require 'cql'
+require 'cassandra'
 require 'zlib'
 
 module NoSE::Backend
@@ -42,14 +42,15 @@ module NoSE::Backend
                  ") VALUES (#{(['?'] * fields.length).join ', '})"
       prepared = client.prepare prepared
 
-      client.batch do |batch|
-        chunk.each do |row|
-          index_row = fields.map do |field|
-            row["#{field.parent.name}_#{field.name}"]
-          end
-          batch.add prepared, *index_row
+      futures = []
+      chunk.each do |row|
+        index_row = fields.map do |field|
+          row["#{field.parent.name}_#{field.name}"]
         end
+
+        futures.push client.execute_async(prepared, *index_row)
       end
+      futures.each(&:join)
     end
 
     private
@@ -76,9 +77,9 @@ module NoSE::Backend
 
     # Get a Cassandra client, connecting if not done already
     def client
-      @client ||= Cql::Client.connect hosts: @hosts, port: @port.to_s,
-                                      keyspace: '"' + @keyspace + '"',
-                                      default_consistency: :one
+      return @client unless @client.nil?
+      cluster = Cassandra.cluster hosts: @hosts, port: @port.to_s
+      @client = cluster.connect @keyspace
     end
 
     # Return the datatype to use in Cassandra for a given field
@@ -166,7 +167,7 @@ module NoSE::Backend
         result = []
         condition_list.each do |conditions|
           values = conditions.map(&:value)
-          result += statement.execute(*values, consistency: :one).to_a
+          result += statement.execute(*values).to_a
         end
 
         result

@@ -29,16 +29,13 @@ module NoSE::Loader
           progress = nil
         end
 
-        results.each_hash.each_slice(1000) do |chunk|
-          Parallel.each(chunk.each_slice(100),
-                        finish: (lambda do |_, _, _|
-                          # Update the progress bar
-                          if progress
-                            inc = [progress.total - progress.current, 100].min
-                            progress.increment inc
-                          end
-                        end)) do |minichunk|
-            @backend.index_insert_chunk index, minichunk
+        results.each_hash.each_slice(100) do |chunk|
+          chunk.map! { |row| convert_values row }
+          @backend.index_insert_chunk index, chunk
+
+          if show_progress
+            inc = [progress.total - progress.current, 100].min
+            progress.increment inc
           end
         end
 
@@ -95,6 +92,16 @@ module NoSE::Loader
                      config[:username],
                      config[:password],
                      config[:database]
+    end
+
+    # Convert values to standard Ruby data types
+    def convert_values(row)
+      row.each do |key, value|
+        case value
+        when Mysql::Time
+          row[key] = Time.at value.to_f
+        end
+      end
     end
 
     # Construct a SQL statement to fetch the data to populate this index
