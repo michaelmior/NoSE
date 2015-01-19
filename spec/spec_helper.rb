@@ -5,10 +5,6 @@
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
-require 'rspec/collection_matchers'
-
-Dir['./spec/support/**/*.rb'].sort.each { |f| require f }
-
 unless RUBY_PLATFORM == 'java'
   require 'codeclimate-test-reporter'
   require 'simplecov'
@@ -20,6 +16,9 @@ unless RUBY_PLATFORM == 'java'
     ]
   end
 end
+
+require 'rspec/collection_matchers'
+Dir['./spec/support/**/*.rb'].sort.each { |f| require f }
 
 RSpec.configure do |config|
   config.expect_with :rspec do |c|
