@@ -101,5 +101,11 @@ module NoSE
       expect(query.longest_entity_path).to eq update.longest_entity_path
       expect(query.select.to_set).to eq update.from.id_fields.to_set
     end
+
+    it 'does not convert simple updates' do
+      update = Update.new 'UPDATE User SET City = ? WHERE User.UserId = ?',
+                          workload.model
+      expect(update.to_query).to be nil
+    end
   end
 end
