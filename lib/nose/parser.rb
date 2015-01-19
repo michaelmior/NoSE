@@ -105,7 +105,17 @@ module NoSE
       where.maybe.as(:where).capture_source(:where)
     }
 
-    rule(:statement) { query | update }
+    rule(:insert) {
+      str('INSERT INTO') >> space >> identifier.as(:entity) >> space >>
+      str('SET') >> space >> settings.as_array(:settings)
+    }
+
+    rule(:delete) {
+      str('DELETE FROM') >> space >> path.as_array(:path) >>
+      where.maybe.as(:where).capture_source(:where)
+    }
+
+    rule(:statement) { query | update | insert | delete }
 
     root :statement
   end
@@ -180,7 +190,17 @@ module NoSE
 
     # Parse either a query or an update
     def self.parse(query, model)
-      klass = query.start_with?('SELECT ') ? Query : Update
+      case query.split.first
+      when 'INSERT'
+        klass = Insert
+      when 'DELETE'
+        klass = Delete
+      when 'UPDATE'
+        klass = Update
+      else  # SELECT
+        klass = Query
+      end
+
       klass.new query, model
     end
 
@@ -201,10 +221,9 @@ module NoSE
       @where_source = (@tree.delete(:where_source) || '').strip
 
       @model = model
-      @from = model[@tree[:path].first.to_s]
-      find_longest_path
-
-      populate_conditions
+      path_entities = @tree[:path] || [@tree[:entity]]
+      @from = model[path_entities.first.to_s]
+      find_longest_path path_entities
     end
 
     # :nocov:
@@ -230,8 +249,8 @@ module NoSE
     end
 
     # Calculate the longest path of entities traversed by the query
-    def find_longest_path
-      path = @tree[:path].map(&:to_s)[1..-1]
+    def find_longest_path(path_entities)
+      path = path_entities.map(&:to_s)[1..-1]
       @longest_entity_path = path.reduce [@from] do |entities, key|
         if entities.last.send(:[], key, true)
           # Search through foreign keys
@@ -253,6 +272,7 @@ module NoSE
     def initialize(query, model)
       super :query, query, model
 
+      populate_conditions
       populate_fields
 
       fail InvalidQueryException, 'must have at least one equality predicate' \
@@ -363,7 +383,7 @@ module NoSE
     end
   end
 
-  # A representation of an update the workload
+  # A representation of an update in the workload
   class Update < Statement
     include StatementConditions
     include StatementSettings
@@ -372,6 +392,7 @@ module NoSE
     def initialize(query, model)
       super :update, query, model
 
+      populate_conditions
       populate_settings
 
       freeze
@@ -382,6 +403,40 @@ module NoSE
     # Extract the path from the original query
     def path_from_query
       /UPDATE\s+(([A-z]+\.)*[A-z]+)\s+/.match(@query).captures.first
+    end
+  end
+
+  # A representation of an insert in the workload
+  class Insert < Statement
+    include StatementSettings
+
+    def initialize(query, model)
+      super :insert, query, model
+
+      populate_settings
+
+      freeze
+    end
+  end
+
+  # A representation of a delete in the workload
+  class Delete < Statement
+    include StatementConditions
+    include StatementToQuery
+
+    def initialize(query, model)
+      super :delete, query, model
+
+      populate_conditions
+
+      freeze
+    end
+
+    private
+
+    # Extract the path from the original query
+    def path_from_query
+      /DELETE FROM\s+(([A-z]+\.)*[A-z]+)\s+/.match(@query).captures.first
     end
   end
 
