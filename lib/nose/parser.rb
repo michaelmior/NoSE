@@ -307,23 +307,11 @@ module NoSE
     end
   end
 
-  # A representation of an update the workload
-  class Update < Statement
-    include StatementConditions
+  # Module to add variable settings to a {Statement}
+  module StatementSettings
+    attr_reader :settings
 
-    attr_accessor :settings
-
-    def initialize(query, model)
-      super :update, query, model
-
-      populate_settings model
-
-      # Save the where clause so we can convert to a query later
-      @model = model
-      @where_source = @tree.delete(:where_source).strip
-
-      freeze
-    end
+    private
 
     # Populate all the variable settings
     def populate_settings(model)
@@ -336,6 +324,24 @@ module NoSE
 
         FieldSetting.new field, value
       end
+    end
+  end
+
+  # A representation of an update the workload
+  class Update < Statement
+    include StatementConditions
+    include StatementSettings
+
+    def initialize(query, model)
+      super :update, query, model
+
+      populate_settings model
+
+      # Save the where clause so we can convert to a query later
+      @model = model
+      @where_source = @tree.delete(:where_source).strip
+
+      freeze
     end
 
     # Create a {Query} which corresponds to this update
