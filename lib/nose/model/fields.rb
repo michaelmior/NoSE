@@ -137,6 +137,13 @@ module NoSE::Fields
     end
   end
 
+  # Field representing a hash of multiple values
+  class HashField < Field
+    def initialize(name, size = 1, **options)
+      super(name, size, **options)
+    end
+  end
+
   # Field holding a unique identifier
   class IDField < Field
     def initialize(name, **options)

@@ -58,19 +58,20 @@ module NoSE
   module Identifiers
     include Parslet
 
-    rule(:identifier)  { match('[A-z]').repeat(1).as(:identifier) }
-    rule(:identifiers) { identifier >> (comma >> identifier).repeat }
+    rule(:identifier)    { match('[A-z]').repeat(1).as(:identifier) }
+    rule(:select_fields) {
+      (identifier | str('**')) >> (comma >> (identifier | str('**'))).repeat }
 
-    rule(:field)       { identifier >> (str('.') >> identifier).repeat(1, 1) }
-    rule(:fields)      { field >> (comma >> field).repeat }
-    rule(:path)        { identifier >> (str('.') >> identifier).repeat }
+    rule(:field)         { identifier >> (str('.') >> identifier).repeat(1, 1) }
+    rule(:fields)        { field >> (comma >> field).repeat }
+    rule(:path)          { identifier >> (str('.') >> identifier).repeat }
   end
 
   module UpdateSettings
     include Parslet
 
     rule(:setting) {
-      identifier.as(:field) >> space? >> str('=') >> space? >>
+      (identifier | str('**')).as(:field) >> space? >> str('=') >> space? >>
       (literal.as(:value) | str('?'))
     }
     rule(:settings) {
@@ -94,7 +95,7 @@ module NoSE
       space >> str('ORDER BY') >> space >> fields.as_array(:fields) }
 
     rule(:query)   {
-      str('SELECT') >> space >> (identifiers.as_array(:select) | str('*')) >>
+      str('SELECT') >> space >> (select_fields.as_array(:select) | str('*')) >>
       space >> str('FROM') >> space >> path.as_array(:path) >>
       where.maybe.as(:where) >> order.maybe.as(:order) >>
       limit.maybe.capture(:limit) }

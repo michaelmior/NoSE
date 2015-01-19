@@ -66,10 +66,12 @@ module NoSE
         ID 'Bar'
         Integer 'Baz'
         String 'Quux', 20
+        etc
       end
 
-      expect(entity.fields).to have(3).items
+      expect(entity.fields).to have(4).items
       expect(entity.fields['Quux'].size).to eq 20
+      expect(entity['**'].class).to be Fields::HashField
     end
 
     it 'raises an exception for nonexistent fields' do
