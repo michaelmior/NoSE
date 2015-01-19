@@ -6,15 +6,8 @@
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
 unless RUBY_PLATFORM == 'java'
-  require 'codeclimate-test-reporter'
-  require 'simplecov'
-  SimpleCov.add_filter '/spec/'
-  SimpleCov.start do
-    formatter SimpleCov::Formatter::MultiFormatter[
-      SimpleCov::Formatter::HTMLFormatter,
-      CodeClimate::TestReporter::Formatter
-    ]
-  end
+  require "codeclimate-test-reporter"
+  CodeClimate::TestReporter.start
 end
 
 require 'rspec/collection_matchers'
