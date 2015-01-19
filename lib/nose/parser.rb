@@ -329,6 +329,13 @@ module NoSE
 
     # Create a {Query} which corresponds to this update
     def to_query
+      # We don't need a query if we're only checking
+      # equality on the primary key of a single entity
+      needs_query = @longest_entity_path.length > 1
+      needs_query ||= @conditions.any?(&:range?)
+      needs_query ||= @conditions.map(&:field).to_set != @from.id_fields.to_set
+      return unless needs_query
+
       # Extract the path from the original query
       path = /UPDATE\s+(([A-z]+\.)*[A-z]+)\s+/.match(@query).captures.first
       query = "SELECT #{@from.id_fields.map(&:name).join ', '} " \
