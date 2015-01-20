@@ -27,9 +27,9 @@ module NoSE
     end
 
     before(:each) do
-      workload.add_query equality_query
-      workload.add_query combo_query
-      workload.add_query order_query
+      workload.add_statement equality_query
+      workload.add_statement combo_query
+      workload.add_statement order_query
     end
 
     it 'contains fields' do

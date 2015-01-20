@@ -166,7 +166,7 @@ module NoSE::Plans
     it 'can use materialized views which traverse multiple entities' do
       query = NoSE::Query.new 'SELECT Body FROM Tweet.User ' \
                               'WHERE User.Username = ?', workload.model
-      workload.add_query query
+      workload.add_statement query
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload
 
       planner = QueryPlanner.new workload.model, indexes
@@ -181,7 +181,7 @@ module NoSE::Plans
     it 'can use multiple indices for a query' do
       query = NoSE::Query.new 'SELECT Body FROM Tweet.User ' \
                               'WHERE User.Username = ?', workload.model
-      workload.add_query query
+      workload.add_statement query
 
       indexes = [
         NoSE::Index.new([user['Username']], [], [tweet['TweetId']],
@@ -199,7 +199,7 @@ module NoSE::Plans
     it 'can create plans which visit each entity' do
       query = NoSE::Query.new 'SELECT URL FROM Link.Tweet.User ' \
                               'WHERE User.Username = ?', workload.model
-      workload.add_query query
+      workload.add_statement query
 
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload
       planner = QueryPlanner.new workload.model, indexes

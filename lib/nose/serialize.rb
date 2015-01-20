@@ -194,11 +194,11 @@ module NoSE::Serialize
     end)
   end
 
-  # Represent entities and queries in a workload
+  # Represent entities and statements in a workload
   class WorkloadRepresenter < Representable::Decorator
     include Representable::JSON
 
-    collection :queries, decorator: StatementRepresenter
+    collection :statements, decorator: StatementRepresenter
 
     # A simple array of the entities in the workload
     def entities
@@ -226,8 +226,10 @@ module NoSE::Serialize
         .from_hash(instance['entities'], entity_map: entity_map)
       entities.each { |entity| workload << entity }
 
-      # Add all queries to the workload
-      instance['queries'].each { |query| workload.add_query query }
+      # Add all statements to the workload
+      instance['statements'].each do |statement|
+        workload.add_statement statement
+      end
 
       workload
     end
