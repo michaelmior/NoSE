@@ -139,7 +139,7 @@ module NoSE::Serialize
 
     # Represent as the text of the statement
     def to_hash(*)
-      represented.query
+      represented.text
     end
   end
 

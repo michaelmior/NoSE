@@ -146,7 +146,7 @@ module NoSE::Plans
 
     # :nocov:
     def to_color
-      @query.query +
+      @query.text +
         "\n  fields: " + @fields.map { |field| field.to_color }.to_a.to_color +
         "\n      eq: " + @eq.map { |field| field.to_color }.to_a.to_color +
         "\n   range: " + (@range.nil? ? '(nil)' : @range.name) +
