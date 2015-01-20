@@ -119,7 +119,6 @@ module NoSE::Search
         .product((0...@workload.queries.length).to_a).map do |i, q|
         next if @data[:costs][q][i].nil?
         @query_vars[i][q] * (@data[:costs][q][i].last * 1.0)
-        # XXX add weight
       end.compact.reduce(&:+)
 
       @logger.info { "Objective function is #{min_cost.inspect}" }

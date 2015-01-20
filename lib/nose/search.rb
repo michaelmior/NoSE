@@ -100,7 +100,8 @@ module NoSE::Search
           end
         end
 
-        populate_query_costs query_costs, index_pos, steps_by_index, weight, plan
+        populate_query_costs query_costs, index_pos, steps_by_index,
+                             weight, plan
       end
 
       query_costs
