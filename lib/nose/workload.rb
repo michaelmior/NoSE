@@ -7,11 +7,11 @@ require 'graphviz'
 module NoSE
   # A representation of a query workload over a given set of entities
   class Workload
-    attr_reader :model, :query_weights
+    attr_reader :model, :statement_weights
     thread_local_accessor :current
 
     def initialize(model=nil, &block)
-      @query_weights = {}
+      @statement_weights = {}
       @model = model || Model.new
       @entities = {}
 
@@ -38,25 +38,25 @@ module NoSE
     def add_query(query, weight = 1)
       query = Statement.parse(query, @model) if query.is_a? String
 
-      @query_weights[query.freeze] = weight
+      @statement_weights[query.freeze] = weight
     end
 
     # Strip the weights from the query dictionary and return a list of queries
     # @return [Array<Query>]
     def queries
-      @query_weights.keys.select { |statement| statement.is_a? Query }
+      @statement_weights.keys.select { |statement| statement.is_a? Query }
     end
 
     # Strip the weights from the query dictionary and return a list of updates
     # @return [Array<Update>]
     def updates
-      @query_weights.keys.select { |statement| statement.is_a? Update }
+      @statement_weights.keys.select { |statement| statement.is_a? Update }
     end
 
     # Check if all the fields used by queries in the workload exist
     # @return [Boolean]
     def fields_exist?
-      @query_weights.keys.each do |query|
+      @statement_weights.keys.each do |query|
         # Projected fields and fields in the where clause exist
         fields = query.where.map { |condition| condition.field } + query.fields
         fields.each do |field|

@@ -34,8 +34,8 @@ $workload = NoSE::Workload.new do
   <% end %>
 
   # Define queries and their relative weights
-  <% workload.query_weights.each do |query, weight| %>
-  Q '<%= query.query %>', <%= weight %>
+  <% workload.statement_weights.each do |statement, weight| %>
+  Q '<%= statement.query %>', <%= weight %>
 
   <% end %>
 end

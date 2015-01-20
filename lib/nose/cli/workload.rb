@@ -42,8 +42,8 @@ module NoSE::CLI
         indexes: indexes.to_set,
         plans: plans.values,
         total_size: indexes.map(&:size).inject(0, :+),
-        total_cost: workload.query_weights.map do |query, weight|
-          weight * plans[query].cost
+        total_cost: workload.statement_weights.map do |statement, weight|
+          weight * plans[statement].cost
         end.inject(0, &:+)
       )
 
