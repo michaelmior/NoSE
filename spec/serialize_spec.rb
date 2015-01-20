@@ -46,7 +46,7 @@ module NoSE::Serialize
     include_context 'entities'
 
     it 'serializes queries to a string' do
-      expect(StatementRepresenter.represent(query).to_hash).to eq(query.query)
+      expect(StatementRepresenter.represent(query).to_hash).to eq(query.text)
     end
   end
 end

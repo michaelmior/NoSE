@@ -183,12 +183,11 @@ module NoSE
 
   # A CQL statement and its associated data
   class Statement
-    attr_reader :from, :longest_entity_path, :query,
-                :eq_fields, :range_field
+    attr_reader :from, :longest_entity_path, :text, :eq_fields, :range_field
 
     # Parse either a query or an update
-    def self.parse(query, model)
-      case query.split.first
+    def self.parse(text, model)
+      case text.split.first
       when 'INSERT'
         klass = Insert
       when 'DELETE'
@@ -199,15 +198,15 @@ module NoSE
         klass = Query
       end
 
-      klass.new query, model
+      klass.new text, model
     end
 
-    def initialize(type, query, model)
-      @query = query
+    def initialize(type, text, model)
+      @text = text
 
       # If parsing fails, re-raise as our custom exception
       begin
-        @tree = CQLT.new.apply(CQLP.new.method(type).call.parse query)
+        @tree = CQLT.new.apply(CQLP.new.method(type).call.parse text)
       rescue Parslet::ParseFailed => exc
         new_exc = ParseFailed.new exc.cause.ascii_tree
         new_exc.set_backtrace exc.backtrace
@@ -226,7 +225,7 @@ module NoSE
 
     # :nocov:
     def to_color
-      "#{@query} [magenta]#{@longest_entity_path.map(&:name).join ', '}[/]"
+      "#{@text} [magenta]#{@longest_entity_path.map(&:name).join ', '}[/]"
     end
     # :nocov:
 
@@ -246,7 +245,7 @@ module NoSE
       @model.find_field field_path.map(&:to_s)
     end
 
-    # Calculate the longest path of entities traversed by the query
+    # Calculate the longest path of entities traversed by the statement
     def find_longest_path(path_entities)
       path = path_entities.map(&:to_s)[1..-1]
       @longest_entity_path = path.reduce [@from] do |entities, key|
@@ -267,13 +266,13 @@ module NoSE
 
     attr_reader :select, :order, :limit
 
-    def initialize(query, model)
-      super :query, query, model
+    def initialize(statement, model)
+      super :query, statement, model
 
       populate_conditions
       populate_fields
 
-      fail InvalidQueryException, 'must have at least one equality predicate' \
+      fail InvalidStatementException, 'must have an equality predicate' \
         if @conditions.empty? || @conditions.all?(&:is_range)
 
       @limit = @tree[:limit].to_i if @tree[:limit]
@@ -366,17 +365,17 @@ module NoSE
       needs_query ||= @conditions.map(&:field).to_set != @from.id_fields.to_set
       return unless needs_query
 
-      # Extract the path from the original query
+      # Extract the path from the original statement
       query = "SELECT #{@from.id_fields.map(&:name).join ', '} " \
-        "FROM #{path_from_query} #{@where_source}"
+              "FROM #{path_from_statement} #{@where_source}"
 
       Query.new query.strip, @model
     end
 
     private
 
-    # Subclasses implement to return the path string from the query text
-    def path_from_query
+    # Subclasses implement to return the path string from the statement text
+    def path_from_statement
       raise NotImplementedError
     end
   end
@@ -387,8 +386,8 @@ module NoSE
     include StatementSettings
     include StatementToQuery
 
-    def initialize(query, model)
-      super :update, query, model
+    def initialize(statement, model)
+      super :update, statement, model
 
       populate_conditions
       populate_settings
@@ -398,9 +397,9 @@ module NoSE
 
     private
 
-    # Extract the path from the original query
-    def path_from_query
-      /UPDATE\s+(([A-z]+\.)*[A-z]+)\s+/.match(@query).captures.first
+    # Extract the path from the original statement
+    def path_from_statement
+      /UPDATE\s+(([A-z]+\.)*[A-z]+)\s+/.match(@text).captures.first
     end
   end
 
@@ -408,8 +407,8 @@ module NoSE
   class Insert < Statement
     include StatementSettings
 
-    def initialize(query, model)
-      super :insert, query, model
+    def initialize(statement, model)
+      super :insert, statement, model
 
       populate_settings
 
@@ -422,8 +421,8 @@ module NoSE
     include StatementConditions
     include StatementToQuery
 
-    def initialize(query, model)
-      super :delete, query, model
+    def initialize(statement, model)
+      super :delete, statement, model
 
       populate_conditions
 
@@ -432,14 +431,14 @@ module NoSE
 
     private
 
-    # Extract the path from the original query
-    def path_from_query
-      /DELETE FROM\s+(([A-z]+\.)*[A-z]+)\s+/.match(@query).captures.first
+    # Extract the path from the original statement
+    def path_from_statement
+      /DELETE FROM\s+(([A-z]+\.)*[A-z]+)\s+/.match(@text).captures.first
     end
   end
 
-  # Thrown when something tries to parse an invalid query
-  class InvalidQueryException < StandardError
+  # Thrown when something tries to parse an invalid statement
+  class InvalidStatementException < StandardError
   end
 
   # Thrown when parsing a statement fails

@@ -12,7 +12,7 @@ module NoSE
     # Produce all possible indices for a given query
     # @return [Array<Index>]
     def indexes_for_query(query)
-      @logger.debug "Enumerating indexes for query #{query.query}"
+      @logger.debug "Enumerating indexes for query #{query.text}"
 
       if query.range_field.nil?
         range = query.order
