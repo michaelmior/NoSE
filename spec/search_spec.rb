@@ -3,7 +3,7 @@ module NoSE::Search
     include_context 'entities'
 
     it 'raises an exception if there is no space' do
-      workload.add_query 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?'
+      workload.add_statement 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?'
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
       expect { Search.new(workload).search_overlap(indexes, 1) }.to raise_error
     end
@@ -11,7 +11,7 @@ module NoSE::Search
     it 'produces a materialized view with sufficient space', gurobi: true do
       query = NoSE::Query.new 'SELECT UserId FROM User WHERE User.City = ? ' \
                               'ORDER BY User.Username', workload.model
-      workload.add_query query
+      workload.add_statement query
 
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
       indexes = Search.new(workload).search_overlap indexes
@@ -21,7 +21,7 @@ module NoSE::Search
     it 'can perform multiple index lookups on a path segment', gurobi: true do
       query = NoSE::Query.new 'SELECT Username FROM User WHERE User.City = ?',
                               workload.model
-      workload.add_query query
+      workload.add_statement query
 
       indexes = [
         NoSE::Index.new([user['City']], [], [user['UserId']], [user]),

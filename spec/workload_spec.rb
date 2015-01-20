@@ -17,7 +17,7 @@ module NoSE
       it 'automatically parses queries' do
         valid_query = Query.new 'SELECT Id FROM Foo WHERE Foo.Id = ?',
                                 workload.model
-        workload.add_query(valid_query)
+        workload.add_statement valid_query
 
         expect(workload.queries).to have(1).item
         expect(workload.queries.first).to be_a Query

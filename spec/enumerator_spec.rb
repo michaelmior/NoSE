@@ -25,7 +25,7 @@ module NoSE
     it 'produces a simple index for a filter within a workload' do
       query = Query.new 'SELECT Username FROM User WHERE User.City = ?',
                         workload.model
-      workload.add_query query
+      workload.add_statement query
       indexes = enum.indexes_for_workload
 
       expect(indexes.to_a).to include \
@@ -35,7 +35,7 @@ module NoSE
     it 'does not produce empty indexes' do
       query = Query.new 'SELECT Body FROM Tweet.User WHERE User.City = ?',
                         workload.model
-      workload.add_query query
+      workload.add_statement query
       indexes = enum.indexes_for_workload
       expect(indexes).to all(satisfy do |index|
         !index.order_fields.empty? || !index.extra.empty?
@@ -50,7 +50,7 @@ module NoSE
 
       update = Update.new 'UPDATE User SET Username = ? WHERE User.City = ?',
                           model
-      workload.add_query update
+      workload.add_statement update
       indexes = enum.indexes_for_workload
 
       expect(indexes.to_a).to include \

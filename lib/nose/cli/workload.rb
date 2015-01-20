@@ -43,6 +43,7 @@ module NoSE::CLI
         plans: plans.values,
         total_size: indexes.map(&:size).inject(0, :+),
         total_cost: workload.statement_weights.map do |statement, weight|
+          next 0 unless statement.is_a? NoSE::Query
           weight * plans[statement].cost
         end.inject(0, &:+)
       )

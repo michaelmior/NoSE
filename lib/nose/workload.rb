@@ -28,23 +28,29 @@ module NoSE
       if other.is_a? Entity
         @model.add_entity other.freeze
       elsif other.is_a? Statement
-        add_query other.freeze
+        add_statement other.freeze
       else
         fail TypeError, 'can only add queries and entities to a workload'
       end
     end
 
     # Add a new {Statement} to the workload or parse a string
-    def add_query(query, weight = 1)
-      query = Statement.parse(query, @model) if query.is_a? String
+    def add_statement(statement, weight = 1)
+      statement = Statement.parse(statement, @model) if statement.is_a? String
 
-      @statement_weights[query.freeze] = weight
+      @statement_weights[statement.freeze] = weight
     end
 
     # Strip the weights from the query dictionary and return a list of queries
     # @return [Array<Query>]
     def queries
       @statement_weights.keys.select { |statement| statement.is_a? Query }
+    end
+
+    # Strip the weights and return a list of statements
+    # @return [Array<Statement>]
+    def statements
+      @statement_weights.keys
     end
 
     # Strip the weights from the query dictionary and return a list of updates
@@ -131,8 +137,8 @@ module NoSE
     end
 
     # Shortcut to add a new {Statement} to the workload
-    def Q(query, weight = 1.0)
-      @workload.add_query query, weight
+    def Q(statement, weight = 1.0)
+      @workload.add_statement statement, weight
     end
 
     # rubocop:enable MethodName
