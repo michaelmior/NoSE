@@ -69,7 +69,7 @@ module NoSE::Search
       # of a particular index within the array of indexes
       index_pos = Hash[indexes.each_with_index.to_a]
 
-      costs = Parallel.map(@workload.query_weights) do |query, weight|
+      costs = Parallel.map(@workload.statement_weights) do |query, weight|
         query_cost planner, index_pos, query, weight
       end
 
