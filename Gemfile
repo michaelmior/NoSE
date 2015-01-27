@@ -24,7 +24,7 @@ group :test do
   gem 'fakefs', require: 'fakefs/safe'
   gem 'rspec'
   gem 'rspec-collection_matchers'
-  gem 'simplecov'
+  gem 'simplecov', require: false
 end
 
 platform :ruby do
