@@ -32,13 +32,6 @@ module NoSE::Plans
     end
     # :nocov:
 
-    # (see PlanStep#cost)
-    def cost
-      # Assume this has no cost and the cost is captured in the fact that we
-      # have to retrieve more data earlier. All this does is skip records.
-      1
-    end
-
     # Check if filtering can be done (we have all the necessary fields)
     def self.apply(parent, state)
       # Get fields and check for possible filtering

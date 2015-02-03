@@ -19,14 +19,6 @@ module NoSE::Plans
       other.instance_of?(self.class) && @sort_fields == other.sort_fields
     end
 
-    # (see PlanStep#cost)
-    def cost
-      # TODO: Find some estimate of sort cost
-      #       This could be partially captured by the fact that sort + limit
-      #       effectively removes the limit
-      1
-    end
-
     # Check if an external sort can used (if a sort is the last step)
     def self.apply(_parent, state)
       new_step = nil
