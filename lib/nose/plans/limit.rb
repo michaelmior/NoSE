@@ -18,11 +18,6 @@ module NoSE::Plans
       other.instance_of?(self.class) && @limit == other.limit
     end
 
-    # This is basically free since we just discard data
-    def cost
-      0
-    end
-
     # Check if we can apply a limit
     def self.apply(_parent, state)
       # TODO: Apply if have IDs of the last entity set

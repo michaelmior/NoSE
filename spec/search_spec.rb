@@ -1,11 +1,13 @@
 module NoSE::Search
   describe Search do
+    include_context 'dummy_cost_model'
     include_context 'entities'
 
     it 'raises an exception if there is no space' do
       workload.add_statement 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?'
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
-      expect { Search.new(workload).search_overlap(indexes, 1) }.to raise_error
+      search = Search.new(workload, cost_model)
+      expect { search.search_overlap(indexes, 1) }.to raise_error
     end
 
     it 'produces a materialized view with sufficient space', gurobi: true do
@@ -14,7 +16,7 @@ module NoSE::Search
       workload.add_statement query
 
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
-      indexes = Search.new(workload).search_overlap indexes
+      indexes = Search.new(workload, cost_model).search_overlap indexes
       expect(indexes).to include query.materialize_view
     end
 
@@ -27,7 +29,7 @@ module NoSE::Search
         NoSE::Index.new([user['City']], [], [user['UserId']], [user]),
         NoSE::Index.new([user['UserId']], [], [user['Username']], [user])
       ]
-      search = Search.new(workload)
+      search = Search.new(workload, cost_model)
       expect do
         search.search_overlap(indexes, indexes.first.size).to_set
       end.to raise_error NoSolutionException

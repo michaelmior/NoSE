@@ -8,9 +8,10 @@ require 'tempfile'
 module NoSE::Search
   # Searches for the optimal indices for a given workload
   class Search
-    def initialize(workload)
+    def initialize(workload, cost_model)
       @logger = Logging.logger['nose::search']
       @workload = workload
+      @cost_model = cost_model
     end
 
     # Search for optimal indices using an ILP which searches for
@@ -63,7 +64,7 @@ module NoSE::Search
 
     # Get the cost of using each index for each query in a workload
     def costs(indexes)
-      planner = NoSE::Plans::QueryPlanner.new @workload, indexes
+      planner = NoSE::Plans::QueryPlanner.new @workload, indexes, @cost_model
 
       # Create a hash to allow efficient lookup of the numerical index
       # of a particular index within the array of indexes
@@ -122,7 +123,9 @@ module NoSE::Search
         end.map(&:index)
         step_indexes.map! { |index| index_pos[index] }
 
-        cost = steps.map(&:cost).inject(0, &:+) * weight
+        cost = steps.map do |step|
+          step.cost @cost_model
+        end.inject(0, &:+) * weight
 
         fail 'No more than three indexes per step' if step_indexes.length > 3
 

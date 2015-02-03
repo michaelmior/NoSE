@@ -5,6 +5,7 @@ end
 require_relative 'nose/util'
 
 require_relative 'nose/backend'
+require_relative 'nose/cost'
 require_relative 'nose/enumerator'
 require_relative 'nose/indexes'
 require_relative 'nose/loader'

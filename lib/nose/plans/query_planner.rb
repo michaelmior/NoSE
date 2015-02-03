@@ -14,20 +14,21 @@ module NoSE::Plans
     def_delegators :@steps, :each, :<<, :[], :==, :===, :eql?,
                    :inspect, :to_s, :to_a, :to_ary, :last, :length, :count
 
-    def initialize(query)
+    def initialize(query, cost_model)
       @steps = []
       @query = query
+      @cost_model = cost_model
     end
 
     # Two plans are compared by their execution cost
     def <=>(other)
-      cost <=> other.cost
+      cost(cost_model) <=> other.cost
     end
 
     # The estimated cost of executing the query using this plan
     # @return [Numeric]
     def cost
-      @steps.map(&:cost).inject(0, &:+)
+      @steps.map { |step| step.cost @cost_model }.inject(0, &:+)
     end
   end
 
@@ -69,14 +70,18 @@ module NoSE::Plans
     end
 
     # Get the list of steps which led us here
+    # If a cost model is not provided, query plans using
+    # this step cannot be evaluated on the basis of cost
+    #
+    # (this is to support PlanStep#parent_index which does not need cost)
     # @return [QueryPlan]
-    def parent_steps
+    def parent_steps(cost_model = nil)
       steps = nil
 
       if @parent.nil?
-        steps = QueryPlan.new state.query
+        steps = QueryPlan.new state.query, cost_model
       else
-        steps = @parent.parent_steps
+        steps = @parent.parent_steps cost_model
         steps << self
       end
 
@@ -93,8 +98,8 @@ module NoSE::Plans
 
     # The cost of executing this step in the plan
     # @return [Numeric]
-    def cost
-      0
+    def cost(cost_model)
+      cost_model.method((subtype_name + '_cost').to_sym).call self
     end
 
     # Add the Subtype module to all step classes
@@ -184,8 +189,9 @@ module NoSE::Plans
 
     attr_reader :root
 
-    def initialize(state)
+    def initialize(state, cost_model)
       @root = RootPlanStep.new(state)
+      @cost_model = cost_model
     end
 
     # Enumerate all plans in the tree
@@ -201,7 +207,7 @@ module NoSE::Plans
           # sure we never consider invalid query plans
           fail unless node.state.answered?
 
-          yield node.parent_steps
+          yield node.parent_steps @cost_model
         end
       end
     end
@@ -228,11 +234,12 @@ module NoSE::Plans
 
   # A query planner which can construct a tree of query plans
   class QueryPlanner
-    def initialize(model, indexes)
+    def initialize(model, indexes, cost_model)
       @logger = Logging.logger['nose::planner']
 
       @model = model
       @indexes = indexes
+      @cost_model = cost_model
     end
 
     # Find a tree of plans for the given query
@@ -241,7 +248,7 @@ module NoSE::Plans
     def find_plans_for_query(query)
       state = QueryState.new query, @model
       state.freeze
-      tree = QueryPlanTree.new(state)
+      tree = QueryPlanTree.new state, @cost_model
 
       # Limit indices to those which cross the query path
       entities = query.longest_entity_path
@@ -253,7 +260,7 @@ module NoSE::Plans
       find_plans_for_step tree.root, indexes_by_path
 
       if tree.root.children.empty?
-        tree = QueryPlanTree.new(state)
+        tree = QueryPlanTree.new state, @cost_model
         find_plans_for_step tree.root, indexes_by_path, prune: false
         fail NoPlanException, "#{query.inspect} #{tree.inspect}"
       end
