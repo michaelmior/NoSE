@@ -45,7 +45,8 @@ module NoSE::CLI
 
     # Get a
     def get_class(class_name, config)
-      name = config[class_name.to_sym][:name]
+      name = config
+      name = config[class_name.to_sym][:name] if config.is_a? Hash
       require_relative "#{class_name}/#{name}"
       full_class_name = ['NoSE', class_name.capitalize,
                          name.capitalize + class_name.capitalize]

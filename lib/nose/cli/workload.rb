@@ -25,7 +25,9 @@ module NoSE::CLI
       end
 
       # Find the final plans for each query
-      planner = NoSE::Plans::QueryPlanner.new workload, indexes
+      config = load_config
+      cost_model = get_class 'cost', config[:backend][:name]
+      planner = NoSE::Plans::QueryPlanner.new workload, indexes, cost_model
       plans = {}
       workload.queries.map do |query|
         plans[query] = planner.min_plan query
@@ -41,6 +43,7 @@ module NoSE::CLI
         enumerated_indexes: enumerated_indexes,
         indexes: indexes.to_set,
         plans: plans.values,
+        cost_model: cost_model,
         total_size: indexes.map(&:size).inject(0, :+),
         total_cost: workload.statement_weights.map do |statement, weight|
           next 0 unless statement.is_a? NoSE::Query

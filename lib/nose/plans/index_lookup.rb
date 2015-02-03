@@ -36,21 +36,6 @@ module NoSE::Plans
       other.instance_of?(self.class) && @index == other.index
     end
 
-    # # Rough cost estimate as the size of data returned
-    # # @return [Numeric]
-    # def cost
-    #   if @state.answered?
-    #     # If we have an answer to the query, we only need
-    #     # to fetch the data fields which are selected
-    #     fields = @index.hash_fields + @index.order_fields +
-    #       @index.extra & @state.query.select
-    #   else
-    #     fields = @index.all_fields
-    #   end
-
-    #   @state.cardinality * fields.map(&:size).inject(0, :+)
-    # end
-
     # Check if this step can be applied for the given index,
     # returning a possible application of the step
     def self.apply(parent, index, state)

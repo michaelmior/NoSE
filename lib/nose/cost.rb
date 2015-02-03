@@ -1,6 +1,8 @@
 module NoSE::Cost
   # Cost model for a backend database
   class CostModel
+    include Supertype
+
     # The cost of filtering intermediate results
     def self.filter_cost(_step)
       # Assume this has no cost and the cost is captured in the fact that we
