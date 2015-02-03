@@ -242,7 +242,7 @@ module NoSE::Serialize
       workload = object.workload
       query = NoSE::Statement.parse instance['query'], workload.model
 
-      plan = NoSE::Plans::QueryPlan.new query
+      plan = NoSE::Plans::QueryPlan.new query, object.cost_model
       state = NoSE::Plans::QueryState.new query, workload
       parent = NoSE::Plans::RootPlanStep.new state
 
@@ -288,16 +288,20 @@ module NoSE::Serialize
     collection :enumerated_indexes, decorator: FullIndexRepresenter,
                                     class: Object,
                                     deserialize: IndexBuilder.new
-    collection :plans, decorator: QueryPlanRepresenter,
-                       class: Object,
-                       deserialize: QueryPlanBuilder.new
-    property :total_size
-    property :total_cost
 
     # The backend cost model used to generate the schema
     def cost_model
       represented.cost_model.subtype_name
     end
+    def cost_model=(cost_model)
+      represented.cost_model = NoSE::Cost::Cost.subtype_class cost_model
+    end
     property :cost_model, exec_context: :decorator
+
+    collection :plans, decorator: QueryPlanRepresenter,
+      class: Object,
+      deserialize: QueryPlanBuilder.new
+    property :total_size
+    property :total_cost
   end
 end
