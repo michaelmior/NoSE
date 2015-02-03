@@ -1,6 +1,6 @@
 module NoSE::Cost
   # Cost model for a backend database
-  class CostModel
+  class Cost
     include Supertype
 
     # The cost of filtering intermediate results
