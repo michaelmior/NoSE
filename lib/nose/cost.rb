@@ -30,3 +30,5 @@ module NoSE::Cost
     end
   end
 end
+
+require_relative 'cost/cassandra'
