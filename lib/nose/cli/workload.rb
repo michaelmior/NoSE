@@ -7,7 +7,7 @@ module NoSE::CLI
   class NoSECLI < Thor
     desc 'workload NAME', 'run the workload NAME'
     option :max_space, type: :numeric, default: Float::INFINITY
-    option :format, type: :string, default: 'text'
+    option :format, type: :string, default: 'text', enum: ['text', 'json']
     def workload(name)
       # rubocop:disable GlobalVars
       require_relative "../../../workloads/#{name}"
