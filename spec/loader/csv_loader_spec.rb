@@ -11,9 +11,9 @@ module NoSE::Loader
       FileUtils.mkdir_p '/tmp/csv'
 
       File.open '/tmp/csv/User.csv', 'w' do |file|
-        file.puts <<-EOF.gsub(/^ {8}/, '')
-        UserId,Username,City
-        1,Alice,Chicago
+        file.puts <<-EOF.gsub(/^ {10}/, '')
+          UserId,Username,City
+          1,Alice,Chicago
         EOF
       end
     end
