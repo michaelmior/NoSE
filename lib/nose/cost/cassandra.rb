@@ -1,5 +1,5 @@
 module NoSE::Cost
-  class CassandraCost < CostModel
+  class CassandraCost < Cost
     include Subtype
 
     # Rough cost estimate as the size of data returned
