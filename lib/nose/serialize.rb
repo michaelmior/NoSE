@@ -148,7 +148,6 @@ module NoSE::Serialize
     include Representable::JSON
 
     property :subtype_name, as: :type
-    property :cost
 
     # The estimated cardinality at this step in the plan
     def cardinality
@@ -294,5 +293,11 @@ module NoSE::Serialize
                        deserialize: QueryPlanBuilder.new
     property :total_size
     property :total_cost
+
+    # The backend cost model used to generate the schema
+    def cost_model
+      represented.cost_model.subtype_name
+    end
+    property :cost_model, exec_context: :decorator
   end
 end

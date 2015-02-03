@@ -22,7 +22,7 @@ module NoSE::Plans
 
     # Two plans are compared by their execution cost
     def <=>(other)
-      cost(cost_model) <=> other.cost
+      cost <=> other.cost
     end
 
     # The estimated cost of executing the query using this plan
