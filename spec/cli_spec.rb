@@ -9,8 +9,8 @@ module NoSE::CLI
     end
 
     it 'can output a graph of a workload' do
-      expect_any_instance_of(GraphViz).to \
-        receive(:output).with(png: '/tmp/rubis.png')
+      expect_any_instance_of(NoSE::Model).to \
+        receive(:output_png).with('/tmp/rubis.png', false)
       run_simple 'nose graph rubis /tmp/rubis.png'
     end
   end
