@@ -62,6 +62,34 @@ module NoSE::CLI
       json = File.read(plan_file)
       representer.from_json(json)
     end
+
+    # Output the results of advising as text
+    def output_text(result)
+      # Output selected indexes
+      header = "Indexes\n" + '━' * 50
+      Formatador.display_line "[blue]#{header}[/]"
+      result.indexes.each do |index|
+        puts index.inspect
+      end
+
+      Formatador.display_line "Total size: [blue]#{result.total_size}[/]\n"
+      puts
+
+      # Output queries plans for the discovered indices
+      header = "Query plans\n" + '━' * 50
+      Formatador.display_line "[blue]#{header}[/]"
+      result.plans.each do |plan|
+        puts plan.query.inspect
+        puts plan.inspect
+        puts
+      end
+    end
+
+    # Output the results of advising as JSON
+    def output_json(result)
+      puts JSON.pretty_generate \
+        NoSE::Serialize::SearchResultRepresenter.represent(result).to_hash
+    end
   end
 end
 
