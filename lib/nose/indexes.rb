@@ -45,15 +45,6 @@ module NoSE
       @key
     end
 
-    def state
-      {
-        hash_fields: @hash_fields.map(&:state),
-        order_fields: @order_fields.map(&:state),
-        extra: @extra.map(&:state),
-        path: @path.map(&:state)
-      }
-    end
-
     # :nocov:
     def to_color
       hash_names = @hash_fields.map(&:inspect)
@@ -78,7 +69,12 @@ module NoSE
     # Hash based on the fields, their keys, and the path
     # @return [Fixnum]
     def hash
-      @hash ||= [@hash_fields, @order_fields, @extra.to_set, @path].hash
+      @hash ||= Zlib.crc32 [
+        @hash_fields.map(&:id),
+        @order_fields.map(&:id),
+        @extra.to_set.map(&:id),
+        @path.map(&:name)
+      ].to_s
     end
 
     # Precalculate the size of the index
@@ -108,7 +104,7 @@ module NoSE
     # the numerical indices into a list of entities
     def entity_range(entities)
       Range.new(*(@path.map do |entity|
-        entities.index entity.name
+        entities.index entity
       end).minmax) rescue (nil..nil)
     end
   end

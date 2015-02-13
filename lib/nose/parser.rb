@@ -343,7 +343,7 @@ module NoSE
     # Populate all the variable settings
     def populate_settings
       @settings = @tree[:settings].map do |setting|
-        field = @model[@from][setting[:field].to_s]
+        field = @from[setting[:field].to_s]
         value = setting[:value]
 
         type = field.class.const_get 'TYPE'
