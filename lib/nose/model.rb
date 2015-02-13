@@ -31,7 +31,8 @@ module NoSE
         field[0..1] = key_field ? key_field.entity.name : field[1]
         find_field field
       else
-        @entities[field[0]].fields[field[1]]
+        entity = field[0].is_a?(String) ? entities[field[0]] : field[0]
+        entity.fields[field[1]]
       end
     end
 

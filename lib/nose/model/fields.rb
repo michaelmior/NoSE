@@ -1,4 +1,5 @@
 require 'forwardable'
+require 'zlib'
 
 module NoSE::Fields
   # A single field on an {Entity}
@@ -15,10 +16,6 @@ module NoSE::Fields
       @cardinality = count
     end
 
-    def state
-      @parent.name + '.' + @name
-    end
-
     # Compare by parent entity and name
     def ==(other)
       other.is_a?(Field) && @parent == other.parent &&
@@ -29,7 +26,7 @@ module NoSE::Fields
     # Hash by entity and name
     # @return [Fixnum]
     def hash
-      @hash ||= [@parent.name, @name].hash
+      @hash ||= Zlib.crc32 [@parent.name, @name].to_s
     end
 
     # :nocov:

@@ -4,8 +4,6 @@ module NoSE
     attr_reader :fields, :name
     attr_accessor :count
 
-    alias_method :state, :name
-
     def initialize(name, &block)
       @name = name
       @fields = {}
@@ -24,17 +22,17 @@ module NoSE
     end
     # :nocov:
 
-    # Compare by name, fields, and count
+    # Compare by name
     # @return [Boolean]
     def ==(other)
-      hash == other.hash
+      @name == other.name
     end
     alias_method :eql?, :==
 
     # The hash is based on the name of the entity and its fields
     # @return [Fixnum]
     def hash
-      @hash ||= @name.hash
+      @hash ||= Zlib.crc32 @name
     end
 
     # Get the key fields for the entity
