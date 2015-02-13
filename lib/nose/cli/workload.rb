@@ -15,23 +15,15 @@ module NoSE::CLI
       # rubocop:enable GlobalVars
 
       enumerated_indexes = NoSE::IndexEnumerator.new(workload) \
-        .indexes_for_workload.to_a
-
-      if options[:max_space].finite?
-        indexes = NoSE::Search::Search.new(workload) \
-          .search_overlap(enumerated_indexes, options[:max_space])
-      else
-        indexes = enumerated_indexes.clone
-      end
+                           .indexes_for_workload.to_a
+      indexes = find_indexes enumerated_indexes, options[:max_space]
 
       # Find the final plans for each query
       config = load_config
       cost_model = get_class 'cost', config[:backend][:name]
       planner = NoSE::Plans::QueryPlanner.new workload, indexes, cost_model
       plans = {}
-      workload.queries.map do |query|
-        plans[query] = planner.min_plan query
-      end
+      workload.queries.each { |query| plans[query] = planner.min_plan query }
 
       # Get the indexes which are actually used
       indexes = plans.map(&:to_a).flatten.select do |step|
@@ -51,11 +43,21 @@ module NoSE::CLI
         end.inject(0, &:+)
       )
 
-      output_json result if options[:format] == 'json'
-      output_text result if options[:format] == 'text'
+      # Output the results in the specified format
+      send(('output_' + options[:format]).to_sym, result)
     end
 
     private
+
+    # Find the indexes with the given space constraint
+    def find_indexes(enumerated_indexes, space)
+      if space.finite?
+        NoSE::Search::Search.new(workload).search_overlap enumerated_indexes,
+                                                          space
+      else
+        enumerated_indexes.clone
+      end
+    end
 
     # Output the results of advising as text
     def output_text(result)
