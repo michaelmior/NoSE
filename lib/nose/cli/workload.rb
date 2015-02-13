@@ -20,7 +20,7 @@ module NoSE::CLI
 
       # Find the final plans for each query
       config = load_config
-      cost_model = get_class 'cost', config[:backend][:name]
+      cost_model = get_class 'cost', config[:cost_model][:name]
       planner = NoSE::Plans::QueryPlanner.new workload, indexes, cost_model
       plans = {}
       workload.queries.each { |query| plans[query] = planner.min_plan query }
