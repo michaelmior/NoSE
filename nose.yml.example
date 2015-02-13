@@ -6,6 +6,10 @@ backend:
   port: 9042
   keyspace: nose
 
+# Cost model name and parameters
+cost_model:
+  name: cassandra
+
 # Loader-specific configuration
 # The mysql loader is recommended, but csv might work as well if
 # your generated indexes all have path length one
