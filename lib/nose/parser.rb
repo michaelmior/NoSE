@@ -153,6 +153,11 @@ module NoSE
     def ==(other)
       @field == other.field && @operator == other.operator
     end
+    alias_method :eql?, :==
+
+    def hash
+      Zlib.crc32 [@field.id, @operator].to_s
+    end
   end
 
   # Used to add a list of conditions to a {Statement}
@@ -232,6 +237,11 @@ module NoSE
     # Compare statements as equal by their parse tree
     def ==(other)
       other.is_a?(Statement) && @tree == other.instance_variable_get(:@tree)
+    end
+    alias_method :eql?, :==
+
+    def hash
+      Zlib.crc32 @tree.to_s
     end
 
     private
@@ -331,6 +341,12 @@ module NoSE
     # Compare settings equal by their field and value
     def ==(other)
       other.field == @field && other.value == @value
+    end
+    alias_method :eql?, :==
+
+    # Hash by field and value
+    def hash
+      Zlib.crc32 [@field.id, @value].to_s
     end
   end
 
