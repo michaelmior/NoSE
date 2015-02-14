@@ -18,6 +18,11 @@ module NoSE::Plans
     def ==(other)
       other.instance_of?(self.class) && @sort_fields == other.sort_fields
     end
+    alias_method :eql?, :==
+
+    def hash
+      Zlib.crc32 @sort_fields.map(&:id).to_s
+    end
 
     # Check if an external sort can used (if a sort is the last step)
     def self.apply(_parent, state)

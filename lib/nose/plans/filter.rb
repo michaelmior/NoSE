@@ -20,6 +20,10 @@ module NoSE::Plans
         @eq == other.eq && @range == other.range
     end
 
+    def hash
+      Zlib.crc32 [@eq.map(&:id), @range.nil? ? nil : @range.id].to_s
+    end
+
     # :nocov:
     def to_color
       "#{super} #{@eq.to_color} #{@range.to_color} " +

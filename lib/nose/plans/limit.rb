@@ -17,6 +17,11 @@ module NoSE::Plans
     def ==(other)
       other.instance_of?(self.class) && @limit == other.limit
     end
+    alias_method :eql?, :==
+
+    def hash
+      @limit
+    end
 
     # Check if we can apply a limit
     def self.apply(_parent, state)

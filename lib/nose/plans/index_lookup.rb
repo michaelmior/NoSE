@@ -35,6 +35,11 @@ module NoSE::Plans
     def ==(other)
       other.instance_of?(self.class) && @index == other.index
     end
+    alias_method :eql?, :==
+
+    def hash
+      index.hash
+    end
 
     # Check if this step can be applied for the given index,
     # returning a possible application of the step
