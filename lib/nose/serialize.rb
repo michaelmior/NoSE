@@ -267,6 +267,13 @@ module NoSE::Serialize
           step = step_class.new limit
         end
 
+        # Copy the correct cardinality
+        # XXX This may not preserve all the necessary state
+        state = step.state.dup
+        state.instance_variable_set :@cardinality,
+                                    step_hash['cardinality']
+        step.state = state.freeze
+
         plan << step
         parent = step
       end
