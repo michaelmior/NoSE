@@ -5,6 +5,7 @@ module NoSE::Plans
   # A single plan for a query
   class QueryPlan
     attr_accessor :query
+    attr_accessor :cost_model
 
     include Comparable
     include Enumerable
@@ -188,6 +189,7 @@ module NoSE::Plans
     include Enumerable
 
     attr_reader :root
+    attr_accessor :cost_model
 
     def initialize(state, cost_model)
       @root = RootPlanStep.new(state)
