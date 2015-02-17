@@ -62,6 +62,12 @@ module NoSE::Backend
       futures.each(&:join)
     end
 
+    # Check if the given index is empty
+    def index_empty?(index)
+      query = "SELECT COUNT(*) FROM \"#{index.key}\" LIMIT 1"
+      client.execute(query).first.values.first == 0
+    end
+
     private
 
     # Add the ID of the last entity if necessary

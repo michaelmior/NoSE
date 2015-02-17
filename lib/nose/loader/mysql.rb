@@ -13,6 +13,12 @@ module NoSE::Loader
       client = new_client config
 
       indexes.each_with_index do |index, i|
+        # Skip this index if it's not empty
+        unless @backend.index_empty? index
+          puts "Skipping index #{index.inspect}"
+          next
+        end
+
         sql = index_sql index
         query = Mysql::Stmt.new client.protocol, Mysql::Charset.by_name('utf8')
         results = query.prepare(sql).execute
