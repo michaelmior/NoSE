@@ -91,6 +91,11 @@ module NoSE::CLI
       puts JSON.pretty_generate \
         NoSE::Serialize::SearchResultRepresenter.represent(result).to_hash
     end
+
+    # Output the results of advising as YAML
+    def output_yaml(result)
+      puts NoSE::Serialize::SearchResultRepresenter.represent(result).to_yaml
+    end
   end
 end
 

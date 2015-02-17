@@ -3,7 +3,8 @@ module NoSE::CLI
   class NoSECLI < Thor
     desc 'reformat PLAN_FILE',
          'reformat the data in PLAN_FILE'
-    option :format, type: :string, default: 'text', enum: ['text', 'json']
+    option :format, type: :string, default: 'text',
+                    enum: ['text', 'json', 'yaml']
     def reformat(plan_file)
       result = load_results plan_file
 
