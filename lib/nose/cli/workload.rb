@@ -14,9 +14,14 @@ module NoSE::CLI
       workload = $workload
       # rubocop:enable GlobalVars
 
+      # Get the cost model
+      config = load_config
+      cost_model = get_class 'cost', config[:cost_model][:name]
+
       enumerated_indexes = NoSE::IndexEnumerator.new(workload) \
                            .indexes_for_workload.to_a
-      indexes = find_indexes enumerated_indexes, options[:max_space]
+      indexes = find_indexes workload, enumerated_indexes, options[:max_space],
+                             cost_model
 
       # Find the final plans for each query
       config = load_config
@@ -50,10 +55,10 @@ module NoSE::CLI
     private
 
     # Find the indexes with the given space constraint
-    def find_indexes(enumerated_indexes, space)
+    def find_indexes(workload, enumerated_indexes, space, cost_model)
       if space.finite?
-        NoSE::Search::Search.new(workload).search_overlap enumerated_indexes,
-                                                          space
+        NoSE::Search::Search.new(workload, cost_model) \
+          .search_overlap enumerated_indexes, space
       else
         enumerated_indexes.clone
       end
