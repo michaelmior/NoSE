@@ -31,4 +31,4 @@ module NoSE::Cost
   end
 end
 
-require_relative 'cost/cassandra'
+require_relative 'cost/field_size'
