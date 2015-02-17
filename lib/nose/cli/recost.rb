@@ -8,7 +8,7 @@ module NoSE::CLI
       config = load_config
 
       # Get the new cost model and recost all the queries
-      new_cost_model = get_class 'cost', config[:cost_model][:name]
+      new_cost_model = get_class 'cost', cost_model
       result.plans.each { |plan| plan.cost_model = new_cost_model }
 
       plans = Hash[result.plans.map { |plan| [plan.query, plan] }]
