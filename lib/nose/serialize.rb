@@ -310,5 +310,17 @@ module NoSE::Serialize
       deserialize: QueryPlanBuilder.new
     property :total_size
     property :total_cost
+
+    # Include the revision of the code used to generate this output
+    def revision
+      `git rev-parse HEAD 2> /dev/null`.strip
+    end
+    property :revision, exec_context: :decorator
+
+    # The time the results were generated
+    def time
+      Time.now.rfc2822
+    end
+    property :time, exec_context: :decorator
   end
 end
