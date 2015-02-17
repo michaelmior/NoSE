@@ -8,15 +8,15 @@ module NoSE::Loader
 
     # @abstract Subclasses should load data for the given list of indexes
     # :nocov:
-    def load(indexes, config, show_progress = false)
-      raise NotImplementedError
+    def load(_indexes, _config, _show_progress = false)
+      fail NotImplementedError
     end
     # :nocov:
 
     # @abstract Subclasses should generate a model from the external source
     # :nocov:
-    def model(config)
-      raise NotImplementedError
+    def model(_config)
+      fail NotImplementedError
     end
     # :nocov:
   end
