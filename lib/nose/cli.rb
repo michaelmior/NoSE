@@ -48,8 +48,9 @@ module NoSE::CLI
       name = config
       name = config[class_name.to_sym][:name] if config.is_a? Hash
       require_relative "#{class_name}/#{name}"
+      name = name.split('_').map(&:capitalize).join
       full_class_name = ['NoSE', class_name.capitalize,
-                         name.capitalize + class_name.capitalize]
+                         name + class_name.capitalize]
       full_class_name.reduce(Object) do |mod, name_part|
         mod.const_get name_part
       end
