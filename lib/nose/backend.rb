@@ -99,4 +99,8 @@ module NoSE::Backend
   # Raised when a query is executed that we have no plan for
   class PlanNotFound < StandardError
   end
+
+  # Raised when a backend attempts to create an index that already exists
+  class IndexAlreadyExists < StandardError
+  end
 end
