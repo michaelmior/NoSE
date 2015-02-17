@@ -322,5 +322,11 @@ module NoSE::Serialize
       Time.now.rfc2822
     end
     property :time, exec_context: :decorator
+
+    # The full command used to generate the results
+    def command
+      "#{$PROGRAM_NAME} #{ARGV.join ' '}"
+    end
+    property :command, exec_context: :decorator
   end
 end
