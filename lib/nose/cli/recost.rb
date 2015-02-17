@@ -1,5 +1,5 @@
 module NoSE::CLI
-  # Add a command to generate a graphic of the schema from a workload
+  # Add a command to recalculate costs with a new model
   class NoSECLI < Thor
     desc 'recost PLAN_FILE COST_MODEL',
          'recost the workload in PLAN_FILE with COST_MODEL'
