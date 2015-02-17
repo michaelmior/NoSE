@@ -130,6 +130,10 @@ module NoSE
         order_choices.each do |order|
           # Skip indices with only a hash component
           index_extra = extra - (index + order)
+
+          # Append the primary key of the last entity in the path if needed
+          order += path.last.id_fields - (index + order)
+
           next if order.empty? && index_extra.empty?
 
           begin
