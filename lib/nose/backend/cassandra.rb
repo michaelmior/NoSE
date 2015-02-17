@@ -14,7 +14,7 @@ module NoSE::Backend
 
     # Produce the DDL necessary for column families for the given indexes
     # and optionally execute them against the server
-    def indexes_ddl(execute = false)
+    def indexes_ddl(execute = false, skip_existing = false)
       Enumerator.new do |enum|
         @indexes.map do |index|
           # Add the ID of the last entity if necessary
@@ -29,7 +29,16 @@ module NoSE::Backend
           ddl += '));'
 
           enum.yield ddl
-          client.execute(ddl) if execute
+
+          begin
+            client.execute(ddl) if execute
+          rescue Cassandra::Errors::AlreadyExistsError => exc
+            next if skip_existing
+
+            new_exc = IndexAlreadyExists.new exc.message
+            new_exc.set_backtrace exc.backtrace
+            raise new_exc
+          end
         end
       end
     end
