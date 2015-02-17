@@ -112,8 +112,9 @@ module NoSE::Serialize
       entity = options[:entity_map][instance['name']]
 
       # Add all fields from the entity
-      fields = EntityFieldRepresenter.represent([]) \
-        .from_hash(instance['fields'], entity_map: options[:entity_map])
+      fields = EntityFieldRepresenter.represent([])
+      fields = fields.from_hash instance['fields'],
+                                entity_map: options[:entity_map]
       fields.each { |field| entity << field }
 
       entity
@@ -213,7 +214,7 @@ module NoSE::Serialize
       represented.model.entities.values
     end
     collection :entities, decorator: EntityRepresenter,
-               exec_context: :decorator
+                          exec_context: :decorator
   end
 
   # Construct a new workload from a parsed hash
@@ -230,8 +231,9 @@ module NoSE::Serialize
       end
 
       # Populate the entities and add them to the workload
-      entities = EntityRepresenter.represent([]) \
-        .from_hash(instance['entities'], entity_map: entity_map)
+      entities = EntityRepresenter.represent([])
+      entities = entities.from_hash instance['entities'],
+                                    entity_map: entity_map
       entities.each { |entity| workload << entity }
 
       # Add all statements to the workload
@@ -310,14 +312,16 @@ module NoSE::Serialize
     def cost_model
       represented.cost_model.subtype_name
     end
+
     def cost_model=(cost_model)
       represented.cost_model = NoSE::Cost::Cost.subtype_class cost_model
     end
+
     property :cost_model, exec_context: :decorator
 
     collection :plans, decorator: QueryPlanRepresenter,
-      class: Object,
-      deserialize: QueryPlanBuilder.new
+                       class: Object,
+                       deserialize: QueryPlanBuilder.new
     property :total_size
     property :total_cost
 
@@ -325,27 +329,33 @@ module NoSE::Serialize
     def revision
       `git rev-parse HEAD 2> /dev/null`.strip
     end
+
     def revision=(revision)
       represented.revision = revision
     end
+
     property :revision, exec_context: :decorator
 
     # The time the results were generated
     def time
       Time.now.rfc2822
     end
+
     def time=(time)
       represented.time = Time.rfc2822 time
     end
+
     property :time, exec_context: :decorator
 
     # The full command used to generate the results
     def command
       "#{$PROGRAM_NAME} #{ARGV.join ' '}"
     end
+
     def command=(command)
       represented.command = command
     end
+
     property :command, exec_context: :decorator
   end
 end
