@@ -315,17 +315,26 @@ module NoSE::Serialize
     def revision
       `git rev-parse HEAD 2> /dev/null`.strip
     end
+    def revision=(revision)
+      represented.revision = revision
+    end
     property :revision, exec_context: :decorator
 
     # The time the results were generated
     def time
       Time.now.rfc2822
     end
+    def time=(time)
+      represented.time = Time.rfc2822 time
+    end
     property :time, exec_context: :decorator
 
     # The full command used to generate the results
     def command
       "#{$PROGRAM_NAME} #{ARGV.join ' '}"
+    end
+    def command=(command)
+      represented.command = command
     end
     property :command, exec_context: :decorator
   end
