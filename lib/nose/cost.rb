@@ -28,6 +28,11 @@ module NoSE::Cost
     def self.index_lookup_cost(_step)
       fail NotImplementedError, 'Must be implemented in a subclass'
     end
+
+    # This is here for debugging purposes because we need a cost
+    def self.pruned_cost(_step)
+      0
+    end
   end
 end
 
