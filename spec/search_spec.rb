@@ -26,7 +26,7 @@ module NoSE::Search
       workload.add_statement query
 
       indexes = [
-        NoSE::Index.new([user['City']], [], [user['UserId']], [user]),
+        NoSE::Index.new([user['City']], [user['UserId']], [], [user]),
         NoSE::Index.new([user['UserId']], [], [user['Username']], [user])
       ]
       search = Search.new(workload, cost_model)

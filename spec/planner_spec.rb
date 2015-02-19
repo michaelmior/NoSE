@@ -69,9 +69,10 @@ module NoSE::Plans
     end
 
     it 'can find multiple plans' do
-      index1 = NoSE::Index.new [tweet['User']], [tweet['Timestamp']],
+      index1 = NoSE::Index.new [tweet['User']],
+                               [tweet['Timestamp'], tweet['TweetId']],
                                [tweet['Body']], [tweet]
-      index2 = NoSE::Index.new [tweet['User']], [],
+      index2 = NoSE::Index.new [tweet['User']], [tweet['TweetId']],
                                [tweet['Timestamp'], tweet['Body']], [tweet]
       planner = QueryPlanner.new workload.model, [index1, index2], cost_model
       query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE Tweet.User = ? ' \
@@ -154,7 +155,8 @@ module NoSE::Plans
 
     it 'fails if required fields are not available' do
       indexes = [
-        NoSE::Index.new([user['Username']], [], [user['City']], [user]),
+        NoSE::Index.new([user['Username']], [user['UserId']], [user['City']],
+                        [user]),
         NoSE::Index.new([tweet['TweetId']], [], [tweet['Body']], [tweet])
       ]
       planner = QueryPlanner.new workload.model, indexes, cost_model
@@ -185,7 +187,7 @@ module NoSE::Plans
       workload.add_statement query
 
       indexes = [
-        NoSE::Index.new([user['Username']], [], [tweet['TweetId']],
+        NoSE::Index.new([user['Username']], [tweet['TweetId']], [],
                         [user, tweet]),
         NoSE::Index.new([tweet['TweetId']], [], [tweet['Body']], [tweet])
       ]
