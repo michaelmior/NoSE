@@ -26,7 +26,7 @@ module NoSE::Serialize
     include_context 'entities'
 
     it 'serializes an index to a key' do
-      index = NoSE::Index.new [user['Username']], [], [user['UserId']],
+      index = NoSE::Index.new [user['Username']], [user['UserId']], [],
                               [user], 'IndexKey'
       hash = IndexRepresenter.represent(index).to_hash
       expect(hash).to eq({'key' => 'IndexKey'})

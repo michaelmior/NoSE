@@ -63,8 +63,8 @@ module NoSE
       end
 
       let(:index) do
-        Index.new [other_entity['Corge']], [], [other_entity['Grault']],
-                  [other_entity]
+        Index.new [other_entity['Corge']], [other_entity['Quux']],
+                  [other_entity['Grault']], [other_entity]
       end
 
       it 'produces nothing if there are no updates' do

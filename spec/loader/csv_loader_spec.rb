@@ -21,7 +21,8 @@ module NoSE::Loader
     it 'can load data into a backend' do
       backend = instance_spy NoSE::Backend::BackendBase
 
-      index = NoSE::Index.new [user['City']], [], [user['Username']], [user]
+      index = NoSE::Index.new [user['City']], [user['UserId']],
+                              [user['Username']], [user]
       loader = CsvLoader.new workload, backend
       loader.load([index], {directory: '/tmp/csv'})
 

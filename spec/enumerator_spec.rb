@@ -30,7 +30,7 @@ module NoSE
       indexes = enum.indexes_for_workload
 
       expect(indexes.to_a).to include \
-        Index.new [user['City']], [], [user['Username']], [user]
+        Index.new [user['City']], [user['UserId']], [user['Username']], [user]
     end
 
     it 'does not produce empty indexes' do
@@ -55,7 +55,7 @@ module NoSE
       indexes = enum.indexes_for_workload
 
       expect(indexes.to_a).to include \
-        Index.new [user['City']], [], [user['UserId']], [user]
+        Index.new [user['City']], [user['UserId']], [user['UserId']], [user]
     end
   end
 end
