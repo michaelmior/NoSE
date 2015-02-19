@@ -113,7 +113,7 @@ $workload = NoSE::Workload.new do
   # 6. SELECT seller AS E_seller, comments.id AS O_id, from_user_id, comment, date FROM comments join items on comments.item_id=items.id;
   # I638854407
 
-  Q 'SELECT id, name FROM items WHERE items.category = ?'
+  Q 'SELECT id, name FROM items WHERE items.category = ? LIMIT 1000'
   # 7. SELECT category as E_category, id, name FROM items;
   # I3358488952
 
