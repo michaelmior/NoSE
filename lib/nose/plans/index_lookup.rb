@@ -94,7 +94,7 @@ module NoSE::Plans
     private
 
     # Modify the state to reflect the fields looked up by the index
-    def update_state(_parent)
+    def update_state(parent)
       # Find fields which are filtered by the index
       eq_filter = @state.eq & (@index.hash_fields + @index.order_fields).to_set
       if @index.order_fields.include?(@state.range)
@@ -131,6 +131,8 @@ module NoSE::Plans
       if @state.answered?(check_limit: false) && !@state.query.limit.nil?
         @state.cardinality = @state.query.limit
       else
+        @state.cardinality = @state.query.longest_entity_path.last.count \
+          if parent.is_a? RootPlanStep
         @state.cardinality = Cardinality.new_cardinality @state.cardinality,
                                                          eq_filter,
                                                          range_filter,

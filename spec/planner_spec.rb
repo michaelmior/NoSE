@@ -119,6 +119,9 @@ module NoSE::Plans
                                        'Tweet.TweetId = ?', workload.model
         @simple_state = QueryState.new simple_query, workload.model
 
+        # Pretend we start with all tweets
+        @simple_state.cardinality = tweet.count
+
         query = NoSE::Query.new 'SELECT Body FROM Tweet.User ' \
                                 'WHERE User.UserId = ?', workload.model
         @state = QueryState.new query, workload.model
