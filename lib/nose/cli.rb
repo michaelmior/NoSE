@@ -84,6 +84,8 @@ module NoSE::CLI
         puts plan.inspect
         puts
       end
+
+      Formatador.display_line "Total cost: [blue]#{result.total_cost}[/]\n"
     end
 
     # Output the results of advising as JSON
