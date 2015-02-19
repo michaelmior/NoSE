@@ -139,7 +139,7 @@ module NoSE::Plans
       @range = query.range_field
       @order_by = query.order
       @path = query.longest_entity_path.reverse
-      @cardinality = @path.first.count
+      @cardinality = 1  # this will be updated on the first index lookup
       @given_fields = @eq.dup
     end
 
