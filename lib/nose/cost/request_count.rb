@@ -7,7 +7,8 @@ module NoSE::Cost
     def self.index_lookup_cost(step)
       # We always start with a single lookup, then the number
       # of lookups is determined by the cardinality at the preceding step
-      step.parent_index.nil? ? 1 : step.parent.state.cardinality
+      step.parent.is_a?(NoSE::Plans::RootPlanStep) ? \
+        1 : step.parent.state.cardinality
     end
   end
 end
