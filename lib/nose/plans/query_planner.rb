@@ -167,7 +167,7 @@ module NoSE::Plans
     # @return [Boolean]
     def answered?(check_limit: true)
       done = @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
-      done &&= @cardinality == @query.limit unless @query.limit.nil? ||
+      done &&= @cardinality <= @query.limit unless @query.limit.nil? ||
                                                    !check_limit
 
       done
