@@ -36,5 +36,6 @@ module NoSE::Cost
   end
 end
 
+require_relative 'cost/entity_count'
 require_relative 'cost/field_size'
 require_relative 'cost/request_count'
