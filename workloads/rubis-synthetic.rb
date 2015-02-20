@@ -6,86 +6,69 @@ $workload = NoSE::Workload.new do
 
   (Entity 'categories' do
     ID     'id'
-    String 'name', 20, count: 20
-    Integer 'dummy', count: 1
-  end) * 20
+    String 'name', 20
+  end) * 500
 
   (Entity 'regions' do
     ID     'id'
-    String 'name', 25, count: 62
-  end) * 62
+    String 'name', 25
+  end) * 50
 
   (Entity 'users' do
     ID         'id'
-    String     'firstname', 20, count: 1001848
-    String     'lastname', 20, count: 1001848
-    String     'nickname', 20, count: 1001848
-    String     'password', 20, count: 1001848
-    String     'email', 20, count: 1001848
-    Integer    'rating', count: 5
-    Float      'balance', count: 1
-    Date       'creation_date', count: 10381
-    ForeignKey 'region', 'regions', count: 62
-  end) * 1001848
+    String     'firstname', 20, count: 900_000
+    String     'lastname', 20, count: 900_000
+    String     'nickname', 20
+    String     'password', 20
+    String     'email', 20
+    Integer    'rating', count: 50
+    Float      'balance', count: 10_000
+    Date       'creation_date', count: 100_000
+    ForeignKey 'region', 'regions'
+  end) * 1_000_000
 
   (Entity 'items' do
     ID         'id'
-    String     'name', 100, count: 33721
-    String     'description', 255, count: 33721
-    Float      'initial_price', count: 4494
-    Integer    'quantity', count: 11
-    Float      'reserve_price', count: 389
-    Float      'buy_now', count: 97
-    Integer    'nb_of_bids', count: 15
-    Float      'max_bid', count: 2167
-    Date       'start_date', count: 1
-    Date       'end_date', count: 1
+    String     'name', 100
+    String     'description'
+    Float      'initial_price', count: 10_000
+    Integer    'quantity', count: 100
+    Float      'reserve_price', count: 10_000
+    Float      'buy_now', count: 10_000
+    Integer    'nb_of_bids', count: 200
+    Float      'max_bid', count: 10_000
+    Date       'start_date', count: 100_000
+    Date       'end_date', count: 100_000
     ForeignKey 'seller', 'users'
     ForeignKey 'category', 'categories'
-  end) * 33721
-
-  (Entity 'olditems' do
-    ID         'id'
-    String     'name', 100, count: 500000
-    String     'description', 255, count: 500000
-    Float      'initial_price', count: 5000
-    Integer    'quantity', count: 10
-    Float      'reserve_price', count: 5974
-    Float      'buy_now', count: 11310
-    Integer    'nb_of_bids', count: 58
-    Float      'max_bid', count: 5125
-    Date       'start_date', count: 48436
-    Date       'end_date', count: 239737
-    ForeignKey 'seller', 'users'
-    ForeignKey 'category', 'categories'
-  end) * 500000
+  end) * 10_000_000
 
   (Entity 'bids' do
     ID         'id'
-    ForeignKey 'user', 'users', count: 993655
-    ForeignKey 'item_id', 'items', count: 426931
-    Integer    'qty', count: 10
-    Float      'bid', count: 5121
-    Date       'date', count: 52913
-  end) * 5060576
+    ForeignKey 'user', 'users', count: 900_000
+    ForeignKey 'item_id', 'items', count: 90_000_000
+    Integer    'qty', count: 50
+    Float      'bid', count: 10_000
+    Date       'date', count: 10_0000
+  end) * 100_000_000
 
   (Entity 'comments' do
     ID         'id'
-     ForeignKey 'from_user_id', 'users', count: 413603
+     ForeignKey 'from_user_id', 'users', count: 500_000
     #ForeignKey 'to_user_id', 'users'
-    ForeignKey 'item_id', 'items', count: 443798
-    Integer    'rating', count: 5
-    Date       'date', count: 51399
-    String     'comment', 255, count: 533426
-  end) * 533426
+    ForeignKey 'item_id', 'items'
+    Integer    'rating', count: 10
+    Date       'date', count: 100_000
+    String     'comment', 250
+  end) * 50_000_000
 
   (Entity 'buynow' do
     ID         'id'
-    ForeignKey 'buyer', 'users', count: 1519
-    ForeignKey 'item', 'items', count: 1549
-    Integer    'qty', count: 10
-    Date       'date', count: 915
-  end) * 1882
+    ForeignKey 'buyer', 'users', count: 500_000
+    ForeignKey 'item', 'items', count: 5_000_000
+    Integer    'qty', count: 50
+    Date       'date', count: 100_000
+  end) * 20_00_000
 
   # Define queries and their relative weights
 
