@@ -29,7 +29,7 @@ module NoSE::Plans
       new_step = nil
 
       if state.fields.empty? && state.eq.empty? && state.range.nil? && \
-          !state.order_by.empty?
+          !state.order_by.empty? && state.cardinality > 1
 
         new_state = state.dup
         new_state.order_by = []
