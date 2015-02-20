@@ -73,15 +73,14 @@ module NoSE::CLI
         puts index.inspect
       end
 
-      Formatador.display_line "Total size: [blue]#{result.total_size}[/]\n"
-      puts
+      Formatador.display_line "\n  Total size: [blue]#{result.total_size}[/]\n"
 
       # Output queries plans for the discovered indices
       header = "Query plans\n" + '━' * 50
       Formatador.display_line "[blue]#{header}[/]"
       result.plans.each do |plan|
         puts plan.query.inspect
-        puts plan.inspect
+        plan.each { |step| puts '  ' + step.inspect }
         puts
       end
 
