@@ -138,6 +138,9 @@ module NoSE::Plans
                                                          range_filter,
                                                          @index.path
       end
+
+      # We don't need to sort if we have a single entity
+      @state.order_by = [] if @state.cardinality == 1
     end
   end
 end

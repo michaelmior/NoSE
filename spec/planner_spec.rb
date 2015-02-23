@@ -16,10 +16,11 @@ module NoSE::Plans
     end
 
     it 'can perform an external sort if an index does not exist' do
-      index = tweet.simple_index
+      index = NoSE::Index.new [tweet['User']], [tweet['TweetId']],
+                              [tweet['Timestamp'], tweet['Body']], [tweet]
       planner = QueryPlanner.new workload.model, [index], cost_model
       query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE ' \
-                              'Tweet.TweetId = ? ORDER BY Tweet.Timestamp',
+                              'Tweet.User = ? ORDER BY Tweet.Timestamp',
                               workload.model
 
       tree = planner.find_plans_for_query query
@@ -44,10 +45,11 @@ module NoSE::Plans
     end
 
     it 'can perform an external sort followed by a limit' do
-      index = tweet.simple_index
+      index = NoSE::Index.new [tweet['User']], [tweet['TweetId']],
+                              [tweet['Timestamp'], tweet['Body']], [tweet]
       planner = QueryPlanner.new workload.model, [index], cost_model
       query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE ' \
-                              'Tweet.TweetId = ? ORDER BY Tweet.Timestamp ' \
+                              'Tweet.User = ? ORDER BY Tweet.Timestamp ' \
                               'LIMIT 5', workload.model
 
       tree = planner.find_plans_for_query query
@@ -212,6 +214,18 @@ module NoSE::Plans
 
       max_steps = planner.find_plans_for_query(query).map(&:length).length
       expect(max_steps).to be >= query.longest_entity_path.length
+    end
+
+    it 'does not use sorting or limits for a single entity result set' do
+      query = NoSE::Query.new 'SELECT * FROM User WHERE User.UserId = ? ' \
+                              'ORDER BY User.UserId LIMIT 10', workload.model
+      workload.add_statement query
+
+      indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload
+      planner = QueryPlanner.new workload.model, indexes, cost_model
+      plan = planner.min_plan query
+
+      expect(plan).to have(1).item
     end
   end
 end
