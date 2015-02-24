@@ -95,9 +95,16 @@ module NoSE::Plans
 
     # Modify the state to reflect the fields looked up by the index
     def update_state(parent)
+      # Get the set of fields which can be filtered by the ordered keys
+      order_prefix = (@state.eq - @index.hash_fields) & @index.order_fields
+      order_prefix << state.range unless state.range.nil?
+      order_prefix = order_prefix.zip(@index.order_fields).take_while do |x, y|
+        x == y
+      end.map(&:first)
+
       # Find fields which are filtered by the index
-      eq_filter = @state.eq & (@index.hash_fields + @index.order_fields).to_set
-      if @index.order_fields.include?(@state.range)
+      eq_filter = @state.eq & (@index.hash_fields + order_prefix).to_set
+      if order_prefix.include?(@state.range)
         range_filter = @state.range
         @state.range = nil
       else
