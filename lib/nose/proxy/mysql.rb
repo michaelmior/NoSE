@@ -59,15 +59,15 @@ module NoSE::Proxy
       begin
         @logger.debug { "Got query #{query}" }
 
-        query = Statement.parse query, @result.workload.model
+        query = NoSE::Statement.parse query, @result.workload.model
         result = @backend.query(query).lazy.map do |row|
           Hash[query.select.map { |field| [field.name, row[field.id]] }]
         end
 
         @logger.debug "Executed query with #{result.size} results"
-      rescue ParseFailed => exc
+      rescue NoSE::ParseFailed => exc
         protocol.error Mysql::ServerError::ER_PARSE_ERROR, exc.message
-      rescue PlanNotFound => exc
+      rescue NoSE::Backend::PlanNotFound => exc
         protocol.error Mysql::ServerError::ER_UNKNOWN_STMT_HANDLER,
           exc.message
       end

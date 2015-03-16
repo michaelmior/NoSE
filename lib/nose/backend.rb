@@ -21,7 +21,8 @@ module NoSE::Backend
       fail PlanNotFound if plan.nil?
 
       results = nil
-      first_step = RootPlanStep.new QueryState.new(query, @workload)
+      first_step = NoSE::Plans::RootPlanStep.new \
+        NoSE::Plans::QueryState.new(query, @workload)
       steps = [first_step] + plan.to_a + [nil]
       steps.each_cons(3) do |prev_step, step, next_step|
         step_class = QueryStep.subtype_class step.subtype_name
