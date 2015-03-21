@@ -137,13 +137,13 @@ module NoSE::Backend
         # Construct a list of conditions from the results
         condition_list = results.map do |result|
           conditions = eq_fields.map do |field|
-            Condition.new field, :'=', result[field.id]
+            NoSE::Condition.new field, :'=', result[field.id]
           end
 
           unless range_field.nil?
-            conditions << Condition.new(range_field,
-                                        query.range_field.operator,
-                                        result[range_field.id])
+            conditions << NoSE::Condition.new(range_field,
+                                              query.range_field.operator,
+                                              result[range_field.id])
           end
 
           conditions
@@ -182,7 +182,7 @@ module NoSE::Backend
         result = []
         condition_list.each do |conditions|
           values = conditions.map(&:value)
-          result += statement.execute(*values).to_a
+          result += client.execute(statement, *values).to_a
         end
 
         result

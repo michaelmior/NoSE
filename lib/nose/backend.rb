@@ -28,7 +28,7 @@ module NoSE::Backend
         step_class = QueryStep.subtype_class step.subtype_name
 
         # Check if the subclass has overridden this step
-        subclass_step_name = step_class.name.sub 'NoSE::Backend',
+        subclass_step_name = step_class.name.sub 'NoSE::Backend::BackendBase',
                                                  self.class.name
         step_class = Object.const_get subclass_step_name
 
