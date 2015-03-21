@@ -160,7 +160,8 @@ module NoSE::Backend
           unless next_step.nil? || !next_step.is_a?(IndexLookupPlanStep)
         select &= step.index.all_fields
 
-        results = index_lookup client, step.index, select, condition_list
+        results = index_lookup client, step.index, select, condition_list,
+                               step.order_by, step.limit
         return [] if results.empty?
 
         results
@@ -170,12 +171,22 @@ module NoSE::Backend
 
       # Lookup values from an index selecting the given
       # fields and filtering on the given conditions
-      def self.index_lookup(client, index, select, condition_list)
+      def self.index_lookup(client, index, select, condition_list,
+                            order, limit)
         query = "SELECT #{select.map(&:id).join ', '} FROM \"#{index.key}\""
         query += ' WHERE ' if condition_list.first.length > 0
         query += condition_list.first.map do |condition|
           "#{condition.field.id} #{condition.operator} ?"
         end.join ', '
+
+        # Add the ORDER BY clause
+        unless order.empty?
+          query += ' ORDER BY ' + order.map(&:id).join(', ')
+        end
+
+        # Add an optional limit
+        query += " LIMIT #{limit}" unless limit.nil?
+
         statement = client.prepare query
 
         # TODO: Chain enumerables of results instead

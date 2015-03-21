@@ -2,7 +2,9 @@ require 'nose/backend/cassandra'
 
 module NoSE::Backend
   describe CassandraBackend do
+    include_context 'dummy_cost_model'
     include_context 'entities'
+
     let(:index) do
       NoSE::Index.new [user['Username']],
                       [tweet['Timestamp'], tweet['TweetId']],
@@ -18,6 +20,30 @@ module NoSE::Backend
         'PRIMARY KEY(("User_Username"), "Tweet_Timestamp", "Tweet_TweetId"));'
       ]
     end
+
+    it 'can lookup data for an index based on a plan' do
+      # Materialize a view for the given query
+      query = NoSE::Statement.parse 'SELECT Body FROM Tweet.User ' \
+                                    'WHERE User.Username = "Bob" ' \
+                                    'ORDER BY Tweet.Timestamp LIMIT 10', workload.model
+      index = query.materialize_view
+      planner = NoSE::Plans::QueryPlanner.new workload.model, [index],
+                                              cost_model
+      step = planner.min_plan(query).first
+
+      # Validate the expected CQL query
+      client = double('client')
+      backend_query = "SELECT User_Username, Tweet_Timestamp, Tweet_Body " \
+                      "FROM \"#{index.key}\" WHERE User_Username = ? " \
+                      "ORDER BY Tweet_Timestamp LIMIT 10"
+      expect(client).to receive(:prepare) { backend_query } \
+        .and_return(backend_query)
+      expect(client).to receive(:execute) { backend_query }.and_return([])
+
+      CassandraBackend::IndexLookupQueryStep.process client, query, nil,
+                                                     step, step.parent, nil
+    end
+
   end
 
   describe BackendBase::SortQueryStep do

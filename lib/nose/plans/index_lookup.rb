@@ -1,7 +1,7 @@
 module NoSE::Plans
   # Superclass for steps using indices
   class IndexLookupPlanStep < PlanStep
-    attr_reader :index
+    attr_reader :index, :limit, :order_by
 
     def initialize(index, state = nil, parent = nil)
       super()
@@ -122,8 +122,12 @@ module NoSE::Plans
         @index.hash_fields.include? field
       end
       order_prefix = @state.order_by.longest_common_prefix @index.order_fields
-      @state.order_by -= order_prefix unless indexed_by_id &&
-        order_prefix.map(&:parent).to_set == Set.new([index.path.first])
+      unless indexed_by_id && order_prefix.map(&:parent).to_set == Set.new([index.path.first])
+        @state.order_by -= order_prefix
+      else
+        order_prefix = []
+      end
+      @order_by = order_prefix
 
       # Strip the path for this index, but if we haven't fetched all
       # fields, leave the last one so we can perform a separate ID lookup
@@ -136,7 +140,7 @@ module NoSE::Plans
 
       # Check if we can apply the limit from the query
       if @state.answered?(check_limit: false) && !@state.query.limit.nil?
-        @state.cardinality = @state.query.limit
+        @limit = @state.cardinality = @state.query.limit
       else
         @state.cardinality = @state.query.longest_entity_path.last.count \
           if parent.is_a? RootPlanStep
