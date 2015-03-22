@@ -16,9 +16,11 @@ module NoSE::Backend
     # :nocov:
 
     # Execute a query with the stored plans
-    def query(query)
-      plan = @plans.find { |possible_plan| possible_plan.query == query }
-      fail PlanNotFound if plan.nil?
+    def query(query, plan = nil)
+      if plan.nil?
+        plan = @plans.find { |possible_plan| possible_plan.query == query }
+        fail PlanNotFound if plan.nil?
+      end
 
       results = nil
       first_step = NoSE::Plans::RootPlanStep.new \
