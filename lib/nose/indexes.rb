@@ -83,16 +83,6 @@ module NoSE
       ].to_s
     end
 
-    # Precalculate the size of the index
-    def calculate_size
-      @entry_size = @all_fields.map(&:size).inject(0, :+)
-      num_entries = @hash_fields.map(&:cardinality).inject(1, &:*)
-      @size =  Cardinality.new_cardinality(@path.first.count,
-                                           @hash_fields,
-                                           nil,
-                                           @path) * @entry_size * num_entries
-    end
-
     # Check if this index is a mapping from the key of the given entity
     # @see Entity#id_fields
     # @return [Boolean]
@@ -112,6 +102,18 @@ module NoSE
       Range.new(*(@path.map do |entity|
         entities.index entity
       end).minmax) rescue (nil..nil)
+    end
+
+    private
+
+    # Precalculate the size of the index
+    def calculate_size
+      @entry_size = @all_fields.map(&:size).inject(0, :+)
+      num_entries = @hash_fields.map(&:cardinality).inject(1, &:*)
+      @size =  Cardinality.new_cardinality(@path.first.count,
+                                           @hash_fields,
+                                           nil,
+                                           @path) * @entry_size * num_entries
     end
   end
 
