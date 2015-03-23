@@ -148,8 +148,8 @@ module NoSE::Backend
           end
 
           unless range_field.nil?
-            conditions << NoSE::Condition.new(range_field,
-                                              query.range_field.operator,
+            operator = query.conditions.select(&:range?).first.operator
+            conditions << NoSE::Condition.new(range_field, operator,
                                               result[range_field.id])
           end
 
