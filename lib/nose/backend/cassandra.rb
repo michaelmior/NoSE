@@ -68,6 +68,13 @@ module NoSE::Backend
       client.execute(query).first.values.first == 0
     end
 
+    # Sample a number of values from the given index
+    def index_sample(index, count)
+      query = "SELECT #{index.all_fields.map(&:id).join ', '} " \
+              "FROM \"#{index.key}\" LIMIT #{count}"
+      client.execute(query).rows
+    end
+
     private
 
     # Add the ID of the last entity if necessary
