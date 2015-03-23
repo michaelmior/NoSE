@@ -184,7 +184,7 @@ module NoSE::Backend
         query += ' WHERE ' if condition_list.first.length > 0
         query += condition_list.first.map do |condition|
           "#{condition.field.id} #{condition.operator} ?"
-        end.join ', '
+        end.join ' AND '
 
         # Add the ORDER BY clause
         unless order.empty?
