@@ -14,7 +14,8 @@ module NoSE::Backend
 
     # Produce the DDL necessary for column families for the given indexes
     # and optionally execute them against the server
-    def indexes_ddl(execute = false, skip_existing = false)
+    def indexes_ddl(execute = false, skip_existing = false,
+                    drop_existing = false)
       Enumerator.new do |enum|
         @indexes.map do |index|
           # Add the ID of the last entity if necessary
@@ -31,6 +32,7 @@ module NoSE::Backend
           enum.yield ddl
 
           begin
+            drop_index(index) if drop_existing && index_exists?(index)
             client.execute(ddl) if execute
           rescue Cassandra::Errors::AlreadyExistsError => exc
             next if skip_existing
@@ -66,6 +68,19 @@ module NoSE::Backend
     def index_empty?(index)
       query = "SELECT COUNT(*) FROM \"#{index.key}\" LIMIT 1"
       client.execute(query).first.values.first == 0
+    end
+
+    # Check if a given index exists in the target database
+    def index_exists?(index)
+      query = 'SELECT COUNT(*) FROM system.schema_columnfamilies ' \
+              "WHERE keyspace_name='#{@keyspace}' AND " \
+              "columnfamily_name='#{index.key}';"
+      client.execute(query).first.values.first > 0
+    end
+
+    # Check if a given index exists in the target database
+    def drop_index(index)
+      client.execute "DROP TABLE \"#{index.key}\""
     end
 
     # Sample a number of values from the given index
