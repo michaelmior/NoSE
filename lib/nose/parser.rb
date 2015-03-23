@@ -142,7 +142,8 @@ module NoSE
       @is_range = [:>, :>=, :<, :<=].include? operator
       @value = value
 
-      freeze
+      # XXX: Not frozen by now to support modification during query execution
+      # freeze
     end
 
     def inspect
