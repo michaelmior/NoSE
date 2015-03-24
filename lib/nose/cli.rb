@@ -65,37 +65,37 @@ module NoSE::CLI
     end
 
     # Output the results of advising as text
-    def output_text(result)
+    def output_text(result, file = $stdout)
       # Output selected indexes
       header = "Indexes\n" + '━' * 50
-      Formatador.display_line "[blue]#{header}[/]"
+      file.puts Formatador.parse("[blue]#{header}[/]")
       result.indexes.each do |index|
-        puts index.inspect
+        file.puts index.inspect
       end
 
-      Formatador.display_line "\n  Total size: [blue]#{result.total_size}[/]\n"
+      file.puts Formatador.parse("\n  Total size: [blue]#{result.total_size}[/]\n")
 
       # Output queries plans for the discovered indices
       header = "Query plans\n" + '━' * 50
-      Formatador.display_line "[blue]#{header}[/]"
+      file.puts Formatador.parse("[blue]#{header}[/]")
       result.plans.each do |plan|
-        puts plan.query.inspect
-        plan.each { |step| puts '  ' + step.inspect }
-        puts
+        file.puts plan.query.inspect
+        plan.each { |step| file.puts '  ' + step.inspect }
+        file.puts
       end
 
-      Formatador.display_line "Total cost: [blue]#{result.total_cost}[/]\n"
+      file.puts Formatador.parse("Total cost: [blue]#{result.total_cost}[/]\n")
     end
 
     # Output the results of advising as JSON
-    def output_json(result)
-      puts JSON.pretty_generate \
+    def output_json(result, file = $stdout)
+      file.puts JSON.pretty_generate \
         NoSE::Serialize::SearchResultRepresenter.represent(result).to_hash
     end
 
     # Output the results of advising as YAML
-    def output_yaml(result)
-      puts NoSE::Serialize::SearchResultRepresenter.represent(result).to_yaml
+    def output_yaml(result, file = $stdout)
+      file.puts NoSE::Serialize::SearchResultRepresenter.represent(result).to_yaml
     end
   end
 end
