@@ -257,7 +257,7 @@ module NoSE::Serialize
       state = NoSE::Plans::QueryState.new query, workload
       parent = NoSE::Plans::RootPlanStep.new state
 
-      f = ->(field) { workload[field['parent']][field['name']] }
+      f = ->(field) { workload.model[field['parent']][field['name']] }
 
       # Loop over all steps in the plan and reconstruct them
       instance['steps'].each do |step_hash|
