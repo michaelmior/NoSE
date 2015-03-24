@@ -9,6 +9,7 @@ module NoSE::CLI
     option :max_space, type: :numeric, default: Float::INFINITY
     option :format, type: :string, default: 'text',
                     enum: ['text', 'json', 'yaml']
+    option :output, type: :string, default: nil
     def workload(name)
       # rubocop:disable GlobalVars
       require_relative "../../../workloads/#{name}"
@@ -50,7 +51,12 @@ module NoSE::CLI
       )
 
       # Output the results in the specified format
-      send(('output_' + options[:format]).to_sym, result)
+      file = options[:output].nil? ? $stdout : File.open(options[:output], 'w')
+      begin
+        send(('output_' + options[:format]).to_sym, result, file)
+      ensure
+        file.close unless options[:output].nil?
+      end
     end
 
     private
