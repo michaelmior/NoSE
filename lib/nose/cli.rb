@@ -110,6 +110,12 @@ require_relative 'cli/proxy'
 require_relative 'cli/reformat'
 require_relative 'cli/repl'
 require_relative 'cli/recost'
-require_relative 'cli/console'
 require_relative 'cli/workload'
 require_relative 'cli/workload_bench'
+
+# Only include the console command if pry is available
+begin
+  require 'pry'
+  require_relative 'cli/console'
+rescue LoadError
+end

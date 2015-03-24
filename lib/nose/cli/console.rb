@@ -1,5 +1,3 @@
-require 'pry'
-
 module NoSE::CLI
   # Start a pry console while preloading configured objects
   class NoSECLI < Thor
