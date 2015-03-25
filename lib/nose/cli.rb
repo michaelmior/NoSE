@@ -30,6 +30,18 @@ module NoSE::CLI
 
     private
 
+    # Find the workload with the given name
+    def get_workload(name)
+      require_relative "../../workloads/#{name}"
+
+      # rubocop:disable GlobalVars
+      workload = $workload
+      $workload = nil
+      # rubocop:enable GlobalVars
+
+      workload
+    end
+
     # Load the configuration to use for a backend
     def load_config
       config = YAML.load_file File.join(Dir.pwd, 'nose.yml')
