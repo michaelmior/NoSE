@@ -11,12 +11,8 @@ module NoSE::CLI
                     enum: ['text', 'json', 'yaml'], aliases: '-f'
     option :output, type: :string, default: nil, aliases: '-o'
     def workload(name)
-      # rubocop:disable GlobalVars
-      require_relative "../../../workloads/#{name}"
-      workload = $workload
-      # rubocop:enable GlobalVars
-
-      # Get the cost model
+      # Get the workload and cost model
+      workload = get_workload name
       config = load_config
       cost_model = get_class 'cost', config[:cost_model][:name]
 
