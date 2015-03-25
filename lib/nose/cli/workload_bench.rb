@@ -13,36 +13,26 @@ module NoSE::CLI
       opts[:format] = 'json'
       opts[:skip_existing] = true
 
-      o = Thor::CoreExt::HashWithIndifferentAccess.new(opts.select do |key|
-        self.class.commands['workload'].options.keys.map(&:to_sym).include? \
-          key.to_sym
-      end)
+      o = filter_command_options opts, 'workload'
       $stderr.puts "Running advisor #{o}..."
       invoke self.class, :workload, [name], o
 
       invoke self.class, :reformat, [filename], {}
 
-      o = Thor::CoreExt::HashWithIndifferentAccess.new(opts.select do |key|
-        self.class.commands['create'].options.keys.map(&:to_sym).include? \
-          key.to_sym
-      end)
+      o = filter_command_options opts, 'create'
       $stderr.puts "Creating indexes #{o}..."
       invoke self.class, :create, [filename], o
 
-      o = Thor::CoreExt::HashWithIndifferentAccess.new(opts.select do |key|
-        self.class.commands['load'].options.keys.map(&:to_sym).include? \
-          key.to_sym
-      end)
+      o = filter_command_options opts, 'load'
       $stderr.puts "Loading data #{o}..."
       invoke self.class, :load, [filename], o
 
-      o = Thor::CoreExt::HashWithIndifferentAccess.new(opts.select do |key|
-        self.class.commands['benchmark'].options.keys.map(&:to_sym).include? \
-          key.to_sym
-      end)
+      o = filter_command_options opts, 'benchmark'
       $stderr.puts "Running benchmark #{o}..."
       invoke self.class, :benchmark, [filename], o
     end
+
+    # Allow this command to accept the options for all commands it calls
     commands['workload_bench'].options.merge! commands['create'].options
     commands['workload_bench'].options.merge! commands['benchmark'].options
     commands['workload_bench'].options.merge! commands['load'].options
