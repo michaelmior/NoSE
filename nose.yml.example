@@ -24,3 +24,9 @@ loader:
 proxy:
   name: mysql
   port: 3307
+
+# vim: set syntax=yaml:
+
+# Local Variables:
+# mode:yaml
+# End:
