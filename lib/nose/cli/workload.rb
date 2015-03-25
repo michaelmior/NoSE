@@ -7,8 +7,8 @@ module NoSE::CLI
   class NoSECLI < Thor
     desc 'workload NAME', 'run the workload NAME'
     option :max_space, type: :numeric, default: Float::INFINITY, aliases: '-s'
-    option :format, type: :string, default: 'text',
-                    enum: ['text', 'json', 'yaml'], aliases: '-f'
+    option :format, type: :string, default: 'txt',
+                    enum: ['txt', 'json', 'yml'], aliases: '-f'
     option :output, type: :string, default: nil, aliases: '-o'
     def workload(name)
       # Get the workload and cost model
