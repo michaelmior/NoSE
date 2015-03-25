@@ -8,7 +8,7 @@ backend:
 
 # Cost model name and parameters
 cost_model:
-  name: cassandra
+  name: request_count
 
 # Loader-specific configuration
 # The mysql loader is recommended, but csv might work as well if
