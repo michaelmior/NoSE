@@ -69,7 +69,7 @@ module NoSE::CLI
     end
 
     # Collect all advisor results for schema design problem
-    def search_result(workload, cost_model, max_space)
+    def search_result(workload, cost_model, max_space = Float::INFINITY)
       enumerated_indexes = NoSE::IndexEnumerator.new(workload) \
         .indexes_for_workload.to_a
       indexes = find_indexes workload, enumerated_indexes, max_space,
