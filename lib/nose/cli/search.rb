@@ -5,19 +5,19 @@ require 'json'
 module NoSE::CLI
   # Add a command to run the advisor for a given workload
   class NoSECLI < Thor
-    desc 'workload NAME', 'run the workload NAME'
+    desc 'search NAME', 'run the workload NAME'
     option :max_space, type: :numeric, default: Float::INFINITY, aliases: '-s'
     option :format, type: :string, default: 'txt',
                     enum: ['txt', 'json', 'yml'], aliases: '-f'
     option :output, type: :string, default: nil, aliases: '-o'
-    def workload(name)
+    def search(name)
       # Get the workload and cost model
       workload = get_workload name
       config = load_config
       cost_model = get_class 'cost', config[:cost_model][:name]
 
       # Execute the advisor
-      result = search workload, cost_model, options[:max_space]
+      result = search_result workload, cost_model, options[:max_space]
 
       # Output the results in the specified format
       file = options[:output].nil? ? $stdout : File.open(options[:output], 'w')
