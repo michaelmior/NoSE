@@ -8,9 +8,9 @@ module NoSE::CLI
   class NoSECLI < Thor
     check_unknown_options!
 
-    class_option :debug, type: :boolean, aliases: :d
+    class_option :debug, type: :boolean, aliases: '-d'
     class_option :parallel, type: :boolean, default: true
-    class_option :colour, type: :boolean, default: nil, aliases: :C
+    class_option :colour, type: :boolean, default: nil, aliases: '-c'
 
     def initialize(*args)
       super

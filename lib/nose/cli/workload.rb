@@ -6,10 +6,10 @@ module NoSE::CLI
   # Add a command to run the advisor for a given workload
   class NoSECLI < Thor
     desc 'workload NAME', 'run the workload NAME'
-    option :max_space, type: :numeric, default: Float::INFINITY
+    option :max_space, type: :numeric, default: Float::INFINITY, aliases: '-s'
     option :format, type: :string, default: 'text',
-                    enum: ['text', 'json', 'yaml']
-    option :output, type: :string, default: nil
+                    enum: ['text', 'json', 'yaml'], aliases: '-f'
+    option :output, type: :string, default: nil, aliases: '-o'
     def workload(name)
       # rubocop:disable GlobalVars
       require_relative "../../../workloads/#{name}"

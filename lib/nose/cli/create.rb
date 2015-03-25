@@ -3,8 +3,8 @@ module NoSE::CLI
   class NoSECLI < Thor
     desc 'create PLAN_FILE', 'create indexes from the given PLAN_FILE'
     option :dry_run, type: :boolean, default: false
-    option :skip_existing, type: :boolean, default: false
-    option :drop_existing, type: :boolean, default: false
+    option :skip_existing, type: :boolean, default: false, aliases: '-s'
+    option :drop_existing, type: :boolean, default: false, aliases: '-d'
     def create(plan_file)
       result = load_results(plan_file)
       config = load_config
