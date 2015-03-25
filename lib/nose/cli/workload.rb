@@ -20,33 +20,8 @@ module NoSE::CLI
       config = load_config
       cost_model = get_class 'cost', config[:cost_model][:name]
 
-      enumerated_indexes = NoSE::IndexEnumerator.new(workload) \
-                           .indexes_for_workload.to_a
-      indexes = find_indexes workload, enumerated_indexes, options[:max_space],
-                             cost_model
-
-      # Find the final plans for each query
-      planner = NoSE::Plans::QueryPlanner.new workload, indexes, cost_model
-      plans = {}
-      workload.queries.each { |query| plans[query] = planner.min_plan query }
-
-      # Get the indexes which are actually used
-      indexes = plans.map(&:to_a).flatten.select do |step|
-        step.is_a? NoSE::Plans::IndexLookupPlanStep
-      end.map(&:index).to_set
-
-      result = OpenStruct.new(
-        workload: workload,
-        enumerated_indexes: enumerated_indexes,
-        indexes: indexes.to_set,
-        plans: plans.values,
-        cost_model: cost_model,
-        total_size: indexes.map(&:size).inject(0, :+),
-        total_cost: workload.statement_weights.map do |statement, weight|
-          next 0 unless statement.is_a? NoSE::Query
-          weight * plans[statement].cost
-        end.inject(0, &:+)
-      )
+      # Execute the advisor
+      result = search workload, cost_model, options[:max_space]
 
       # Output the results in the specified format
       file = options[:output].nil? ? $stdout : File.open(options[:output], 'w')
