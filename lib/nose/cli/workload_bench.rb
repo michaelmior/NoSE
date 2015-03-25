@@ -8,33 +8,39 @@ module NoSE::CLI
       filename = Tempfile.new('workload').path
 
       # Set some default options for various commands
-      options = options.to_h
-      options[:output] = filename
-      options[:format] = 'json'
-      options[:skip_existing] = true
+      opts = options.to_h
+      opts[:output] = filename
+      opts[:format] = 'json'
+      opts[:skip_existing] = true
 
-      o = Thor::CoreExt::HashWithIndifferentAccess.new(options.select do |key|
+      o = Thor::CoreExt::HashWithIndifferentAccess.new(opts.select do |key|
         self.class.commands['workload'].options.keys.map(&:to_sym).include? \
           key.to_sym
       end)
+      $stderr.puts "Running advisor #{o}..."
       invoke self.class, :workload, [name], o
 
-      o = Thor::CoreExt::HashWithIndifferentAccess.new(options.select do |key|
+      invoke self.class, :reformat, [filename], {}
+
+      o = Thor::CoreExt::HashWithIndifferentAccess.new(opts.select do |key|
         self.class.commands['create'].options.keys.map(&:to_sym).include? \
           key.to_sym
       end)
+      $stderr.puts "Creating indexes #{o}..."
       invoke self.class, :create, [filename], o
 
-      o = Thor::CoreExt::HashWithIndifferentAccess.new(options.select do |key|
+      o = Thor::CoreExt::HashWithIndifferentAccess.new(opts.select do |key|
         self.class.commands['load'].options.keys.map(&:to_sym).include? \
           key.to_sym
       end)
+      $stderr.puts "Loading data #{o}..."
       invoke self.class, :load, [filename], o
 
-      o = Thor::CoreExt::HashWithIndifferentAccess.new(options.select do |key|
+      o = Thor::CoreExt::HashWithIndifferentAccess.new(opts.select do |key|
         self.class.commands['benchmark'].options.keys.map(&:to_sym).include? \
           key.to_sym
       end)
+      $stderr.puts "Running benchmark #{o}..."
       invoke self.class, :benchmark, [filename], o
     end
     commands['workload_bench'].options.merge! commands['create'].options
