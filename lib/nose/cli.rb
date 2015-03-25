@@ -108,7 +108,7 @@ module NoSE::CLI
     end
 
     # Output the results of advising as text
-    def output_text(result, file = $stdout)
+    def output_txt(result, file = $stdout)
       # Output selected indexes
       header = "Indexes\n" + '━' * 50
       file.puts Formatador.parse("[blue]#{header}[/]")
@@ -137,7 +137,7 @@ module NoSE::CLI
     end
 
     # Output the results of advising as YAML
-    def output_yaml(result, file = $stdout)
+    def output_yml(result, file = $stdout)
       file.puts NoSE::Serialize::SearchResultRepresenter.represent(result).to_yaml
     end
 
