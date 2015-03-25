@@ -162,6 +162,7 @@ require_relative 'cli/reformat'
 require_relative 'cli/repl'
 require_relative 'cli/recost'
 require_relative 'cli/search'
+require_relative 'cli/search_all'
 require_relative 'cli/search_bench'
 
 # Only include the console command if pry is available
