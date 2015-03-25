@@ -69,7 +69,7 @@ module NoSE::CLI
     end
 
     # Collect all advisor results for schema design problem
-    def search(workload, cost_model, max_space)
+    def search_result(workload, cost_model, max_space)
       enumerated_indexes = NoSE::IndexEnumerator.new(workload) \
         .indexes_for_workload.to_a
       indexes = find_indexes workload, enumerated_indexes, max_space,
@@ -161,8 +161,8 @@ require_relative 'cli/proxy'
 require_relative 'cli/reformat'
 require_relative 'cli/repl'
 require_relative 'cli/recost'
-require_relative 'cli/workload'
-require_relative 'cli/workload_bench'
+require_relative 'cli/search'
+require_relative 'cli/search_bench'
 
 # Only include the console command if pry is available
 begin

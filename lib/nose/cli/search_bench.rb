@@ -2,8 +2,8 @@
 module NoSE::CLI
   # Add a command to run the advisor and benchmarks for a given workload
   class NoSECLI < Thor
-    desc 'workload-bench NAME', 'run the workload NAME and benchmarks'
-    def workload_bench(name)
+    desc 'search-bench NAME', 'run the workload NAME and benchmarks'
+    def search_bench(name)
       # Open a tempfile which will be used for advisor output
       filename = Tempfile.new('workload').path
 
@@ -13,9 +13,9 @@ module NoSE::CLI
       opts[:format] = 'json'
       opts[:skip_existing] = true
 
-      o = filter_command_options opts, 'workload'
+      o = filter_command_options opts, 'search'
       $stderr.puts "Running advisor #{o}..."
-      invoke self.class, :workload, [name], o
+      invoke self.class, :search, [name], o
 
       invoke self.class, :reformat, [filename], {}
 
@@ -33,9 +33,9 @@ module NoSE::CLI
     end
 
     # Allow this command to accept the options for all commands it calls
-    commands['workload_bench'].options.merge! commands['create'].options
-    commands['workload_bench'].options.merge! commands['benchmark'].options
-    commands['workload_bench'].options.merge! commands['load'].options
-    commands['workload_bench'].options.merge! commands['workload'].options
+    commands['search_bench'].options.merge! commands['create'].options
+    commands['search_bench'].options.merge! commands['benchmark'].options
+    commands['search_bench'].options.merge! commands['load'].options
+    commands['search_bench'].options.merge! commands['search'].options
   end
 end
