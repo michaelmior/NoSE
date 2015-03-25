@@ -43,7 +43,7 @@ module NoSE::CLI
                    config[:backend]
     end
 
-    # Get a
+    # Get a class of a particular name from the configuration
     def get_class(class_name, config)
       name = config
       name = config[class_name.to_sym][:name] if config.is_a? Hash
