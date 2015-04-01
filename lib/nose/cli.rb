@@ -108,7 +108,16 @@ module NoSE::CLI
     end
 
     # Output the results of advising as text
-    def output_txt(result, file = $stdout)
+    def output_txt(result, file = $stdout, enumerated = false)
+      if enumerated
+        header = "Enumerated indexes\n" + '━' * 50
+        file.puts Formatador.parse("[blue]#{header}[/]")
+        result.enumerated_indexes.each do |index|
+          file.puts index.inspect
+        end
+        file.puts
+      end
+
       # Output selected indexes
       header = "Indexes\n" + '━' * 50
       file.puts Formatador.parse("[blue]#{header}[/]")
@@ -131,14 +140,30 @@ module NoSE::CLI
     end
 
     # Output the results of advising as JSON
-    def output_json(result, file = $stdout)
+    def output_json(result, file = $stdout, enumerated = false)
+      # Temporarily remove the enumerated indexes
+      if enumerated
+        enumerated = result.enumerated_indexes
+        result.delete_field :enumerated_indexes
+      end
+
       file.puts JSON.pretty_generate \
         NoSE::Serialize::SearchResultRepresenter.represent(result).to_hash
+
+      result.enumerated_indexes = enumerated if enumerated
     end
 
     # Output the results of advising as YAML
-    def output_yml(result, file = $stdout)
+    def output_yml(result, file = $stdout, enumerated = false)
+      # Temporarily remove the enumerated indexes
+      if enumerated
+        enumerated = result.enumerated_indexes
+        result.delete_field :enumerated_indexes
+      end
+
       file.puts NoSE::Serialize::SearchResultRepresenter.represent(result).to_yaml
+
+      result.enumerated_indexes = enumerated if enumerated
     end
 
     # Filter an options hash for those only relevant to a given command
