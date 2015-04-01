@@ -7,6 +7,7 @@ module NoSE::CLI
   class NoSECLI < Thor
     desc 'search NAME', 'run the workload NAME'
     option :max_space, type: :numeric, default: Float::INFINITY, aliases: '-s'
+    option :enumerated, type: :boolean, default: false, aliases: '-e'
     option :format, type: :string, default: 'txt',
                     enum: ['txt', 'json', 'yml'], aliases: '-f'
     option :output, type: :string, default: nil, aliases: '-o'
@@ -22,7 +23,8 @@ module NoSE::CLI
       # Output the results in the specified format
       file = options[:output].nil? ? $stdout : File.open(options[:output], 'w')
       begin
-        send(('output_' + options[:format]).to_sym, result, file)
+        send(('output_' + options[:format]).to_sym,
+             result, file, options[:enumerated])
       ensure
         file.close unless options[:output].nil?
       end

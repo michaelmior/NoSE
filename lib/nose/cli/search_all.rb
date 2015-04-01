@@ -6,6 +6,7 @@ module NoSE::CLI
     desc 'search-all NAME DIRECTORY',
          'output all possible schemas for the workload NAME under different ' \
          'storage constraints to DIRECTORY'
+    option :enumerated, type: :boolean, aliases: '-e'
     option :format, type: :string, default: 'txt',
                     enum: ['txt', 'json', 'yml'], aliases: '-f'
     def search_all(name, directory)
@@ -56,7 +57,8 @@ module NoSE::CLI
       results.each_with_index do |result, i|
         file = File.open File.join(directory, "#{i}.#{options[:format]}"), 'w'
         begin
-          send(('output_' + options[:format]).to_sym, result, file)
+          send(('output_' + options[:format]).to_sym,
+               result, file, options[:enumerated])
         ensure
           file.close
         end
