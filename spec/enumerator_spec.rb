@@ -19,6 +19,10 @@ module NoSE
       indexes = enum.indexes_for_query query
 
       expect(indexes).to include \
+        Index.new [user['City']], [user['UserId'], tweet['TweetId']],
+                  [tweet['Body']], [user, tweet]
+
+      expect(indexes).not_to include \
         Index.new [user['City']], [tweet['TweetId']], [tweet['Body']],
                   [user, tweet]
     end

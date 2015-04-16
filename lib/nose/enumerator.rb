@@ -104,7 +104,7 @@ module NoSE
     # Get fields which should be included in an index for the given path
     def extra_choices(path, select, eq, range)
       filter_choices = eq[path.last] + range[path.last]
-      choices = [path.last.id_fields]
+      choices = []
       choices << select if path.include? select.first.parent
       choices << filter_choices unless filter_choices.empty?
       choices
@@ -129,7 +129,7 @@ module NoSE
 
         order_choices.each do |order|
           # Append the primary key of the last entity in the path if needed
-          order += path.last.id_fields - (index + order)
+          order += path.map(&:id_fields).flatten(1) - (index + order)
 
           # Skip indices with only a hash component
           index_extra = extra - (index + order)
