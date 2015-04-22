@@ -37,7 +37,7 @@ module NoSE
     end
 
     # Output a PNG representation of entities in the model
-    def output_png(filename, include_fields = false)
+    def output(format, filename, include_fields = false)
       graph = GraphViz.new :G, type: :digraph
       nodes = Hash[@entities.values.map do |entity|
         label = "#{entity.name}\n"
@@ -57,7 +57,7 @@ module NoSE
         end
       end
 
-      graph.output png: filename
+      graph.output **{format => filename}
     end
   end
 

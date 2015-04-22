@@ -50,7 +50,7 @@ module NoSE
     it 'can produce an image of itself' do
       expect_any_instance_of(GraphViz).to \
         receive(:output).with(png: '/tmp/rubis.png')
-      workload.model.output_png '/tmp/rubis.png'
+      workload.model.output :png, '/tmp/rubis.png'
     end
 
     context 'when generating identity maps' do
