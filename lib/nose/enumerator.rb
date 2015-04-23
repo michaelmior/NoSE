@@ -87,18 +87,15 @@ module NoSE
       indexes
     end
 
-    # Get all possible index fields which jump a path with a set of filters
+    # Get all possible index fields for entities on a path
     def index_choices(path, eq)
-      eq_fields = path.map { |entity| eq[entity] }.compact.flatten
-
-      # Add the ID fields of the entity on the head of the path
-      eq_fields += path.first.id_fields
-
-      eq_choices = 1.upto(eq_fields.count).map do |n|
-        eq_fields.permutation(n).to_a
-      end.inject([], &:+).reject(&:empty?)
-
-      eq_choices
+      path.map do |entity|
+        # Get the fields for the entity and add in the IDs
+        entity_fields = eq[entity] + path.first.id_fields
+        1.upto(entity_fields.count).map do |n|
+          entity_fields.permutation(n).to_a
+        end
+      end.flatten(2)
     end
 
     # Get fields which should be included in an index for the given path
