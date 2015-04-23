@@ -101,6 +101,13 @@ module NoSE
         end.to raise_error
       end
 
+      it 'cannot have hash fields involving multiple entities' do
+        expect do
+          Index.new [model['Foo']['Bar'], model['Corge']['Quux']],
+                    [model['Foo']['Id']], [], [model['Corge'], model['Foo']]
+        end.to raise_error
+      end
+
       it 'must have fields at the start of the path' do
         expect do
           Index.new [model['Foo']['Id']], [], [],
