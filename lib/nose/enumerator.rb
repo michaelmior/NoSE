@@ -33,10 +33,19 @@ module NoSE
     # Produce all possible indices for a given workload
     # @return [Set<Index>]
     def indexes_for_workload
-      queries = @workload.queries + @workload.updates.map(&:to_query).compact
+      queries = @workload.queries
       indexes = Parallel.map(queries) do |query|
         indexes_for_query(query).to_a << query.materialize_view
       end.inject([], &:+)
+
+      # Add indexes generated for support queries
+      indexes += indexes.dup.map do |index|
+        @workload.updates.map do |update|
+          query = update.support_query(index)
+          next if query.nil?
+          indexes_for_query(query).to_a << query.materialize_view
+        end.compact
+      end.flatten
 
       combine_indexes indexes
       indexes.uniq!
