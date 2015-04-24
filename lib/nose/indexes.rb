@@ -138,15 +138,23 @@ module NoSE
     # Construct an index which acts as a materialized view for a query
     # @return [Index]
     def materialize_view
-      order_fields = @order
+      # We must have hash fields, so if there are no equality
+      # predicates, use the ID at the end of the query path instead
+      first_hash_entity = @longest_entity_path.detect do |entity|
+        @eq_fields.any? { |field| field.parent == entity }
+      end
+      eq = @eq_fields.select { |field| field.parent == first_hash_entity }
+      eq = @longest_entity_path.last.id_fields if eq.empty?
+
+      # Start the ordered fields with the equality predicates
+      # on other entities, followed by all of the attributes
+      # used in ordering, then the range field
+      order_fields = @eq_fields.select do |field|
+        field.parent != first_hash_entity
+      end + @order
       if @range_field && !@order.include?(@range_field)
         order_fields << @range_field
       end
-
-      # We must have hash fields, so if there are no equality
-      # predicates, use the ID at the end of the query path instead
-      eq = @eq_fields
-      eq = @longest_entity_path.last.id_fields if @eq_fields.empty?
 
       # Ensure we include IDs of the final entity
       order_fields += @longest_entity_path.first.id_fields \
