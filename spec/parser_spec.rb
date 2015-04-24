@@ -134,6 +134,23 @@ module NoSE
                           workload.model
       expect(update.to_query).to be nil
     end
+
+    it 'does not produce a support query for unaffected indexes' do
+      update = Update.new 'UPDATE User SET City = ? WHERE User.UserId = ?',
+                          workload.model
+      index = NoSE::Index.new [tweet['TweetId']], [], [tweet['Timestamp']],
+                              [tweet], workload.model
+      expect(update.support_query index).to be_nil
+    end
+
+    it 'can generate support queries' do
+      update = Update.new 'UPDATE User SET City = ? WHERE User.UserId = ?',
+                          workload.model
+      index = NoSE::Index.new [tweet['Timestamp']], [user['UserId']],
+                              [user['City']], [tweet, user], workload.model
+      expect(update.support_query(index).text).to eq \
+        'SELECT Timestamp FROM Tweet.User WHERE User.UserId = ?'
+    end
   end
 
   describe Insert do
