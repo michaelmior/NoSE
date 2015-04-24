@@ -74,35 +74,18 @@ module NoSE
     end
 
     # Generate the identity maps for updates in the workload
-    def identity_maps(indexes)
+    def identity_maps
       # Get all the fields touched by updates
-      updated_entities = Set.new
+      update_entities = Hash.new { |hash, key| hash[key] = Set.new }
       updates.each do |update|
         update.settings.map(&:field).each do |field|
-          updated_entities.add field.parent
+          update_entities[field.parent].add field
         end
       end
 
-      identity_maps = Set.new
-      indexes.each do |index|
-        # If no entities in the index path are updated, we don't need a map
-        next unless updated_entities.any? do |entity|
-          index.path.include? entity
-        end
-
-        # Loop over all entities in the index which are updated
-        (updated_entities & index.path.to_set).each do |entity|
-          # Get all the fields corresponding to this entity in the index
-          update_fields = index.all_fields.select do |field|
-            field.parent == entity
-          end
-
-          identity_maps.add Index.new entity.id_fields, [], update_fields,
-                                      [entity]
-        end
+      update_entities.map do |entity, fields|
+        Index.new entity.id_fields, [], fields, [entity], "#{entity.name}_ID"
       end
-
-      identity_maps
     end
 
     # Write the workload
