@@ -32,7 +32,7 @@ module NoSE
         find_field field
       else
         entity = field[0].is_a?(String) ? entities[field[0]] : field[0]
-        entity.fields[field[1]]
+        entity[field[1]]
       end
     end
 
