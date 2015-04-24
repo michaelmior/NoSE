@@ -24,7 +24,7 @@ module NoSE
 
       # We must have the primary key of the final entity as part of the
       # primary key of the generated index or we lose data
-      fail InvalidIndexException 'missing last entity keys' \
+      fail InvalidIndexException, 'missing last entity keys' \
         unless @path.last.id_fields.all? \
           &(@hash_fields + @order_fields).method(:include?)
 
