@@ -121,6 +121,15 @@ module NoSE
       expect(update.support_query(index).text).to eq \
         'SELECT Timestamp FROM Tweet.User WHERE User.UserId = ?'
     end
+
+    it 'does not select fields with update predicates in support queries' do
+      update = Update.new 'UPDATE User SET City = ? WHERE User.UserId = ?',
+                          workload.model
+      index = NoSE::Index.new [user['Username'], user['UserId']], [],
+                              [user['City']], [user], workload.model
+      expect(update.support_query(index).text).to eq \
+        'SELECT Username FROM User WHERE User.UserId = ?'
+    end
   end
 
   describe Insert do

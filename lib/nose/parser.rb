@@ -383,8 +383,11 @@ module NoSE
       end
       query_from = [index.path.first.name] + query_keys.map(&:name)
 
-      Query.new "SELECT #{index.hash_fields.map(&:name).join ', ' } " \
-        "FROM #{query_from.join '.'} #{@where_source}", @model
+      # Don't require selecting fields given in the WHERE clause
+      required_fields = index.hash_fields - @conditions.map(&:field)
+
+      Query.new "SELECT #{required_fields.map(&:name).join ', ' } " \
+                "FROM #{query_from.join '.'} #{@where_source}", @model
     end
   end
 
