@@ -2,9 +2,9 @@ require 'forwardable'
 require 'ostruct'
 
 module NoSE::Plans
-  # A single plan for a query
-  class QueryPlan
-    attr_accessor :query
+  # A single plan for a statement
+  class StatementPlan
+    attr_accessor :statement
     attr_accessor :cost_model
 
     include Comparable
@@ -15,9 +15,9 @@ module NoSE::Plans
     def_delegators :@steps, :each, :<<, :[], :==, :===, :eql?,
                    :inspect, :to_s, :to_a, :to_ary, :last, :length, :count
 
-    def initialize(query, cost_model)
+    def initialize(statement, cost_model)
       @steps = []
-      @query = query
+      @statement = statement
       @cost_model = cost_model
     end
 
@@ -26,14 +26,14 @@ module NoSE::Plans
       cost <=> other.cost
     end
 
-    # The estimated cost of executing the query using this plan
+    # The estimated cost of executing the statement using this plan
     # @return [Numeric]
     def cost
       @steps.map { |step| step.cost @cost_model }.inject(0, &:+)
     end
   end
 
-  # A single step in a query plan
+  # A single step in a statement plan
   class PlanStep
     include Supertype
 
@@ -71,16 +71,16 @@ module NoSE::Plans
     end
 
     # Get the list of steps which led us here
-    # If a cost model is not provided, query plans using
+    # If a cost model is not provided, statement plans using
     # this step cannot be evaluated on the basis of cost
     #
     # (this is to support PlanStep#parent_index which does not need cost)
-    # @return [QueryPlan]
+    # @return [StatementPlan]
     def parent_steps(cost_model = nil)
       steps = nil
 
       if @parent.nil?
-        steps = QueryPlan.new state.query, cost_model
+        steps = StatementPlan.new state.statement, cost_model
       else
         steps = @parent.parent_steps cost_model
         steps << self
@@ -109,14 +109,14 @@ module NoSE::Plans
     end
   end
 
-  # A dummy step used to inspect failed query plans
+  # A dummy step used to inspect failed statement plans
   class PrunedPlanStep < PlanStep
     def state
       OpenStruct.new answered?: true
     end
   end
 
-  # The root of a tree of query plans used as a placeholder
+  # The root of a tree of statement plans used as a placeholder
   class RootPlanStep < PlanStep
     def initialize(state)
       super()
@@ -124,26 +124,26 @@ module NoSE::Plans
     end
   end
 
-  # Ongoing state of a query throughout the execution plan
-  class QueryState
+  # Ongoing state of a statement throughout the execution plan
+  class StatementState
     attr_accessor :from, :fields, :eq, :range, :order_by, :path, :cardinality,
                   :given_fields
-    attr_reader :query, :entities, :model
+    attr_reader :statement, :entities, :model
 
-    def initialize(query, model)
-      @query = query
+    def initialize(statement, model)
+      @statement = statement
       @model = model
-      @from = query.from
-      @fields = query.select
-      @eq = query.eq_fields
-      @range = query.range_field
-      @order_by = query.order
-      @path = query.longest_entity_path.reverse
+      @from = statement.from
+      @fields = statement.select
+      @eq = statement.eq_fields
+      @range = statement.range_field
+      @order_by = statement.order
+      @path = statement.longest_entity_path.reverse
       @cardinality = 1  # this will be updated on the first index lookup
       @given_fields = @eq.dup
     end
 
-    # All the fields referenced anywhere in the query
+    # All the fields referenced anywhere in the statement
     def all_fields
       all_fields = @fields + @eq
       all_fields << @range unless @range.nil?
@@ -152,7 +152,7 @@ module NoSE::Plans
 
     # :nocov:
     def to_color
-      @query.text +
+      @statement.text +
         "\n  fields: " + @fields.map { |field| field.to_color }.to_a.to_color +
         "\n      eq: " + @eq.map { |field| field.to_color }.to_a.to_color +
         "\n   range: " + (@range.nil? ? '(nil)' : @range.name) +
@@ -163,18 +163,18 @@ module NoSE::Plans
     end
     # :nocov:
 
-    # Check if the query has been fully answered
+    # Check if the statement has been fully answered
     # @return [Boolean]
     def answered?(check_limit: true)
       done = @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
-      done &&= @cardinality <= @query.limit unless @query.limit.nil? ||
-                                                   !check_limit
+      done &&= @cardinality <= @statement.limit \
+        unless @statement.limit.nil? || !check_limit
 
       done
     end
 
-    # Get all fields relevant for filtering in the query for entities in the
-    # given list, optionally including selected fields
+    # Get all fields relevant for filtering in the statement for entities
+    # in the given list, optionally including selected fields
     # @return [Array<Field>]
     def fields_for_entities(entities, select: false)
       path_fields = @eq + @order_by
@@ -184,8 +184,8 @@ module NoSE::Plans
     end
   end
 
-  # A tree of possible query plans
-  class QueryPlanTree
+  # A tree of possible statement plans
+  class StatementPlanTree
     include Enumerable
 
     attr_reader :root
@@ -206,7 +206,7 @@ module NoSE::Plans
           nodes.concat node.children.to_a
         else
           # This is just an extra check to make absolutely
-          # sure we never consider invalid query plans
+          # sure we never consider invalid statement plans
           fail unless node.state.answered?
 
           yield node.parent_steps @cost_model
@@ -214,7 +214,7 @@ module NoSE::Plans
       end
     end
 
-    # Return the total number of plans for this query
+    # Return the total number of plans for this statement
     # @return [Integer]
     def size
       to_a.count
@@ -230,12 +230,12 @@ module NoSE::Plans
     # :nocov:
   end
 
-  # Thrown when it is not possible to construct a plan for a query
+  # Thrown when it is not possible to construct a plan for a statement
   class NoPlanException < StandardError
   end
 
-  # A query planner which can construct a tree of query plans
-  class QueryPlanner
+  # A statement planner which can construct a tree of statement plans
+  class StatementPlanner
     def initialize(model, indexes, cost_model)
       @logger = Logging.logger['nose::planner']
 
@@ -244,16 +244,16 @@ module NoSE::Plans
       @cost_model = cost_model
     end
 
-    # Find a tree of plans for the given query
-    # @return [QueryPlanTree]
+    # Find a tree of plans for the given statement
+    # @return [StatementPlanTree]
     # @raise [NoPlanException]
-    def find_plans_for_query(query)
-      state = QueryState.new query, @model
+    def find_plans_for_statement(statement)
+      state = StatementState.new statement, @model
       state.freeze
-      tree = QueryPlanTree.new state, @cost_model
+      tree = StatementPlanTree.new state, @cost_model
 
-      # Limit indices to those which cross the query path
-      entities = query.longest_entity_path
+      # Limit indices to those which cross the statement path
+      entities = statement.longest_entity_path
       indexes = @indexes.clone.select do |index|
         index.entity_range(entities) != (nil..nil)
       end
@@ -262,20 +262,20 @@ module NoSE::Plans
       find_plans_for_step tree.root, indexes_by_path
 
       if tree.root.children.empty?
-        tree = QueryPlanTree.new state, @cost_model
+        tree = StatementPlanTree.new state, @cost_model
         find_plans_for_step tree.root, indexes_by_path, prune: false
-        fail NoPlanException, "#{query.inspect} #{tree.inspect}"
+        fail NoPlanException, "#{statement.inspect} #{tree.inspect}"
       end
 
-      @logger.debug { "Plans for #{query.inspect}: #{tree.inspect}" }
+      @logger.debug { "Plans for #{statement.inspect}: #{tree.inspect}" }
 
       tree
     end
 
-    # Get the minimum cost plan for executing this query
-    # @return [QueryPlan]
-    def min_plan(query)
-      find_plans_for_query(query).min
+    # Get the minimum cost plan for executing this statement
+    # @return [StatementPlan]
+    def min_plan(statement)
+      find_plans_for_statement(statement).min
     end
 
     private
@@ -297,7 +297,7 @@ module NoSE::Plans
       false
     end
 
-    # Find possible query plans for a query strating at the given step
+    # Find possible statement plans for a statement strating at the given step
     def find_plans_for_step(step, indexes_by_path, used_indexes = Set.new,
                             prune: true)
       return if step.state.answered?
@@ -339,7 +339,7 @@ module NoSE::Plans
       steps
     end
 
-    # Get a list of possible next steps for a query in the given state
+    # Get a list of possible next steps for a statement in the given state
     # @return [Array<PlanStep>]
     def find_steps_for_state(parent, state, indexes_by_path, used_indexes)
       steps = find_nonindexed_steps parent, state

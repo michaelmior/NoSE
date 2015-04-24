@@ -139,19 +139,19 @@ module NoSE::Backend
       end
     end
 
-    # A query step to look up data from a particular column family
-    class IndexLookupQueryStep < QueryStep
+    # A statement step to look up data from a particular column family
+    class IndexLookupStatementStep < StatementStep
       # Perform a column family lookup in Cassandra
-      def self.process(client, query, results, step, prev_step, next_step)
+      def self.process(client, statement, results, step, prev_step, next_step)
         # Get the fields which are used for lookups at this step
         # TODO: Check if we can apply the next filter via ALLOW FILTERING
         eq_fields = (prev_step.state.eq - step.state.eq).to_set
         eq_fields += step.index.hash_fields
         range_field = prev_step.state.range if step.state.range.nil?
 
-        # If this is the first lookup, get the lookup values from the query
+        # If this is the first lookup, get the lookup values from the statement
         if results.nil?
-          results = [Hash[query.conditions.map do |condition|
+          results = [Hash[statement.conditions.map do |condition|
             [condition.field.id, condition.value]
           end]]
         end
@@ -163,7 +163,7 @@ module NoSE::Backend
           end
 
           unless range_field.nil?
-            operator = query.conditions.select(&:range?).first.operator
+            operator = statement.conditions.select(&:range?).first.operator
             conditions << NoSE::Condition.new(range_field, operator,
                                               result[range_field.id])
           end
@@ -173,11 +173,11 @@ module NoSE::Backend
 
         # Decide which fields should be selected
         # We just pick whatever is contained in the index that is either
-        # mentioned in the query or required for the next lookup
-        # TODO: Potentially try query.all_fields for those not required
+        # mentioned in the statement or required for the next lookup
+        # TODO: Potentially try statement.all_fields for those not required
         #       It should be sufficient to check what is needed for subsequent
-        #       filtering and sorting and use only those + query.select
-        select = query.all_fields
+        #       filtering and sorting and use only those + statement.select
+        select = statement.all_fields
         select += next_step.index.hash_fields \
           unless next_step.nil? || !next_step.is_a?(IndexLookupPlanStep)
         select &= step.index.all_fields

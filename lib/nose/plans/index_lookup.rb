@@ -7,8 +7,8 @@ module NoSE::Plans
       super()
       @index = index
 
-      if state && state.query
-        all_fields = state.query.all_fields
+      if state && state.statement
+        all_fields = state.statement.all_fields
         @fields = (@index.hash_fields + @index.order_fields).to_set + \
           (@index.extra.to_set & all_fields)
       else
@@ -67,7 +67,7 @@ module NoSE::Plans
         (parent.fields + state.given_fields).include? field
       end
 
-      # Get fields in the query relevant to this index
+      # Get fields in the statement relevant to this index
       path_fields = state.fields_for_entities(index.path).to_set
       path_fields -= parent.fields  # exclude fields already fetched
       return nil unless path_fields.all?(&index.all_fields.method(:include?))
@@ -138,11 +138,11 @@ module NoSE::Plans
         @state.path = @state.path[index.path.length - 1..-1]
       end
 
-      # Check if we can apply the limit from the query
-      if @state.answered?(check_limit: false) && !@state.query.limit.nil?
-        @limit = @state.cardinality = @state.query.limit
+      # Check if we can apply the limit from the statement
+      if @state.answered?(check_limit: false) && !@state.statement.limit.nil?
+        @limit = @state.cardinality = @state.statement.limit
       else
-        @state.cardinality = @state.query.longest_entity_path.last.count \
+        @state.cardinality = @state.statement.longest_entity_path.last.count \
           if parent.is_a? RootPlanStep
         @state.cardinality = Cardinality.new_cardinality @state.cardinality,
                                                          eq_filter,
