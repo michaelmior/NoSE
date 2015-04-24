@@ -76,6 +76,13 @@ module NoSE
         index = combo_query.materialize_view
         expect(index.key).to eq 'i835299498'
       end
+
+      it 'includes only one entity in the hash fields' do
+        query = Query.new 'SELECT Id FROM Foo.Corge WHERE Foo.Bar = ? ' \
+                          'AND Corge.Quux = ?', model
+        index = query.materialize_view
+        expect(index.hash_fields.map(&:parent).uniq).to have(1).item
+      end
     end
 
     it 'can tell if it maps identities for a field' do
