@@ -91,6 +91,12 @@ module NoSE
                         workload.model
       expect(query.select).to match_array [user['**']]
     end
+
+    it 'fails if a field does not exist' do
+      expect do
+        Query.new 'SELECT Banana FROM User WHERE User.City = ?', workload.model
+      end.to raise_error FieldNotFound
+    end
   end
 
   describe Update do
