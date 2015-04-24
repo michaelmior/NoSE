@@ -412,6 +412,25 @@ module NoSE
       freeze
     end
 
+    # Get the support query for updating a particular index
+    def support_query(index)
+      # Get the updated fields and check if an update is necessary
+      updated_fields = settings.map(&:field).to_set & index.all_fields
+      return nil if updated_fields.empty?
+
+      # Find where the index path intersects the update path
+      # and splice in the path of the where clause from the update
+      query_path = index.path.take_while { |entity| entity != @from }
+      query_path += longest_entity_path
+      query_keys = query_path.each_cons(2).map do |entity, next_entity|
+        entity.foreign_key_for(next_entity)
+      end
+      query_from = [index.path.first.name] + query_keys.map(&:name)
+
+      Query.new "SELECT #{index.hash_fields.map(&:name).join ', ' } " \
+                "FROM #{query_from.join '.'} #{@where_source}", @model
+    end
+
     private
 
     # Extract the path from the original statement
