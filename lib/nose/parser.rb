@@ -220,7 +220,7 @@ module NoSE
       end
 
       # XXX Save the where clause so we can convert to a query later
-      #     Ideally this would be in {StatementToQuery}
+      #     Ideally this would be in {StatementSupportQuery}
       @where_source = (@tree.delete(:where_source) || '').strip
 
       @model = model
@@ -300,11 +300,6 @@ module NoSE
       (@select + @conditions.map(&:field) + @order).to_set
     end
 
-    # This is already a query, no conversion necessary
-    def to_query
-      self
-    end
-
     private
 
     # Populate the fields selected by this query
@@ -371,47 +366,8 @@ module NoSE
     end
   end
 
-  # Extend {Statement} objects to allow them to be converted to queries
-  module StatementToQuery
-    # Create a {Query} which corresponds to this update
-    def to_query
-      # We don't need a query if we're only checking
-      # equality on the primary key of a single entity
-      needs_query = @longest_entity_path.length > 1
-      needs_query ||= @conditions.any?(&:range?)
-      needs_query ||= @conditions.map(&:field).to_set != @from.id_fields.to_set
-      return unless needs_query
-
-      # Extract the path from the original statement
-      query = "SELECT #{@from.id_fields.map(&:name).join ', '} " \
-              "FROM #{path_from_statement} #{@where_source}"
-
-      Query.new query.strip, @model
-    end
-
-    private
-
-    # Subclasses implement to return the path string from the statement text
-    def path_from_statement
-      raise NotImplementedError
-    end
-  end
-
-  # A representation of an update in the workload
-  class Update < Statement
-    include StatementConditions
-    include StatementSettings
-    include StatementToQuery
-
-    def initialize(statement, model)
-      super :update, statement, model
-
-      populate_conditions
-      populate_settings
-
-      freeze
-    end
-
+  # Extend {Statement} objects to allow them to generate support queries
+  module StatementSupportQuery
     # Get the support query for updating a particular index
     def support_query(index)
       # Get the updated fields and check if an update is necessary
@@ -428,14 +384,23 @@ module NoSE
       query_from = [index.path.first.name] + query_keys.map(&:name)
 
       Query.new "SELECT #{index.hash_fields.map(&:name).join ', ' } " \
-                "FROM #{query_from.join '.'} #{@where_source}", @model
+        "FROM #{query_from.join '.'} #{@where_source}", @model
     end
+  end
 
-    private
+  # A representation of an update in the workload
+  class Update < Statement
+    include StatementConditions
+    include StatementSettings
+    include StatementSupportQuery
 
-    # Extract the path from the original statement
-    def path_from_statement
-      /UPDATE\s+(([A-z]+\.)*[A-z]+)\s+/.match(@text).captures.first
+    def initialize(statement, model)
+      super :update, statement, model
+
+      populate_conditions
+      populate_settings
+
+      freeze
     end
   end
 
@@ -455,7 +420,7 @@ module NoSE
   # A representation of a delete in the workload
   class Delete < Statement
     include StatementConditions
-    include StatementToQuery
+    include StatementSupportQuery
 
     def initialize(statement, model)
       super :delete, statement, model
@@ -463,13 +428,6 @@ module NoSE
       populate_conditions
 
       freeze
-    end
-
-    private
-
-    # Extract the path from the original statement
-    def path_from_statement
-      /DELETE FROM\s+(([A-z]+\.)*[A-z]+)\s+/.match(@text).captures.first
     end
   end
 

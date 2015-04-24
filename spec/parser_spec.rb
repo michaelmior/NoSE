@@ -13,16 +13,6 @@ module NoSE
     end
   end
 
-  shared_examples 'converts to a query' do
-    it 'can be converted to a query' do
-      query = statement.to_query
-      expect(query.conditions).to eq statement.conditions
-      expect(query.from).to eq statement.from
-      expect(query.longest_entity_path).to eq statement.longest_entity_path
-      expect(query.select.to_set).to eq statement.from.id_fields.to_set
-    end
-  end
-
   describe Query do
     include_context 'entities'
 
@@ -33,9 +23,6 @@ module NoSE
     end
 
     it_behaves_like 'a statement' do
-      let(:statement) { query }
-    end
-    include_examples 'converts to a query' do
       let(:statement) { query }
     end
 
@@ -111,28 +98,11 @@ module NoSE
     it_behaves_like 'a statement' do
       let(:statement) { update }
     end
-    include_examples 'converts to a query' do
-      let(:statement) { update }
-    end
 
     it 'can parse field settings' do
       expect(update.settings).to match_array [
         FieldSetting.new(tweet['Body'], 'foo')
       ]
-    end
-
-    it 'can be converted to a query' do
-      query = update.to_query
-      expect(query.conditions).to eq update.conditions
-      expect(query.from).to eq update.from
-      expect(query.longest_entity_path).to eq update.longest_entity_path
-      expect(query.select.to_set).to eq update.from.id_fields.to_set
-    end
-
-    it 'does not convert simple updates' do
-      update = Update.new 'UPDATE User SET City = ? WHERE User.UserId = ?',
-                          workload.model
-      expect(update.to_query).to be nil
     end
 
     it 'does not produce a support query for unaffected indexes' do
@@ -179,9 +149,6 @@ module NoSE
     end
 
     it_behaves_like 'a statement' do
-      let(:statement) { delete }
-    end
-    include_examples 'converts to a query' do
       let(:statement) { delete }
     end
   end
