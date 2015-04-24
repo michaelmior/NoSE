@@ -42,7 +42,7 @@ module NoSE
     end
 
     # Strip the weights from the query dictionary and return a list of queries
-    # @return [Array<Query>]
+    # @return [Array<Statement>]
     def queries
       @statement_weights.keys.select { |statement| statement.is_a? Query }
     end
@@ -71,21 +71,6 @@ module NoSE
       end
 
       true
-    end
-
-    # Generate the identity maps for updates in the workload
-    def identity_maps
-      # Get all the fields touched by updates
-      update_entities = Hash.new { |hash, key| hash[key] = Set.new }
-      updates.each do |update|
-        update.settings.map(&:field).each do |field|
-          update_entities[field.parent].add field
-        end
-      end
-
-      update_entities.map do |entity, fields|
-        Index.new entity.id_fields, [], fields, [entity], "#{entity.name}_ID"
-      end
     end
 
     # Write the workload
