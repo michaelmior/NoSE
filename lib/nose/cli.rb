@@ -75,10 +75,10 @@ module NoSE::CLI
       indexes = find_indexes workload, enumerated_indexes, max_space,
         cost_model
 
-      # Find the final plans for each query
-      planner = NoSE::Plans::QueryPlanner.new workload, indexes, cost_model
+      # Find the final plans for each statement
+      planner = NoSE::Plans::StatementPlanner.new workload, indexes, cost_model
       plans = {}
-      workload.queries.each { |query| plans[query] = planner.min_plan query }
+      workload.queries.each { |stmt| plans[stmt] = planner.min_plan stmt }
 
       # Get the indexes which are actually used
       indexes = plans.map(&:to_a).flatten.select do |step|
@@ -131,7 +131,7 @@ module NoSE::CLI
       header = "Query plans\n" + '━' * 50
       file.puts Formatador.parse("[blue]#{header}[/]")
       result.plans.each do |plan|
-        file.puts plan.query.inspect
+        file.puts plan.statement.inspect
         plan.each { |step| file.puts '  ' + step.inspect }
         file.puts
       end

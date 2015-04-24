@@ -150,7 +150,7 @@ module NoSE::Serialize
     end
   end
 
-  # Base representation for query plan steps
+  # Base representation for statement plan steps
   class PlanStepRepresenter < Representable::Decorator
     include Representable::JSON
     include Representable::YAML
@@ -185,12 +185,12 @@ module NoSE::Serialize
     property :limit
   end
 
-  # Represent a query plan as a sequence of steps
-  class QueryPlanRepresenter < Representable::Decorator
+  # Represent a statement plan as a sequence of steps
+  class StatementPlanRepresenter < Representable::Decorator
     include Representable::JSON
     include Representable::YAML
 
-    property :query, decorator: StatementRepresenter
+    property :statement, decorator: StatementRepresenter
     property :cost
     collection :each, as: :steps, decorator: (lambda do |step, *|
       {
@@ -245,16 +245,16 @@ module NoSE::Serialize
     end
   end
 
-  # Reconstruct the steps of a query plan
-  class QueryPlanBuilder
+  # Reconstruct the steps of a statement plan
+  class StatementPlanBuilder
     include Uber::Callable
 
     def call(object, _fragment, instance, **_options)
       workload = object.workload
-      query = NoSE::Statement.parse instance['query'], workload.model
+      statement = NoSE::Statement.parse instance['statement'], workload.model
 
-      plan = NoSE::Plans::QueryPlan.new query, object.cost_model
-      state = NoSE::Plans::QueryState.new query, workload
+      plan = NoSE::Plans::StatementPlan.new statement, object.cost_model
+      state = NoSE::Plans::StatementState.new statement, workload
       parent = NoSE::Plans::RootPlanStep.new state
 
       f = ->(field) { workload.model[field['parent']][field['name']] }
@@ -319,9 +319,9 @@ module NoSE::Serialize
 
     property :cost_model, exec_context: :decorator
 
-    collection :plans, decorator: QueryPlanRepresenter,
+    collection :plans, decorator: StatementPlanRepresenter,
                        class: Object,
-                       deserialize: QueryPlanBuilder.new
+                       deserialize: StatementPlanBuilder.new
     property :total_size
     property :total_cost
 
