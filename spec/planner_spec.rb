@@ -1,15 +1,15 @@
 module NoSE::Plans
-  describe StatementPlanner do
+  describe QueryPlanner do
     include_context 'dummy_cost_model'
     include_context 'entities'
 
     it 'can look up fields by key' do
       index = tweet.simple_index
-      planner = StatementPlanner.new workload.model, [index], cost_model
+      planner = QueryPlanner.new workload.model, [index], cost_model
       query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
                               workload.model
 
-      tree = planner.find_plans_for_statement query
+      tree = planner.find_plans_for_query query
       expect(tree.first).to eq([IndexLookupPlanStep.new(index)])
       expect(tree).to have(1).plan
       expect(tree.first.cost).to be > 0
@@ -18,12 +18,12 @@ module NoSE::Plans
     it 'can perform an external sort if an index does not exist' do
       index = NoSE::Index.new [tweet['User']], [tweet['TweetId']],
                               [tweet['Timestamp'], tweet['Body']], [tweet]
-      planner = StatementPlanner.new workload.model, [index], cost_model
+      planner = QueryPlanner.new workload.model, [index], cost_model
       query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE ' \
                               'Tweet.User = ? ORDER BY Tweet.Timestamp',
                               workload.model
 
-      tree = planner.find_plans_for_statement query
+      tree = planner.find_plans_for_query query
       steps = [
         IndexLookupPlanStep.new(index),
         SortPlanStep.new([tweet['Timestamp']])
@@ -34,11 +34,11 @@ module NoSE::Plans
 
     it 'can apply a limit directly' do
       index = tweet.simple_index
-      planner = StatementPlanner.new workload.model, [index], cost_model
+      planner = QueryPlanner.new workload.model, [index], cost_model
       query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE ' \
                               'Tweet.TweetId = ? LIMIT 5', workload.model
 
-      tree = planner.find_plans_for_statement query
+      tree = planner.find_plans_for_query query
       expect(tree.first).to eq([IndexLookupPlanStep.new(index)])
       expect(tree).to have(1).plan
       expect(tree.first.last.state.cardinality).to eq 5
@@ -47,12 +47,12 @@ module NoSE::Plans
     it 'can perform an external sort followed by a limit' do
       index = NoSE::Index.new [tweet['User']], [tweet['TweetId']],
                               [tweet['Timestamp'], tweet['Body']], [tweet]
-      planner = StatementPlanner.new workload.model, [index], cost_model
+      planner = QueryPlanner.new workload.model, [index], cost_model
       query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE ' \
                               'Tweet.User = ? ORDER BY Tweet.Timestamp ' \
                               'LIMIT 5', workload.model
 
-      tree = planner.find_plans_for_statement query
+      tree = planner.find_plans_for_query query
       steps = [
         IndexLookupPlanStep.new(index),
         SortPlanStep.new([tweet['Timestamp']]),
@@ -63,10 +63,10 @@ module NoSE::Plans
     end
 
     it 'raises an exception if there is no plan' do
-      planner = StatementPlanner.new workload.model, [], cost_model
+      planner = QueryPlanner.new workload.model, [], cost_model
       query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
                               workload.model
-      expect { planner.find_plans_for_statement query }.to \
+      expect { planner.find_plans_for_query query }.to \
           raise_error NoPlanException
     end
 
@@ -76,12 +76,11 @@ module NoSE::Plans
                                [tweet['Body']], [tweet]
       index2 = NoSE::Index.new [tweet['User']], [tweet['TweetId']],
                                [tweet['Timestamp'], tweet['Body']], [tweet]
-      planner = StatementPlanner.new workload.model, [index1, index2],
-                                     cost_model
+      planner = QueryPlanner.new workload.model, [index1, index2], cost_model
       query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE Tweet.User = ? ' \
                               'ORDER BY Tweet.Timestamp', workload.model
 
-      tree = planner.find_plans_for_statement query
+      tree = planner.find_plans_for_query query
       expect(tree.to_a).to match_array [
         [IndexLookupPlanStep.new(index1)],
         [
@@ -94,11 +93,11 @@ module NoSE::Plans
     it 'knows which fields are available at a given step' do
       index = NoSE::Index.new [tweet['TweetId']], [],
                               [tweet['Body'], tweet['Timestamp']], [tweet]
-      planner = StatementPlanner.new workload.model, [index], cost_model
+      planner = QueryPlanner.new workload.model, [index], cost_model
       query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
                               workload.model
 
-      plan = planner.find_plans_for_statement(query).first
+      plan = planner.find_plans_for_query(query).first
       expect(plan.last.fields).to include(tweet['TweetId'], tweet['Body'],
                                           tweet['Timestamp'])
     end
@@ -106,12 +105,12 @@ module NoSE::Plans
     it 'can apply external filtering' do
       index = NoSE::Index.new [tweet['TweetId']], [],
                               [tweet['Body'], tweet['Timestamp']], [tweet]
-      planner = StatementPlanner.new workload.model, [index], cost_model
+      planner = QueryPlanner.new workload.model, [index], cost_model
       query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE ' \
                               'Tweet.TweetId = ? AND Tweet.Timestamp > ?',
                                workload.model
 
-      tree = planner.find_plans_for_statement(query)
+      tree = planner.find_plans_for_query(query)
       expect(tree).to have(1).plan
       expect(tree.first.last).to eq FilterPlanStep.new([], tweet['Timestamp'])
     end
@@ -120,14 +119,14 @@ module NoSE::Plans
       before(:each) do
         simple_query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE ' \
                                        'Tweet.TweetId = ?', workload.model
-        @simple_state = StatementState.new simple_query, workload.model
+        @simple_state = QueryState.new simple_query, workload.model
 
         # Pretend we start with all tweets
         @simple_state.cardinality = tweet.count
 
         query = NoSE::Query.new 'SELECT Body FROM Tweet.User ' \
                                 'WHERE User.UserId = ?', workload.model
-        @state = StatementState.new query, workload.model
+        @state = QueryState.new query, workload.model
       end
 
       it 'can reduce the cardinality to 1 when filtering by ID' do
@@ -165,10 +164,10 @@ module NoSE::Plans
                         [user]),
         NoSE::Index.new([tweet['TweetId']], [], [tweet['Body']], [tweet])
       ]
-      planner = StatementPlanner.new workload.model, indexes, cost_model
+      planner = QueryPlanner.new workload.model, indexes, cost_model
       query = NoSE::Query.new 'SELECT Body FROM Tweet.User ' \
                               'WHERE User.Username = ?', workload.model
-      expect { planner.find_plans_for_statement query }.to \
+      expect { planner.find_plans_for_query query }.to \
         raise_error NoPlanException
     end
 
@@ -178,8 +177,8 @@ module NoSE::Plans
       workload.add_statement query
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload
 
-      planner = StatementPlanner.new workload.model, indexes, cost_model
-      plans = planner.find_plans_for_statement(query)
+      planner = QueryPlanner.new workload.model, indexes, cost_model
+      plans = planner.find_plans_for_query(query)
       plan_indexes = plans.map do |plan|
         plan.select { |step| step.is_a? IndexLookupPlanStep }.map(&:index)
       end
@@ -198,7 +197,7 @@ module NoSE::Plans
         NoSE::Index.new([tweet['TweetId']], [], [tweet['Body']], [tweet])
       ]
 
-      planner = StatementPlanner.new workload.model, indexes, cost_model
+      planner = QueryPlanner.new workload.model, indexes, cost_model
       expect(planner.min_plan(query)).to eq [
         IndexLookupPlanStep.new(indexes[0]),
         IndexLookupPlanStep.new(indexes[1])
@@ -211,9 +210,9 @@ module NoSE::Plans
       workload.add_statement query
 
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload
-      planner = StatementPlanner.new workload.model, indexes, cost_model
+      planner = QueryPlanner.new workload.model, indexes, cost_model
 
-      max_steps = planner.find_plans_for_statement(query).map(&:length).length
+      max_steps = planner.find_plans_for_query(query).map(&:length).length
       expect(max_steps).to be >= query.longest_entity_path.length
     end
 
@@ -223,7 +222,7 @@ module NoSE::Plans
       workload.add_statement query
 
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload
-      planner = StatementPlanner.new workload.model, indexes, cost_model
+      planner = QueryPlanner.new workload.model, indexes, cost_model
       plan = planner.min_plan query
 
       expect(plan).to have(1).item

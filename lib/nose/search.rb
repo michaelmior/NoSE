@@ -62,10 +62,9 @@ module NoSE::Search
       selected_indexes
     end
 
-    # Get the cost of using each index for each statement in a workload
+    # Get the cost of using each index for each query in a workload
     def costs(indexes)
-      planner = NoSE::Plans::StatementPlanner.new @workload, indexes,
-                                                  @cost_model
+      planner = NoSE::Plans::QueryPlanner.new @workload, indexes, @cost_model
 
       # Create a hash to allow efficient lookup of the numerical index
       # of a particular index within the array of indexes
@@ -73,17 +72,17 @@ module NoSE::Search
 
       costs = Parallel.map(@workload.statement_weights) do |statement, weight|
         next unless statement.is_a? NoSE::Query
-        statement_cost planner, index_pos, statement, weight
+        query_cost planner, index_pos, statement, weight
       end
 
       costs
     end
 
-    # Get the cost for indices for an individual statement
-    def statement_cost(planner, index_pos, statement, weight)
-      statement_costs = {}
+    # Get the cost for indices for an individual query
+    def query_cost(planner, index_pos, query, weight)
+      query_costs = {}
 
-      planner.find_plans_for_statement(statement).each do |plan|
+      planner.find_plans_for_query(query).each do |plan|
         steps_by_index = []
         plan.each do |step|
           if step.is_a? NoSE::Plans::IndexLookupPlanStep
@@ -103,22 +102,21 @@ module NoSE::Search
           end
         end
 
-        populate_statement_costs statement_costs, index_pos, steps_by_index,
-                                 weight, plan
+        populate_query_costs query_costs, index_pos, steps_by_index,
+                             weight, plan
       end
 
-      statement_costs
+      query_costs
     end
 
     # Store the costs and indexes for this plan in a nested hash
-    def populate_statement_costs(statement_costs, index_pos, steps_by_index,
-                                 weight, plan)
-      # The first key is the number of the statement and the second is the
+    def populate_query_costs(query_costs, index_pos, steps_by_index, weight, plan)
+      # The first key is the number of the query and the second is the
       # number of the index
       #
       # The value is a two-element array with the numbers of the indices
-      # which are jointly used to answer a step in the statement plan along
-      # with the cost of all plan steps for the part of the statement path
+      # which are jointly used to answer a step in the query plan along
+      # with the cost of all plan steps for the part of the query path
       steps_by_index.each do |steps|
         step_indexes = steps.select do |step|
           step.is_a? NoSE::Plans::IndexLookupPlanStep
@@ -131,24 +129,24 @@ module NoSE::Search
 
         fail 'No more than three indexes per step' if step_indexes.length > 3
 
-        if statement_costs.key? step_indexes.first
-          current_cost = statement_costs[step_indexes.first].last
-          current_steps = statement_costs[step_indexes.first].first
+        if query_costs.key? step_indexes.first
+          current_cost = query_costs[step_indexes.first].last
+          current_steps = query_costs[step_indexes.first].first
 
           if step_indexes.length == 1 && (current_steps != step_indexes ||
                                           current_cost != cost)
             # # We should only have one step if there exists a step with length 1
-            # fail 'Invalid statement plan found when calculating cost: ' +
+            # fail 'Invalid query plan found when calculating cost: ' +
             #   plan.inspect.to_s
 
             # XXX This is wrong, but the costs are broken for now
-            statement_costs[step_indexes.first] = [step_indexes,
-                                                   [cost, current_cost].max]
+            query_costs[step_indexes.first] = [step_indexes,
+                                               [cost, current_cost].max]
           else
             # Take the minimum cost index for the second step
             if current_steps.length > 1
               if cost < current_cost
-                statement_costs[step_indexes.first] = [step_indexes, cost]
+                query_costs[step_indexes.first] = [step_indexes, cost]
               elsif cost == current_cost
                 # Cost is the same, so keep track of multiple possible last
                 # steps by making the second element an array
@@ -160,12 +158,12 @@ module NoSE::Search
                   step_indexes = [step_indexes.first,
                                   [current_steps.last, step_indexes.last]]
                 end
-                statement_costs[step_indexes.first] = [step_indexes, cost]
+                query_costs[step_indexes.first] = [step_indexes, cost]
               end
             end
           end
         else
-          statement_costs[step_indexes.first] = [step_indexes, cost]
+          query_costs[step_indexes.first] = [step_indexes, cost]
         end
       end
     end

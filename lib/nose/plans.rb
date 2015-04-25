@@ -1,1 +1,1 @@
-require_relative 'plans/statement_planner'
+require_relative 'plans/query_planner'
