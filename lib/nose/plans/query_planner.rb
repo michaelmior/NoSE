@@ -128,7 +128,7 @@ module NoSE::Plans
   class QueryState
     attr_accessor :from, :fields, :eq, :range, :order_by, :path, :cardinality,
                   :given_fields
-    attr_reader :query, :entities, :model
+    attr_reader :query, :model
 
     def initialize(query, model)
       @query = query
