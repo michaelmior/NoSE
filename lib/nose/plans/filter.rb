@@ -1,5 +1,5 @@
 module NoSE::Plans
-  # A statement plan performing a filter without an index
+  # A query plan performing a filter without an index
   class FilterPlanStep < PlanStep
     attr_reader :eq, :range
 

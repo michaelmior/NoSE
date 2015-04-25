@@ -5,8 +5,8 @@ module NoSE::Cost
     let(:subject) { RequestCountCost }
 
     it 'counts a single request for a single step plan' do
-      planner = NoSE::Plans::StatementPlanner.new workload.model,
-                                                  [tweet.simple_index], subject
+      planner = NoSE::Plans::QueryPlanner.new workload.model,
+                                              [tweet.simple_index], subject
       plan = planner.min_plan \
         NoSE::Query.new('SELECT * FROM Tweet WHERE Tweet.TweetId = ?',
                         workload.model)
