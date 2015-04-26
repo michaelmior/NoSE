@@ -119,14 +119,14 @@ module NoSE::Plans
       before(:each) do
         simple_query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE ' \
                                        'Tweet.TweetId = ?', workload.model
-        @simple_state = QueryState.new simple_query, workload.model
+        @simple_state = StatementState.new simple_query, workload.model
 
         # Pretend we start with all tweets
         @simple_state.cardinality = tweet.count
 
         query = NoSE::Query.new 'SELECT Body FROM Tweet.User ' \
                                 'WHERE User.UserId = ?', workload.model
-        @state = QueryState.new query, workload.model
+        @state = StatementState.new query, workload.model
       end
 
       it 'can reduce the cardinality to 1 when filtering by ID' do

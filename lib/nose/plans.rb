@@ -1,7 +1,117 @@
 module NoSE::Plans
+  # Ongoing state of a statement throughout the execution plan
+  class StatementState
+    attr_accessor :from, :fields, :eq, :range, :order_by, :path, :cardinality,
+      :given_fields
+    attr_reader :query, :model
+
+    def initialize(query, model)
+      @query = query
+      @model = model
+      @from = query.from
+      @fields = query.select
+      @eq = query.eq_fields
+      @range = query.range_field
+      @order_by = query.order
+      @path = query.longest_entity_path.reverse
+      @cardinality = 1  # this will be updated on the first index lookup
+      @given_fields = @eq.dup
+    end
+
+    # All the fields referenced anywhere in the query
+    def all_fields
+      all_fields = @fields + @eq
+      all_fields << @range unless @range.nil?
+      all_fields
+    end
+
+    # :nocov:
+    def to_color
+      @query.text +
+        "\n  fields: " + @fields.map { |field| field.to_color }.to_a.to_color +
+        "\n      eq: " + @eq.map { |field| field.to_color }.to_a.to_color +
+        "\n   range: " + (@range.nil? ? '(nil)' : @range.name) +
+        "\n   order: " + @order_by.map do |field|
+          field.to_color
+        end.to_a.to_color +
+        "\n    path: " + @path.to_a.to_color
+    end
+    # :nocov:
+
+    # Check if the statement has been fully answered
+    # @return [Boolean]
+    def answered?(check_limit: true)
+      done = @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
+      done &&= @cardinality <= @query.limit unless @query.limit.nil? ||
+        !check_limit
+
+      done
+    end
+
+    # Get all fields relevant for filtering in the statement for entities
+    # in the given list, optionally including selected fields
+    # @return [Array<Field>]
+    def fields_for_entities(entities, select: false)
+      path_fields = @eq + @order_by
+      path_fields += @fields if select
+      path_fields << @range unless @range.nil?
+      path_fields.select { |field| entities.include? field.parent }
+    end
+  end
+
+  # A tree of possible statement plans
+  class QueryPlanTree
+    include Enumerable
+
+    attr_reader :root
+    attr_accessor :cost_model
+
+    def initialize(state, cost_model)
+      @root = RootPlanStep.new(state)
+      @cost_model = cost_model
+    end
+
+    # Enumerate all plans in the tree
+    def each
+      nodes = [@root]
+
+      while nodes.length > 0
+        node = nodes.pop
+        if node.children.length > 0
+          nodes.concat node.children.to_a
+        else
+          # This is just an extra check to make absolutely
+          # sure we never consider invalid statement plans
+          fail unless node.state.answered?
+
+          yield node.parent_steps @cost_model
+        end
+      end
+    end
+
+    # Return the total number of plans for this statement
+    # @return [Integer]
+    def size
+      to_a.count
+    end
+
+    # :nocov:
+    def to_color(step = nil, indent = 0)
+      step = @root if step.nil?
+      '  ' * indent + step.to_color + "\n" + step.children.map do |child_step|
+        to_color child_step, indent + 1
+      end.reduce('', &:+)
+    end
+    # :nocov:
+  end
+
+  # Thrown when it is not possible to construct a plan for a statement
+  class NoPlanException < StandardError
+  end
+
   # A single plan for a statement
   class StatementPlan
-    attr_accessor :query
+    attr_accessor :statement
     attr_accessor :cost_model
 
     include Comparable
@@ -12,9 +122,9 @@ module NoSE::Plans
     def_delegators :@steps, :each, :<<, :[], :==, :===, :eql?,
       :inspect, :to_s, :to_a, :to_ary, :last, :length, :count
 
-    def initialize(query, cost_model)
+    def initialize(statement, cost_model)
       @steps = []
-      @query = query
+      @statement = statement
       @cost_model = cost_model
     end
 
@@ -23,7 +133,7 @@ module NoSE::Plans
       cost <=> other.cost
     end
 
-    # The estimated cost of executing the query using this plan
+    # The estimated cost of executing the statement using this plan
     # @return [Numeric]
     def cost
       @steps.map { |step| step.cost @cost_model }.inject(0, &:+)
