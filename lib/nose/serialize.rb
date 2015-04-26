@@ -186,7 +186,7 @@ module NoSE::Serialize
   end
 
   # Represent a query plan as a sequence of steps
-  class QueryPlanRepresenter < Representable::Decorator
+  class StatementPlanRepresenter < Representable::Decorator
     include Representable::JSON
     include Representable::YAML
 
@@ -246,14 +246,14 @@ module NoSE::Serialize
   end
 
   # Reconstruct the steps of a query plan
-  class QueryPlanBuilder
+  class StatementPlanBuilder
     include Uber::Callable
 
     def call(object, _fragment, instance, **_options)
       workload = object.workload
       query = NoSE::Statement.parse instance['query'], workload.model
 
-      plan = NoSE::Plans::QueryPlan.new query, object.cost_model
+      plan = NoSE::Plans::StatementPlan.new query, object.cost_model
       state = NoSE::Plans::QueryState.new query, workload
       parent = NoSE::Plans::RootPlanStep.new state
 
@@ -319,9 +319,9 @@ module NoSE::Serialize
 
     property :cost_model, exec_context: :decorator
 
-    collection :plans, decorator: QueryPlanRepresenter,
+    collection :plans, decorator: StatementPlanRepresenter,
                        class: Object,
-                       deserialize: QueryPlanBuilder.new
+                       deserialize: StatementPlanBuilder.new
     property :total_size
     property :total_cost
 
