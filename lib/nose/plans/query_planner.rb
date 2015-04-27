@@ -2,6 +2,66 @@ require 'forwardable'
 require 'ostruct'
 
 module NoSE::Plans
+  # Ongoing state of a query throughout the execution plan
+  class QueryState
+    attr_accessor :from, :fields, :eq, :range, :order_by, :path, :cardinality,
+      :given_fields
+    attr_reader :query, :model
+
+    def initialize(query, model)
+      @query = query
+      @model = model
+      @from = query.from
+      @fields = query.select
+      @eq = query.eq_fields
+      @range = query.range_field
+      @order_by = query.order
+      @path = query.longest_entity_path.reverse
+      @cardinality = 1  # this will be updated on the first index lookup
+      @given_fields = @eq.dup
+    end
+
+    # All the fields referenced anywhere in the query
+    def all_fields
+      all_fields = @fields + @eq
+      all_fields << @range unless @range.nil?
+      all_fields
+    end
+
+    # :nocov:
+    def to_color
+      @query.text +
+        "\n  fields: " + @fields.map { |field| field.to_color }.to_a.to_color +
+        "\n      eq: " + @eq.map { |field| field.to_color }.to_a.to_color +
+        "\n   range: " + (@range.nil? ? '(nil)' : @range.name) +
+        "\n   order: " + @order_by.map do |field|
+          field.to_color
+        end.to_a.to_color +
+        "\n    path: " + @path.to_a.to_color
+    end
+    # :nocov:
+
+    # Check if the query has been fully answered
+    # @return [Boolean]
+    def answered?(check_limit: true)
+      done = @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
+      done &&= @cardinality <= @query.limit unless @query.limit.nil? ||
+        !check_limit
+
+      done
+    end
+
+    # Get all fields relevant for filtering in the query for entities
+    # in the given list, optionally including selected fields
+    # @return [Array<Field>]
+    def fields_for_entities(entities, select: false)
+      path_fields = @eq + @order_by
+      path_fields += @fields if select
+      path_fields << @range unless @range.nil?
+      path_fields.select { |field| entities.include? field.parent }
+    end
+  end
+
   # A query planner which can construct a tree of query plans
   class QueryPlanner
     def initialize(model, indexes, cost_model)
@@ -16,7 +76,7 @@ module NoSE::Plans
     # @return [QueryPlanTree]
     # @raise [NoPlanException]
     def find_plans_for_query(query)
-      state = StatementState.new query, @model
+      state = QueryState.new query, @model
       state.freeze
       tree = QueryPlanTree.new state, @cost_model
 
