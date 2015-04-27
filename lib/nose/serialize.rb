@@ -190,7 +190,7 @@ module NoSE::Serialize
     include Representable::JSON
     include Representable::YAML
 
-    property :query, decorator: StatementRepresenter
+    property :statement, decorator: StatementRepresenter
     property :cost
     collection :each, as: :steps, decorator: (lambda do |step, *|
       {
@@ -245,16 +245,16 @@ module NoSE::Serialize
     end
   end
 
-  # Reconstruct the steps of a query plan
+  # Reconstruct the steps of a statement plan
   class StatementPlanBuilder
     include Uber::Callable
 
     def call(object, _fragment, instance, **_options)
       workload = object.workload
-      query = NoSE::Statement.parse instance['query'], workload.model
+      statement = NoSE::Statement.parse instance['statement'], workload.model
 
-      plan = NoSE::Plans::StatementPlan.new query, object.cost_model
-      state = NoSE::Plans::QueryState.new query, workload
+      plan = NoSE::Plans::StatementPlan.new statement, object.cost_model
+      state = NoSE::Plans::QueryState.new statement, workload
       parent = NoSE::Plans::RootPlanStep.new state
 
       f = ->(field) { workload.model[field['parent']][field['name']] }
