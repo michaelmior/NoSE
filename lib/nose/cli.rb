@@ -131,7 +131,7 @@ module NoSE::CLI
       header = "Query plans\n" + '━' * 50
       file.puts Formatador.parse("[blue]#{header}[/]")
       result.plans.each do |plan|
-        file.puts plan.query.inspect
+        file.puts plan.statement.inspect
         plan.each { |step| file.puts '  ' + step.inspect }
         file.puts
       end
