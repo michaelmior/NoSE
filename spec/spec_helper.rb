@@ -8,6 +8,9 @@
 require 'simplecov' unless RUBY_PLATFORM == 'java'
 
 require 'rspec/collection_matchers'
+require 'fakefs/safe'
+require 'fakefs/spec_helpers'
+
 Dir['./spec/support/**/*.rb'].sort.each { |f| require f }
 
 RSpec.configure do |config|

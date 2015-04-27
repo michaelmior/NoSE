@@ -13,6 +13,15 @@ module NoSE::CLI
     def self.basename
       'nose'
     end
+
+    private
+
+    # Use example config for tests
+    def load_config
+      file = File.join File.dirname(__FILE__), '..', '..', 'nose.yml.example'
+      config = YAML.load_file file
+      config.deep_symbolize_keys
+    end
   end
 
   # Runner for use with tests

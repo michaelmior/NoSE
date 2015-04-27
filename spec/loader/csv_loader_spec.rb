@@ -1,7 +1,5 @@
 require 'nose/loader/csv'
 
-require 'fakefs/spec_helpers'
-
 module NoSE::Loader
   describe CsvLoader do
     include_context 'entities'
