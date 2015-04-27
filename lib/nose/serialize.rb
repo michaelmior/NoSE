@@ -285,6 +285,9 @@ module NoSE::Serialize
                                     step_hash['cardinality']
         step.state = state.freeze
 
+        # Force setting of the parent step
+        step.instance_variable_set :@parent, parent
+
         plan << step
         parent = step
       end
