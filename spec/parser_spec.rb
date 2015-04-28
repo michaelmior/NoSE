@@ -130,6 +130,13 @@ module NoSE
       expect(update.support_query(index).text).to eq \
         'SELECT Username FROM User WHERE User.UserId = ?'
     end
+
+    it 'fails if the FROM clause does not start with the updated entity' do
+      expect do
+        Update.new 'UPDATE User FROM Tweet.User SET City = ? ' \
+                   'WHERE User.UserId = ?', workload.model
+      end.to raise_error InvalidStatementException
+    end
   end
 
   describe Insert do
