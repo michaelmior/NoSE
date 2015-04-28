@@ -228,4 +228,29 @@ module NoSE::Plans
       expect(plan).to have(1).item
     end
   end
+
+  describe UpdatePlanner do
+    include_context 'dummy_cost_model'
+    include_context 'entities'
+
+    it 'can produce a simple plan for an update' do
+      update = NoSE::Update.new 'UPDATE User SET City = ? ' \
+                                'WHERE User.UserId = ?', workload.model
+      index = NoSE::Index.new [tweet['Timestamp']], [user['UserId']],
+                              [user['City']], [tweet, user]
+      workload.add_statement update
+      indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload \
+        [index]
+
+      planner = UpdatePlanner.new workload.model, indexes, cost_model
+      plans = planner.find_plans_for_update update, [index]
+
+      # XXX indexes[1] is fragile, but ok for now
+      expect(plans.map(&:to_a)).to include [[
+        IndexLookupPlanStep.new(indexes[1]),
+        DeletePlanStep.new(index),
+        InsertPlanStep.new(index)
+      ]]
+    end
+  end
 end
