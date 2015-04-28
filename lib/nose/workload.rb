@@ -54,9 +54,9 @@ module NoSE
     end
 
     # Strip the weights from the query dictionary and return a list of updates
-    # @return [Array<Update>]
+    # @return [Array<Statement>]
     def updates
-      @statement_weights.keys.select { |statement| statement.is_a? Update }
+      @statement_weights.keys.reject { |statement| statement.is_a? Query }
     end
 
     # Check if all the fields used by queries in the workload exist

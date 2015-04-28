@@ -252,5 +252,24 @@ module NoSE::Plans
         InsertPlanStep.new(index)
       ]]
     end
+
+    it 'can produce a simple plan for a delete' do
+      delete = NoSE::Delete.new 'DELETE FROM User WHERE User.UserId = ?',
+                                workload.model
+      index = NoSE::Index.new [tweet['Timestamp']], [user['UserId']],
+                              [user['City']], [tweet, user]
+      workload.add_statement delete
+      indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload \
+        [index]
+
+      planner = UpdatePlanner.new workload.model, indexes, cost_model
+      plans = planner.find_plans_for_update delete, [index]
+
+      # XXX indexes[1] is fragile, but ok for now
+      expect(plans.map(&:to_a)).to include [[
+        IndexLookupPlanStep.new(indexes[1]),
+        DeletePlanStep.new(index)
+      ]]
+    end
   end
 end
