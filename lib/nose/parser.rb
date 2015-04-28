@@ -101,7 +101,8 @@ module NoSE
       limit.maybe.capture(:limit) }
 
     rule(:update) {
-      str('UPDATE') >> space >> path.as_array(:path) >> space >>
+      str('UPDATE') >> space >> identifier.as(:entity) >> space >>
+      (str('FROM') >> space >> path.as_array(:path) >> space).maybe >>
       str('SET') >> space >> settings.as_array(:settings) >>
       where.maybe.as(:where).capture_source(:where)
     }
@@ -112,7 +113,8 @@ module NoSE
     }
 
     rule(:delete) {
-      str('DELETE FROM') >> space >> path.as_array(:path) >>
+      str('DELETE') >> space >> identifier.as(:entity) >>
+      (space >> str('FROM') >> space >> path.as_array(:path)).maybe >>
       where.maybe.as(:where).capture_source(:where)
     }
 
@@ -224,9 +226,9 @@ module NoSE
       @where_source = (@tree.delete(:where_source) || '').strip
 
       @model = model
-      path_entities = @tree[:path] || [@tree[:entity]]
-      @from = model[path_entities.first.to_s]
-      find_longest_path path_entities
+      @tree[:path] ||= [@tree[:entity]]
+      @from = model[@tree[:path].first.to_s]
+      find_longest_path @tree[:path]
     end
 
     # :nocov:

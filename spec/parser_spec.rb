@@ -90,7 +90,7 @@ module NoSE
     include_context 'entities'
 
     let(:update) do
-      Update.new 'UPDATE Tweet.User SET Body = "foo" WHERE ' \
+      Update.new 'UPDATE Tweet FROM Tweet.User SET Body = "foo" WHERE ' \
                  'Tweet.Link = ? AND Tweet.Timestamp > ? AND User.City = ?',
                  workload.model
     end
@@ -152,7 +152,7 @@ module NoSE
     include_context 'entities'
 
     let(:delete) do
-      Delete.new 'DELETE FROM Tweet.User WHERE ' \
+      Delete.new 'DELETE Tweet FROM Tweet.User WHERE ' \
                  'Tweet.Link = ? AND Tweet.Timestamp > ? AND User.City = ?',
                  workload.model
     end
