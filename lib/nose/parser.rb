@@ -368,11 +368,12 @@ module NoSE
 
   # Extend {Statement} objects to allow them to generate support queries
   module StatementSupportQuery
-    # Get the support query for updating a particular index
-    def support_query(index)
-      # Get the updated fields and check if an update is necessary
-      updated_fields = settings.map(&:field).to_set & index.all_fields
-      return nil if updated_fields.empty?
+    protected
+
+    # Get the support query for updating a given
+    # set of fields for a particular index
+    def support_query_for_fields(index, fields)
+      return nil if fields.empty?
 
       # Find where the index path intersects the update path
       # and splice in the path of the where clause from the update
@@ -405,6 +406,13 @@ module NoSE
 
       freeze
     end
+
+    # Get the support query for updating an index
+    def support_query(index)
+      # Get the updated fields and check if an update is necessary
+      updated_fields = settings.map(&:field).to_set & index.all_fields
+      support_query_for_fields index, updated_fields
+    end
   end
 
   # A representation of an insert in the workload
@@ -431,6 +439,11 @@ module NoSE
       populate_conditions
 
       freeze
+    end
+
+    # Get the support query for deleting from an index
+    def support_query(index)
+      support_query_for_fields index, @from.fields
     end
   end
 
