@@ -65,7 +65,7 @@ module NoSE::Plans
   # A query planner which can construct a tree of query plans
   class QueryPlanner
     def initialize(model, indexes, cost_model)
-      @logger = Logging.logger['nose::planner']
+      @logger = Logging.logger['nose::query_planner']
 
       @model = model
       @indexes = indexes
@@ -187,8 +187,3 @@ module NoSE::Plans
     end
   end
 end
-
-require_relative 'filter'
-require_relative 'index_lookup'
-require_relative 'limit'
-require_relative 'sort'

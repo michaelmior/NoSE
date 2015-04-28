@@ -171,4 +171,11 @@ module NoSE::Plans
   end
 end
 
+require_relative 'plans/filter'
+require_relative 'plans/index_lookup'
+require_relative 'plans/limit'
+require_relative 'plans/sort'
+require_relative 'plans/update'
+
 require_relative 'plans/query_planner'
+require_relative 'plans/update_planner'
