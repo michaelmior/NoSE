@@ -254,7 +254,7 @@ module NoSE::Plans
     end
 
     it 'can produce a simple plan for a delete' do
-      delete = NoSE::Delete.new 'DELETE FROM User WHERE User.UserId = ?',
+      delete = NoSE::Delete.new 'DELETE User WHERE User.UserId = ?',
                                 workload.model
       index = NoSE::Index.new [tweet['Timestamp']], [user['UserId']],
                               [user['City']], [tweet, user]
