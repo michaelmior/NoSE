@@ -227,6 +227,10 @@ module NoSE
 
       @model = model
       @tree[:path] ||= [@tree[:entity]]
+      fail InvalidStatementException,
+           "FROM clause must start with #{@tree[:entity]}" \
+           if @tree[:entity] && @tree[:path].first != @tree[:entity]
+
       @from = model[@tree[:path].first.to_s]
       find_longest_path @tree[:path]
     end
