@@ -198,40 +198,4 @@ module NoSE::Fields
       super
     end
   end
-
-  # All the keys found when traversing foreign keys
-  class KeyPath
-    include Enumerable
-
-    # Most of the work is delegated to the array
-    extend Forwardable
-    def_delegators :@key_fields, :each, :<<, :[], :==, :===, :eql?,
-                   :inspect, :to_s, :to_a, :to_ary, :last
-
-    def initialize(path, entity)
-      @key_fields = fields_for_path path, entity
-    end
-
-    # Get the keys along a given path of entities
-    # @return [Array<Field>]
-    def fields_for_path(path, entity)
-      path = path[1..-1] if path[0] == entity.name
-
-      key_field = entity.fields[path[0]]
-      if key_field.instance_of? IDField
-        [key_field]
-      elsif key_field.is_a? ForeignKeyField
-        [key_field] + key_field.entity.key_fields(path[1..-1])
-      else
-        entity.id_fields.to_a
-      end
-    end
-
-    # Get the common prefix of two paths
-    # return [Array<Field>]
-    def &(other)
-      @key_fields.longest_common_prefix \
-        other.instance_variable_get(:@key_fields)
-    end
-  end
 end
