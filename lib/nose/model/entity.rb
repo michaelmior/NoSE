@@ -84,12 +84,6 @@ module NoSE
       return @fields[field] if @fields.key? field
       fail FieldNotFound unless silent
     end
-
-    # All the keys found when traversing foreign keys
-    # @return [Fields::KeyPath]
-    def key_fields(path)
-      Fields::KeyPath.new path, self
-    end
   end
 
   # A helper class for DSL creation to avoid messing with {Entity}
