@@ -118,7 +118,6 @@ $workload = NoSE::Workload.new do
   # ViewUserInfo
   Q 'SELECT id, to_user_id, item_id, rating, date, comment FROM comments WHERE comments.to_user_id = ?', 4.41 / 2
   Q 'SELECT id, nickname FROM users WHERE users.id = ?', 4.41 / 2
-  Q 'UPDATE users SET nickname = ? WHERE users.id = ?'
 end
 
 # rubocop:enable all
