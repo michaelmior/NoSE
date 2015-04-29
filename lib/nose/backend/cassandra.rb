@@ -18,14 +18,11 @@ module NoSE::Backend
                     drop_existing = false)
       Enumerator.new do |enum|
         @indexes.map do |index|
-          # Add the ID of the last entity if necessary
-          fields, extra_id = index_insert_fields index
-
           ddl = "CREATE COLUMNFAMILY \"#{index.key}\" (" \
-          "#{field_names fields, true}, " \
-          "PRIMARY KEY((#{field_names index.hash_fields})" \
+                "#{field_names index.all_fields, true}, " \
+                "PRIMARY KEY((#{field_names index.hash_fields})"
 
-          cluster_key = index.order_fields + extra_id
+          cluster_key = index.order_fields
           ddl += ", #{field_names cluster_key}" unless cluster_key.empty?
           ddl += '));'
 
@@ -47,7 +44,7 @@ module NoSE::Backend
 
     # Insert a chunk of rows into an index
     def index_insert_chunk(index, chunk)
-      fields, _ = index_insert_fields index
+      fields = index.all_fields
       prepared = "INSERT INTO \"#{index.key}\" (" \
                  "#{field_names fields}" \
                  ") VALUES (#{(['?'] * fields.length).join ', '})"
@@ -91,17 +88,6 @@ module NoSE::Backend
     end
 
     private
-
-    # Add the ID of the last entity if necessary
-    def index_insert_fields(index)
-      extra_id = []
-      extra_id += index.path.last.id_fields \
-        unless (index.path.last.id_fields -
-                (index.hash_fields.to_a + index.order_fields)).empty?
-      fields = index.all_fields.to_set + extra_id.to_set
-
-      [fields, extra_id]
-    end
 
     # Get a comma-separated list of field names with optional types
     def field_names(fields, types = false)
