@@ -7,6 +7,8 @@ module NoSE::Fields
     include Supertype
 
     attr_reader :name, :size, :parent
+    attr_accessor :primary_key
+    alias_method :primary_key?, :primary_key
 
     TYPE = nil
 
@@ -14,6 +16,7 @@ module NoSE::Fields
       @name = name
       @size = size
       @cardinality = count
+      @primary_key = false
     end
 
     # Compare by parent entity and name
@@ -145,6 +148,7 @@ module NoSE::Fields
   class IDField < Field
     def initialize(name, **options)
       super(name, 16, **options)
+      @primary_key = true
     end
 
     # Return the String parameter as-is
@@ -160,6 +164,7 @@ module NoSE::Fields
     def initialize(name, entity, **options)
       super(name, **options)
       @relationship = :one
+      @primary_key = false
 
       # XXX: This is a hack which allows us to look up the stack to find an
       #      enclosing workload and the entity being referenced by the key
