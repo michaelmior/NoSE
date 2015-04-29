@@ -38,7 +38,7 @@ module NoSE
     # Get the key fields for the entity
     # @return [Array<Fields::Field>]
     def id_fields
-      fields.values.select { |field| field.instance_of? Fields::IDField }
+      fields.values.select(&:primary_key?)
     end
 
     # Get all foreign key fields on the entity
@@ -91,6 +91,31 @@ module NoSE
     def initialize(entity)
       @entity = entity
     end
+
+    # rubocop:disable MethodName
+
+    # Specify a list of field names for the primary key
+    def PrimaryKey(*names)
+      # Unset the old keys and set new ones,
+      # we dup because the fields are frozen
+      @entity.fields.values.each do |field|
+        if field.primary_key?
+          field = field.dup
+          field.primary_key = false
+          @entity.fields[field.name] = field
+          field.freeze
+        end
+      end
+
+      names.each do |name|
+        field = @entity[name].dup
+        field.primary_key = true
+        @entity.fields[name] = field
+        field.freeze
+      end
+    end
+
+    # rubocop:enable MethodName
 
     def etc(size = 1)
       @entity << Fields::HashField.new('**', size)
