@@ -216,16 +216,18 @@ module NoSE::Plans
       expect(max_steps).to be >= query.longest_entity_path.length
     end
 
-    it 'does not use sorting or limits for a single entity result set' do
+    it 'does not use limits for a single entity result set' do
       query = NoSE::Query.new 'SELECT * FROM User WHERE User.UserId = ? ' \
                               'ORDER BY User.UserId LIMIT 10', workload.model
       workload.add_statement query
 
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload
       planner = QueryPlanner.new workload.model, indexes, cost_model
-      plan = planner.min_plan query
+      plans = planner.find_plans_for_query query
 
-      expect(plan).to have(1).item
+      expect(plans.all? do |plan|
+        plan.all? { |step| !step.is_a? LimitPlanStep }
+      end).to be_truthy
     end
   end
 
