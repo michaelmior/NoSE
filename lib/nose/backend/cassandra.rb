@@ -117,9 +117,7 @@ module NoSE::Backend
       when [NoSE::Fields::DateField]
         :timestamp
       when [NoSE::Fields::IDField],
-           [NoSE::Fields::ForeignKeyField],
-           [NoSE::Fields::ToOneKeyField],
-           [NoSE::Fields::ToManyKeyField]
+           [NoSE::Fields::ForeignKeyField]
         # TODO: Decide on UUID
         :int
       end
