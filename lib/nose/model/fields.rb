@@ -194,21 +194,4 @@ module NoSE::Fields
       @entity == entity
     end
   end
-
-  # Alias of {ForeignKeyField}
-  ToOneKeyField = ForeignKeyField
-
-  # Field holding a foreign key to many other entities
-  class ToManyKeyField < ForeignKeyField
-    def initialize(name, entity, **options)
-      super(name, entity, **options)
-      @relationship = :many
-    end
-
-    # An estimated number of entities on the other side of the relationship
-    def cardinality
-      # TODO: Properly calculation probably based on IndexLookupPlanStep#sample
-      super
-    end
-  end
 end

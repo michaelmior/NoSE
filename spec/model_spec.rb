@@ -11,23 +11,12 @@ module NoSE
 
     it 'can have foreign keys' do
       other = entity * 100
-      field = Fields::ToOneKeyField.new('other', other)
+      field = Fields::ForeignKeyField.new('other', other)
       entity << field
 
       expect(field.entity).to be(other)
       expect(field.class.subtype_name).to eq('foreign_key')
       expect(field.relationship).to eq(:one)
-      expect(field.cardinality).to eq(100)
-    end
-
-    it 'can have foreign keys with cardinality > 1' do
-      others = entity * 100
-      field = Fields::ToManyKeyField.new('others', others)
-      entity << field
-
-      expect(field.entity).to be(others)
-      expect(field.class.subtype_name).to eq('to_many')
-      expect(field.relationship).to eq(:many)
       expect(field.cardinality).to eq(100)
     end
 
