@@ -70,6 +70,14 @@ module NoSE::Fields
 
     # Populate a helper DSL object with all subclasses of Field
     def self.inherited(child_class)
+      # We use separate methods for foreign keys
+      begin
+        fk_class = NoSE::Fields.const_get('ForeignKeyField')
+      rescue NameError
+        fk_class = nil
+      end
+      return if !fk_class.nil? && child_class <= fk_class
+
       # Add convenience methods for all field types for an entity DSL
       method_name = child_class.name.sub(/^NoSE::Fields::(.*?)(Field)?$/, '\1')
       NoSE::EntityDSL.send :define_method, method_name,

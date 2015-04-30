@@ -25,7 +25,6 @@ $workload = NoSE::Workload.new do
     Integer    'rating', count: 5
     Float      'balance', count: 1
     Date       'creation_date', count: 10381
-    ForeignKey 'region', 'regions', count: 62
   end) * 1001848
 
   (Entity 'items' do
@@ -40,8 +39,6 @@ $workload = NoSE::Workload.new do
     Float      'max_bid', count: 2167
     Date       'start_date', count: 1
     Date       'end_date', count: 1
-    ForeignKey 'seller', 'users'
-    ForeignKey 'category', 'categories'
   end) * 33721
 
   (Entity 'olditems' do
@@ -56,14 +53,10 @@ $workload = NoSE::Workload.new do
     Float      'max_bid', count: 5125
     Date       'start_date', count: 48436
     Date       'end_date', count: 239737
-    ForeignKey 'seller', 'users'
-    ForeignKey 'category', 'categories'
   end) * 500000
 
   (Entity 'bids' do
     ID         'id'
-    ForeignKey 'user_id', 'users', count: 993655
-    ForeignKey 'item_id', 'items', count: 426931
     Integer    'qty', count: 10
     Float      'bid', count: 5121
     Date       'date', count: 52913
@@ -71,9 +64,6 @@ $workload = NoSE::Workload.new do
 
   (Entity 'comments' do
     ID         'id'
-    # ForeignKey 'from_user_id', 'users', count: 413603
-    ForeignKey 'to_user_id', 'users'
-    ForeignKey 'item_id', 'items', count: 443798
     Integer    'rating', count: 5
     Date       'date', count: 51399
     String     'comment', 255, count: 533426
@@ -81,11 +71,22 @@ $workload = NoSE::Workload.new do
 
   (Entity 'buynow' do
     ID         'id'
-    ForeignKey 'buyer_id', 'users', count: 1519
-    ForeignKey 'item_id', 'items', count: 1549
     Integer    'qty', count: 10
     Date       'date', count: 915
   end) * 1882
+
+  OneToMany 'region',     'users'     => 'regions', count: 62
+  OneToMany 'seller',     'items'     => 'users'
+  OneToMany 'category',   'items'     => 'categories'
+  OneToMany 'seller',     'olditems'  => 'users'
+  OneToMany 'category',   'olditems'  => 'categories'
+  OneToMany 'user_id',    'bids'      => 'users', count: 993655
+  OneToMany 'item_id',    'bids'      => 'items', count: 426931
+  #OneToMany 'from_user_id', 'comments'  => 'users', count: 413603
+  OneToMany 'to_user_id', 'comments'  => 'users', count: 443798
+  OneToMany 'item_id',    'comments'  => 'items', count: 533426
+  OneToMany 'buyer_id',   'buynow'    => 'users', count: 1519
+  OneToMany 'item_id',    'buynow'    => 'items', count: 1549
 
   # Define queries and their relative weights
 

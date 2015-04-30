@@ -98,10 +98,11 @@ module NoSE
     end
 
     # Separate function for foreign keys to avoid circular dependencies
-    def ForeignKey(name, parent, entity, count: nil)
-      @workload[parent] << Fields::ForeignKeyField.new(name,
-                                                       @workload.model[entity],
-                                                       count: count)
+    def OneToMany(name, entities, **options)
+      from_entity, to_entity = entities.first
+      field = Fields::ToOneKeyField.new name, @workload.model[to_entity],
+                                        **options
+      @workload.model[from_entity] << field
     end
 
     # Shortcut to add a new {Statement} to the workload
