@@ -24,7 +24,6 @@ $workload = NoSE::Workload.new do
     Integer    'rating', count: 50
     Float      'balance', count: 10_000
     Date       'creation_date', count: 100_000
-    ForeignKey 'region', 'regions'
   end) * 1_000_000
 
   (Entity 'items' do
@@ -39,14 +38,10 @@ $workload = NoSE::Workload.new do
     Float      'max_bid', count: 10_000
     Date       'start_date', count: 100_000
     Date       'end_date', count: 100_000
-    ForeignKey 'seller', 'users'
-    ForeignKey 'category', 'categories'
   end) * 10_000_000
 
   (Entity 'bids' do
     ID         'id'
-    ForeignKey 'user', 'users', count: 900_000
-    ForeignKey 'item_id', 'items', count: 90_000_000
     Integer    'qty', count: 50
     Float      'bid', count: 10_000
     Date       'date', count: 10_0000
@@ -54,9 +49,6 @@ $workload = NoSE::Workload.new do
 
   (Entity 'comments' do
     ID         'id'
-     ForeignKey 'from_user_id', 'users', count: 500_000
-    #ForeignKey 'to_user_id', 'users'
-    ForeignKey 'item_id', 'items'
     Integer    'rating', count: 10
     Date       'date', count: 100_000
     String     'comment', 250
@@ -64,11 +56,20 @@ $workload = NoSE::Workload.new do
 
   (Entity 'buynow' do
     ID         'id'
-    ForeignKey 'buyer', 'users', count: 500_000
-    ForeignKey 'item', 'items', count: 5_000_000
     Integer    'qty', count: 50
     Date       'date', count: 100_000
   end) * 20_00_000
+
+  OneToMany 'region',       'users'    => 'regions'
+  OneToMany 'seller',       'items'    => 'users'
+  OneToMany 'category',     'items'    => 'categories'
+  OneToMany 'user',         'bids'     => 'users', count: 900_000
+  OneToMany 'item_id',      'bids'     => 'items', count: 90_000_000
+  OneToMany 'from_user_id', 'comments' => 'users', count: 500_000
+  #OneToMany 'to_user_id', 'comments' => 'users'
+  OneToMany 'item_id',      'comments' => 'items'
+  OneToMany 'buyer',        'buynow'   => 'users', count: 500_000
+  OneToMany 'item',         'buynow'   => 'items', count: 5_000_000
 
   # Define queries and their relative weights
 

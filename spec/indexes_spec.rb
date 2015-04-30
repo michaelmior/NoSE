@@ -9,8 +9,9 @@ module NoSE
         (Entity 'Foo' do
           ID 'Id'
           Integer 'Bar'
-          ForeignKey 'Corge', 'Corge'
         end) * 100
+
+        OneToMany 'Corge', 'Foo' => 'Corge'
       end
     end
     let(:model) { workload.model }

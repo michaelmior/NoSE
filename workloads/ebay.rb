@@ -21,10 +21,11 @@ $workload = NoSE::Workload.new do
 
   Entity 'Like' do
     ID         'LikeID'
-    ForeignKey 'UserID', 'User'
-    ForeignKey 'ItemID', 'Item'
     Date       'LikedAt'
   end
+
+  OneToMany 'UserID', 'Like' => 'User'
+  OneToMany 'ItemID', 'Like' => 'Item'
 
   # Define queries and their relative weights
   Q 'SELECT * FROM User WHERE User.UserID = ?'

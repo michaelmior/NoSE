@@ -19,9 +19,10 @@ module NoSE
           ID         'TweetId'
           String     'Body', 140, count: 5
           Integer    'Timestamp'
-          ForeignKey 'User', 'User'
-          ForeignKey 'Link', 'Link'
         end) * 1000
+
+        OneToMany 'User', 'Tweet' => 'User'
+        OneToMany 'Link', 'Tweet' => 'Link'
       end
     end
     let(:tweet) { workload.model['Tweet'] }
