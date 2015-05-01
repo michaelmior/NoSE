@@ -151,8 +151,8 @@ module NoSE::Plans
       end
 
       it 'can update the cardinality when performing a lookup' do
-        index = NoSE::Index.new [user['UserId']], [], [tweet['Body']],
-                                [tweet, user]
+        index = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
+                                [tweet['Body']], [user, tweet]
         step = IndexLookupPlanStep.new index, @state, RootPlanStep.new(@state)
         expect(step.state.cardinality).to eq 100
       end
