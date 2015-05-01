@@ -30,8 +30,8 @@ $workload = NoSE::Workload.new do
   # Define queries and their relative weights
   Q 'SELECT * FROM User WHERE User.UserID = ?'
   Q 'SELECT * FROM Item WHERE Item.ItemID = ?'
-  Q 'SELECT * FROM User.Like WHERE Like.ItemID = ? ORDER BY Like.LikedAt'
-  Q 'SELECT * FROM Item.Like WHERE Like.UserID = ? ORDER BY Like.LikedAt'
+  Q 'SELECT * FROM User.Like.Item WHERE Item.ItemID = ? ORDER BY Like.LikedAt'
+  Q 'SELECT * FROM Item.Like.User WHERE User.UserID = ? ORDER BY Like.LikedAt'
 end
 
 # rubocop:enable all

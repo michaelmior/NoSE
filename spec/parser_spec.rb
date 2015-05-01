@@ -5,11 +5,11 @@ module NoSE
     end
 
     it 'tracks fields used in equality predicates' do
-      expect(statement.eq_fields).to match_array [tweet['Link'], user['City']]
+      expect(statement.eq_fields).to match_array [link['LinkId'], user['City']]
     end
 
     it 'can report the longest entity path' do
-      expect(statement.longest_entity_path).to match_array [tweet, user]
+      expect(statement.longest_entity_path).to match_array [tweet, user, link]
     end
   end
 
@@ -17,9 +17,10 @@ module NoSE
     include_context 'entities'
 
     let(:query) do
-      Query.new 'SELECT TweetId FROM Tweet.User WHERE ' \
-                'Tweet.Link = ? AND Tweet.Timestamp > ? AND User.City = ? ' \
-                'ORDER BY Tweet.Timestamp LIMIT 5', workload.model
+      Query.new 'SELECT TweetId FROM Tweet.User.Link WHERE ' \
+                'Link.LinkId = ? AND Tweet.Timestamp > ? ' \
+                'AND User.City = ? ORDER BY Tweet.Timestamp LIMIT 5',
+                workload.model
     end
 
     it_behaves_like 'a statement' do
@@ -84,15 +85,21 @@ module NoSE
         Query.new 'SELECT Banana FROM User WHERE User.City = ?', workload.model
       end.to raise_error FieldNotFound
     end
+
+    it 'does not allow predicates on foreign keys' do
+      expect do
+        Query.new 'SELECT * FROM Tweet WHERE Tweet.User = ?', workload.model
+      end.to raise_error InvalidStatementException
+    end
   end
 
   describe Update do
     include_context 'entities'
 
     let(:update) do
-      Update.new 'UPDATE Tweet FROM Tweet.User SET Body = "foo" WHERE ' \
-                 'Tweet.Link = ? AND Tweet.Timestamp > ? AND User.City = ?',
-                 workload.model
+      Update.new 'UPDATE Tweet FROM Tweet.User.Link SET Body = "foo" WHERE ' \
+                 'Link.LinkId = ? AND Tweet.Timestamp > ? ' \
+                 'AND User.City = ?', workload.model
     end
 
     it_behaves_like 'a statement' do
@@ -159,9 +166,9 @@ module NoSE
     include_context 'entities'
 
     let(:delete) do
-      Delete.new 'DELETE Tweet FROM Tweet.User WHERE ' \
-                 'Tweet.Link = ? AND Tweet.Timestamp > ? AND User.City = ?',
-                 workload.model
+      Delete.new 'DELETE Tweet FROM Tweet.User.Link WHERE ' \
+                 'Link.LinkId = ? AND Tweet.Timestamp > ? ' \
+                 'AND User.City = ?', workload.model
     end
 
     it_behaves_like 'a statement' do

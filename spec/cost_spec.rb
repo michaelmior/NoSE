@@ -20,7 +20,7 @@ module NoSE::Cost
     let(:subject) { EntityCountCost }
 
     it 'counts multiple requests when multiple entities are selected' do
-      query = NoSE::Query.new 'SELECT * FROM Tweet WHERE Tweet.User = ?',
+      query = NoSE::Query.new 'SELECT * FROM Tweet.User WHERE User.UserId = ?',
                               workload.model
       planner = NoSE::Plans::QueryPlanner.new workload.model,
                                               [query.materialize_view], subject
