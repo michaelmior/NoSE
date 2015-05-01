@@ -132,37 +132,6 @@ module Subtype
   end
 end
 
-# Reopen class to add thread local access
-class Class
-  # Allow thread local class variables
-  def thread_local_accessor(name, options = {})
-    m = Module.new
-    m.module_eval do
-      class_variable_set :"@@#{name}", Hash.new do
-        |h, k| h[k] = options[:default]
-      end
-    end
-    m.module_eval %{
-      FINALIZER = lambda {|id| @@#{name}.delete id }
-
-      def #{name}
-        @@#{name}[Thread.current.object_id]
-      end
-
-      def #{name}=(val)
-        ObjectSpace.define_finalizer Thread.current, FINALIZER \
-          unless @@#{name}.has_key? Thread.current.object_id
-        @@#{name}[Thread.current.object_id] = val
-      end
-    }
-
-    class_eval do
-      include m
-      extend m
-    end
-  end
-end
-
 # Simple helper class to facilitate cardinality estimates
 class Cardinality
   # Update the cardinality after traversing the index
