@@ -60,16 +60,16 @@ $workload = NoSE::Workload.new do
     Date       'date', count: 100_000
   end) * 20_00_000
 
-  OneToMany 'region',       'users'    => 'regions'
-  OneToMany 'seller',       'items'    => 'users'
-  OneToMany 'category',     'items'    => 'categories'
-  OneToMany 'user',         'bids'     => 'users', count: 900_000
-  OneToMany 'item_id',      'bids'     => 'items', count: 90_000_000
-  OneToMany 'from_user_id', 'comments' => 'users', count: 500_000
-  #OneToMany 'to_user_id', 'comments' => 'users'
-  OneToMany 'item_id',      'comments' => 'items'
-  OneToMany 'buyer',        'buynow'   => 'users', count: 500_000
-  OneToMany 'item',         'buynow'   => 'items', count: 5_000_000
+  ManyToOne 'region',       'users'    => 'regions'
+  ManyToOne 'seller',       'items'    => 'users'
+  ManyToOne 'category',     'items'    => 'categories'
+  ManyToOne 'user',         'bids'     => 'users', count: 900_000
+  ManyToOne 'item_id',      'bids'     => 'items', count: 90_000_000
+  ManyToOne 'from_user_id', 'comments' => 'users', count: 500_000
+  #ManyToOne 'to_user_id', 'comments' => 'users'
+  ManyToOne 'item_id',      'comments' => 'items'
+  ManyToOne 'buyer',        'buynow'   => 'users', count: 500_000
+  ManyToOne 'item',         'buynow'   => 'items', count: 5_000_000
 
   # Define queries and their relative weights
 

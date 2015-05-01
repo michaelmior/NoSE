@@ -21,8 +21,8 @@ module NoSE
           Integer    'Timestamp'
         end) * 1000
 
-        OneToMany 'User', 'Tweet' => 'User'
-        OneToMany 'Link', 'Tweet' => 'Link'
+        ManyToOne 'User', 'Tweet' => 'User'
+        ManyToOne 'Link', 'Tweet' => 'Link'
       end
     end
     let(:tweet) { workload.model['Tweet'] }
