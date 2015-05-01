@@ -16,11 +16,12 @@ module NoSE::Plans
     end
 
     it 'can perform an external sort if an index does not exist' do
-      index = NoSE::Index.new [tweet['User']], [tweet['TweetId']],
-                              [tweet['Timestamp'], tweet['Body']], [tweet]
+      index = NoSE::Index.new [user['City']], [tweet['TweetId']],
+                              [tweet['Timestamp'], tweet['Body']],
+                              [user, tweet]
       planner = QueryPlanner.new workload.model, [index], cost_model
-      query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE ' \
-                              'Tweet.User = ? ORDER BY Tweet.Timestamp',
+      query = NoSE::Query.new 'SELECT Body FROM Tweet.User WHERE ' \
+                              'User.City = ? ORDER BY Tweet.Timestamp',
                               workload.model
 
       tree = planner.find_plans_for_query query
@@ -45,11 +46,12 @@ module NoSE::Plans
     end
 
     it 'can perform an external sort followed by a limit' do
-      index = NoSE::Index.new [tweet['User']], [tweet['TweetId']],
-                              [tweet['Timestamp'], tweet['Body']], [tweet]
+      index = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
+                              [tweet['Timestamp'], tweet['Body']],
+                              [user, tweet]
       planner = QueryPlanner.new workload.model, [index], cost_model
-      query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE ' \
-                              'Tweet.User = ? ORDER BY Tweet.Timestamp ' \
+      query = NoSE::Query.new 'SELECT Body FROM Tweet.User WHERE ' \
+                              'User.UserId = ? ORDER BY Tweet.Timestamp ' \
                               'LIMIT 5', workload.model
 
       tree = planner.find_plans_for_query query
@@ -71,13 +73,15 @@ module NoSE::Plans
     end
 
     it 'can find multiple plans' do
-      index1 = NoSE::Index.new [tweet['User']],
+      index1 = NoSE::Index.new [user['UserId']],
                                [tweet['Timestamp'], tweet['TweetId']],
-                               [tweet['Body']], [tweet]
-      index2 = NoSE::Index.new [tweet['User']], [tweet['TweetId']],
-                               [tweet['Timestamp'], tweet['Body']], [tweet]
+                               [tweet['Body']], [user, tweet]
+      index2 = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
+                               [tweet['Timestamp'], tweet['Body']],
+                               [user, tweet]
       planner = QueryPlanner.new workload.model, [index1, index2], cost_model
-      query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE Tweet.User = ? ' \
+      query = NoSE::Query.new 'SELECT Body FROM Tweet.User ' \
+                              'WHERE User.UserId = ? ' \
                               'ORDER BY Tweet.Timestamp', workload.model
 
       tree = planner.find_plans_for_query query

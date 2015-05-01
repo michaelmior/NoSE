@@ -180,6 +180,10 @@ module NoSE
         type = field.class.const_get 'TYPE'
         fail TypeError unless type.nil? || value.nil? || value.is_a?(type)
 
+        # Don't allow predicates on foreign keys
+        fail InvalidStatementException, 'Predicates cannot use foreign keys' \
+          if field.is_a? Fields::ForeignKeyField
+
         Condition.new field, condition[:op].to_sym, value
       end
 
