@@ -143,11 +143,15 @@ class Cardinality
     cardinality *= filter_cardinality eq_filter, range_filter, path.first
 
     path.each_cons(2) do |entity, next_entity|
-      tail = entity.foreign_key_for(next_entity).nil?
-      if tail
-        cardinality = cardinality * 1.0 * next_entity.count / entity.count
+      # TODO: Fix and add sampling for M2M relationships
+      # TODO: Track path of foreign keys and don't rely on relation direction
+
+      # Update with the new cardinality of the relationship
+      foreign_key = entity.foreign_key_for next_entity
+      if foreign_key.nil?
+        cardinality *= next_entity.count * 1.0 / entity.count
       else
-        cardinality = sample cardinality, next_entity.count
+        cardinality *= sample cardinality, foreign_key.cardinality
       end
 
       # Update cardinality via the filtering implicit to the index
