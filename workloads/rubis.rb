@@ -75,18 +75,18 @@ $workload = NoSE::Workload.new do
     Date       'date', count: 915
   end) * 1882
 
-  OneToMany 'region',     'users'     => 'regions', count: 62
-  OneToMany 'seller',     'items'     => 'users'
-  OneToMany 'category',   'items'     => 'categories'
-  OneToMany 'seller',     'olditems'  => 'users'
-  OneToMany 'category',   'olditems'  => 'categories'
-  OneToMany 'user_id',    'bids'      => 'users', count: 993655
-  OneToMany 'item_id',    'bids'      => 'items', count: 426931
-  #OneToMany 'from_user_id', 'comments'  => 'users', count: 413603
-  OneToMany 'to_user_id', 'comments'  => 'users', count: 443798
-  OneToMany 'item_id',    'comments'  => 'items', count: 533426
-  OneToMany 'buyer_id',   'buynow'    => 'users', count: 1519
-  OneToMany 'item_id',    'buynow'    => 'items', count: 1549
+  ManyToOne 'region',     'users'     => 'regions', count: 62
+  ManyToOne 'seller',     'items'     => 'users'
+  ManyToOne 'category',   'items'     => 'categories'
+  ManyToOne 'seller',     'olditems'  => 'users'
+  ManyToOne 'category',   'olditems'  => 'categories'
+  ManyToOne 'user_id',    'bids'      => 'users', count: 993655
+  ManyToOne 'item_id',    'bids'      => 'items', count: 426931
+  #ManyToOne 'from_user_id', 'comments'  => 'users', count: 413603
+  ManyToOne 'to_user_id', 'comments'  => 'users', count: 443798
+  ManyToOne 'item_id',    'comments'  => 'items', count: 533426
+  ManyToOne 'buyer_id',   'buynow'    => 'users', count: 1519
+  ManyToOne 'item_id',    'buynow'    => 'items', count: 1549
 
   # Define queries and their relative weights
 

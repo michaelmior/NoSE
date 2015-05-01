@@ -24,8 +24,8 @@ $workload = NoSE::Workload.new do
     Date       'LikedAt'
   end
 
-  OneToMany 'UserID', 'Like' => 'User'
-  OneToMany 'ItemID', 'Like' => 'Item'
+  ManyToOne 'UserID', 'Like' => 'User'
+  ManyToOne 'ItemID', 'Like' => 'Item'
 
   # Define queries and their relative weights
   Q 'SELECT * FROM User WHERE User.UserID = ?'
