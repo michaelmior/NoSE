@@ -173,13 +173,6 @@ module NoSE::Fields
       super(name, **options)
       @relationship = :one
       @primary_key = false
-
-      # XXX: This is a hack which allows us to look up the stack to find an
-      #      enclosing workload and the entity being referenced by the key
-      if entity.is_a? String
-        workload = NoSE::Workload.current
-        entity = workload.model[entity] unless workload.nil?
-      end
       @entity = entity
     end
 
