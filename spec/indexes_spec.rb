@@ -3,6 +3,7 @@ module NoSE
     let(:workload) do
       Workload.new do
         Entity 'Corge' do
+          ID 'Id'
           Integer 'Quux'
         end
 

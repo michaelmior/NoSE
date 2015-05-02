@@ -18,6 +18,7 @@ module NoSE
 
     # Add an {Entity} to the workload
     def add_entity(entity)
+      fail InvalidEntity, 'no primary keys defined' if entity.id_fields.empty?
       @entities[entity.name] = entity
     end
 
@@ -63,5 +64,9 @@ module NoSE
 
   # Raised when looking up an entity in the workload which does not exist
   class EntityNotFound < StandardError
+  end
+
+  # Raised when attempting to add an invalid entity to a workload
+  class InvalidEntity < StandardError
   end
 end
