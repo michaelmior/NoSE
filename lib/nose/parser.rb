@@ -429,6 +429,8 @@ module NoSE
   class Insert < Statement
     include StatementSettings
 
+    alias_method :entity, :from
+
     def initialize(statement, model)
       super :insert, statement, model
 
