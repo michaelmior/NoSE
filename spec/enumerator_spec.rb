@@ -21,10 +21,6 @@ module NoSE
       expect(indexes).to include \
         Index.new [user['City']], [user['UserId'], tweet['TweetId']],
                   [tweet['Body']], [user, tweet]
-
-      expect(indexes).not_to include \
-        Index.new [user['City']], [tweet['TweetId']], [tweet['Body']],
-                  [user, tweet]
     end
 
     it 'produces a simple index for a filter within a workload' do

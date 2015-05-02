@@ -7,7 +7,7 @@ module NoSE::Backend
 
     let(:index) do
       NoSE::Index.new [user['Username']],
-                      [tweet['Timestamp'], tweet['TweetId']],
+                      [tweet['Timestamp'], user['UserId'], tweet['TweetId']],
                       [tweet['Body']],
                       [user, tweet], 'TweetIndex'
     end
@@ -16,8 +16,9 @@ module NoSE::Backend
     it 'can generate DDL for a simple index' do
       expect(backend.indexes_ddl).to match_array [
         'CREATE COLUMNFAMILY "TweetIndex" ("User_Username" text, ' \
-        '"Tweet_Timestamp" int, "Tweet_TweetId" int, "Tweet_Body" text, ' \
-        'PRIMARY KEY(("User_Username"), "Tweet_Timestamp", "Tweet_TweetId"));'
+        '"Tweet_Timestamp" int, "User_UserId" int, "Tweet_TweetId" int, ' \
+        '"Tweet_Body" text, PRIMARY KEY(("User_Username"), ' \
+        '"Tweet_Timestamp", "User_UserId", "Tweet_TweetId"));'
       ]
     end
 
