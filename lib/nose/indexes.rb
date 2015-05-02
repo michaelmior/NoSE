@@ -22,10 +22,9 @@ module NoSE
       fail InvalidIndexException, 'invalid path for index fields' \
         unless entities.include?(path.first) && entities.include?(path.last)
 
-      # We must have the primary key of the final entity as part of the
-      # primary key of the generated index or we lose data
-      fail InvalidIndexException, 'missing last entity keys' \
-        unless @path.last.id_fields.all? \
+      # We must have the primary keys of the all entities on the path
+      fail InvalidIndexException, 'missing path entity keys' \
+        unless @path.map(&:id_fields).flatten.all? \
           &(@hash_fields + @order_fields).method(:include?)
 
       # Initialize the hash function and freeze ourselves
@@ -157,7 +156,7 @@ module NoSE
       end
 
       # Ensure we include IDs of the final entity
-      order_fields += @longest_entity_path.first.id_fields \
+      order_fields += @longest_entity_path.reverse.map(&:id_fields).flatten \
                       - eq.to_a - order_fields
 
       NoSE::Index.new(eq, order_fields,

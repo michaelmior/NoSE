@@ -16,7 +16,8 @@ module NoSE::Plans
     end
 
     it 'can perform an external sort if an index does not exist' do
-      index = NoSE::Index.new [user['City']], [tweet['TweetId']],
+      index = NoSE::Index.new [user['City']],
+                              [user['UserId'], tweet['TweetId']],
                               [tweet['Timestamp'], tweet['Body']],
                               [user, tweet]
       planner = QueryPlanner.new workload.model, [index], cost_model
@@ -196,8 +197,8 @@ module NoSE::Plans
       workload.add_statement query
 
       indexes = [
-        NoSE::Index.new([user['Username']], [tweet['TweetId']], [],
-                        [user, tweet]),
+        NoSE::Index.new([user['Username']], [user['UserId'], tweet['TweetId']],
+                        [], [user, tweet]),
         NoSE::Index.new([tweet['TweetId']], [], [tweet['Body']], [tweet])
       ]
 
@@ -242,7 +243,8 @@ module NoSE::Plans
     it 'can produce a simple plan for an update' do
       update = NoSE::Update.new 'UPDATE User SET City = ? ' \
                                 'WHERE User.UserId = ?', workload.model
-      index = NoSE::Index.new [tweet['Timestamp']], [user['UserId']],
+      index = NoSE::Index.new [tweet['Timestamp']],
+                              [tweet['TweetId'], user['UserId']],
                               [user['City']], [tweet, user]
       workload.add_statement update
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload \
@@ -262,7 +264,8 @@ module NoSE::Plans
     it 'can produce a simple plan for a delete' do
       delete = NoSE::Delete.new 'DELETE User WHERE User.UserId = ?',
                                 workload.model
-      index = NoSE::Index.new [tweet['Timestamp']], [user['UserId']],
+      index = NoSE::Index.new [tweet['Timestamp']],
+                              [tweet['TweetId'], user['UserId']],
                               [user['City']], [tweet, user]
       workload.add_statement delete
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload \

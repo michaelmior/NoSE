@@ -123,7 +123,8 @@ module NoSE
     it 'can generate support queries' do
       update = Update.new 'UPDATE User SET City = ? WHERE User.UserId = ?',
                           workload.model
-      index = NoSE::Index.new [tweet['Timestamp']], [user['UserId']],
+      index = NoSE::Index.new [tweet['Timestamp']],
+                              [tweet['TweetId'], user['UserId']],
                               [user['City']], [tweet, user], workload.model
       expect(update.support_queries(index).first.text).to eq \
         'SELECT Timestamp FROM Tweet.User WHERE User.UserId = ?'
