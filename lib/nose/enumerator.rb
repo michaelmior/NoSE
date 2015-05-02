@@ -41,10 +41,12 @@ module NoSE
       # Add indexes generated for support queries
       indexes += indexes.dup.map do |index|
         @workload.updates.map do |update|
-          query = update.support_query(index)
-          next if query.nil?
-          indexes_for_query(query).to_a << query.materialize_view
-        end.compact
+          queries = update.support_queries(index)
+          queries.map do |query|
+            next [] if query.nil?
+            indexes_for_query(query).to_a << query.materialize_view
+          end
+        end.flatten(1)
       end.flatten
 
       combine_indexes indexes

@@ -13,24 +13,27 @@ module NoSE::Plans
     # Find the necessary update plans for a given set of indexes
     def find_plans_for_update(statement, indexes)
       indexes.map do |index|
-        query = statement.support_query(index)
-        next if query.nil?
-        tree = @query_planner.find_plans_for_query query
+        queries = statement.support_queries(index)
+        next [] if queries.empty?
 
-        # Walk the tree and add delete and insert steps at the end
-        tree.each do |plan|
-          last_step = plan.last
-          unless statement.is_a? NoSE::Insert
-            last_step.children = [DeletePlanStep.new(index, last_step.state)]
-            last_step = last_step.children.first
+        queries.map do |query|
+          tree = @query_planner.find_plans_for_query query
+
+          # Walk the tree and add delete and insert steps at the end
+          tree.each do |plan|
+            last_step = plan.last
+            unless statement.is_a? NoSE::Insert
+              last_step.children = [DeletePlanStep.new(index, last_step.state)]
+              last_step = last_step.children.first
+            end
+            unless statement.is_a? NoSE::Delete
+              last_step.children = [InsertPlanStep.new(index, last_step.state)]
+            end
           end
-          unless statement.is_a? NoSE::Delete
-            last_step.children = [InsertPlanStep.new(index, last_step.state)]
-          end
+
+          tree
         end
-
-        tree
-      end
+      end.flatten(1)
     end
   end
 end

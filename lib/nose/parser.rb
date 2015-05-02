@@ -417,11 +417,11 @@ module NoSE
       freeze
     end
 
-    # Get the support query for updating an index
-    def support_query(index)
+    # Get the support queries for updating an index
+    def support_queries(index)
       # Get the updated fields and check if an update is necessary
       updated_fields = settings.map(&:field).to_set & index.all_fields
-      support_query_for_fields index, updated_fields
+      [support_query_for_fields(index, updated_fields)].compact
     end
   end
 
@@ -438,6 +438,16 @@ module NoSE
 
       freeze
     end
+
+    # Get the support queries for inserting into an index
+    def support_queries(index)
+      # XXX We should be able to do this with at most two queries,
+      #     one for each side of the branch down the query path
+      return [] if (@entity.fields.values.to_set & index.all_fields).empty?
+      index.all_fields.group_by(&:parent).map do |_, fields|
+        support_query_for_fields index, fields
+      end.compact
+    end
   end
 
   # A representation of a delete in the workload
@@ -453,9 +463,9 @@ module NoSE
       freeze
     end
 
-    # Get the support query for deleting from an index
-    def support_query(index)
-      support_query_for_fields index, @from.fields
+    # Get the support queries for deleting from an index
+    def support_queries(index)
+      [support_query_for_fields(index, @from.fields)].compact
     end
   end
 

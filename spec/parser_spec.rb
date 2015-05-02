@@ -117,7 +117,7 @@ module NoSE
                           workload.model
       index = NoSE::Index.new [tweet['TweetId']], [], [tweet['Timestamp']],
                               [tweet], workload.model
-      expect(update.support_query index).to be_nil
+      expect(update.support_queries index).to be_empty
     end
 
     it 'can generate support queries' do
@@ -125,7 +125,7 @@ module NoSE
                           workload.model
       index = NoSE::Index.new [tweet['Timestamp']], [user['UserId']],
                               [user['City']], [tweet, user], workload.model
-      expect(update.support_query(index).text).to eq \
+      expect(update.support_queries(index).first.text).to eq \
         'SELECT Timestamp FROM Tweet.User WHERE User.UserId = ?'
     end
 
@@ -134,7 +134,7 @@ module NoSE
                           workload.model
       index = NoSE::Index.new [user['Username'], user['UserId']], [],
                               [user['City']], [user], workload.model
-      expect(update.support_query(index).text).to eq \
+      expect(update.support_queries(index).first.text).to eq \
         'SELECT Username FROM User WHERE User.UserId = ?'
     end
 
