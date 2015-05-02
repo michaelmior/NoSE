@@ -160,6 +160,10 @@ module NoSE
         FieldSetting.new(user['City'], 'NY')
       ]
     end
+
+    it 'knows which entity is being inserted' do
+      expect(insert.entity).to eq(user)
+    end
   end
 
   describe Delete do
