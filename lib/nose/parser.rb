@@ -402,7 +402,8 @@ module NoSE
       query_path = index.path.take_while { |entity| entity != @from }
       query_path += longest_entity_path
       query_keys = query_path.each_cons(2).map do |entity, next_entity|
-        entity.foreign_key_for(next_entity)
+        entity.foreign_key_for(next_entity) || \
+        next_entity.foreign_key_for(entity)
       end
       query_from = [index.path.first.name] + query_keys.map(&:name)
 
