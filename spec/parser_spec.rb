@@ -126,8 +126,11 @@ module NoSE
       index = NoSE::Index.new [tweet['Timestamp']],
                               [tweet['TweetId'], user['UserId']],
                               [user['City']], [tweet, user], workload.model
-      expect(update.support_queries(index).first.text).to eq \
+      query = update.support_queries(index).first
+      expect(query.text).to eq \
         'SELECT Timestamp FROM Tweet.User WHERE User.UserId = ?'
+      expect(query.statement).to eq(update)
+      expect(query.index).to eq(index)
     end
 
     it 'does not select fields with update predicates in support queries' do
