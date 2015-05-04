@@ -329,6 +329,18 @@ module NoSE
     end
   end
 
+  # A query required to support an update
+  class SupportQuery < Query
+    attr_reader :statement, :index
+
+    def initialize(query, model, statement, index)
+      @statement = statement
+      @index = index
+
+      super query, model
+    end
+  end
+
   # The setting of a field from an {Update} statement
   class FieldSetting
     attr_reader :field, :value
@@ -397,8 +409,9 @@ module NoSE
       # Don't require selecting fields given in the WHERE clause
       required_fields = index.hash_fields - @conditions.map(&:field)
 
-      Query.new "SELECT #{required_fields.map(&:name).join ', ' } " \
-                "FROM #{query_from.join '.'} #{@where_source}", @model
+      SupportQuery.new "SELECT #{required_fields.map(&:name).join ', ' } " \
+                       "FROM #{query_from.join '.'} #{@where_source}", @model,
+                       self, index
     end
   end
 
