@@ -22,7 +22,16 @@ module NoSE::Search
       return [] if indexes.empty?
 
       # Get the cost of all queries
-      costs = costs indexes
+      query_weights = @workload.statement_weights.clone
+      @workload.statement_weights.each do |statement, weight|
+        next if statement.is_a? NoSE::Query
+        indexes.each do |index|
+          statement.support_queries(index).each do |query|
+            query_weights[query] = weight
+          end
+        end
+      end
+      costs, cardinality = query_costs query_weights, indexes
 
       @logger.debug do
         "Costs: \n" + pp_s(costs) + "\n" \
@@ -33,18 +42,20 @@ module NoSE::Search
       end
 
       # Solve the LP using Gurobi
-      solve_gurobi indexes,
+      solve_gurobi query_weights.keys, indexes,
                    max_space: max_space,
                    index_sizes: index_sizes,
-                   costs: costs
+                   costs: costs,
+                   cardinality: cardinality,
+                   cost_model: @cost_model
     end
 
     private
 
     # Solve the index selection problem using Gurobi
-    def solve_gurobi(indexes, data)
+    def solve_gurobi(queries, indexes, data)
       # Construct and solve the ILP
-      problem = Problem.new @workload, indexes, data
+      problem = Problem.new queries, indexes, data
       problem.solve
 
       # We won't get here if there's no valdi solution
@@ -63,24 +74,27 @@ module NoSE::Search
     end
 
     # Get the cost of using each index for each query in a workload
-    def costs(indexes)
+    def query_costs(query_weights, indexes)
       planner = NoSE::Plans::QueryPlanner.new @workload, indexes, @cost_model
+      cardinality = {}
 
       # Create a hash to allow efficient lookup of the numerical index
       # of a particular index within the array of indexes
       index_pos = Hash[indexes.each_with_index.to_a]
 
-      costs = Parallel.map(@workload.statement_weights) do |statement, weight|
-        next unless statement.is_a? NoSE::Query
-        query_cost planner, index_pos, statement, weight
+      costs = Parallel.map(query_weights) do |query, weight|
+        cost, query_cardinality = query_cost planner, index_pos, query, weight
+        cardinality[query] = query_cardinality
+        cost
       end
 
-      costs
+      [costs, cardinality]
     end
 
     # Get the cost for indices for an individual query
     def query_cost(planner, index_pos, query, weight)
       query_costs = {}
+      cardinality = 0
 
       planner.find_plans_for_query(query).each do |plan|
         steps_by_index = []
@@ -102,11 +116,12 @@ module NoSE::Search
           end
         end
 
+        cardinality = [cardinality, plan.last.state.cardinality].max
         populate_query_costs query_costs, index_pos, steps_by_index,
                              weight, plan
       end
 
-      query_costs
+      [query_costs, cardinality]
     end
 
     # Store the costs and indexes for this plan in a nested hash

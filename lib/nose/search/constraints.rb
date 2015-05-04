@@ -3,7 +3,7 @@ module NoSE::Search
   class Constraint
     # If this is not overridden, apply query-specific constraints
     def self.apply(problem)
-      problem.workload.queries.each_with_index do |query, q|
+      problem.queries.each_with_index do |query, q|
         self.apply_query query, q, problem
       end
     end
@@ -20,7 +20,7 @@ module NoSE::Search
     # Add constraint for indices being present
     def self.apply(problem)
       (0...problem.indexes.length).each do |i|
-        (0...problem.workload.queries.length).each do |q|
+        (0...problem.queries.length).each do |q|
           problem.model.addConstr problem.query_vars[i][q] +
                                   problem.index_vars[i] * -1 <= 0,
                                   "i#{i}q#{q}_avail"
@@ -86,7 +86,15 @@ module NoSE::Search
 
       # Ensure we have exactly one index on each component of the query path
       query_constraint.each do |constraint|
-        problem.model.addConstr(constraint == 1)
+        # If this is a support query, then we might not need a plan
+        if query.is_a? NoSE::SupportQuery
+          # Find the index associated with the support query and make
+          # the requirement of a plan conditional on this index
+          index_i = problem.indexes.index(query.index)
+          problem.model.addConstr(constraint >= problem.index_vars[index_i])
+        else
+          problem.model.addConstr(constraint == 1)
+        end
       end
     end
   end
