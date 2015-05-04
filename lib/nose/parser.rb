@@ -409,6 +409,7 @@ module NoSE
 
       # Don't require selecting fields given in the WHERE clause
       required_fields = index.hash_fields - @conditions.map(&:field)
+      return nil if required_fields.empty?
 
       SupportQuery.new "SELECT #{required_fields.map(&:name).join ', ' } " \
                        "FROM #{query_from.join '.'} #{@where_source}", @model,
