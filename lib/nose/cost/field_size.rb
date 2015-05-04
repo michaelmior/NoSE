@@ -16,5 +16,15 @@ module NoSE::Cost
 
       step.state.cardinality * fields.map(&:size).inject(0, :+)
     end
+
+    # Cost estimate as the size of an index entry
+    def self.delete_cost(step)
+      step.index.entry_size
+    end
+
+    # Cost estimate as the size of an index entry
+    def self.insert_cost(step)
+      step.index.entry_size
+    end
   end
 end

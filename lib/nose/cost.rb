@@ -29,6 +29,16 @@ module NoSE::Cost
       fail NotImplementedError, 'Must be implemented in a subclass'
     end
 
+    # The cost of performing a deletion from an index
+    def self.delete_cost(_step)
+      fail NotImplementedError, 'Must be implemented in a subclass'
+    end
+
+    # The cost of performing an insert into an index
+    def self.insert_cost(_step)
+      fail NotImplementedError, 'Must be implemented in a subclass'
+    end
+
     # This is here for debugging purposes because we need a cost
     def self.pruned_cost(_step)
       0

@@ -10,5 +10,15 @@ module NoSE::Cost
       step.parent.is_a?(NoSE::Plans::RootPlanStep) ? \
         1 : step.parent.state.cardinality
     end
+
+    # Cost estimate as number of entities deleted
+    def self.delete_cost(step)
+      step.state.cardinality
+    end
+
+    # Cost estimate as number of entities inserted
+    def self.insert_cost(step)
+      step.state.cardinality
+    end
   end
 end
