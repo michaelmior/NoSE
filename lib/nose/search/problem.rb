@@ -116,12 +116,9 @@ module NoSE::Search
     # Set the value of the objective function (workload cost)
     def set_objective
       # Get divisors whih we later use for support queries
-      query_divisors = Hash.new { |h, k| h[k] = Gurobi::LinExpr.new }
       update_divisors = Hash.new 0
       @queries.map do |query|
         next unless query.is_a? NoSE::SupportQuery
-        index_i = @indexes.index(query.index)
-        query_divisors[query.statement] += @index_vars[index_i]
         update_divisors[query.statement] += 1
       end
 
@@ -135,29 +132,30 @@ module NoSE::Search
 
           # Add the cost of inserting or deleting data divided by
           # the number of required support queries to avoid double counting
-          state = QueryState.new query, nil
+          state = NoSE::Plans::QueryState.new query, nil
           state.cardinality = data[:cardinality][query]
 
           unless query.statement.is_a? NoSE::Insert
-            query_cost += DeletePlanStep.new(query.index, state).cost \
-              data[:cost_model] / update_divisors[query.statement]
+            step = NoSE::Plans::DeletePlanStep.new(query.index, state)
+            query_cost += step.cost(data[:cost_model]) /
+                          update_divisors[query.statement]
           end
           unless query.statement.is_a? NoSE::Delete
-            query_cost += InsertPlanStep.new(query.index, state).cost \
-              data[:cost_model] / update_divisors[query.statement]
+            step = NoSE::Plans::InsertPlanStep.new(query.index, state)
+            query_cost += step.cost(data[:cost_model]) /
+                          update_divisors[query.statement]
           end
 
-          # Only count cost if query is necessary (index is present)
-          index_i = @indexes.index(query.index)
-          query_cost *= @index_vars[index_i]
-
-          # Divide cost by number of support queries used
-          query_cost *= @query_vars[i][q] / query_divisors[query.statement]
+          # XXX This should not be necessary since no plan should be chosen
+          #     if this query is not required (so there will be no cost)
+          # # Only count cost if query is necessary (index is present)
+          # index_i = @indexes.index(query.index)
+          # query_cost *= @index_vars[index_i]
         else
-          query_cost = @query_vars[i][q] * (@data[:costs][q][i].last * 1.0)
+          query_cost = @data[:costs][q][i].last * 1.0
         end
 
-        query_cost
+        @query_vars[i][q] * query_cost
       end.compact.reduce(&:+)
 
       @logger.info { "Objective function is #{min_cost.inspect}" }

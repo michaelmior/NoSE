@@ -25,11 +25,14 @@ module NoSE::Search
       query_weights = @workload.statement_weights.clone
       @workload.statement_weights.each do |statement, weight|
         next if statement.is_a? NoSE::Query
+
         indexes.each do |index|
           statement.support_queries(index).each do |query|
             query_weights[query] = weight
           end
         end
+
+        query_weights.delete statement
       end
       costs, cardinality = query_costs query_weights, indexes
 
@@ -76,16 +79,19 @@ module NoSE::Search
     # Get the cost of using each index for each query in a workload
     def query_costs(query_weights, indexes)
       planner = NoSE::Plans::QueryPlanner.new @workload, indexes, @cost_model
-      cardinality = {}
 
       # Create a hash to allow efficient lookup of the numerical index
       # of a particular index within the array of indexes
       index_pos = Hash[indexes.each_with_index.to_a]
 
-      costs = Parallel.map(query_weights) do |query, weight|
-        cost, query_cardinality = query_cost planner, index_pos, query, weight
-        cardinality[query] = query_cardinality
-        cost
+      results = Parallel.map(query_weights) do |query, weight|
+        query_cost planner, index_pos, query, weight
+      end
+      costs = results.map(&:first)
+
+      cardinality = {}
+      query_weights.keys.each_with_index do |query, i|
+        cardinality[query] = results[i][1]
       end
 
       [costs, cardinality]

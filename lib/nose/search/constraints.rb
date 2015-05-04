@@ -90,8 +90,8 @@ module NoSE::Search
         if query.is_a? NoSE::SupportQuery
           # Find the index associated with the support query and make
           # the requirement of a plan conditional on this index
-          index_i = problem.indexes.index(query.index)
-          problem.model.addConstr(constraint >= problem.index_vars[index_i])
+          index_var = problem.index_vars[problem.indexes.index(query.index)]
+          problem.model.addConstr(constraint == index_var * 1.0)
         else
           problem.model.addConstr(constraint == 1)
         end
