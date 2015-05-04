@@ -9,11 +9,11 @@ end
 
 module NoSE::Search
   class Problem
-    attr_reader :model, :status, :workload, :index_vars, :query_vars,
+    attr_reader :model, :status, :queries, :index_vars, :query_vars,
                 :indexes, :data
 
-    def initialize(workload, indexes, data)
-      @workload = workload
+    def initialize(queries, indexes, data)
+      @queries = queries
       @indexes = indexes
       @data = data
       @logger = Logging.logger['nose::search::problem']
@@ -95,7 +95,7 @@ module NoSE::Search
       (0...@indexes.length).each do |i|
         @index_vars[i] = @model.addVar 0, 1, 0, Gurobi::BINARY, "i#{i}"
         @query_vars[i] = []
-        (0...@workload.queries.length).each do |q|
+        (0...@queries.length).each do |q|
           @query_vars[i][q] = @model.addVar 0, 1, 0, Gurobi::BINARY,
                                             "q#{q}i#{i}"
         end
@@ -115,10 +115,49 @@ module NoSE::Search
 
     # Set the value of the objective function (workload cost)
     def set_objective
+      # Get divisors whih we later use for support queries
+      query_divisors = Hash.new { |h, k| h[k] = Gurobi::LinExpr.new }
+      update_divisors = Hash.new 0
+      @queries.map do |query|
+        next unless query.is_a? NoSE::SupportQuery
+        index_i = @indexes.index(query.index)
+        query_divisors[query.statement] += @index_vars[index_i]
+        update_divisors[query.statement] += 1
+      end
+
       min_cost = (0...@query_vars.length).to_a \
-        .product((0...@workload.queries.length).to_a).map do |i, q|
+        .product((0...@queries.length).to_a).map do |i, q|
         next if @data[:costs][q][i].nil?
-        @query_vars[i][q] * (@data[:costs][q][i].last * 1.0)
+
+        query = @queries[q]
+        if query.is_a? NoSE::SupportQuery
+          query_cost = @data[:costs][q][i].last * 1.0
+
+          # Add the cost of inserting or deleting data divided by
+          # the number of required support queries to avoid double counting
+          state = QueryState.new query, nil
+          state.cardinality = data[:cardinality][query]
+
+          unless query.statement.is_a? NoSE::Insert
+            query_cost += DeletePlanStep.new(query.index, state).cost \
+              data[:cost_model] / update_divisors[query.statement]
+          end
+          unless query.statement.is_a? NoSE::Delete
+            query_cost += InsertPlanStep.new(query.index, state).cost \
+              data[:cost_model] / update_divisors[query.statement]
+          end
+
+          # Only count cost if query is necessary (index is present)
+          index_i = @indexes.index(query.index)
+          query_cost *= @index_vars[index_i]
+
+          # Divide cost by number of support queries used
+          query_cost *= @query_vars[i][q] / query_divisors[query.statement]
+        else
+          query_cost = @query_vars[i][q] * (@data[:costs][q][i].last * 1.0)
+        end
+
+        query_cost
       end.compact.reduce(&:+)
 
       @logger.info { "Objective function is #{min_cost.inspect}" }
