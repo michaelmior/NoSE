@@ -122,7 +122,10 @@ module NoSE::Search
           end
         end
 
+        # The cardinality estimates may be slightly different but we take
+        # the max since we always change he same number of entries
         cardinality = [cardinality, plan.last.state.cardinality].max
+
         populate_query_costs query_costs, index_pos, steps_by_index,
                              weight, plan
       end
