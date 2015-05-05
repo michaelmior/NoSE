@@ -132,19 +132,9 @@ module NoSE::Search
 
           # Add the cost of inserting or deleting data divided by
           # the number of required support queries to avoid double counting
-          state = NoSE::Plans::QueryState.new query, nil
-          state.cardinality = data[:cardinality][query]
-
-          unless query.statement.is_a? NoSE::Insert
-            step = NoSE::Plans::DeletePlanStep.new(query.index, state)
-            query_cost += step.cost(data[:cost_model]) /
-                          update_divisors[query.statement]
-          end
-          unless query.statement.is_a? NoSE::Delete
-            step = NoSE::Plans::InsertPlanStep.new(query.index, state)
-            query_cost += step.cost(data[:cost_model]) /
-                          update_divisors[query.statement]
-          end
+          query_cost += update_cost(query, data[:cardinality][query],
+                                    data[:cost_model]) /
+                        update_divisors[query.statement]
 
           # XXX This should not be necessary since no plan should be chosen
           #     if this query is not required (so there will be no cost)
@@ -161,6 +151,25 @@ module NoSE::Search
       @logger.info { "Objective function is #{min_cost.inspect}" }
 
       @model.setObjective min_cost, Gurobi::MINIMIZE
+    end
+
+    # Get the cost of an update using a support
+    # query for a given number of entities
+    def update_cost(query, cardinality, cost_model)
+      query_cost = 0
+      state = NoSE::Plans::QueryState.new query, nil
+      state.cardinality = cardinality
+
+      unless query.statement.is_a? NoSE::Insert
+        step = NoSE::Plans::DeletePlanStep.new(query.index, state)
+        query_cost += step.cost cost_model
+      end
+      unless query.statement.is_a? NoSE::Delete
+        step = NoSE::Plans::InsertPlanStep.new(query.index, state)
+        query_cost += step.cost cost_model
+      end
+
+      query_cost
     end
   end
 
