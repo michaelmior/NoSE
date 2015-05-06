@@ -390,6 +390,11 @@ module NoSE
 
   # Extend {Statement} objects to allow them to generate support queries
   module StatementSupportQuery
+    # Determine if this statement modifies a particular index
+    def modifies_index?(index)
+      !(@settings.map(&:field).to_set & index.all_fields).empty?
+    end
+
     protected
 
     # Get the support query for updating a given

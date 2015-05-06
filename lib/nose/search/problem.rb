@@ -9,11 +9,12 @@ end
 
 module NoSE::Search
   class Problem
-    attr_reader :model, :status, :queries, :index_vars, :query_vars,
+    attr_reader :model, :status, :queries, :updates, :index_vars, :query_vars,
                 :indexes, :data
 
-    def initialize(queries, indexes, data)
+    def initialize(queries, updates, indexes, data)
       @queries = queries
+      @updates = updates
       @indexes = indexes
       @data = data
       @logger = Logging.logger['nose::search::problem']
@@ -116,10 +117,10 @@ module NoSE::Search
     # Set the value of the objective function (workload cost)
     def set_objective
       # Get divisors whih we later use for support queries
-      update_divisors = Hash.new 0
+      update_divisors = Hash.new { |h, k| h[k] = Set.new }
       @queries.map do |query|
         next unless query.is_a? NoSE::SupportQuery
-        update_divisors[query.statement] += 1
+        update_divisors[query.statement].add query.index
       end
 
       min_cost = (0...@query_vars.length).to_a \
@@ -132,9 +133,10 @@ module NoSE::Search
 
           # Add the cost of inserting or deleting data divided by
           # the number of required support queries to avoid double counting
-          query_cost += update_cost(query, data[:cardinality][query],
+          query_cost += update_cost(query, query.index,
+                                    data[:cardinality][query],
                                     data[:cost_model]) /
-                        update_divisors[query.statement]
+                        update_divisors[query.statement].count
 
           # XXX This should not be necessary since no plan should be chosen
           #     if this query is not required (so there will be no cost)
@@ -148,28 +150,38 @@ module NoSE::Search
         @query_vars[i][q] * query_cost
       end.compact.reduce(&:+)
 
+      # Deal with updates which do not require support queries
+      @updates.each do |update|
+        @indexes.each do |index|
+          next if !update.modifies_index?(index) ||
+                  update_divisors[update].include?(index)
+
+          min_cost += Gurobi::LinExpr.new \
+                      update_cost(update, index, 1, data[:cost_model])
+        end
+      end
+
       @logger.info { "Objective function is #{min_cost.inspect}" }
 
       @model.setObjective min_cost, Gurobi::MINIMIZE
     end
 
-    # Get the cost of an update using a support
-    # query for a given number of entities
-    def update_cost(query, cardinality, cost_model)
-      query_cost = 0
-      state = NoSE::Plans::StatementState.new query, nil
+    # Get the cost of an index update for a given number of entities
+    def update_cost(statement, index, cardinality, cost_model)
+      cost = 0
+      state = NoSE::Plans::StatementState.new statement, nil
       state.cardinality = cardinality
 
-      unless query.statement.is_a? NoSE::Insert
-        step = NoSE::Plans::DeletePlanStep.new(query.index, state)
-        query_cost += step.cost cost_model
+      unless statement.is_a? NoSE::Insert
+        step = NoSE::Plans::DeletePlanStep.new index, state
+        cost += step.cost cost_model
       end
-      unless query.statement.is_a? NoSE::Delete
-        step = NoSE::Plans::InsertPlanStep.new(query.index, state)
-        query_cost += step.cost cost_model
+      unless statement.is_a? NoSE::Delete
+        step = NoSE::Plans::InsertPlanStep.new index, state
+        cost += step.cost cost_model
       end
 
-      query_cost
+      cost
     end
   end
 

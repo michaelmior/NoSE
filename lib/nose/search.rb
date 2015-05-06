@@ -58,7 +58,7 @@ module NoSE::Search
     # Solve the index selection problem using Gurobi
     def solve_gurobi(queries, indexes, data)
       # Construct and solve the ILP
-      problem = Problem.new queries, indexes, data
+      problem = Problem.new queries, @workload.updates, indexes, data
       problem.solve
 
       # We won't get here if there's no valdi solution
