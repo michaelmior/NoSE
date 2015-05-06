@@ -254,7 +254,7 @@ module NoSE::Serialize
       statement = NoSE::Statement.parse instance['statement'], workload.model
 
       plan = NoSE::Plans::StatementPlan.new statement, object.cost_model
-      state = NoSE::Plans::QueryState.new statement, workload
+      state = NoSE::Plans::StatementState.new statement, workload
       parent = NoSE::Plans::RootPlanStep.new state
 
       f = ->(field) { workload.model[field['parent']][field['name']] }

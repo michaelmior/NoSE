@@ -9,7 +9,7 @@ module NoSE::Cost
         # If we have an answer to the query, we only need
         # to fetch the data fields which are selected
         fields = step.index.hash_fields + step.index.order_fields +
-                 step.index.extra & step.state.query.select
+                 step.index.extra & step.state.statement.select
       else
         fields = step.index.all_fields
       end
