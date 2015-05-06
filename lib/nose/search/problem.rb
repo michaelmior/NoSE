@@ -157,7 +157,7 @@ module NoSE::Search
     # query for a given number of entities
     def update_cost(query, cardinality, cost_model)
       query_cost = 0
-      state = NoSE::Plans::QueryState.new query, nil
+      state = NoSE::Plans::StatementState.new query, nil
       state.cardinality = cardinality
 
       unless query.statement.is_a? NoSE::Insert

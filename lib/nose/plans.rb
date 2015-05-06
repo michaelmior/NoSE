@@ -1,4 +1,83 @@
 module NoSE::Plans
+  # Ongoing state of a statement throughout the execution plan
+  class StatementState
+    attr_accessor :from, :fields, :eq, :range, :order_by, :path, :cardinality,
+                  :given_fields
+    attr_reader :statement, :model
+
+    def initialize(statement, model)
+      @statement = statement
+      @model = model
+      @from = statement.from
+
+      # Populate the fields used in this statement
+      case statement
+      when NoSE::Query then @fields = statement.select
+      when NoSE::Delete then @fields = []
+      else @fields = statement.settings.map(&:field)
+      end
+
+      # Populate the conditions and path of the statement
+      if statement.is_a? NoSE::Insert
+        @eq = []
+        @range = nil
+        @order_by = []
+        @path = [statement.entity]
+      else
+        @eq = statement.eq_fields.dup
+        @range = statement.range_field
+        @path = statement.longest_entity_path.reverse
+      end
+
+      # Get the ordering from the query
+      @order_by = statement.is_a?(NoSE::Query) ? statement.order.dup : []
+
+      @cardinality = 1  # this will be updated on the first index lookup
+      @given_fields = @eq.dup
+    end
+
+    # All the fields referenced anywhere in the statement
+    def all_fields
+      all_fields = @fields + @eq
+      all_fields << @range unless @range.nil?
+      all_fields
+    end
+
+    # :nocov:
+    def to_color
+      @statement.text +
+        "\n  fields: " + @fields.map(&:to_color).to_a.to_color +
+        "\n      eq: " + @eq.map(&:to_color).to_a.to_color +
+        "\n   range: " + (@range.nil? ? '(nil)' : @range.name) +
+        "\n   order: " + @order_by.map(&:to_color).to_a.to_color +
+        "\n    path: " + @path.to_a.to_color
+    end
+    # :nocov:
+
+    # Check if the statement has been fully answered
+    # @return [Boolean]
+    def answered?(check_limit: true)
+      done = @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
+      return done unless statement.is_a? NoSE::Query
+
+      # Check if the limit has been applied
+      done &&= @cardinality <= @statement.limit unless @statement.limit.nil? ||
+                                                       !check_limit
+
+      done
+    end
+
+    # Get all fields relevant for filtering in the statement for entities
+    # in the given list, optionally including selected fields
+    # @return [Array<Field>]
+    def fields_for_entities(entities, select: false)
+      path_fields = @eq + @order_by
+      path_fields += @fields if select
+      path_fields << @range unless @range.nil?
+      path_fields.select { |field| entities.include? field.parent }
+    end
+  end
+
   # A tree of possible query plans
   class QueryPlanTree
     include Enumerable
@@ -79,6 +158,7 @@ module NoSE::Plans
       @steps.map { |step| step.cost @cost_model }.inject(0, &:+)
     end
   end
+
   # A single step in a statement plan
   class PlanStep
     include Supertype
@@ -126,7 +206,7 @@ module NoSE::Plans
       steps = nil
 
       if @parent.nil?
-        steps = StatementPlan.new state.query, cost_model
+        steps = StatementPlan.new state.statement, cost_model
       else
         steps = @parent.parent_steps cost_model
         steps << self
