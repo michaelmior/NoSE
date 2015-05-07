@@ -1,3 +1,4 @@
+# Loaders which insert data into indexes from external sources
 module NoSE::Loader
   # Superclass for all data loaders
   class LoaderBase

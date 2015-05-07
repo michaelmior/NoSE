@@ -8,6 +8,7 @@ rescue LoadError
 end
 
 module NoSE::Search
+  # A representation of a search problem as an ILP
   class Problem
     attr_reader :model, :status, :queries, :updates, :index_vars, :query_vars,
                 :indexes, :data
@@ -23,6 +24,7 @@ module NoSE::Search
       setup_model
     end
 
+    # Run the solver and make the selected indexes available
     def solve
       return unless @status.nil?
 
@@ -71,12 +73,18 @@ module NoSE::Search
       end
     end
 
+    # Build the ILP by creating all the variables and constraints
     def setup_model
       # Set up solver environment
       env = Gurobi::Env.new
       env.set_int Gurobi::IntParam::METHOD,
                   Gurobi::METHOD_DETERMINISTIC_CONCURRENT
+
+      # This copies the number of parallel processes used by the parallel gem
+      # so it implicitly respects the --no-parallel CLI flag
       env.set_int Gurobi::IntParam::THREADS, Parallel.processor_count
+
+      # Disable console output since it's quite messy
       env.set_int Gurobi::IntParam::OUTPUT_FLAG, 0
 
       @model = Gurobi::Model.new env

@@ -67,6 +67,7 @@ module NoSE
     rule(:path)          { identifier >> (str('.') >> identifier).repeat }
   end
 
+  # Field settings for update and insert statements
   module UpdateSettings
     include Parslet
 

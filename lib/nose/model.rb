@@ -2,6 +2,7 @@ require_relative 'model/entity'
 require_relative 'model/fields'
 
 module NoSE
+  # A conceptual data model of a set of entities
   class Model
     attr_reader :entities
 

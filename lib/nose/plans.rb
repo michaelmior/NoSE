@@ -1,3 +1,4 @@
+# Statement planning and abstract models of execution steps
 module NoSE::Plans
   # Ongoing state of a statement throughout the execution plan
   class StatementState
