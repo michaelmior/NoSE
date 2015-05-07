@@ -14,7 +14,7 @@ Note that this project depends on forks of several gems.
 Examples of the workload input format is given in the `workloads/` directory.
 To run the schema advisor, simply execute the command below
 
-    bundle exec nose workload rubis
+    bundle exec nose search rubis
 
 All source code is documented and more details on the command line tool can be retrieved with `bundle exec nose help`.
 You can view complete documentation by running `bundle exec rake doc` and viewing the output in the `doc/` directory.
