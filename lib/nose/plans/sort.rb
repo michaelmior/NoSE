@@ -3,9 +3,11 @@ module NoSE::Plans
   class SortPlanStep < PlanStep
     attr_reader :sort_fields
 
-    def initialize(sort_fields)
+    def initialize(sort_fields, state = nil)
       super()
+
       @sort_fields = sort_fields
+      @state = state
     end
 
     # :nocov:

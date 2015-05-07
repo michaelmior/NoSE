@@ -9,7 +9,7 @@ module NoSE::CLI
     option :max_space, type: :numeric, default: Float::INFINITY, aliases: '-s'
     option :enumerated, type: :boolean, default: false, aliases: '-e'
     option :format, type: :string, default: 'txt',
-                    enum: ['txt', 'json', 'yml'], aliases: '-f'
+                    enum: %w(txt json yml), aliases: '-f'
     option :output, type: :string, default: nil, aliases: '-o'
     def search(name)
       # Get the workload and cost model

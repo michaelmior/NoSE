@@ -21,12 +21,11 @@ require_relative 'nose/workload'
 require_relative 'nose/serialize'
 
 # :nocov:
-if ENV['NOSE_LOG']
-  require 'logging'
+require 'logging'
 
-  logger = Logging.logger['nose']
-  logger.level = ENV['NOSE_LOG'].downcase.to_sym
-  logger.add_appenders Logging.appenders.stderr
-  logger = nil # rubocop:disable Lint/UselessAssignment
-end
+logger = Logging.logger['nose']
+logger.level = (ENV['NOSE_LOG'] || 'info').downcase.to_sym
+
+logger.add_appenders Logging.appenders.stderr
+logger = nil # rubocop:disable Lint/UselessAssignment
 # :nocov:

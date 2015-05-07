@@ -1,5 +1,11 @@
 require 'formatador'
 
+begin
+  require 'readline'
+rescue LoadError
+  nil
+end
+
 module NoSE::CLI
   # Add a command to run a REPL which evaluates queries
   class NoSECLI < Thor
@@ -30,13 +36,12 @@ module NoSE::CLI
     def read_line
       prefix = '>> '
 
-      begin
-        require 'readline'
+      if Object.const_defined? 'Readline'
         line = Readline.readline prefix
         return if line.nil?
 
         Readline::HISTORY.push line
-      rescue LoadError
+      else
         print prefix
         line = gets
       end
@@ -44,24 +49,33 @@ module NoSE::CLI
       line
     end
 
-    # Try to execute a query read from the REPL
-    def execute_query(line, result, backend)
+    # Parse a query from a given string of text
+    def parse_query(text, workload)
       begin
-        query = NoSE::Statement.parse line, result.workload
+        query = NoSE::Statement.parse text, workload
       rescue NoSE::ParseFailed => e
         puts '! ' + e.message
-        return
+        query = nil
       end
+
+      query
+    end
+
+    # Try to execute a query read from the REPL
+    def execute_query(line, result, backend)
+      # Parse the query
+      query = parse_query line, result.workload
+      return if query.nil?
 
       begin
         start_time = Time.now
-        results = backend.query(query)
+        results = backend.query query
         elapsed = Time.now - start_time
       rescue NotImplementedError => e
         puts '! ' + e.message
       else
         Formatador.display_compact_table results unless results.empty?
-        puts '(%d rows in %.2fs)' % [results.length, elapsed]
+        puts format('(%d rows in %.2fs)', results.length, elapsed)
       end
     end
   end

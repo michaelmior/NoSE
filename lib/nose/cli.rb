@@ -12,8 +12,12 @@ module NoSE::CLI
     class_option :parallel, type: :boolean, default: true
     class_option :colour, type: :boolean, default: nil, aliases: '-c'
 
-    def initialize(*args)
+    def initialize(_options, _local_options, config)
       super
+
+      # Set up a logger for this command
+      cmd_name = config[:current_command].name
+      @logger = Logging.logger["nose::#{cmd_name}"]
 
       # Enable forcing the colour or no colour for output
       # We just lie to Formatador about whether or not $stdout is a tty
@@ -107,36 +111,43 @@ module NoSE::CLI
       representer.from_json(json)
     end
 
-    # Output the results of advising as text
-    def output_txt(result, file = $stdout, enumerated = false)
-      if enumerated
-        header = "Enumerated indexes\n" + '━' * 50
-        file.puts Formatador.parse("[blue]#{header}[/]")
-        result.enumerated_indexes.each do |index|
-          file.puts index.inspect
-        end
-        file.puts
-      end
-
-      # Output selected indexes
-      header = "Indexes\n" + '━' * 50
+    # Output a list of indexes as text
+    def output_indexes_txt(header, indexes, file)
       file.puts Formatador.parse("[blue]#{header}[/]")
-      result.indexes.each do |index|
-        file.puts index.inspect
-      end
+      indexes.each { |index| file.puts index.inspect }
+      file.puts
+    end
 
-      file.puts Formatador.parse("\n  Total size: [blue]#{result.total_size}[/]\n")
-
-      # Output queries plans for the discovered indices
-      header = "Query plans\n" + '━' * 50
-      file.puts Formatador.parse("[blue]#{header}[/]")
-      result.plans.each do |plan|
+    # Output a list of query plans as text
+    def output_plans_txt(plans, file)
+      plans.each do |plan|
         file.puts plan.statement.inspect
         plan.each { |step| file.puts '  ' + step.inspect }
         file.puts
       end
+    end
 
-      file.puts Formatador.parse("Total cost: [blue]#{result.total_cost}[/]\n")
+    # Output the results of advising as text
+    def output_txt(result, file = $stdout, enumerated = false)
+      if enumerated
+        header = "Enumerated indexes\n" + '━' * 50
+        output_indexes_txt header, result.enumerated_indexes, file
+      end
+
+      # Output selected indexes
+      header = "Indexes\n" + '━' * 50
+      output_indexes_txt header, result.indexes, file
+
+      file.puts Formatador.parse("  Total size: " \
+                                 "[blue]#{result.total_size}[/]\n\n")
+
+      # Output query plans for the discovered indices
+      header = "Query plans\n" + '━' * 50
+      file.puts Formatador.parse("[blue]#{header}[/]")
+      output_plans_txt result.plans, file
+
+      file.puts Formatador.parse("  Total cost: " \
+                                 "[blue]#{result.total_cost}[/]\n")
     end
 
     # Output the results of advising as JSON

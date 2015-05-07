@@ -161,7 +161,7 @@ module NoSE::Search
         end
       end
 
-      @logger.info { "Objective function is #{min_cost.inspect}" }
+      @logger.debug { "Objective function is #{min_cost.inspect}" }
 
       @model.setObjective min_cost, Gurobi::MINIMIZE
     end
