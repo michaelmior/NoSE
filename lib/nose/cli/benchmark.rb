@@ -8,13 +8,8 @@ module NoSE::CLI
       config = load_config
       backend = get_backend(config, result)
 
-      # Get a sample of values from each index used by the queries
-      index_values = Hash[result.indexes.map do |index|
-        values = backend.index_sample(index, options[:num_iterations]).to_a
-        fail "Index #{index.key} is empty and will produce no results" \
-          if values.empty?
-        [index, values]
-      end]
+      index_values = index_values result.indexes, backend,
+                                  options[:num_iterations]
 
       result.workload.queries.each do |query|
         # Get the plan and indexes used for this query
@@ -43,7 +38,7 @@ module NoSE::CLI
           query.conditions.each_with_index do |condition, i|
             condition.instance_variable_set :@value, values[i]
           end
-          backend.query(query, plan)
+          backend.query query, plan
         end
 
         # Report the time taken
@@ -51,6 +46,19 @@ module NoSE::CLI
         puts "#{query.text} executed in " \
              "#{elapsed / options[:num_iterations]} average"
       end
+    end
+
+    private
+
+    # Get a sample of values from each index used by the queries
+    def index_values(indexes, backend, iterations)
+      Hash[indexes.map do |index|
+        values = backend.index_sample(index, iterations).to_a
+        fail "Index #{index.key} is empty and will produce no results" \
+          if values.empty?
+
+        [index, values]
+      end]
     end
   end
 end

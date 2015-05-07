@@ -8,14 +8,23 @@ module NoSE::CLI
          'storage constraints to DIRECTORY'
     option :enumerated, type: :boolean, aliases: '-e'
     option :format, type: :string, default: 'txt',
-                    enum: ['txt', 'json', 'yml'], aliases: '-f'
+                    enum: %w(txt json yml), aliases: '-f'
     def search_all(name, directory)
       # Load the workload and cost model and create the output directory
       workload = get_workload name
       config = load_config
       cost_model = get_class 'cost', config[:cost_model][:name]
-      FileUtils::mkdir_p(directory) unless Dir.exists?(directory)
+      FileUtils.mkdir_p(directory) unless Dir.exist?(directory)
 
+      # Run the search and output the results
+      results = search_results workload, cost_model
+      output_results results, directory, options
+    end
+
+    private
+
+    # Get a list of all possible search results
+    def search_results(workload, cost_model)
       # Start with the maximum possible size and divide in two
       max_result = search_result workload, cost_model
       max_size = max_result.total_size
@@ -34,6 +43,8 @@ module NoSE::CLI
         prev_size = (size - prev_size) / 2.0 + prev_size
 
         begin
+          @logger.info "Running search with size #{size}"
+
           result = search_result workload, cost_model, size
           next if sizes.include? result.total_size
         rescue NoSE::Search::NoSolutionException, NoSE::Plans::NoPlanException
@@ -52,7 +63,11 @@ module NoSE::CLI
         sizes.add result.total_size unless result.nil?
       end
 
-      # Output all results to file
+      results
+    end
+
+    # Output all results to file
+    def output_results(results, directory, options)
       results.sort_by!(&:total_size)
       results.each_with_index do |result, i|
         file = File.open File.join(directory, "#{i}.#{options[:format]}"), 'w'

@@ -4,7 +4,7 @@ module NoSE::CLI
     desc 'reformat PLAN_FILE',
          'reformat the data in PLAN_FILE'
     option :format, type: :string, default: 'txt',
-                    enum: ['txt', 'json', 'yml'], aliases: '-f'
+                    enum: %w(txt json yml), aliases: '-f'
     def reformat(plan_file)
       result = load_results plan_file
 
