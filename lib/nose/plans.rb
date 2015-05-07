@@ -10,12 +10,8 @@ module NoSE::Plans
       @model = model
       @from = statement.from
 
-      # Populate the fields used in this statement
-      case statement
-      when NoSE::Query then @fields = statement.select
-      when NoSE::Delete then @fields = []
-      else @fields = statement.settings.map(&:field)
-      end
+      populate_fields statement
+      populate_conditions statement
 
       # Populate the conditions and path of the statement
       if statement.is_a? NoSE::Insert
@@ -75,6 +71,31 @@ module NoSE::Plans
       path_fields += @fields if select
       path_fields << @range unless @range.nil?
       path_fields.select { |field| entities.include? field.parent }
+    end
+
+    private
+
+    # Populate the fields used in this statement
+    def populate_fields(statement)
+      case statement
+      when NoSE::Query then @fields = statement.select
+      when NoSE::Delete then @fields = []
+      else @fields = statement.settings.map(&:field)
+      end
+    end
+
+    # Populate the conditions and path of the statement
+    def populate_conditions(statement)
+      if statement.is_a? NoSE::Insert
+        @eq = []
+        @range = nil
+        @order_by = []
+        @path = [statement.entity]
+      else
+        @eq = statement.eq_fields.dup
+        @range = statement.range_field
+        @path = statement.longest_entity_path.reverse
+      end
     end
   end
 
