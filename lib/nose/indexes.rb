@@ -12,20 +12,7 @@ module NoSE
       @path = path
       @key = saved_key
 
-      fail InvalidIndexException, 'hash fields cannot be empty' \
-        if @hash_fields.empty?
-
-      fail InvalidIndexException, 'hash fields can only involve one entity' \
-        if @hash_fields.map(&:parent).to_set.size > 1
-
-      entities = @all_fields.map(&:parent).to_set
-      fail InvalidIndexException, 'invalid path for index fields' \
-        unless entities.include?(path.first) && entities.include?(path.last)
-
-      # We must have the primary keys of the all entities on the path
-      fail InvalidIndexException, 'missing path entity keys' \
-        unless @path.map(&:id_fields).flatten.all? \
-          &(@hash_fields + @order_fields).method(:include?)
+      validate_index
 
       # Initialize the hash function and freeze ourselves
       hash
@@ -107,6 +94,24 @@ module NoSE
     end
 
     private
+
+    # Ensure this index is valid
+    def validate_index
+      fail InvalidIndexException, 'hash fields cannot be empty' \
+        if @hash_fields.empty?
+
+      fail InvalidIndexException, 'hash fields can only involve one entity' \
+        if @hash_fields.map(&:parent).to_set.size > 1
+
+      entities = @all_fields.map(&:parent).to_set
+      fail InvalidIndexException, 'invalid path for index fields' \
+        unless entities.include?(path.first) && entities.include?(path.last)
+
+      # We must have the primary keys of the all entities on the path
+      fail InvalidIndexException, 'missing path entity keys' \
+        unless @path.map(&:id_fields).flatten.all? \
+          &(@hash_fields + @order_fields).method(:include?)
+    end
 
     # Precalculate the size of the index
     def calculate_size
