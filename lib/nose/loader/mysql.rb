@@ -110,23 +110,20 @@ module NoSE::Loader
       end
     end
 
-    # Construct a SQL statement to fetch the data to populate this index
-    def index_sql(index, limit = nil)
-      # Get all the necessary fields
+    # Get all the fields selected by this index
+    def index_sql_select(index)
       fields = index.hash_fields.to_a + index.order_fields + index.extra.to_a
       fields += index.path.last.id_fields
-      fields = fields.map do |field|
+
+      fields.map do |field|
         "#{field.parent.name}.#{field.name} AS " \
         "#{field.parent.name}_#{field.name}"
       end
+    end
 
-      # Find the series of foreign keys along the index path
-      keys = index.path.each_cons(2).map do |first, second|
-        second.foreign_key_for(first) ||
-        first.foreign_key_for(second)
-      end
-
-      # Construct the join condition
+    # Get the list of tables along with the join condition
+    # for a query to fetch index data over a given set of keys
+    def index_sql_tables(index, keys)
       tables = index.path.first.name
       ([nil] + keys).each_cons(2) do |prev_key, key|
         # Check which side of the entity we should be joining on
@@ -137,9 +134,26 @@ module NoSE::Loader
         end
 
         tables += " JOIN #{entity.name} ON " \
-                  "#{key.parent.name}.#{key.name}=" \
-                  "#{key.entity.name}.#{key.entity.id_fields.first.name}"
+          "#{key.parent.name}.#{key.name}=" \
+          "#{key.entity.name}.#{key.entity.id_fields.first.name}"
       end
+
+      tables
+    end
+
+    # Construct a SQL statement to fetch the data to populate this index
+    def index_sql(index, limit = nil)
+      # Get all the necessary fields
+      fields = index_sql_select index
+
+      # Find the series of foreign keys along the index path
+      keys = index.path.each_cons(2).map do |first, second|
+        second.foreign_key_for(first) ||
+        first.foreign_key_for(second)
+      end
+
+      # Construct the join condition
+      tables = index_sql_tables index, keys
 
       query = "SELECT #{fields.join ', '} FROM #{tables}"
       query += " LIMIT #{limit}" unless limit.nil?
