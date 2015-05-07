@@ -114,6 +114,36 @@ module NoSE::Search
       @logger.debug { "Added #{@model.getConstrs.count} constraints to model" }
     end
 
+    # Deal with updates which do not require support queries
+    def add_update_costs(min_cost, data, update_divisors)
+      @updates.each do |update|
+        @indexes.each do |index|
+          next if !update.modifies_index?(index) ||
+                  update_divisors[update].include?(index)
+
+          min_cost += Gurobi::LinExpr.new \
+                      update_cost(update, index, 1, data[:cost_model])
+        end
+      end
+    end
+
+    # Get the total cost of the query for the objective function
+    def total_query_cost(query, cost, query_var, data, update_divisors)
+      return if cost.nil?
+      query_cost = cost.last * 1.0
+
+      if query.is_a? NoSE::SupportQuery
+        # Add the cost of inserting or deleting data divided by
+        # the number of required support queries to avoid double counting
+        query_cost += update_cost(query, query.index,
+                                  data[:cardinality][query],
+                                  data[:cost_model]) /
+                      update_divisors[query.statement].count
+      end
+
+      query_var * query_cost
+    end
+
     # Set the value of the objective function (workload cost)
     def set_objective
       # Get divisors whih we later use for support queries
@@ -125,41 +155,11 @@ module NoSE::Search
 
       min_cost = (0...@query_vars.length).to_a \
         .product((0...@queries.length).to_a).map do |i, q|
-        next if @data[:costs][q][i].nil?
-
-        query = @queries[q]
-        if query.is_a? NoSE::SupportQuery
-          query_cost = @data[:costs][q][i].last * 1.0
-
-          # Add the cost of inserting or deleting data divided by
-          # the number of required support queries to avoid double counting
-          query_cost += update_cost(query, query.index,
-                                    data[:cardinality][query],
-                                    data[:cost_model]) /
-                        update_divisors[query.statement].count
-
-          # XXX This should not be necessary since no plan should be chosen
-          #     if this query is not required (so there will be no cost)
-          # # Only count cost if query is necessary (index is present)
-          # index_i = @indexes.index(query.index)
-          # query_cost *= @index_vars[index_i]
-        else
-          query_cost = @data[:costs][q][i].last * 1.0
-        end
-
-        @query_vars[i][q] * query_cost
+        total_query_cost @queries[q], @data[:costs][q][i],
+                         @query_vars[i][q], data, update_divisors
       end.compact.reduce(&:+)
 
-      # Deal with updates which do not require support queries
-      @updates.each do |update|
-        @indexes.each do |index|
-          next if !update.modifies_index?(index) ||
-                  update_divisors[update].include?(index)
-
-          min_cost += Gurobi::LinExpr.new \
-                      update_cost(update, index, 1, data[:cost_model])
-        end
-      end
+      add_update_costs min_cost, data, update_divisors
 
       @logger.debug { "Objective function is #{min_cost.inspect}" }
 
