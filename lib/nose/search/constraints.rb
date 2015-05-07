@@ -47,15 +47,30 @@ module NoSE::Search
   class CompletePlanConstraints < Constraint
     private
 
+    # Add the discovered constraints to the problem
+    def self.add_query_constraints(query, constraints, problem)
+      constraints.each do |constraint|
+        # If this is a support query, then we might not need a plan
+        if query.is_a? NoSE::SupportQuery
+          # Find the index associated with the support query and make
+          # the requirement of a plan conditional on this index
+          index_var = problem.index_vars[problem.indexes.index(query.index)]
+          problem.model.addConstr(constraint == index_var * 1.0)
+        else
+          problem.model.addConstr(constraint == 1)
+        end
+      end
+    end
+
     # Add complete query plan constraints
     def self.apply_query(query, q, problem)
       entities = query.longest_entity_path
-      query_constraint = Array.new(entities.length) { Gurobi::LinExpr.new }
+      query_constraints = Array.new(entities.length) { Gurobi::LinExpr.new }
 
       problem.data[:costs][q].each do |i, (step_indexes, _)|
         problem.indexes[i].entity_range(entities).each do |part|
           index_var = problem.query_vars[i][q]
-          query_constraint[part] += index_var
+          query_constraints[part] += index_var
         end
 
         # All indices used at this step must either all be used, or none used
@@ -85,17 +100,7 @@ module NoSE::Search
       end
 
       # Ensure we have exactly one index on each component of the query path
-      query_constraint.each do |constraint|
-        # If this is a support query, then we might not need a plan
-        if query.is_a? NoSE::SupportQuery
-          # Find the index associated with the support query and make
-          # the requirement of a plan conditional on this index
-          index_var = problem.index_vars[problem.indexes.index(query.index)]
-          problem.model.addConstr(constraint == index_var * 1.0)
-        else
-          problem.model.addConstr(constraint == 1)
-        end
-      end
+      add_query_constraints query, query_constraints, problem
     end
   end
 end
