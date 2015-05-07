@@ -11,7 +11,7 @@ module NoSE::Loader
       simple_indexes = simple_indexes.group_by { |index| index.path.first }
       simple_indexes.each do |entity, simple_index_list|
         filename = File.join config[:directory], "#{entity.name}.csv"
-        total_rows = -1  # account for header row
+        total_rows = (config[:limit] || 0) - 1  # account for header row
         File.open(filename) { |file| file.each_line { total_rows += 1 } }
 
         if show_progress
