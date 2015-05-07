@@ -122,13 +122,21 @@ module NoSE::Loader
 
       # Find the series of foreign keys along the index path
       keys = index.path.each_cons(2).map do |first, second|
-        second.foreign_key_for first
+        second.foreign_key_for(first) ||
+        first.foreign_key_for(second)
       end
 
       # Construct the join condition
       tables = index.path.first.name
-      keys.each do |key|
-        tables += " JOIN #{key.parent.name} ON " \
+      ([nil] + keys).each_cons(2) do |prev_key, key|
+        # Check which side of the entity we should be joining on
+        if !prev_key.nil? && prev_key.parent == key.parent
+          entity = key.entity
+        else
+          entity = key.parent
+        end
+
+        tables += " JOIN #{entity.name} ON " \
                   "#{key.parent.name}.#{key.name}=" \
                   "#{key.entity.name}.#{key.entity.id_fields.first.name}"
       end
