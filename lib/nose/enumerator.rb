@@ -127,7 +127,6 @@ module NoSE
 
       range_fields = path.map { |entity| range[entity] }.reduce(&:+)
       order_choices = range_fields.prefixes.to_a << []
-
       extra_choices = extra_choices path, select, eq, range
 
       # Generate all possible indices based on the field choices
@@ -144,31 +143,34 @@ module NoSE
 
           next if order.empty? && index_extra.empty?
 
-          begin
-            indexes << Index.new(index, order, index_extra, path)
-            @logger.debug "Enumerated #{indexes.last.inspect}"
-          rescue InvalidIndexException
-            # This combination of fields is not valid, that's ok
-            nil
-          end
+          new_index = generate_index index, order, index_extra, path
+          indexes << new_index unless new_index.nil?
 
           # Partition into the ordering portion
           if index.length == max_eq_fields
             index.partitions.each do |index_prefix, order_prefix|
-              begin
-                indexes << Index.new(index_prefix, order_prefix + order,
-                                     extra, path)
-                @logger.debug "Enumerated #{indexes.last.inspect}"
-              rescue InvalidIndexException
-                # This combination of fields is not valid, that's ok
-                nil
-              end
+              new_index = generate_index index_prefix, order_prefix + order,
+                                         extra, path
+              indexes << new_index unless new_index.nil?
             end
           end
         end
 
         indexes
       end.inject([], &:+).flatten
+    end
+
+    # Generate a new index and ignore if invalid
+    def generate_index(hash, order, extra, path)
+      begin
+        index = Index.new hash, order, extra, path
+        @logger.debug "Enumerated #{index}"
+      rescue InvalidIndexException
+        # This combination of fields is not valid, that's ok
+        index = nil
+      end
+
+      index
     end
   end
 end
