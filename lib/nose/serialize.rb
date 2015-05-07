@@ -272,10 +272,10 @@ module NoSE::Serialize
           step = step_class.new eq, range, parent.state
         elsif step_class == NoSE::Plans::SortPlanStep
           sort_fields = step_hash['sort_fields'].map(&f)
-          step = step_class.new sort_fields
+          step = step_class.new sort_fields, parent.state
         elsif step_class == NoSE::Plans::LimitPlanStep
           limit = step_hash['limit'].to_i
-          step = step_class.new limit
+          step = step_class.new limit, parent.state
         end
 
         # Copy the correct cardinality
