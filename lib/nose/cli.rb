@@ -36,14 +36,9 @@ module NoSE::CLI
 
     # Find the workload with the given name
     def get_workload(name)
-      require_relative "../../workloads/#{name}"
-
-      # rubocop:disable GlobalVars
-      workload = $workload
-      $workload = nil
-      # rubocop:enable GlobalVars
-
-      workload
+      filename = File.expand_path "../../../workloads/#{name}.rb", __FILE__
+      contents = File.read(filename)
+      binding.eval contents, filename
     end
 
     # Load the configuration to use for a backend

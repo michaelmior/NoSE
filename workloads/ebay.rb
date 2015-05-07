@@ -3,7 +3,7 @@
 
 # rubocop:disable all
 
-$workload = NoSE::Workload.new do
+NoSE::Workload.new do
   # Define entities along with the size and cardinality of their fields
   # as well as an estimated number of each entity
 
