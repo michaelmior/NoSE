@@ -3,6 +3,7 @@ module NoSE::CLI
   class NoSECLI < Thor
     desc 'load PLAN_FILE', 'create indexes from the given PLAN_FILE'
     option :progress, type: :boolean, default: true, aliases: '-p'
+    option :limit, type: :numeric, default: nil, aliases: '-l'
     def load(plan_file)
       result = load_results(plan_file)
       config = load_config

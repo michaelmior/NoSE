@@ -19,7 +19,7 @@ module NoSE::Loader
           next
         end
 
-        sql = index_sql index
+        sql = index_sql index, config[:limit]
         query = Mysql::Stmt.new client.protocol, Mysql::Charset.by_name('utf8')
         results = query.prepare(sql).execute
 
@@ -111,7 +111,7 @@ module NoSE::Loader
     end
 
     # Construct a SQL statement to fetch the data to populate this index
-    def index_sql(index)
+    def index_sql(index, limit = nil)
       # Get all the necessary fields
       fields = index.hash_fields.to_a + index.order_fields + index.extra.to_a
       fields += index.path.last.id_fields
@@ -141,7 +141,10 @@ module NoSE::Loader
                   "#{key.entity.name}.#{key.entity.id_fields.first.name}"
       end
 
-      "SELECT #{fields.join ', '} FROM #{tables}"
+      query = "SELECT #{fields.join ', '} FROM #{tables}"
+      query += " LIMIT #{limit}" unless limit.nil?
+
+      query
     end
   end
 end
