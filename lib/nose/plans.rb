@@ -13,18 +13,6 @@ module NoSE::Plans
       populate_fields statement
       populate_conditions statement
 
-      # Populate the conditions and path of the statement
-      if statement.is_a? NoSE::Insert
-        @eq = []
-        @range = nil
-        @order_by = []
-        @path = [statement.entity]
-      else
-        @eq = statement.eq_fields.dup
-        @range = statement.range_field
-        @path = statement.longest_entity_path.reverse
-      end
-
       # Get the ordering from the query
       @order_by = statement.is_a?(NoSE::Query) ? statement.order.dup : []
 
