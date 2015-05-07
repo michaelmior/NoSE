@@ -1,3 +1,4 @@
+# Cost models for steps of backend statement excution
 module NoSE::Cost
   # Cost model for a backend database
   class Cost
@@ -16,7 +17,7 @@ module NoSE::Cost
       0
     end
 
-    # (see PlanStep#cost)
+    # The cost of sorting a set of results
     def self.sort_cost(_step)
       # TODO: Find some estimate of sort cost
       #       This could be partially captured by the fact that sort + limit

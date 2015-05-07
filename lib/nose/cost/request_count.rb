@@ -1,4 +1,5 @@
 module NoSE::Cost
+  # A cost model which estimates the number of requests to the backend
   class RequestCountCost < Cost
     include Subtype
 

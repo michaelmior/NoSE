@@ -3,6 +3,7 @@ require 'parallel'
 require 'thor'
 require 'yaml'
 
+# CLI tools for running the advisor
 module NoSE::CLI
   # A command-line interface to running the advisor tool
   class NoSECLI < Thor

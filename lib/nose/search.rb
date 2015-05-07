@@ -5,6 +5,7 @@ require 'logging'
 require 'ostruct'
 require 'tempfile'
 
+# ILP construction and schema search
 module NoSE::Search
   # Searches for the optimal indices for a given workload
   class Search

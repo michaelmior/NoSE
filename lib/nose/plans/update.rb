@@ -1,4 +1,5 @@
 module NoSE::Plans
+  # A superclass for steps which modify indexes
   class UpdatePlanStep < PlanStep
     attr_reader :index, :state
 
@@ -30,12 +31,14 @@ module NoSE::Plans
     end
   end
 
+  # A step which inserts data into a given index
   class InsertPlanStep < UpdatePlanStep
     def initialize(index, state = nil)
       super index, :insert, state
     end
   end
 
+  # A step which deletes data into a given index
   class DeletePlanStep < UpdatePlanStep
     def initialize(index, state = nil)
       super index, :delete, state

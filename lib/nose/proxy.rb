@@ -1,3 +1,4 @@
+# Query processing proxies to transparently execute queries against a backend
 module NoSE::Proxy
   # A proxy server to interpret our query language and implement query plans
   class ProxyBase

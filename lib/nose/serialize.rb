@@ -2,6 +2,7 @@ require 'representable'
 require 'representable/json'
 require 'representable/yaml'
 
+# Serialization of workloads, models, and statement execution plans
 module NoSE::Serialize
   # Construct a field from a parsed hash
   class FieldBuilder

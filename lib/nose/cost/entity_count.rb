@@ -1,4 +1,5 @@
 module NoSE::Cost
+  # A cost model which estimates the number of entities transferred
   class EntityCountCost < Cost
     include Subtype
 

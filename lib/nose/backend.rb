@@ -1,3 +1,4 @@
+# Communication with backends for index creation and statement execution
 module NoSE::Backend
   # Superclass of all database backends
   class BackendBase

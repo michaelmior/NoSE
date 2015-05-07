@@ -1,4 +1,5 @@
 module NoSE::Cost
+  # A cost model which estimates the total size of data transferred
   class FieldSizeCost < Cost
     include Subtype
 
