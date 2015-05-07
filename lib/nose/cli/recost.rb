@@ -11,7 +11,7 @@ module NoSE::CLI
       new_cost_model = get_class 'cost', cost_model
       result.plans.each { |plan| plan.cost_model = new_cost_model }
 
-      plans = Hash[result.plans.map { |plan| [plan.query, plan] }]
+      plans = Hash[result.plans.map { |plan| [plan.statement, plan] }]
 
       result.cost_model = new_cost_model
       total_cost = result.workload.statement_weights.map do |statement, weight|

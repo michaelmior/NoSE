@@ -18,7 +18,7 @@ module NoSE::Backend
     # Execute a query with the stored plans
     def query(query, plan = nil)
       if plan.nil?
-        plan = @plans.find { |possible_plan| possible_plan.query == query }
+        plan = @plans.find { |possible_plan| possible_plan.statement == query }
         fail PlanNotFound if plan.nil?
       end
 
