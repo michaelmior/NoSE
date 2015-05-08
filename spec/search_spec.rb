@@ -34,5 +34,34 @@ module NoSE::Search
         search.search_overlap(indexes, indexes.first.size).to_set
       end.to raise_error NoSolutionException
     end
+
+    it 'does not denormalize heavily updated data', gurobi: true do
+      workload.add_statement 'UPDATE User SET Username = ? ' \
+                             'WHERE User.UserId = ?', 0.98
+      workload.add_statement 'SELECT Username FROM User ' \
+                             'WHERE User.City = ?', 0.01
+      workload.add_statement 'SELECT Username FROM User ' \
+                             'WHERE User.Username = ?', 0.01
+
+      # Enumerate the indexes and select those actually used
+      indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
+      cost_model = NoSE::Cost::EntityCountCost
+      indexes = Search.new(workload, cost_model).search_overlap indexes
+
+      # Get the indexes actually used by the generated plans
+      planner = NoSE::Plans::QueryPlanner.new workload, indexes, cost_model
+      plans = {}
+      workload.queries.each { |query| plans[query] = planner.min_plan query }
+      indexes = plans.map(&:to_a).flatten.select do |step|
+        step.is_a? NoSE::Plans::IndexLookupPlanStep
+      end.map(&:index).to_set
+
+      expect(indexes).to match_array [
+        NoSE::Index.new([user['Username']], [user['UserId']], [], [user]),
+        NoSE::Index.new([user['City']], [user['UserId']], [], [user]),
+        NoSE::Index.new([user['UserId']], [], [user['Username'], user['City']],
+                        [user])
+      ]
+    end
   end
 end
