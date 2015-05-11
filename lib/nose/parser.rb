@@ -240,6 +240,21 @@ module NoSE
       find_longest_path @tree[:path]
     end
 
+    # Specifies if the statement modifies any data
+    def read_only?
+      false
+    end
+
+    # Specifies if the statement will require data to be inserted
+    def requires_insert?
+      false
+    end
+
+    # Specifies if the statement will require data to be deleted
+    def requires_delete?
+      false
+    end
+
     # :nocov:
     def to_color
       "#{@text} [magenta]#{@longest_entity_path.map(&:name).join ', '}[/]"
@@ -304,6 +319,11 @@ module NoSE
       end
 
       freeze
+    end
+
+    # Specifies that queries don't modify data
+    def read_only?
+      true
     end
 
     # All fields referenced anywhere in the query
@@ -438,6 +458,16 @@ module NoSE
       freeze
     end
 
+    # Specifies that updates require insertion
+    def requires_insert?
+      true
+    end
+
+    # Specifies that updates require deletion
+    def requires_delete?
+      true
+    end
+
     # Get the support queries for updating an index
     def support_queries(index)
       # Get the updated fields and check if an update is necessary
@@ -458,6 +488,11 @@ module NoSE
       populate_settings
 
       freeze
+    end
+
+    # Specifies that inserts require insertion
+    def requires_insert?
+      true
     end
 
     # Get the support queries for inserting into an index
@@ -482,6 +517,11 @@ module NoSE
       populate_conditions
 
       freeze
+    end
+
+    # Specifies that deletes require deletion
+    def requires_delete?
+      true
     end
 
     # Get the support queries for deleting from an index

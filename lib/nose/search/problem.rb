@@ -180,11 +180,11 @@ module NoSE::Search
       state = NoSE::Plans::StatementState.new statement, nil
       state.cardinality = cardinality
 
-      unless statement.is_a? NoSE::Insert
+      if statement.requires_delete?
         step = NoSE::Plans::DeletePlanStep.new index, state
         cost += step.cost cost_model
       end
-      unless statement.is_a? NoSE::Delete
+      if statement.requires_insert?
         step = NoSE::Plans::InsertPlanStep.new index, state
         cost += step.cost cost_model
       end

@@ -22,11 +22,11 @@ module NoSE::Plans
           # Walk the tree and add delete and insert steps at the end
           tree.each do |plan|
             last_step = plan.last
-            unless statement.is_a? NoSE::Insert
+            if statement.requires_delete?
               last_step.children = [DeletePlanStep.new(index, last_step.state)]
               last_step = last_step.children.first
             end
-            unless statement.is_a? NoSE::Delete
+            if statement.requires_insert?
               last_step.children = [InsertPlanStep.new(index, last_step.state)]
             end
           end
