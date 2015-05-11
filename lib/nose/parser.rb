@@ -119,7 +119,16 @@ module NoSE
       where.maybe.as(:where).capture_source(:where)
     }
 
-    rule(:statement) { query | update | insert | delete }
+    rule(:connect) {
+      str('CONNECT') >> space >> identifier.as(:entity) >> space? >>
+      str('(') >> space? >> literal.as(:source_pk) >> space? >> str(')') >>
+      space >> str('TO') >> space >> identifier.as(:target) >> space? >>
+      str('(') >> space? >> literal.as_array(:target_pk) >> space? >> str(')')
+    }
+
+    rule(:statement) {
+      query | update | insert | delete | connect
+    }
 
     root :statement
   end
@@ -208,6 +217,8 @@ module NoSE
         klass = Delete
       when 'UPDATE'
         klass = Update
+      when 'CONNECT'
+        klass = Connect
       else  # SELECT
         klass = Query
       end
@@ -528,6 +539,31 @@ module NoSE
     # Get the support queries for deleting from an index
     def support_queries(index)
       [support_query_for_fields(index, @from.fields)].compact
+    end
+  end
+
+  # A representation of a connect in the workload
+  class Connect < Statement
+    attr_reader :source_pk, :target, :target_pk
+    alias_method :source, :from
+
+    def initialize(statement, model)
+      super :connect, statement, model
+
+      @source_pk = @tree[:source_pk]
+      @target = @from[@tree[:target].to_s]
+      @target_pk = @tree[:target_pk]
+
+      # XXX Only works for non-composite PKs
+      source_type = @from.id_fields.first.class.const_get 'TYPE'
+      fail TypeError unless source_type.nil? || source_pk.nil? ||
+                            source_pk.is_a?(type)
+
+      target_type = @target.class.const_get 'TYPE'
+      fail TypeError unless target_type.nil? || target_pk.nil? ||
+                            target_pk.is_a?(type)
+
+      freeze
     end
   end
 
