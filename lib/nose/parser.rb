@@ -120,10 +120,14 @@ module NoSE
     }
 
     rule(:connect) {
-      str('CONNECT') >> space >> identifier.as(:entity) >> space? >>
-      str('(') >> space? >> literal.as(:source_pk) >> space? >> str(')') >>
-      space >> str('TO') >> space >> identifier.as(:target) >> space? >>
-      str('(') >> space? >> literal.as_array(:target_pk) >> space? >> str(')')
+      (str('CONNECT') | str('DISCONNECT')).capture(:type) >> space >>
+      identifier.as(:entity) >> space? >> str('(') >> space? >>
+      literal.as(:source_pk) >> space? >> str(')') >> space >>
+      dynamic do |_, context|
+        context.captures[:type] == 'CONNECT' ? str('TO') : str('FROM')
+      end >>
+      space >> identifier.as(:target) >> space? >> str('(') >> space? >>
+      literal.as_array(:target_pk) >> space? >> str(')')
     }
 
     rule(:statement) {
@@ -219,6 +223,8 @@ module NoSE
         klass = Update
       when 'CONNECT'
         klass = Connect
+      when 'DISCONNECT'
+        klass = Disconnect
       else  # SELECT
         klass = Query
       end
@@ -542,14 +548,15 @@ module NoSE
     end
   end
 
-  # A representation of a connect in the workload
-  class Connect < Statement
+  # Superclass for connect and disconnect statements
+  class Connection < Statement
     attr_reader :source_pk, :target, :target_pk
     alias_method :source, :from
 
-    def initialize(statement, model)
-      super :connect, statement, model
+    protected
 
+    # Populate the keys and entities
+    def populate_keys
       @source_pk = @tree[:source_pk]
       @target = @from[@tree[:target].to_s]
       @target_pk = @tree[:target_pk]
@@ -562,7 +569,27 @@ module NoSE
       target_type = @target.class.const_get 'TYPE'
       fail TypeError unless target_type.nil? || target_pk.nil? ||
                             target_pk.is_a?(type)
+    end
+  end
 
+  # A representation of a connect in the workload
+  class Connect < Connection
+    def initialize(statement, model)
+      super :connect, statement, model
+      fail InvalidStatementException, 'DISCONNECT parsed as CONNECT' \
+        unless @text.split.first == 'CONNECT'
+      populate_keys
+      freeze
+    end
+  end
+
+  # A representation of a disconnect in the workload
+  class Disconnect < Connection
+    def initialize(statement, model)
+      super :connect, statement, model
+      fail InvalidStatementException, 'CONNECT parsed as DISCONNECT' \
+        unless @text.split.first == 'DISCONNECT'
+      populate_keys
       freeze
     end
   end
