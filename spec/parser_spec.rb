@@ -196,4 +196,18 @@ module NoSE
       expect(connect.target_pk).to eq('B')
     end
   end
+
+  describe Disconnect do
+    include_context 'entities'
+
+    it 'can parse simple disconnect statements' do
+      connect = Disconnect.new 'DISCONNECT Tweet("A") FROM User("B")',
+                               workload.model
+
+      expect(connect.source).to eq(tweet)
+      expect(connect.source_pk).to eq('A')
+      expect(connect.target).to eq(tweet['User'])
+      expect(connect.target_pk).to eq('B')
+    end
+  end
 end
