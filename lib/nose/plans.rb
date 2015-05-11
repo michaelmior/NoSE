@@ -66,6 +66,7 @@ module NoSE::Plans
 
     # Populate the fields used in this statement
     def populate_fields(statement)
+      # TODO Update for relationship changes
       case statement
       when NoSE::Query then @fields = statement.select
       when NoSE::Delete then @fields = []
@@ -75,6 +76,7 @@ module NoSE::Plans
 
     # Populate the conditions and path of the statement
     def populate_conditions(statement)
+      # TODO Update for relationship changes
       if statement.is_a? NoSE::Insert
         @eq = []
         @range = nil
