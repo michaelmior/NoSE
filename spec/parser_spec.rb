@@ -183,4 +183,17 @@ module NoSE
       let(:statement) { delete }
     end
   end
+
+  describe Connect do
+    include_context 'entities'
+
+    it 'can parse simple connect statements' do
+      connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
+
+      expect(connect.source).to eq(tweet)
+      expect(connect.source_pk).to eq('A')
+      expect(connect.target).to eq(tweet['User'])
+      expect(connect.target_pk).to eq('B')
+    end
+  end
 end
