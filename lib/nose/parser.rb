@@ -36,7 +36,7 @@ module NoSE
     rule(:quote)       { str('"') }
     rule(:nonquote)    { quote.absent? >> any }
     rule(:string)      { quote >> nonquote.repeat(1).as(:str) >> quote }
-    rule(:literal)     { integer | string }
+    rule(:literal)     { integer | string | str('?').as(:unknown) }
   end
 
   # Predicates used in queries and updates
@@ -47,7 +47,7 @@ module NoSE
       str('=') | str('!=') | str('<=') | str('>=') | str('<') | str('>') }
     rule(:condition)   {
       field.as(:field) >> space? >> operator.as(:op) >> space? >>
-      (literal.as(:value) | str('?')) }
+      literal.as(:value) }
     rule(:expression)  {
       condition >> (space >> str('AND') >> space >> expression).repeat }
     rule(:where)       {
@@ -73,7 +73,7 @@ module NoSE
 
     rule(:setting) {
       (identifier | str('**')).as(:field) >> space? >> str('=') >> space? >>
-      (literal.as(:value) | str('?'))
+      literal.as(:value)
     }
     rule(:settings) {
       setting >> (space? >> str(',') >> space? >> setting).repeat
@@ -132,6 +132,7 @@ module NoSE
     rule(str: simple(:string)) { string.to_s }
     rule(int: simple(:integer)) { integer.to_i }
     rule(statement: subtree(:stmt)) { stmt.first.last }
+    rule(unknown: simple(:val)) { nil }
   end
 
   # A single condition in a where clause
