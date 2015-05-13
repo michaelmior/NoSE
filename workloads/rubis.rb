@@ -97,8 +97,8 @@ NoSE::Workload.new do
   # ViewBidHistory
   Q 'SELECT items.name FROM items WHERE items.id = ?', 2.38 / 4
   Q 'SELECT olditems.name FROM olditems WHERE olditems.id = ?', 2.38 / 4
-  Q 'SELECT bids.id, bids.user_id, item_id.id, bids.qty, bids.bid, bids.date FROM bids.item_id WHERE item_id.id = ? ORDER BY bids.date', 2.38 / 4
-  Q 'SELECT users.id, users.nickname FROM users.bids.item_id WHERE item_id.id = ?', 2.38 / 4
+  Q 'SELECT bids.id, item_id.id, bids.qty, bids.bid, bids.date FROM bids.item_id WHERE item_id.id = ? ORDER BY bids.date', 2.38 / 4
+  Q 'SELECT users.id, users.nickname, bids.id FROM users.bids.item_id WHERE item_id.id = ?', 2.38 / 4
 
   # ViewItem
   Q 'SELECT items.* FROM items WHERE items.id = ?', 22.95 / 4.0 * 0.75
@@ -117,8 +117,9 @@ NoSE::Workload.new do
   # Q 'SELECT id, name FROM regions', (0.03 + 0.02)
 
   # ViewUserInfo
-  Q 'SELECT comments.id, comments.to_user_id, comments.item_id, comments.rating, comments.date, comments.comment FROM comments.to_user_id WHERE to_user_id.id = ?', 4.41 / 2
-  Q 'SELECT users.id, users.nickname FROM users WHERE users.id = ?', 4.41 / 2
+  Q 'SELECT comments.id, comments.rating, comments.date, comments.comment FROM comments.to_user_id WHERE to_user_id.id = ?', 4.41 / 3
+  Q 'SELECT comments.id, item_id.id FROM comments.item_id WHERE comments.id = ?', 4.41 / 3
+  Q 'SELECT to_user_id.id, to_user_id.nickname, comments.id FROM comments.to_user_id WHERE to_user_id.id = ?', 4.41 / 3
 end
 
 # rubocop:enable all

@@ -73,7 +73,7 @@ NoSE::Workload.new do
 
   # Define queries and their relative weights
 
-  Q 'SELECT comments.from_user_id, comments.date, comments.comment FROM comments.item_id WHERE item_id.id = ? ORDER BY comments.date'
+  Q 'SELECT comments.date, comments.comment FROM comments.item_id WHERE item_id.id = ? ORDER BY comments.date'
   # 1. SELECT item_id as E_item, date as O_date, from_user_id, date, comment FROM comments;
   # I2227598752
 
@@ -85,7 +85,7 @@ NoSE::Workload.new do
   # 3. SELECT region as E_region, items.id, name, description, max_bid FROM items join users on items.seller=users.id WHERE items.seller.region;
   # I4186334592
 
-  Q 'SELECT comments.from_user_id, comments.date, comments.comment FROM comments.item_id.seller.region WHERE item_id.quantity = ? AND region.id = ?'
+  Q 'SELECT comments.date, comments.comment FROM comments.item_id.seller.region WHERE item_id.quantity = ? AND region.id = ?'
   # 4. SELECT category AS E_category, region as E_region, from_user_id, date, comment FROM comments join items on comments.item_id=items.id join users on items.seller=users.id;
   # I3254083673
 
@@ -93,7 +93,7 @@ NoSE::Workload.new do
   # 5. SELECT region as E_region, category as E_category, end_date as O_end_date, bids.id as O_id, bid, date FROM bids join items on bids.item_id=items.id join users on items.seller=users.id
   # I1184534160
 
-  Q 'SELECT comments.from_user_id, comments.comment, comments.date FROM comments.item_id.seller WHERE seller.id = ?'
+  Q 'SELECT comments.comment, comments.date FROM comments.item_id.seller WHERE seller.id = ?'
   # 6. SELECT seller AS E_seller, comments.id AS O_id, from_user_id, comment, date FROM comments join items on comments.item_id=items.id;
   # I638854407
 

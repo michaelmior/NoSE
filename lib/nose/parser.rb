@@ -365,9 +365,8 @@ module NoSE
         else
           field = @model.find_field [entity, field.last.to_s]
 
-          # XXX This should be switched on once the RUBiS workload is fixed
-          # fail InvalidStatementException, 'Foreign keys cannot be selected' \
-          #   if field.is_a? Fields::ForeignKeyField
+          fail InvalidStatementException, 'Foreign keys cannot be selected' \
+            if field.is_a? Fields::ForeignKeyField
 
           field
         end
