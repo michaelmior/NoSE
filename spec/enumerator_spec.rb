@@ -5,7 +5,7 @@ module NoSE
     subject(:enum) { IndexEnumerator.new workload }
 
     it 'produces a simple index for a filter' do
-      query = Query.new 'SELECT Username FROM User WHERE User.City = ?',
+      query = Query.new 'SELECT User.Username FROM User WHERE User.City = ?',
                         workload.model
       indexes = enum.indexes_for_query query
 
@@ -14,7 +14,7 @@ module NoSE
     end
 
     it 'produces a simple index for a foreign key join' do
-      query = Query.new 'SELECT Body FROM Tweet.User WHERE User.City = ?',
+      query = Query.new 'SELECT Tweet.Body FROM Tweet.User WHERE User.City = ?',
                         workload.model
       indexes = enum.indexes_for_query query
 
@@ -24,7 +24,7 @@ module NoSE
     end
 
     it 'produces a simple index for a filter within a workload' do
-      query = Query.new 'SELECT Username FROM User WHERE User.City = ?',
+      query = Query.new 'SELECT User.Username FROM User WHERE User.City = ?',
                         workload.model
       workload.add_statement query
       indexes = enum.indexes_for_workload
@@ -34,8 +34,8 @@ module NoSE
     end
 
     it 'does not produce empty indexes' do
-      query = Query.new 'SELECT Body FROM Tweet.User WHERE User.City = ?',
-                        workload.model
+      query = Query.new 'SELECT Tweet.Body FROM Tweet.User ' \
+                        'WHERE User.City = ?', workload.model
       workload.add_statement query
       indexes = enum.indexes_for_workload
       expect(indexes).to all(satisfy do |index|
@@ -66,8 +66,8 @@ module NoSE
                           model
       workload.add_statement update
 
-      query = Query.new 'SELECT Body FROM Tweet.User WHERE User.Username = ?',
-                        workload.model
+      query = Query.new 'SELECT Tweet.Body FROM Tweet.User ' \
+                        'WHERE User.Username = ?', workload.model
       workload.add_statement query
 
       indexes = enum.indexes_for_workload

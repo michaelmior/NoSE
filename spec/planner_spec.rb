@@ -6,8 +6,8 @@ module NoSE::Plans
     it 'can look up fields by key' do
       index = tweet.simple_index
       planner = QueryPlanner.new workload.model, [index], cost_model
-      query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
-                              workload.model
+      query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet ' \
+                              'WHERE Tweet.TweetId = ?', workload.model
 
       tree = planner.find_plans_for_query query
       expect(tree.first).to eq([IndexLookupPlanStep.new(index)])
@@ -21,7 +21,7 @@ module NoSE::Plans
                               [tweet['Timestamp'], tweet['Body']],
                               [user, tweet]
       planner = QueryPlanner.new workload.model, [index], cost_model
-      query = NoSE::Query.new 'SELECT Body FROM Tweet.User WHERE ' \
+      query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User WHERE ' \
                               'User.City = ? ORDER BY Tweet.Timestamp',
                               workload.model
 
@@ -37,7 +37,7 @@ module NoSE::Plans
     it 'can apply a limit directly' do
       index = tweet.simple_index
       planner = QueryPlanner.new workload.model, [index], cost_model
-      query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE ' \
+      query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet WHERE ' \
                               'Tweet.TweetId = ? LIMIT 5', workload.model
 
       tree = planner.find_plans_for_query query
@@ -51,7 +51,7 @@ module NoSE::Plans
                               [tweet['Timestamp'], tweet['Body']],
                               [user, tweet]
       planner = QueryPlanner.new workload.model, [index], cost_model
-      query = NoSE::Query.new 'SELECT Body FROM Tweet.User WHERE ' \
+      query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User WHERE ' \
                               'User.UserId = ? ORDER BY Tweet.Timestamp ' \
                               'LIMIT 5', workload.model
 
@@ -67,8 +67,8 @@ module NoSE::Plans
 
     it 'raises an exception if there is no plan' do
       planner = QueryPlanner.new workload.model, [], cost_model
-      query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
-                              workload.model
+      query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet ' \
+                              'WHERE Tweet.TweetId = ?', workload.model
       expect { planner.find_plans_for_query query }.to \
           raise_error NoPlanException
     end
@@ -81,7 +81,7 @@ module NoSE::Plans
                                [tweet['Timestamp'], tweet['Body']],
                                [user, tweet]
       planner = QueryPlanner.new workload.model, [index1, index2], cost_model
-      query = NoSE::Query.new 'SELECT Body FROM Tweet.User ' \
+      query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User ' \
                               'WHERE User.UserId = ? ' \
                               'ORDER BY Tweet.Timestamp', workload.model
 
@@ -99,8 +99,8 @@ module NoSE::Plans
       index = NoSE::Index.new [tweet['TweetId']], [],
                               [tweet['Body'], tweet['Timestamp']], [tweet]
       planner = QueryPlanner.new workload.model, [index], cost_model
-      query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?',
-                              workload.model
+      query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet ' \
+                              'WHERE Tweet.TweetId = ?', workload.model
 
       plan = planner.find_plans_for_query(query).first
       expect(plan.last.fields).to include(tweet['TweetId'], tweet['Body'],
@@ -111,7 +111,7 @@ module NoSE::Plans
       index = NoSE::Index.new [tweet['TweetId']], [],
                               [tweet['Body'], tweet['Timestamp']], [tweet]
       planner = QueryPlanner.new workload.model, [index], cost_model
-      query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE ' \
+      query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet WHERE ' \
                               'Tweet.TweetId = ? AND Tweet.Timestamp > ?',
                                workload.model
 
@@ -122,14 +122,14 @@ module NoSE::Plans
 
     context 'when updating cardinality' do
       before(:each) do
-        simple_query = NoSE::Query.new 'SELECT Body FROM Tweet WHERE ' \
+        simple_query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet WHERE ' \
                                        'Tweet.TweetId = ?', workload.model
         @simple_state = StatementState.new simple_query, workload.model
 
         # Pretend we start with all tweets
         @simple_state.cardinality = tweet.count
 
-        query = NoSE::Query.new 'SELECT Body FROM Tweet.User ' \
+        query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User ' \
                                 'WHERE User.UserId = ?', workload.model
         @state = StatementState.new query, workload.model
       end
@@ -170,14 +170,14 @@ module NoSE::Plans
         NoSE::Index.new([tweet['TweetId']], [], [tweet['Body']], [tweet])
       ]
       planner = QueryPlanner.new workload.model, indexes, cost_model
-      query = NoSE::Query.new 'SELECT Body FROM Tweet.User ' \
+      query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User ' \
                               'WHERE User.Username = ?', workload.model
       expect { planner.find_plans_for_query query }.to \
         raise_error NoPlanException
     end
 
     it 'can use materialized views which traverse multiple entities' do
-      query = NoSE::Query.new 'SELECT Body FROM Tweet.User ' \
+      query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User ' \
                               'WHERE User.Username = ?', workload.model
       workload.add_statement query
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload
@@ -192,7 +192,7 @@ module NoSE::Plans
     end
 
     it 'can use multiple indices for a query' do
-      query = NoSE::Query.new 'SELECT Body FROM Tweet.User ' \
+      query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User ' \
                               'WHERE User.Username = ?', workload.model
       workload.add_statement query
 
@@ -210,7 +210,7 @@ module NoSE::Plans
     end
 
     it 'can create plans which visit each entity' do
-      query = NoSE::Query.new 'SELECT URL FROM Link.Tweet.User ' \
+      query = NoSE::Query.new 'SELECT Link.URL FROM Link.Tweet.User ' \
                               'WHERE User.Username = ?', workload.model
       workload.add_statement query
 
@@ -222,7 +222,8 @@ module NoSE::Plans
     end
 
     it 'does not use limits for a single entity result set' do
-      query = NoSE::Query.new 'SELECT * FROM User WHERE User.UserId = ? ' \
+      query = NoSE::Query.new 'SELECT User.* FROM User ' \
+                              'WHERE User.UserId = ? ' \
                               'ORDER BY User.UserId LIMIT 10', workload.model
       workload.add_statement query
 

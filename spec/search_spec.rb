@@ -4,14 +4,16 @@ module NoSE::Search
     include_context 'entities'
 
     it 'raises an exception if there is no space' do
-      workload.add_statement 'SELECT Body FROM Tweet WHERE Tweet.TweetId = ?'
+      workload.add_statement 'SELECT Tweet.Body FROM Tweet ' \
+                             'WHERE Tweet.TweetId = ?'
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
       search = Search.new(workload, cost_model)
       expect { search.search_overlap(indexes, 1) }.to raise_error
     end
 
     it 'produces a materialized view with sufficient space', gurobi: true do
-      query = NoSE::Query.new 'SELECT UserId FROM User WHERE User.City = ? ' \
+      query = NoSE::Query.new 'SELECT User.UserId FROM User ' \
+                              'WHERE User.City = ? ' \
                               'ORDER BY User.Username', workload.model
       workload.add_statement query
 
@@ -21,8 +23,8 @@ module NoSE::Search
     end
 
     it 'can perform multiple index lookups on a path segment', gurobi: true do
-      query = NoSE::Query.new 'SELECT Username FROM User WHERE User.City = ?',
-                              workload.model
+      query = NoSE::Query.new 'SELECT User.Username FROM User ' \
+                              'WHERE User.City = ?', workload.model
       workload.add_statement query
 
       indexes = [
@@ -38,9 +40,9 @@ module NoSE::Search
     it 'does not denormalize heavily updated data', gurobi: true do
       workload.add_statement 'UPDATE User SET Username = ? ' \
                              'WHERE User.UserId = ?', 0.98
-      workload.add_statement 'SELECT Username FROM User ' \
+      workload.add_statement 'SELECT User.Username FROM User ' \
                              'WHERE User.City = ?', 0.01
-      workload.add_statement 'SELECT Username FROM User ' \
+      workload.add_statement 'SELECT User.Username FROM User ' \
                              'WHERE User.Username = ?', 0.01
 
       # Enumerate the indexes and select those actually used

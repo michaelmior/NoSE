@@ -17,7 +17,7 @@ module NoSE
     include_context 'entities'
 
     let(:query) do
-      Query.new 'SELECT TweetId FROM Tweet.User.Link WHERE ' \
+      Query.new 'SELECT Tweet.TweetId FROM Tweet.User.Link WHERE ' \
                 'Link.LinkId = ? AND Tweet.Timestamp > ? ' \
                 'AND User.City = ? ORDER BY Tweet.Timestamp LIMIT 5',
                 workload.model
@@ -40,15 +40,15 @@ module NoSE
     end
 
     it 'can select all fields' do
-      stmt = Query.new 'SELECT * FROM Tweet WHERE Tweet.Body = ?',
+      stmt = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Body = ?',
                        workload.model
       expect(stmt.select).to match_array tweet.fields.values
     end
 
     it 'compares equal regardless of constant values' do
-      stmt1 = Query.new 'SELECT * FROM Tweet WHERE Tweet.Timestamp = 3',
+      stmt1 = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Timestamp = 3',
                         workload.model
-      stmt2 = Query.new 'SELECT * FROM Tweet WHERE Tweet.Timestamp = 2',
+      stmt2 = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Timestamp = 2',
                         workload.model
 
       expect(stmt1).to eq stmt2
@@ -56,39 +56,42 @@ module NoSE
 
     context 'when parsing literals' do
       it 'can find strings' do
-        stmt = Query.new 'SELECT * FROM User WHERE User.City = "NY"',
+        stmt = Query.new 'SELECT User.* FROM User WHERE User.City = "NY"',
                          workload.model
         expect(stmt.conditions.first.value).to eq 'NY'
       end
 
       it 'can find integers' do
-        stmt = Query.new 'SELECT * FROM Tweet WHERE Tweet.Timestamp = 3',
+        stmt = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Timestamp = 3',
                          workload.model
         expect(stmt.conditions.first.value).to eq 3
       end
 
       it 'fails if the value is the wrong type' do
         expect do
-          Query.new 'SELECT * FROM User WHERE User.City = 3', workload.model
+          Query.new 'SELECT User.* FROM User WHERE User.City = 3',
+                    workload.model
         end.to raise_error TypeError
       end
     end
 
     it 'can select additional hash fields' do
-      query = Query.new 'SELECT ** FROM User WHERE User.UserId = ?',
+      query = Query.new 'SELECT User.** FROM User WHERE User.UserId = ?',
                         workload.model
       expect(query.select).to match_array [user['**']]
     end
 
     it 'fails if a field does not exist' do
       expect do
-        Query.new 'SELECT Banana FROM User WHERE User.City = ?', workload.model
+        Query.new 'SELECT User.Banana FROM User WHERE User.City = ?',
+                  workload.model
       end.to raise_error FieldNotFound
     end
 
     it 'does not allow predicates on foreign keys' do
       expect do
-        Query.new 'SELECT * FROM Tweet WHERE Tweet.User = ?', workload.model
+        Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.User = ?',
+                  workload.model
       end.to raise_error InvalidStatementException
     end
   end
@@ -128,7 +131,7 @@ module NoSE
                               [user['City']], [tweet, user], workload.model
       query = update.support_queries(index).first
       expect(query.text).to eq \
-        'SELECT Timestamp FROM Tweet.User WHERE User.UserId = ?'
+        'SELECT Tweet.Timestamp FROM Tweet.User WHERE User.UserId = ?'
       expect(query.statement).to eq(update)
       expect(query.index).to eq(index)
     end
@@ -139,7 +142,7 @@ module NoSE
       index = NoSE::Index.new [user['Username'], user['UserId']], [],
                               [user['City']], [user], workload.model
       expect(update.support_queries(index).first.text).to eq \
-        'SELECT Username FROM User WHERE User.UserId = ?'
+        'SELECT User.Username FROM User WHERE User.UserId = ?'
     end
 
     it 'fails if the FROM clause does not start with the updated entity' do

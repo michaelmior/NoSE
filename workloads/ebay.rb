@@ -28,10 +28,10 @@ NoSE::Workload.new do
   ManyToOne 'ItemID', 'Like' => 'Item'
 
   # Define queries and their relative weights
-  Q 'SELECT * FROM User WHERE User.UserID = ?'
-  Q 'SELECT * FROM Item WHERE Item.ItemID = ?'
-  Q 'SELECT * FROM User.Like.Item WHERE Item.ItemID = ? ORDER BY Like.LikedAt'
-  Q 'SELECT * FROM Item.Like.User WHERE User.UserID = ? ORDER BY Like.LikedAt'
+  Q 'SELECT User.* FROM User WHERE User.UserID = ?'
+  Q 'SELECT Item.* FROM Item WHERE Item.ItemID = ?'
+  Q 'SELECT User.* FROM User.Like.Item WHERE Item.ItemID = ? ORDER BY Like.LikedAt'
+  Q 'SELECT Item.* FROM Item.Like.User WHERE User.UserID = ? ORDER BY Like.LikedAt'
 end
 
 # rubocop:enable all

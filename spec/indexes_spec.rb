@@ -17,14 +17,14 @@ module NoSE
     end
     let(:model) { workload.model }
     let(:equality_query) do
-      Query.new 'SELECT Id FROM Foo WHERE Foo.Id = ?', model
+      Query.new 'SELECT Foo.Id FROM Foo WHERE Foo.Id = ?', model
     end
     let(:combo_query) do
-      Query.new 'SELECT Id FROM Foo WHERE Foo.Id > ? AND Foo.Bar = ?',
+      Query.new 'SELECT Foo.Id FROM Foo WHERE Foo.Id > ? AND Foo.Bar = ?',
                 model
     end
     let(:order_query) do
-      Query.new 'SELECT Id FROM Foo WHERE Foo.Id = ? ORDER BY Foo.Bar',
+      Query.new 'SELECT Foo.Id FROM Foo WHERE Foo.Id = ? ORDER BY Foo.Bar',
                 model
     end
 
@@ -80,7 +80,7 @@ module NoSE
       end
 
       it 'includes only one entity in the hash fields' do
-        query = Query.new 'SELECT Id FROM Foo.Corge WHERE Foo.Bar = ? ' \
+        query = Query.new 'SELECT Foo.Id FROM Foo.Corge WHERE Foo.Bar = ? ' \
                           'AND Corge.Quux = ?', model
         index = query.materialize_view
         expect(index.hash_fields.map(&:parent).uniq).to have(1).item
