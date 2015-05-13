@@ -24,7 +24,7 @@ module NoSE::Backend
 
     it 'can lookup data for an index based on a plan' do
       # Materialize a view for the given query
-      query = NoSE::Statement.parse 'SELECT Body FROM Tweet.User ' \
+      query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
                                     'WHERE User.Username = "Bob" ' \
                                     'ORDER BY Tweet.Timestamp LIMIT 10', workload.model
       index = query.materialize_view
@@ -75,8 +75,8 @@ module NoSE::Backend
         {'User_Username' => 'Bob'}
       ]
       step = NoSE::Plans::FilterPlanStep.new [user['Username']], nil
-      query = NoSE::Query.new 'SELECT * FROM User WHERE User.Username = "Bob"',
-                              workload.model
+      query = NoSE::Query.new 'SELECT User.* FROM User ' \
+                              'WHERE User.Username = "Bob"', workload.model
 
       BackendBase::FilterQueryStep.process nil, query, results, step, nil, nil
 
@@ -91,8 +91,9 @@ module NoSE::Backend
         {'User_Username' => 'Bob'}
       ]
       step = NoSE::Plans::FilterPlanStep.new [], [user['Username']]
-      query = NoSE::Query.new 'SELECT * FROM User WHERE User.Username < "B" ' \
-                              'AND User.City = "New York"', workload.model
+      query = NoSE::Query.new 'SELECT User.* FROM User WHERE ' \
+                              'User.Username < "B" AND User.City = "New York"',
+                              workload.model
 
       BackendBase::FilterQueryStep.process nil, query, results, step, nil, nil
 

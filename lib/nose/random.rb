@@ -136,7 +136,7 @@ module NoSE
         path.sample.fields.values.sample
       end
 
-      query = "SELECT #{select.map(&:name).join ', '} " \
+      query = "SELECT #{path.first.name}.#{select.map(&:name).join ', '} " \
               "FROM #{path.first.name} WHERE #{conditions.map do |field|
                 "#{condition_field_name field, path}.#{field.name} = ?"
               end.join ' AND '}"

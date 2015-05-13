@@ -15,7 +15,7 @@ module NoSE
       end
 
       it 'automatically parses queries' do
-        valid_query = Query.new 'SELECT Id FROM Foo WHERE Foo.Id = ?',
+        valid_query = Query.new 'SELECT Foo.Id FROM Foo WHERE Foo.Id = ?',
                                 workload.model
         workload.add_statement valid_query
 

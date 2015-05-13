@@ -8,7 +8,7 @@ module NoSE::Cost
       planner = NoSE::Plans::QueryPlanner.new workload.model,
                                               [tweet.simple_index], subject
       plan = planner.min_plan \
-        NoSE::Query.new 'SELECT * FROM Tweet WHERE Tweet.TweetId = ?',
+        NoSE::Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.TweetId = ?',
                         workload.model
       expect(plan.cost).to eq 1
     end
@@ -20,8 +20,8 @@ module NoSE::Cost
     let(:subject) { EntityCountCost }
 
     it 'counts multiple requests when multiple entities are selected' do
-      query = NoSE::Query.new 'SELECT * FROM Tweet.User WHERE User.UserId = ?',
-                              workload.model
+      query = NoSE::Query.new 'SELECT Tweet.* FROM Tweet.User ' \
+                              'WHERE User.UserId = ?', workload.model
       planner = NoSE::Plans::QueryPlanner.new workload.model,
                                               [query.materialize_view], subject
       plan = planner.min_plan query
@@ -38,7 +38,7 @@ module NoSE::Cost
       index = tweet.simple_index
       planner = NoSE::Plans::QueryPlanner.new workload.model, [index], subject
       plan = planner.min_plan \
-        NoSE::Query.new 'SELECT * FROM Tweet WHERE Tweet.TweetId = ?',
+        NoSE::Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.TweetId = ?',
                         workload.model
       expect(plan.cost).to eq index.all_fields.map(&:size).inject(&:+)
     end

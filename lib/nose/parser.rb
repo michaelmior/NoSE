@@ -59,11 +59,13 @@ module NoSE
     include Parslet
 
     rule(:identifier)    { match('[A-z]').repeat(1).as(:identifier) }
-    rule(:select_fields) {
-      (identifier | str('**')) >> (comma >> (identifier | str('**'))).repeat }
-
     rule(:field)         { identifier >> (str('.') >> identifier).repeat(1, 1) }
     rule(:fields)        { field >> (comma >> field).repeat }
+    rule(:select_field)  { field | (identifier >> str('.') >>
+                                    str('**').as(:identifier2)) |
+                           (identifier >> str('.') >>
+                            str('*').as(:identifier2)) }
+    rule(:select_fields) { select_field >> (comma >> select_field).repeat }
     rule(:path)          { identifier >> (str('.') >> identifier).repeat }
   end
 
@@ -96,7 +98,7 @@ module NoSE
       space >> str('ORDER BY') >> space >> fields.as_array(:fields) }
 
     rule(:query)   {
-      str('SELECT') >> space >> (select_fields.as_array(:select) | str('*')) >>
+      str('SELECT') >> space >> select_fields.as_array(:select) >>
       space >> str('FROM') >> space >> path.as_array(:path) >>
       where.maybe.as(:where) >> order.maybe.as(:order) >>
       limit.maybe.capture(:limit) }
@@ -140,6 +142,7 @@ module NoSE
   # Simple transformations to clean up the CQL parse tree
   class CQLT < Parslet::Transform
     rule(identifier: simple(:identifier)) { identifier }
+    rule(identifier: simple(:identifier), identifier2: simple(:identifier2)) { [identifier, identifier2] }
     rule(field: sequence(:id)) { id.map(&:to_s) }
     rule(path: sequence(:id)) { id.map(&:to_s) }
     rule(str: simple(:string)) { string.to_s }
@@ -353,13 +356,13 @@ module NoSE
 
     # Populate the fields selected by this query
     def populate_fields
-      if @tree[:select]
-        @select = @tree[:select].map do |field|
-          @model.find_field [@from, field.to_s]
-        end.to_set
-      else
-        @select = @from.fields.values.to_set
-      end
+      @select = @tree[:select].flatten.each_slice(2).map do |field|
+        if field.last == '*'
+          @model[field.first.to_s].fields.values
+        else
+          @model.find_field field.map(&:to_s)
+        end
+      end.flatten(1).to_set
 
       return @order = [] if @tree[:order].nil?
       @order = @tree[:order][:fields].map do |field|
@@ -455,7 +458,19 @@ module NoSE
       required_fields = index.hash_fields - @conditions.map(&:field)
       return nil if required_fields.empty?
 
-      SupportQuery.new "SELECT #{required_fields.map(&:name).join ', ' } " \
+      # Get the full name of each field to be used during selection
+      query_keys.unshift index.path.first
+      required_fields.map! do |field|
+        parent = query_keys.find do |key|
+          field.parent == key ||
+          (key.is_a?(NoSE::Fields::ForeignKeyField) &&
+           field.parent == key.entity)
+        end
+
+        "#{parent.name}.#{field.name}"
+      end
+
+      SupportQuery.new "SELECT #{required_fields.to_a.join ', ' } " \
                        "FROM #{query_from.join '.'} #{@where_source}", @model,
                        self, index
     end

@@ -92,23 +92,23 @@ NoSE::Workload.new do
 
   # BrowseCategories
   # XXX Must have at least one equality predicate
-  Q 'SELECT id, name FROM categories WHERE categories.dummy = 1', (4.44 + 3.21)
+  Q 'SELECT categories.id, categories.name FROM categories WHERE categories.dummy = 1', (4.44 + 3.21)
 
   # ViewBidHistory
-  Q 'SELECT name FROM items WHERE items.id = ?', 2.38 / 4
-  Q 'SELECT name FROM olditems WHERE olditems.id = ?', 2.38 / 4
-  Q 'SELECT id, user_id, item_id, qty, bid, date FROM bids.item_id WHERE item_id.id = ? ORDER BY bids.date', 2.38 / 4
-  Q 'SELECT id, nickname FROM users.bids.item_id WHERE item_id.id = ?', 2.38 / 4
+  Q 'SELECT items.name FROM items WHERE items.id = ?', 2.38 / 4
+  Q 'SELECT olditems.name FROM olditems WHERE olditems.id = ?', 2.38 / 4
+  Q 'SELECT bids.id, bids.user_id, bids.item_id, bids.qty, bids.bid, bids.date FROM bids.item_id WHERE item_id.id = ? ORDER BY bids.date', 2.38 / 4
+  Q 'SELECT users.id, users.nickname FROM users.bids.item_id WHERE item_id.id = ?', 2.38 / 4
 
   # ViewItem
-  Q 'SELECT * FROM items WHERE items.id = ?', 22.95 / 4.0 * 0.75
-  Q 'SELECT * FROM olditems WHERE olditems.id = ?', 22.95 / 4.0 * 0.25
-  Q 'SELECT bid FROM bids.item_id WHERE item_id.id = ? ORDER BY bids.bid LIMIT 1', 22.95 / 4.0
-  Q 'SELECT bid, qty FROM bids.item_id WHERE item_id.id = ? ORDER BY bids.bid LIMIT 5', 22.95 / 4.0
-  Q 'SELECT id FROM bids.item_id WHERE item_id.id = ?', 22.95 / 4.0 # XXX: total bids
+  Q 'SELECT items.* FROM items WHERE items.id = ?', 22.95 / 4.0 * 0.75
+  Q 'SELECT olditems.* FROM olditems WHERE olditems.id = ?', 22.95 / 4.0 * 0.25
+  Q 'SELECT bids.bid FROM bids.item_id WHERE item_id.id = ? ORDER BY bids.bid LIMIT 1', 22.95 / 4.0
+  Q 'SELECT bids.bid, bids.qty FROM bids.item_id WHERE item_id.id = ? ORDER BY bids.bid LIMIT 5', 22.95 / 4.0
+  Q 'SELECT bids.id FROM bids.item_id WHERE item_id.id = ?', 22.95 / 4.0 # XXX: total bids
 
   # SearchItemsByCategory
-  Q 'SELECT id, name, initial_price, max_bid, nb_of_bids, end_date FROM items.category WHERE category.id = ? AND items.end_date >= ?', (27.77 + 8.26)
+  Q 'SELECT items.id, items.name, items.initial_price, items.max_bid, items.nb_of_bids, items.end_date FROM items.category WHERE category.id = ? AND items.end_date >= ?', (27.77 + 8.26)
 
   # XXX Not currently supported
   # # SearchItemsByRegion
@@ -117,10 +117,8 @@ NoSE::Workload.new do
   # Q 'SELECT id, name FROM regions', (0.03 + 0.02)
 
   # ViewUserInfo
-  Q 'SELECT id, to_user_id, item_id, rating, date, comment FROM comments.to_user_id WHERE to_user_id.id = ?', 4.41 / 2
-  Q 'SELECT id, nickname FROM users WHERE users.id = ?', 4.41 / 2
-
-  Q 'UPDATE comments FROM comments.to_user_id SET rating = ? WHERE to_user_id.id = ?'
+  Q 'SELECT comments.id, comments.to_user_id, comments.item_id, comments.rating, comments.date, comments.comment FROM comments.to_user_id WHERE to_user_id.id = ?', 4.41 / 2
+  Q 'SELECT users.id, users.nickname FROM users WHERE users.id = ?', 4.41 / 2
 end
 
 # rubocop:enable all
