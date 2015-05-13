@@ -357,10 +357,19 @@ module NoSE
     # Populate the fields selected by this query
     def populate_fields
       @select = @tree[:select].flatten.each_slice(2).map do |field|
+        # Find the entity along the path
+        entity = longest_entity_path[@tree[:path].index(field.first)]
+
         if field.last == '*'
-          @model[field.first.to_s].fields.values
+          entity.fields.values
         else
-          @model.find_field field.map(&:to_s)
+          field = @model.find_field [entity, field.last.to_s]
+
+          # XXX This should be switched on once the RUBiS workload is fixed
+          # fail InvalidStatementException, 'Foreign keys cannot be selected' \
+          #   if field.is_a? Fields::ForeignKeyField
+
+          field
         end
       end.flatten(1).to_set
 

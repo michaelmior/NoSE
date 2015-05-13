@@ -97,7 +97,7 @@ NoSE::Workload.new do
   # ViewBidHistory
   Q 'SELECT items.name FROM items WHERE items.id = ?', 2.38 / 4
   Q 'SELECT olditems.name FROM olditems WHERE olditems.id = ?', 2.38 / 4
-  Q 'SELECT bids.id, bids.user_id, bids.item_id, bids.qty, bids.bid, bids.date FROM bids.item_id WHERE item_id.id = ? ORDER BY bids.date', 2.38 / 4
+  Q 'SELECT bids.id, bids.user_id, item_id.id, bids.qty, bids.bid, bids.date FROM bids.item_id WHERE item_id.id = ? ORDER BY bids.date', 2.38 / 4
   Q 'SELECT users.id, users.nickname FROM users.bids.item_id WHERE item_id.id = ?', 2.38 / 4
 
   # ViewItem
