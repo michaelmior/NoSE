@@ -3,8 +3,7 @@ source 'https://rubygems.org'
 gem 'formatador'
 gem 'logging'
 gem 'parallel'
-gem 'parslet', git: 'https://github.com/michaelmior/parslet.git',
-               ref: '5d7bb70'
+gem 'parslet'
 gem 'rake', require: false
 gem 'representable'
 gem 'ruby-graphviz'
