@@ -17,8 +17,29 @@ class CaptureSource < Parslet::Atoms::Capture
   end
 end
 
-# Extend the DSL to support capturing the source
+# Modify named captures to allow arrays
+class Parslet::Atoms::Named < Parslet::Atoms::Base
+  def initialize(parslet, name, array = false)
+    super()
+    @parslet, @name, @array = parslet, name, array
+  end
+
+  private
+
+  def produce_return_value(val)
+    flatval = flatten(val, true)
+    flatval = [flatval] if @array and val.last == [:repetition]
+    { name => flatval }
+  end
+end
+
+# Extend the DSL to with some additional ways to capture the output
 module Parslet::Atoms::DSL
+  # Like #as, but ensures that the result is always an array
+  def as_array(name)
+    Parslet::Atoms::Named.new(self, name, true)
+  end
+
   # Capture some output along with the source string
   def capture_source(name)
     CaptureSource.new(self, name)
