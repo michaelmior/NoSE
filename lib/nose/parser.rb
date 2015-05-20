@@ -483,8 +483,9 @@ module NoSE
       end
       query_from = [index.path.first.name] + query_keys.map(&:name)
 
-      # Don't require selecting fields given in the WHERE clause
-      required_fields = index.hash_fields - @conditions.map(&:field)
+      # Don't require selecting fields given in the WHERE clause or settings
+      given_fields = self.is_a?(Insert) ? @settings : @conditions
+      required_fields = index.hash_fields - given_fields.map(&:field)
       return nil if required_fields.empty?
 
       # Get the full name of each field to be used during selection
@@ -499,9 +500,10 @@ module NoSE
         "#{parent.name}.#{field.name}"
       end
 
-      SupportQuery.new "SELECT #{required_fields.to_a.join ', ' } " \
-                       "FROM #{query_from.join '.'} #{@where_source}", @model,
-                       self, index
+      query = "SELECT #{required_fields.to_a.join ', ' } " \
+              "FROM #{query_from.join '.'}"
+      query += " #{@where_source}" unless @where_source.empty?
+      SupportQuery.new query, @model, self, index
     end
   end
 
@@ -541,6 +543,7 @@ module NoSE
   # A representation of an insert in the workload
   class Insert < Statement
     include StatementSettings
+    include StatementSupportQuery
 
     alias_method :entity, :from
 
@@ -561,7 +564,7 @@ module NoSE
     def support_queries(index)
       # XXX We should be able to do this with at most two queries,
       #     one for each side of the branch down the query path
-      return [] if (@entity.fields.values.to_set & index.all_fields).empty?
+      return [] if (@from.fields.values.to_set & index.all_fields).empty?
       index.all_fields.group_by(&:parent).map do |_, fields|
         support_query_for_fields index, fields
       end.compact
