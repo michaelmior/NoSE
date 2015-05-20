@@ -7,6 +7,7 @@ module NoSE
     def initialize(name, &block)
       @name = name
       @fields = {}
+      @foreign_keys = {}
       @count = 1
 
       # Precompute the hash
@@ -44,20 +45,20 @@ module NoSE
     # Get all foreign key fields on the entity
     # @return [Array<Fields::ForeignKeyField>]
     def foreign_keys
-      fields.values.select { |field| field.is_a? Fields::ForeignKeyField }
+      @foreign_keys.values
     end
 
     # Find the foreign key to a particular entity
     # @return [Fields::Field, nil]
     def foreign_key_for(entity)
-      fields.values.find do |field|
-        field.is_a?(Fields::ForeignKeyField) && field.entity == entity
-      end
+      @foreign_keys.values.find { |field| field.entity == entity }
     end
 
     # Adds a {Fields::Field} to the entity
     def <<(field)
       @fields[field.name] = field
+      @foreign_keys[field.name] = field if field.is_a? Fields::ForeignKeyField
+
       field.instance_variable_set(:@parent, self)
 
       field.hash
