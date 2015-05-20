@@ -327,13 +327,16 @@ module NoSE
     # Calculate the longest path of entities traversed by the statement
     def find_longest_path(path_entities)
       path = path_entities.map(&:to_s)[1..-1]
-      @longest_entity_path = path.reduce [@from] do |entities, key|
-        if entities.last.field? key
+      @longest_entity_path = [@from]
+
+      path.each do |key|
+        last_entity = @longest_entity_path.last
+        if last_entity.field? key
           # Search through foreign keys
-          entities + [entities.last[key].entity]
+          @longest_entity_path << last_entity[key].entity
         else
           # Assume only one foreign key in the opposite direction
-          entities + [@model[key]]
+          @longest_entity_path << @model[key]
         end
       end
     end
