@@ -80,9 +80,14 @@ module NoSE
 
     # Get the field on the entity with the given name
     # @return [Field]
-    def [](field, silent = false)
-      return @fields[field] if @fields.key? field
-      fail FieldNotFound unless silent
+    def [](field)
+      fail FieldNotFound unless field? field
+      @fields[field]
+    end
+
+    # Return true if the entity contains a field with the given name
+    def field?(field)
+      @fields.key? field
     end
   end
 

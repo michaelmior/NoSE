@@ -328,7 +328,7 @@ module NoSE
     def find_longest_path(path_entities)
       path = path_entities.map(&:to_s)[1..-1]
       @longest_entity_path = path.reduce [@from] do |entities, key|
-        if entities.last.send(:[], key, true)
+        if entities.last.field? key
           # Search through foreign keys
           entities + [entities.last[key].entity]
         else
