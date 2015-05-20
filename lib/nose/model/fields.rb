@@ -56,11 +56,6 @@ module NoSE::Fields
       @cardinality || @parent.count || 1
     end
 
-    # Check if this field is a foreign key to the given entity
-    def foreign_key_to?(_entity)
-      false
-    end
-
     # @abstract Subclasses should produce a typed value from a string
     # :nocov:
     def self.value_from_string(_string)
@@ -180,11 +175,6 @@ module NoSE::Fields
     # or a manually set cardinality
     def cardinality
       @entity.count || super
-    end
-
-    # Check if this field is a foreign key to the given entity
-    def foreign_key_to?(entity)
-      @entity == entity
     end
   end
 end

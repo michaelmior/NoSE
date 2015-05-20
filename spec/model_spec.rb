@@ -73,10 +73,6 @@ module NoSE
     it 'can have its cardinality updated by multiplication' do
       expect((field * 5).cardinality).to eq 5
     end
-
-    it 'is never a foreign key' do
-      expect(field.foreign_key_to? Entity.new('Baz')).to be_falsy
-    end
   end
 
   describe Fields::IntegerField do
@@ -101,14 +97,6 @@ module NoSE
     it 'can convert string literals' do
       date = Fields::DateField.value_from_string '2001-02-03T04:05:06+07:00'
       expect(date).to eq DateTime.new(2001, 2, 3, 4, 5, 6, '+7').to_time
-    end
-  end
-
-  describe Fields::ForeignKeyField do
-    include_context 'entities'
-
-    it 'can check if it points to an entity' do
-      expect(tweet['User'].foreign_key_to? user).to be_truthy
     end
   end
 end
