@@ -75,18 +75,42 @@ NoSE::Workload.new do
     Date       'date', count: 915
   end) * 1882
 
-  ManyToOne 'region',     'users'     => 'regions', count: 62
-  ManyToOne 'seller',     'items'     => 'users'
-  ManyToOne 'category',   'items'     => 'categories'
-  ManyToOne 'seller',     'olditems'  => 'users'
-  ManyToOne 'category',   'olditems'  => 'categories'
-  ManyToOne 'user_id',    'bids'      => 'users', count: 993655
-  ManyToOne 'item_id',    'bids'      => 'items', count: 426931
-  #ManyToOne 'from_user_id', 'comments'  => 'users', count: 413603
-  ManyToOne 'to_user_id', 'comments'  => 'users', count: 443798
-  ManyToOne 'item_id',    'comments'  => 'items', count: 533426
-  ManyToOne 'buyer_id',   'buynow'    => 'users', count: 1519
-  ManyToOne 'item_id',    'buynow'    => 'items', count: 1549
+  ManyToOne 'region',      'users',
+            'users'     => 'regions', count: 62
+
+  ManyToOne 'seller',      'items_sold',
+            'items'     => 'users'
+
+  ManyToOne 'category',    'items',
+            'items'     => 'categories'
+
+  ManyToOne 'seller',      'olditems_sold',
+            'olditems'  => 'users'
+
+
+  ManyToOne 'category',    'olditems',
+            'olditems'  => 'categories'
+
+  ManyToOne 'user',        'bids',
+            'bids'      => 'users', count: 993655
+
+  ManyToOne 'item',        'bids',
+            'bids'      => 'items', count: 426931
+
+  # ManyToOne 'from_user',   'comments_sent',
+  #           'comments'  => 'users', count: 41603
+
+  ManyToOne 'to_user',     'comments_received',
+            'comments'  => 'users', count: 443798
+
+  ManyToOne 'item',        'comments',
+            'comments'  => 'items', count: 533426
+
+  ManyToOne 'buyer',       'bought_now',
+            'buynow'    => 'users', count: 1519
+
+  ManyToOne 'item',        'bought_now',
+            'buynow'    => 'items', count: 1549
 
   # Define queries and their relative weights
 
@@ -97,15 +121,15 @@ NoSE::Workload.new do
   # ViewBidHistory
   Q 'SELECT items.name FROM items WHERE items.id = ?', 2.38 / 4
   Q 'SELECT olditems.name FROM olditems WHERE olditems.id = ?', 2.38 / 4
-  Q 'SELECT bids.id, item_id.id, bids.qty, bids.bid, bids.date FROM bids.item_id WHERE item_id.id = ? ORDER BY bids.date', 2.38 / 4
-  Q 'SELECT users.id, users.nickname, bids.id FROM users.bids.item_id WHERE item_id.id = ?', 2.38 / 4
+  Q 'SELECT bids.id, item.id, bids.qty, bids.bid, bids.date FROM bids.item WHERE item.id = ? ORDER BY bids.date', 2.38 / 4
+  Q 'SELECT users.id, users.nickname, bids.id FROM users.bids.item WHERE item.id = ?', 2.38 / 4
 
   # ViewItem
   Q 'SELECT items.* FROM items WHERE items.id = ?', 22.95 / 4.0 * 0.75
   Q 'SELECT olditems.* FROM olditems WHERE olditems.id = ?', 22.95 / 4.0 * 0.25
-  Q 'SELECT bids.bid FROM bids.item_id WHERE item_id.id = ? ORDER BY bids.bid LIMIT 1', 22.95 / 4.0
-  Q 'SELECT bids.bid, bids.qty FROM bids.item_id WHERE item_id.id = ? ORDER BY bids.bid LIMIT 5', 22.95 / 4.0
-  Q 'SELECT bids.id FROM bids.item_id WHERE item_id.id = ?', 22.95 / 4.0 # XXX: total bids
+  Q 'SELECT bids.bid FROM bids.item WHERE item.id = ? ORDER BY bids.bid LIMIT 1', 22.95 / 4.0
+  Q 'SELECT bids.bid, bids.qty FROM bids.item WHERE item.id = ? ORDER BY bids.bid LIMIT 5', 22.95 / 4.0
+  Q 'SELECT bids.id FROM bids.item WHERE item.id = ?', 22.95 / 4.0 # XXX: total bids
 
   # SearchItemsByCategory
   Q 'SELECT items.id, items.name, items.initial_price, items.max_bid, items.nb_of_bids, items.end_date FROM items.category WHERE category.id = ? AND items.end_date >= ?', (27.77 + 8.26)
@@ -117,9 +141,9 @@ NoSE::Workload.new do
   # Q 'SELECT id, name FROM regions', (0.03 + 0.02)
 
   # ViewUserInfo
-  Q 'SELECT comments.id, comments.rating, comments.date, comments.comment FROM comments.to_user_id WHERE to_user_id.id = ?', 4.41 / 3
-  Q 'SELECT comments.id, item_id.id FROM comments.item_id WHERE comments.id = ?', 4.41 / 3
-  Q 'SELECT to_user_id.id, to_user_id.nickname, comments.id FROM comments.to_user_id WHERE to_user_id.id = ?', 4.41 / 3
+  Q 'SELECT comments.id, comments.rating, comments.date, comments.comment FROM comments.to_user WHERE to_user.id = ?', 4.41 / 3
+  Q 'SELECT comments.id, item.id FROM comments.item WHERE comments.id = ?', 4.41 / 3
+  Q 'SELECT to_user.id, to_user.nickname, comments.id FROM comments.to_user WHERE to_user.id = ?', 4.41 / 3
 end
 
 # rubocop:enable all
