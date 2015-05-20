@@ -7,31 +7,33 @@ NoSE::Workload.new do
   # Define entities along with the size and cardinality of their fields
   # as well as an estimated number of each entity
 
-  Entity 'User' do
+  Entity 'Users' do
     ID     'UserID'
     String 'Name', 50
     String 'Email', 50
   end
 
-  Entity 'Item' do
+  Entity 'Items' do
     ID     'ItemID'
     String 'Title', 50
     String 'Desc', 200
   end
 
-  Entity 'Like' do
+  Entity 'Likes' do
     ID         'LikeID'
     Date       'LikedAt'
   end
 
-  ManyToOne 'UserID', 'Like' => 'User'
-  ManyToOne 'ItemID', 'Like' => 'Item'
+  ManyToOne 'User',    'Likes',
+            'Likes' => 'Users'
+  ManyToOne 'Item',    'Likes',
+            'Likes' => 'Items'
 
   # Define queries and their relative weights
-  Q 'SELECT User.* FROM User WHERE User.UserID = ?'
-  Q 'SELECT Item.* FROM Item WHERE Item.ItemID = ?'
-  Q 'SELECT User.* FROM User.Like.Item WHERE Item.ItemID = ? ORDER BY Like.LikedAt'
-  Q 'SELECT Item.* FROM Item.Like.User WHERE User.UserID = ? ORDER BY Like.LikedAt'
+  Q 'SELECT Users.* FROM Users WHERE Users.UserID = ?'
+  Q 'SELECT Items.* FROM Items WHERE Items.ItemID = ?'
+  Q 'SELECT Users.* FROM Users.Likes.Item WHERE Item.ItemID = ? ORDER BY Likes.LikedAt'
+  Q 'SELECT Items.* FROM Items.Likes.User WHERE User.UserID = ? ORDER BY Likes.LikedAt'
 end
 
 # rubocop:enable all

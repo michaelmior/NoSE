@@ -60,20 +60,39 @@ NoSE::Workload.new do
     Date       'date', count: 100_000
   end) * 20_00_000
 
-  ManyToOne 'region',       'users'    => 'regions'
-  ManyToOne 'seller',       'items'    => 'users'
-  ManyToOne 'category',     'items'    => 'categories'
-  ManyToOne 'user',         'bids'     => 'users', count: 900_000
-  ManyToOne 'item_id',      'bids'     => 'items', count: 90_000_000
-  ManyToOne 'from_user_id', 'comments' => 'users', count: 500_000
-  #ManyToOne 'to_user_id', 'comments' => 'users'
-  ManyToOne 'item_id',      'comments' => 'items'
-  ManyToOne 'buyer',        'buynow'   => 'users', count: 500_000
-  ManyToOne 'item',         'buynow'   => 'items', count: 5_000_000
+  ManyToOne 'region',       'users',
+            'users'      => 'regions'
+
+  ManyToOne 'seller',       'items_sold',
+            'items'      => 'users'
+
+  ManyToOne 'category',     'items',
+            'items'      => 'categories'
+
+  ManyToOne 'user',         'bids',
+            'bids'       => 'users', count: 900_000
+
+  ManyToOne 'item',         'bids',
+            'bids'       => 'items', count: 90_000_000
+
+  ManyToOne 'from_user',    'comments_sent',
+            'comments'   => 'users', count: 500_000
+
+  # ManyToOne 'to_user',      'comments_received'
+  #           'comments'   => 'users'
+
+  ManyToOne 'item',         'comments',
+            'comments'   => 'items'
+
+  ManyToOne 'buyer',        'bought_now',
+            'buynow'     => 'users', count: 500_000
+
+  ManyToOne 'item',         'bought_now',
+            'buynow'     => 'items', count: 5_000_000
 
   # Define queries and their relative weights
 
-  Q 'SELECT comments.date, comments.comment FROM comments.item_id WHERE item_id.id = ? ORDER BY comments.date'
+  Q 'SELECT comments.date, comments.comment FROM comments.item WHERE item.id = ? ORDER BY comments.date'
   # 1. SELECT item_id as E_item, date as O_date, from_user_id, date, comment FROM comments;
   # I2227598752
 
@@ -85,15 +104,15 @@ NoSE::Workload.new do
   # 3. SELECT region as E_region, items.id, name, description, max_bid FROM items join users on items.seller=users.id WHERE items.seller.region;
   # I4186334592
 
-  Q 'SELECT comments.date, comments.comment FROM comments.item_id.seller.region WHERE item_id.quantity = ? AND region.id = ?'
+  Q 'SELECT comments.date, comments.comment FROM comments.item.seller.region WHERE item.quantity = ? AND region.id = ?'
   # 4. SELECT category AS E_category, region as E_region, from_user_id, date, comment FROM comments join items on comments.item_id=items.id join users on items.seller=users.id;
   # I3254083673
 
-  Q 'SELECT bids.bid, bids.date FROM bids.item_id.seller.region WHERE region.id = ? AND item_id.quantity = ? AND item_id.end_date < ?'
+  Q 'SELECT bids.bid, bids.date FROM bids.item.seller.region WHERE region.id = ? AND item.quantity = ? AND item.end_date < ?'
   # 5. SELECT region as E_region, category as E_category, end_date as O_end_date, bids.id as O_id, bid, date FROM bids join items on bids.item_id=items.id join users on items.seller=users.id
   # I1184534160
 
-  Q 'SELECT comments.comment, comments.date FROM comments.item_id.seller WHERE seller.id = ?'
+  Q 'SELECT comments.comment, comments.date FROM comments.item.seller WHERE seller.id = ?'
   # 6. SELECT seller AS E_seller, comments.id AS O_id, from_user_id, comment, date FROM comments join items on comments.item_id=items.id;
   # I638854407
 
@@ -101,7 +120,7 @@ NoSE::Workload.new do
   # 7. SELECT category as E_category, id, name FROM items;
   # I3358488952
 
-  Q 'SELECT comments.comment FROM comments.item_id.category WHERE category.id = ? ORDER BY comments.date'
+  Q 'SELECT comments.comment FROM comments.item.category WHERE category.id = ? ORDER BY comments.date'
   # 8. SELECT category AS E_category, date AS O_date, comment FROM comments join items ON comments.item_id=items.id;
   # I127205473
 end

@@ -93,9 +93,10 @@ module NoSE
     end
 
     # Separate function for foreign keys to avoid circular dependencies
-    def ManyToOne(name, entities, **options)
+    def ManyToOne(from_name, _to_name, entities, **options)
       from_entity, to_entity = entities.first
-      field = Fields::ForeignKeyField.new name, @workload.model[to_entity],
+      field = Fields::ForeignKeyField.new from_name,
+                                          @workload.model[to_entity],
                                           **options
       @workload.model[from_entity] << field
     end
