@@ -98,8 +98,7 @@ module NoSE
       expect(index.hash_fields).to eq([model['Foo']['Id']].to_set)
       expect(index.order_fields).to eq([])
       expect(index.extra).to eq([
-        model['Foo']['Bar'],
-        model['Foo']['Corge']
+        model['Foo']['Bar']
       ].to_set)
       expect(index.key).to eq 'Foo'
     end

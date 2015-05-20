@@ -608,7 +608,7 @@ module NoSE
     # Populate the keys and entities
     def populate_keys
       @source_pk = @tree[:source_pk]
-      @target = @from[@tree[:target].to_s]
+      @target = @from.foreign_keys[@tree[:target].to_s]
       @target_pk = @tree[:target_pk]
 
       # XXX Only works for non-composite PKs

@@ -1,7 +1,7 @@
 module NoSE
   # A representation of an object in the conceptual data model
   class Entity
-    attr_reader :fields, :name
+    attr_reader :fields, :foreign_keys, :name
     attr_accessor :count
 
     def initialize(name, &block)
@@ -42,12 +42,6 @@ module NoSE
       fields.values.select(&:primary_key?)
     end
 
-    # Get all foreign key fields on the entity
-    # @return [Array<Fields::ForeignKeyField>]
-    def foreign_keys
-      @foreign_keys.values
-    end
-
     # Find the foreign key to a particular entity
     # @return [Fields::Field, nil]
     def foreign_key_for(entity)
@@ -56,11 +50,13 @@ module NoSE
 
     # Adds a {Fields::Field} to the entity
     def <<(field)
-      @fields[field.name] = field
-      @foreign_keys[field.name] = field if field.is_a? Fields::ForeignKeyField
+      if field.is_a? Fields::ForeignKeyField
+        @foreign_keys[field.name] = field
+      else
+        @fields[field.name] = field
+      end
 
       field.instance_variable_set(:@parent, self)
-
       field.hash
       field.freeze
 
@@ -81,9 +77,10 @@ module NoSE
 
     # Get the field on the entity with the given name
     # @return [Field]
-    def [](field)
-      fail FieldNotFound unless field? field
-      @fields[field]
+    def [](field_name)
+      field = @fields[field_name] || @foreign_keys[field_name]
+      fail FieldNotFound if field.nil?
+      field
     end
 
     # Return true if the entity contains a field with the given name

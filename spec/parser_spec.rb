@@ -5,11 +5,11 @@ module NoSE
     end
 
     it 'tracks fields used in equality predicates' do
-      expect(statement.eq_fields).to match_array [link['LinkId'], user['City']]
+      expect(statement.eq_fields).to match_array [user['City']]
     end
 
     it 'can report the longest entity path' do
-      expect(statement.longest_entity_path).to match_array [tweet, user, link]
+      expect(statement.longest_entity_path).to match_array [tweet, user]
     end
   end
 
@@ -17,10 +17,9 @@ module NoSE
     include_context 'entities'
 
     let(:query) do
-      Query.new 'SELECT Tweet.TweetId FROM Tweet.User.Link WHERE ' \
-                'Link.LinkId = ? AND Tweet.Timestamp > ? ' \
-                'AND User.City = ? ORDER BY Tweet.Timestamp LIMIT 5',
-                workload.model
+      Query.new 'SELECT Tweet.TweetId FROM Tweet.User WHERE ' \
+                'Tweet.Timestamp > ? AND User.City = ? ' \
+                'ORDER BY Tweet.Timestamp LIMIT 5', workload.model
     end
 
     it_behaves_like 'a statement' do
@@ -100,9 +99,8 @@ module NoSE
     include_context 'entities'
 
     let(:update) do
-      Update.new 'UPDATE Tweet FROM Tweet.User.Link SET Body = "foo" WHERE ' \
-                 'Link.LinkId = ? AND Tweet.Timestamp > ? ' \
-                 'AND User.City = ?', workload.model
+      Update.new 'UPDATE Tweet FROM Tweet.User SET Body = "foo" WHERE ' \
+                 'Tweet.Timestamp > ? AND User.City = ?', workload.model
     end
 
     it_behaves_like 'a statement' do
@@ -177,9 +175,8 @@ module NoSE
     include_context 'entities'
 
     let(:delete) do
-      Delete.new 'DELETE Tweet FROM Tweet.User.Link WHERE ' \
-                 'Link.LinkId = ? AND Tweet.Timestamp > ? ' \
-                 'AND User.City = ?', workload.model
+      Delete.new 'DELETE Tweet FROM Tweet.User WHERE ' \
+                 'Tweet.Timestamp > ? AND User.City = ?', workload.model
     end
 
     it_behaves_like 'a statement' do
