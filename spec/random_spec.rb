@@ -14,9 +14,7 @@ module NoSE
 
     it 'does not generate disconnected entities' do
       expect(network.entities).to all(satisfy do |entity|
-        connected = entity.fields.values.any? do |field|
-          field.is_a? Fields::ForeignKeyField
-        end ||
+        connected = !entity.foreign_keys.empty?
         connected ||= network.entities.any? do |other|
           !other.foreign_key_for(entity).nil?
         end

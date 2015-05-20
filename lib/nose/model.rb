@@ -29,7 +29,7 @@ module NoSE
       if field.count > 2
         # Do a foreign key lookup
         field = field.dup
-        key_field = @entities[field[0]].fields[field[1]]
+        key_field = @entities[field[0]][field[1]]
         field[0..1] = key_field ? key_field.entity.name : field[1]
         find_field field
       else
@@ -54,7 +54,7 @@ module NoSE
       end]
 
       entities.values.each do |entity|
-        entity.foreign_keys.each do |key|
+        entity.foreign_keys.values.each do |key|
           graph.add_edges nodes[entity.name], nodes[key.entity.name]
         end
       end

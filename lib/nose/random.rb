@@ -165,7 +165,7 @@ module NoSE
     def random_path(max_length)
       path = [@model.entities.values.sample]
       while path.length < max_length
-        keys = path.last.foreign_keys - path
+        keys = path.last.foreign_keys.values - path
         break if keys.empty?
 
         # Ensure we don't have cycles on the path
