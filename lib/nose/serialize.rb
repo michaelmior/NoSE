@@ -2,7 +2,7 @@ require 'representable'
 require 'representable/json'
 require 'representable/yaml'
 
-# Serialization of workloads, models, and statement execution plans
+# Serialization of workloads and statement execution plans
 module NoSE::Serialize
   # Construct a field from a parsed hash
   class FieldBuilder
@@ -136,7 +136,7 @@ module NoSE::Serialize
 
     # A simple array of the fields within the entity
     def fields
-      represented.fields.values
+      represented.fields.values + represented.foreign_keys.values
     end
   end
 

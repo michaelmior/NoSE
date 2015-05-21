@@ -330,14 +330,9 @@ module NoSE
       @longest_entity_path = [@from]
 
       path.each do |key|
+        # Search through foreign keys
         last_entity = @longest_entity_path.last
-        if last_entity.field? key
-          # Search through foreign keys
-          @longest_entity_path << last_entity[key].entity
-        else
-          # Assume only one foreign key in the opposite direction
-          @longest_entity_path << @model[key]
-        end
+        @longest_entity_path << last_entity[key].entity
       end
     end
   end

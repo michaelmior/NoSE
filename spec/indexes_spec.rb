@@ -12,8 +12,8 @@ module NoSE
           Integer 'Bar'
         end) * 100
 
-        ManyToOne 'Corge', 'Foos',
-                  'Foo' => 'Corge'
+        HasOne 'Corge', 'Foos',
+               'Foo' => 'Corge'
       end
     end
     let(:model) { workload.model }
