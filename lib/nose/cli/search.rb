@@ -34,12 +34,8 @@ module NoSE::CLI
 
     # Find the indexes with the given space constraint
     def find_indexes(workload, enumerated_indexes, space, cost_model)
-      if space.finite?
-        NoSE::Search::Search.new(workload, cost_model) \
-          .search_overlap enumerated_indexes, space
-      else
-        enumerated_indexes.clone
-      end
+      NoSE::Search::Search.new(workload, cost_model) \
+        .search_overlap enumerated_indexes, space
     end
   end
 end

@@ -33,7 +33,7 @@ module NoSE::CLI
       expect { YAML.load get_process(reformat_cmd).stdout }.to_not raise_error
     end
 
-    it 'can search with no limits' do
+    it 'can search with no limits', gurobi: true do
       search_cmd = 'nose search rubis --format=json'
       run_simple search_cmd
       expect { JSON.parse get_process(search_cmd).stdout }.to_not raise_error
