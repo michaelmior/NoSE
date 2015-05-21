@@ -146,11 +146,11 @@ class Cardinality
       # TODO: Track path of foreign keys and don't rely on relation direction
 
       # Update with the new cardinality of the relationship
-      foreign_key = entity.foreign_key_for next_entity
-      if foreign_key.nil?
+      if next_entity.foreign_key_for(entity).relationship == :many
         cardinality *= next_entity.count * 1.0 / entity.count
       else
-        cardinality *= sample cardinality, foreign_key.cardinality
+        cardinality *= sample cardinality,
+                              entity.foreign_key_for(next_entity).cardinality
       end
 
       # Update cardinality via the filtering implicit to the index

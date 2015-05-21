@@ -21,18 +21,18 @@ module NoSE
           Integer    'Timestamp'
         end) * 1000
 
-        ManyToOne 'User',    'Tweets',
-                  'Tweet' => 'User'
+        HasOne 'User',    'Tweets',
+               'Tweet' => 'User'
 
-        ManyToOne 'Link',    'Tweets',
-                  'Tweet' => 'Link'
+        HasOne 'Link',    'Tweets',
+               'Tweet' => 'Link'
       end
     end
     let(:tweet) { workload.model['Tweet'] }
     let(:user) { workload.model['User'] }
     let(:link) { workload.model['Link'] }
     let(:query) do
-      Query.new 'SELECT Link.URL FROM Link.Tweet.User ' \
+      Query.new 'SELECT Link.URL FROM Link.Tweets.User ' \
                 'WHERE User.Username = ? LIMIT 5', workload.model
     end
   end

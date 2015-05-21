@@ -210,7 +210,7 @@ module NoSE::Plans
     end
 
     it 'can create plans which visit each entity' do
-      query = NoSE::Query.new 'SELECT Link.URL FROM Link.Tweet.User ' \
+      query = NoSE::Query.new 'SELECT Link.URL FROM Link.Tweets.User ' \
                               'WHERE User.Username = ?', workload.model
       workload.add_statement query
 

@@ -60,35 +60,35 @@ NoSE::Workload.new do
     Date       'date', count: 100_000
   end) * 20_00_000
 
-  ManyToOne 'region',       'users',
-            'users'      => 'regions'
+  HasOne 'region',       'users',
+         'users'      => 'regions'
 
-  ManyToOne 'seller',       'items_sold',
-            'items'      => 'users'
+  HasOne 'seller',       'items_sold',
+         'items'      => 'users'
 
-  ManyToOne 'category',     'items',
-            'items'      => 'categories'
+  HasOne 'category',     'items',
+         'items'      => 'categories'
 
-  ManyToOne 'user',         'bids',
-            'bids'       => 'users', count: 900_000
+  HasOne 'user',         'bids',
+         'bids'       => 'users', count: 900_000
 
-  ManyToOne 'item',         'bids',
-            'bids'       => 'items', count: 90_000_000
+  HasOne 'item',         'bids',
+         'bids'       => 'items', count: 90_000_000
 
-  ManyToOne 'from_user',    'comments_sent',
-            'comments'   => 'users', count: 500_000
+  HasOne 'from_user',    'comments_sent',
+         'comments'   => 'users', count: 500_000
 
-  # ManyToOne 'to_user',      'comments_received'
-  #           'comments'   => 'users'
+  # HasOne 'to_user',      'comments_received'
+  #        'comments'   => 'users'
 
-  ManyToOne 'item',         'comments',
-            'comments'   => 'items'
+  HasOne 'item',         'comments',
+         'comments'   => 'items'
 
-  ManyToOne 'buyer',        'bought_now',
-            'buynow'     => 'users', count: 500_000
+  HasOne 'buyer',        'bought_now',
+         'buynow'     => 'users', count: 500_000
 
-  ManyToOne 'item',         'bought_now',
-            'buynow'     => 'items', count: 5_000_000
+  HasOne 'item',         'bought_now',
+         'buynow'     => 'items', count: 5_000_000
 
   # Define queries and their relative weights
 

@@ -93,12 +93,25 @@ module NoSE
     end
 
     # Separate function for foreign keys to avoid circular dependencies
-    def ManyToOne(from_name, _to_name, entities, **options)
+    def HasMany(from_name, to_name, entities, **options)
       from_entity, to_entity = entities.first
       field = Fields::ForeignKeyField.new from_name,
                                           @workload.model[to_entity],
                                           **options
       @workload.model[from_entity] << field
+
+      # Add the key in the opposite direction
+      options[:count] = @workload.model[from_entity].count
+      options[:relationship] = :many
+      field = Fields::ForeignKeyField.new to_name,
+                                          @workload.model[from_entity],
+                                          **options
+      @workload.model[to_entity] << field
+    end
+
+    # Add a HasOne operation which is just the opposite of HasMany
+    def HasOne(from_name, to_name, entities, **options)
+      HasMany to_name, from_name, [entities.first.reverse].to_h, **options
     end
 
     # Shortcut to add a new {Statement} to the workload

@@ -75,42 +75,41 @@ NoSE::Workload.new do
     Date       'date', count: 915
   end) * 1882
 
-  ManyToOne 'region',      'users',
-            'users'     => 'regions', count: 62
+  HasOne 'region',      'users',
+         'users'     => 'regions', count: 62
 
-  ManyToOne 'seller',      'items_sold',
-            'items'     => 'users'
+  HasOne 'seller',      'items_sold',
+         'items'     => 'users'
 
-  ManyToOne 'category',    'items',
-            'items'     => 'categories'
+  HasOne 'category',    'items',
+         'items'     => 'categories'
 
-  ManyToOne 'seller',      'olditems_sold',
-            'olditems'  => 'users'
+  HasOne 'seller',      'olditems_sold',
+         'olditems'  => 'users'
 
+  HasOne 'category',    'olditems',
+         'olditems'  => 'categories'
 
-  ManyToOne 'category',    'olditems',
-            'olditems'  => 'categories'
+  HasOne 'user',        'bids',
+         'bids'      => 'users', count: 993655
 
-  ManyToOne 'user',        'bids',
-            'bids'      => 'users', count: 993655
+  HasOne 'item',        'bids',
+         'bids'      => 'items', count: 426931
 
-  ManyToOne 'item',        'bids',
-            'bids'      => 'items', count: 426931
+  # HasOne 'from_user',   'comments_sent',
+  #        'comments'  => 'users', count: 41603
 
-  # ManyToOne 'from_user',   'comments_sent',
-  #           'comments'  => 'users', count: 41603
+  HasOne 'to_user',     'comments_received',
+         'comments'  => 'users', count: 443798
 
-  ManyToOne 'to_user',     'comments_received',
-            'comments'  => 'users', count: 443798
+  HasOne 'item',        'comments',
+         'comments'  => 'items', count: 533426
 
-  ManyToOne 'item',        'comments',
-            'comments'  => 'items', count: 533426
+  HasOne 'buyer',       'bought_now',
+         'buynow'    => 'users', count: 1519
 
-  ManyToOne 'buyer',       'bought_now',
-            'buynow'    => 'users', count: 1519
-
-  ManyToOne 'item',        'bought_now',
-            'buynow'    => 'items', count: 1549
+  HasOne 'item',        'bought_now',
+         'buynow'    => 'items', count: 1549
 
   # Define queries and their relative weights
 

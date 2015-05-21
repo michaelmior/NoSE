@@ -165,8 +165,8 @@ module NoSE::Fields
     attr_reader :entity, :relationship
 
     def initialize(name, entity, **options)
+      @relationship = options.delete(:relationship) || :one
       super(name, **options)
-      @relationship = :one
       @primary_key = false
       @entity = entity
     end
