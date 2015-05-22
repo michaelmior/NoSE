@@ -17,6 +17,10 @@ module NoSE::Plans
       # Get the ordering from the query
       @order_by = statement.is_a?(NoSE::Query) ? statement.order.dup : []
 
+      # We never need to order by fields listed in equality predicates
+      # since we'll only ever have rows with a single value
+      @order_by -= @eq.to_a
+
       @cardinality = 1  # this will be updated on the first index lookup
       @given_fields = @eq.dup
     end
@@ -92,11 +96,11 @@ module NoSE::Plans
         @eq = []
         @range = nil
         @order_by = []
-        @path = [statement.entity]
+        @path = [statement.entity.id_fields.first]
       else
         @eq = statement.eq_fields.dup
         @range = statement.range_field
-        @path = statement.longest_entity_path.reverse
+        @path = statement.key_path.reverse
       end
     end
   end

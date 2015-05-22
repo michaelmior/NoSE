@@ -10,7 +10,8 @@ module NoSE
       indexes = enum.indexes_for_query query
 
       expect(indexes.to_a).to include \
-        Index.new [user['City']], [user['UserId']], [user['Username']], [user]
+        Index.new [user['City']], [user['UserId']], [user['Username']],
+                  [user.id_fields.first]
     end
 
     it 'produces a simple index for a foreign key join' do
@@ -20,7 +21,7 @@ module NoSE
 
       expect(indexes).to include \
         Index.new [user['City']], [user['UserId'], tweet['TweetId']],
-                  [tweet['Body']], [user, tweet]
+                  [tweet['Body']], [user.id_fields.first, user['Tweets']]
     end
 
     it 'produces a simple index for a filter within a workload' do
@@ -30,7 +31,8 @@ module NoSE
       indexes = enum.indexes_for_workload
 
       expect(indexes.to_a).to include \
-        Index.new [user['City']], [user['UserId']], [user['Username']], [user]
+        Index.new [user['City']], [user['UserId']], [user['Username']],
+                  [user.id_fields.first]
     end
 
     it 'does not produce empty indexes' do
@@ -73,7 +75,8 @@ module NoSE
       indexes = enum.indexes_for_workload
 
       expect(indexes.to_a).to include \
-        Index.new [user['City']], [user['UserId']], [user['Username']], [user]
+        Index.new [user['City']], [user['UserId']], [user['Username']],
+                  [user.id_fields.first]
     end
   end
 end

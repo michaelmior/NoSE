@@ -8,7 +8,9 @@ module NoSE::Loader
     # Load data for all the indexes
     def load(indexes, config, show_progress = false)
       simple_indexes = indexes.select { |index| index.path.length == 1 }
-      simple_indexes = simple_indexes.group_by { |index| index.path.first }
+      simple_indexes = simple_indexes.group_by do |index|
+        index.path.first.parent
+      end
       simple_indexes.each do |entity, simple_index_list|
         filename = File.join config[:directory], "#{entity.name}.csv"
         total_rows = (config[:limit] || 0) - 1  # account for header row

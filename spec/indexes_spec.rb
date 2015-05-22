@@ -12,13 +12,13 @@ module NoSE
           Integer 'Bar'
         end) * 100
 
-        HasOne 'Corge', 'Foos',
+        HasOne 'Corge', 'Foo',
                'Foo' => 'Corge'
       end
     end
     let(:model) { workload.model }
     let(:equality_query) do
-      Query.new 'SELECT Foo.Id FROM Foo WHERE Foo.Id = ?', model
+      Query.new 'SELECT Foo.Bar FROM Foo WHERE Foo.Id = ?', model
     end
     let(:combo_query) do
       Query.new 'SELECT Foo.Id FROM Foo WHERE Foo.Id > ? AND Foo.Bar = ?',
@@ -36,21 +36,23 @@ module NoSE
     end
 
     it 'contains fields' do
-      index = Index.new [model['Foo']['Id']], [], [], [model['Foo']]
+      index = Index.new [model['Foo']['Id']], [], [model['Foo']['Bar']],
+                        [model['Foo'].id_fields.first]
       expect(index.contains_field? model['Foo']['Id']).to be true
     end
 
     it 'can store additional fields' do
       index = Index.new [model['Foo']['Id']], [], [model['Foo']['Bar']],
-                        [model['Foo']]
+                        [model['Foo'].id_fields.first]
       expect(index.contains_field? model['Foo']['Bar']).to be true
     end
 
     it 'can calculate its size' do
-      index = Index.new([model['Foo']['Id']], [], [], [model['Foo']])
-      expect(index.entry_size).to eq(model['Foo']['Id'].size)
-      expect(index.size).to eq(model['Foo']['Id'].size *
-                               model['Foo'].count)
+      index = Index.new [model['Foo']['Id']], [], [model['Foo']['Bar']],
+                        [model['Foo'].id_fields.first]
+      entry_size = model['Foo']['Id'].size + model['Foo']['Bar'].size
+      expect(index.entry_size).to eq(entry_size)
+      expect(index.size).to eq(entry_size * model['Foo'].count)
     end
 
     context 'when materializing views' do
@@ -77,7 +79,7 @@ module NoSE
 
       it 'keeps a static key' do
         index = combo_query.materialize_view
-        expect(index.key).to eq 'i835299498'
+        expect(index.key).to eq 'i3087462560'
       end
 
       it 'includes only one entity in the hash fields' do
@@ -89,7 +91,8 @@ module NoSE
     end
 
     it 'can tell if it maps identities for a field' do
-      index = Index.new([model['Foo']['Id']], [], [], [model['Foo']])
+      index = Index.new [model['Foo']['Id']], [], [model['Foo']['Bar']],
+                        [model['Foo'].id_fields.first]
       expect(index.identity_for? model['Foo']).to be true
     end
 
@@ -106,28 +109,30 @@ module NoSE
     context 'when checking validity' do
       it 'cannot have empty hash fields' do
         expect do
-          Index.new [], [], [model['Foo']['Id']], [model['Foo']]
+          Index.new [], [], [model['Foo']['Id']],
+                    [model['Foo'].id_fields.first]
         end.to raise_error
       end
 
       it 'cannot have hash fields involving multiple entities' do
         expect do
           Index.new [model['Foo']['Bar'], model['Corge']['Quux']],
-                    [model['Foo']['Id']], [], [model['Corge'], model['Foo']]
+                    [model['Foo']['Id']], [],
+                    [model['Corge'].id_fields.first, model['Foo']['Corge']]
         end.to raise_error
       end
 
       it 'must have fields at the start of the path' do
         expect do
           Index.new [model['Foo']['Id']], [], [],
-                    [model['Corge'], model['Foo']]
+                    [model['Corge'].id_fields.first, model['Foo']['Corge']]
         end.to raise_error InvalidIndexException
       end
 
       it 'must have fields at the end of the path' do
         expect do
           Index.new [model['Corge']['Quux']], [], [],
-                    [model['Corge'], model['Foo']]
+                    [model['Corge'].id_fields.first, model['Foo']['Corge']]
         end.to raise_error InvalidIndexException
       end
     end

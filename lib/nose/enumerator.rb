@@ -26,7 +26,7 @@ module NoSE
       range = range.group_by(&:parent)
       range.default_proc = ->(*) { [] }
 
-      indexes_for_path query.longest_entity_path.reverse, query.select,
+      indexes_for_path query.key_path.reverse, query.select,
                        eq, range
     end
 
@@ -100,9 +100,9 @@ module NoSE
 
     # Get all possible index fields for entities on a path
     def index_choices(path, eq)
-      path.map do |entity|
+      path.entities.map do |entity|
         # Get the fields for the entity and add in the IDs
-        entity_fields = eq[entity] + path.first.id_fields
+        entity_fields = eq[entity] + [path.first]
         1.upto(entity_fields.count).map do |n|
           entity_fields.permutation(n).to_a
         end
@@ -110,10 +110,16 @@ module NoSE
     end
 
     # Get fields which should be included in an index for the given path
-    def extra_choices(path, select, eq, range)
-      filter_choices = eq[path.last] + range[path.last]
+    def extra_choices(path_entities, select, eq, range)
+      filter_choices = eq[path_entities.last] + range[path_entities.last]
       choices = []
-      choices << select if path.include? select.first.parent
+
+      # Include any fields which might be selected
+      select_fields = select.select do |field|
+        path_entities.include? field.parent
+      end
+
+      choices << select_fields unless select_fields.empty?
       choices << filter_choices unless filter_choices.empty?
       choices
     end
@@ -125,9 +131,9 @@ module NoSE
       index_choices = index_choices path, eq
       max_eq_fields = index_choices.map(&:length).max
 
-      range_fields = path.map { |entity| range[entity] }.reduce(&:+)
+      range_fields = path.entities.map { |entity| range[entity] }.reduce(&:+)
       order_choices = range_fields.prefixes.to_a << []
-      extra_choices = extra_choices path, select, eq, range
+      extra_choices = extra_choices path.entities.to_a, select, eq, range
 
       # Generate all possible indices based on the field choices
       choices = index_choices.product(extra_choices)
@@ -136,7 +142,7 @@ module NoSE
 
         order_choices.each do |order|
           # Append the primary key of the last entity in the path if needed
-          order += path.map(&:id_fields).flatten(1) - (index + order)
+          order += path.entities.map(&:id_fields).flatten(1) - (index + order)
 
           # Skip indices with only a hash component
           index_extra = extra - (index + order)

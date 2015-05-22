@@ -163,6 +163,7 @@ module NoSE::Fields
   # Field holding a foreign key to another entity
   class ForeignKeyField < IDField
     attr_reader :entity, :relationship
+    attr_accessor :reverse
 
     def initialize(name, entity, **options)
       @relationship = options.delete(:relationship) || :one

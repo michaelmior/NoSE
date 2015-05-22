@@ -9,7 +9,7 @@ module NoSE::Backend
       NoSE::Index.new [user['Username']],
                       [tweet['Timestamp'], user['UserId'], tweet['TweetId']],
                       [tweet['Body']],
-                      [user, tweet], 'TweetIndex'
+                      [user.id_fields.first, user['Tweets']], 'TweetIndex'
     end
     let(:backend) { CassandraBackend.new workload, [index], [], {} }
 

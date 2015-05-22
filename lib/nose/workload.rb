@@ -95,18 +95,22 @@ module NoSE
     # Separate function for foreign keys to avoid circular dependencies
     def HasMany(from_name, to_name, entities, **options)
       from_entity, to_entity = entities.first
-      field = Fields::ForeignKeyField.new from_name,
-                                          @workload.model[to_entity],
-                                          **options
-      @workload.model[from_entity] << field
+      from_field = Fields::ForeignKeyField.new from_name,
+                                               @workload.model[to_entity],
+                                               **options
 
       # Add the key in the opposite direction
       options[:count] = @workload.model[from_entity].count
       options[:relationship] = :many
-      field = Fields::ForeignKeyField.new to_name,
-                                          @workload.model[from_entity],
-                                          **options
-      @workload.model[to_entity] << field
+      to_field = Fields::ForeignKeyField.new to_name,
+                                             @workload.model[from_entity],
+                                             **options
+
+      # Set the opposite keys and add to entities
+      to_field.reverse = from_field
+      from_field.reverse = to_field
+      @workload.model[from_entity] << from_field
+      @workload.model[to_entity] << to_field
     end
 
     # Add a HasOne operation which is just the opposite of HasMany

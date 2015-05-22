@@ -28,8 +28,10 @@ module NoSE::Search
       workload.add_statement query
 
       indexes = [
-        NoSE::Index.new([user['City']], [user['UserId']], [], [user]),
-        NoSE::Index.new([user['UserId']], [], [user['Username']], [user])
+        NoSE::Index.new([user['City']], [user['UserId']], [],
+                        [user.id_fields.first]),
+        NoSE::Index.new([user['UserId']], [], [user['Username']],
+                        [user.id_fields.first])
       ]
       search = Search.new(workload, cost_model)
       expect do
@@ -59,10 +61,12 @@ module NoSE::Search
       end.map(&:index).to_set
 
       expect(indexes).to match_array [
-        NoSE::Index.new([user['Username']], [user['UserId']], [], [user]),
-        NoSE::Index.new([user['City']], [user['UserId']], [], [user]),
+        NoSE::Index.new([user['Username']], [user['UserId']], [],
+                        [user.id_fields.first]),
+        NoSE::Index.new([user['City']], [user['UserId']], [],
+                        [user.id_fields.first]),
         NoSE::Index.new([user['UserId']], [], [user['Username'], user['City']],
-                        [user])
+                        [user.id_fields.first])
       ]
     end
   end

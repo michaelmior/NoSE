@@ -27,7 +27,7 @@ module NoSE::Serialize
 
     it 'serializes an index to a key' do
       index = NoSE::Index.new [user['Username']], [user['UserId']], [],
-                              [user], 'IndexKey'
+                              [user.id_fields.first], 'IndexKey'
       hash = IndexRepresenter.represent(index).to_hash
       expect(hash).to eq({'key' => 'IndexKey'})
     end

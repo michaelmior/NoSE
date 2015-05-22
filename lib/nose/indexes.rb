@@ -9,7 +9,7 @@ module NoSE
       @order_fields = order_fields - hash_fields.to_a
       @extra = extra.to_set - @hash_fields - @order_fields.to_set
       @all_fields = @hash_fields + order_fields.to_set + @extra
-      @path = path
+      @path = path.is_a?(KeyPath) ? path : KeyPath.new(path)
       @key = saved_key
 
       validate_index
@@ -68,7 +68,7 @@ module NoSE
         @hash_fields.map(&:id),
         @order_fields.map(&:id),
         @extra.to_set.map(&:id),
-        @path.map(&:name)
+        @path.map(&:id)
       ].to_s
     end
 
@@ -88,7 +88,7 @@ module NoSE
     # Create a new range over the entities traversed by an index using
     # the numerical indices into a list of entities
     def entity_range(entities)
-      Range.new(*(@path.map do |entity|
+      Range.new(*(@path.entities.map do |entity|
         entities.index entity
       end).minmax) rescue (nil..nil)
     end
@@ -100,16 +100,20 @@ module NoSE
       fail InvalidIndexException, 'hash fields cannot be empty' \
         if @hash_fields.empty?
 
+      fail InvalidIndexException, 'must have fields other than hash fields' \
+        if @order_fields.empty? && @extra.empty?
+
       fail InvalidIndexException, 'hash fields can only involve one entity' \
         if @hash_fields.map(&:parent).to_set.size > 1
 
       entities = @all_fields.map(&:parent).to_set
       fail InvalidIndexException, 'invalid path for index fields' \
-        unless entities.include?(path.first) && entities.include?(path.last)
+        unless entities.include?(path.entities.first) &&
+               entities.include?(path.entities.to_a.last)
 
       # We must have the primary keys of the all entities on the path
       fail InvalidIndexException, 'missing path entity keys' \
-        unless @path.map(&:id_fields).flatten.all? \
+        unless @path.entities.map(&:id_fields).flatten.all? \
           &(@hash_fields + @order_fields).method(:include?)
     end
 
@@ -117,10 +121,9 @@ module NoSE
     def calculate_size
       @entry_size = @all_fields.map(&:size).inject(0, :+)
       num_entries = @hash_fields.map(&:cardinality).inject(1, &:*)
-      @size =  Cardinality.new_cardinality(@path.first.count,
-                                           @hash_fields,
-                                           nil,
-                                           @path) * @entry_size * num_entries
+      @size =  Cardinality.new_cardinality(@path.first.parent.count,
+                                           @hash_fields, nil, @path.entities)
+      @size *= @entry_size * num_entries
     end
   end
 
@@ -133,7 +136,8 @@ module NoSE
     # Create a simple index which maps entity keys to other fields
     # @return [Index]
     def simple_index
-      Index.new(id_fields, [], fields.values - id_fields, [self], name)
+      Index.new id_fields, [], fields.values - id_fields,
+                [self.id_fields.first], name
     end
   end
 
@@ -153,7 +157,7 @@ module NoSE
 
       NoSE::Index.new(eq, order_fields,
                       all_fields - (@eq_fields + @order).to_set,
-                      @longest_entity_path.reverse)
+                      @key_path.reverse)
     end
 
     # Get the ordered keys for a materialized view
