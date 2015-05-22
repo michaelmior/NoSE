@@ -14,7 +14,7 @@ module NoSE::CLI
       run_simple 'nose graph rubis /tmp/rubis.png'
     end
 
-    it 'can reformat output' do
+    it 'can reformat output', gurobi: true do
       # Run a simple search and output as JSON
       run_simple 'nose search rubis-synthetic --format=json'
       json = all_output
