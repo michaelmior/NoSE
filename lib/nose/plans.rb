@@ -57,7 +57,18 @@ module NoSE::Plans
     # @return [Array<Field>]
     def fields_for_entities(entities, select: false)
       path_fields = @eq + @order_by
-      path_fields += @fields if select
+
+      # If necessary, include ALL the fields which should be selected,
+      # otherwise we can exclude fields from the last entity set since
+      # we may end up selecting these with a separate index lookup
+      if select
+        path_fields += @fields
+      else
+        path_fields += @fields.select do
+          |field| entities[0..-2].include? field.parent
+        end
+      end
+
       path_fields << @range unless @range.nil?
       path_fields.select { |field| entities.include? field.parent }
     end
