@@ -111,8 +111,10 @@ module NoSE::Search
             # a single entity, we should bundle them together
             last_step = steps_by_index.last.last unless steps_by_index.empty?
             if last_step.is_a?(NoSE::Plans::IndexLookupPlanStep) &&
-               (step.index.path == [last_step.index.path.last] ||
-                last_step.index.path == [step.index.path.first])
+               (step.index.path.entities.to_a ==
+                [last_step.index.path.entities.to_a.last] ||
+                last_step.index.path.entities.to_a ==
+                [step.index.path.entities.to_a.first])
               steps_by_index.last.push step
               next
             end

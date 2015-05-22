@@ -19,7 +19,7 @@ module NoSE::Plans
       index = NoSE::Index.new [user['City']],
                               [user['UserId'], tweet['TweetId']],
                               [tweet['Timestamp'], tweet['Body']],
-                              [user, tweet]
+                              [user.id_fields.first, user['Tweets']]
       planner = QueryPlanner.new workload.model, [index], cost_model
       query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User WHERE ' \
                               'User.City = ? ORDER BY Tweet.Timestamp',
@@ -49,7 +49,7 @@ module NoSE::Plans
     it 'can perform an external sort followed by a limit' do
       index = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
                               [tweet['Timestamp'], tweet['Body']],
-                              [user, tweet]
+                              [user.id_fields.first, user['Tweets']]
       planner = QueryPlanner.new workload.model, [index], cost_model
       query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User WHERE ' \
                               'User.UserId = ? ORDER BY Tweet.Timestamp ' \
@@ -76,10 +76,11 @@ module NoSE::Plans
     it 'can find multiple plans' do
       index1 = NoSE::Index.new [user['UserId']],
                                [tweet['Timestamp'], tweet['TweetId']],
-                               [tweet['Body']], [user, tweet]
+                               [tweet['Body']],
+                               [user.id_fields.first, user['Tweets']]
       index2 = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
                                [tweet['Timestamp'], tweet['Body']],
-                               [user, tweet]
+                               [user.id_fields.first, user['Tweets']]
       planner = QueryPlanner.new workload.model, [index1, index2], cost_model
       query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User ' \
                               'WHERE User.UserId = ? ' \
@@ -97,7 +98,8 @@ module NoSE::Plans
 
     it 'knows which fields are available at a given step' do
       index = NoSE::Index.new [tweet['TweetId']], [],
-                              [tweet['Body'], tweet['Timestamp']], [tweet]
+                             [tweet['Body'], tweet['Timestamp']],
+                             [tweet.id_fields.first]
       planner = QueryPlanner.new workload.model, [index], cost_model
       query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet ' \
                               'WHERE Tweet.TweetId = ?', workload.model
@@ -109,7 +111,8 @@ module NoSE::Plans
 
     it 'can apply external filtering' do
       index = NoSE::Index.new [tweet['TweetId']], [],
-                              [tweet['Body'], tweet['Timestamp']], [tweet]
+                              [tweet['Body'], tweet['Timestamp']],
+                              [tweet.id_fields.first]
       planner = QueryPlanner.new workload.model, [index], cost_model
       query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet WHERE ' \
                               'Tweet.TweetId = ? AND Tweet.Timestamp > ?',
@@ -157,7 +160,8 @@ module NoSE::Plans
 
       it 'can update the cardinality when performing a lookup' do
         index = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
-                                [tweet['Body']], [user, tweet]
+                                [tweet['Body']],
+                                [user.id_fields.first, user['Tweets']]
         step = IndexLookupPlanStep.new index, @state, RootPlanStep.new(@state)
         expect(step.state.cardinality).to eq 100
       end
@@ -166,8 +170,9 @@ module NoSE::Plans
     it 'fails if required fields are not available' do
       indexes = [
         NoSE::Index.new([user['Username']], [user['UserId']], [user['City']],
-                        [user]),
-        NoSE::Index.new([tweet['TweetId']], [], [tweet['Body']], [tweet])
+                        [user.id_fields.first]),
+        NoSE::Index.new([tweet['TweetId']], [], [tweet['Body']],
+                        [tweet.id_fields.first])
       ]
       planner = QueryPlanner.new workload.model, indexes, cost_model
       query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User ' \
@@ -198,8 +203,9 @@ module NoSE::Plans
 
       indexes = [
         NoSE::Index.new([user['Username']], [user['UserId'], tweet['TweetId']],
-                        [], [user, tweet]),
-        NoSE::Index.new([tweet['TweetId']], [], [tweet['Body']], [tweet])
+                        [], [user.id_fields.first, user['Tweets']]),
+        NoSE::Index.new([tweet['TweetId']], [], [tweet['Body']],
+                        [tweet.id_fields.first])
       ]
 
       planner = QueryPlanner.new workload.model, indexes, cost_model
@@ -246,7 +252,8 @@ module NoSE::Plans
                                 'WHERE User.UserId = ?', workload.model
       index = NoSE::Index.new [tweet['Timestamp']],
                               [tweet['TweetId'], user['UserId']],
-                              [user['City']], [tweet, user]
+                              [user['City']],
+                              [tweet.id_fields.first, tweet['User']]
       workload.add_statement update
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload \
         [index]
@@ -267,7 +274,8 @@ module NoSE::Plans
                                 workload.model
       index = NoSE::Index.new [tweet['Timestamp']],
                               [tweet['TweetId'], user['UserId']],
-                              [user['City']], [tweet, user]
+                              [user['City']],
+                              [tweet.id_fields.first, tweet['User']]
       workload.add_statement delete
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload \
         [index]

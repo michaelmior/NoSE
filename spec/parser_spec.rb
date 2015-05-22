@@ -117,7 +117,7 @@ module NoSE
       update = Update.new 'UPDATE User SET City = ? WHERE User.UserId = ?',
                           workload.model
       index = NoSE::Index.new [tweet['TweetId']], [], [tweet['Timestamp']],
-                              [tweet], workload.model
+                              [tweet.id_fields.first], workload.model
       expect(update.support_queries index).to be_empty
     end
 
@@ -126,7 +126,9 @@ module NoSE
                           workload.model
       index = NoSE::Index.new [tweet['Timestamp']],
                               [tweet['TweetId'], user['UserId']],
-                              [user['City']], [tweet, user], workload.model
+                              [user['City']],
+                              [tweet.id_fields.first, tweet['User']],
+                              workload.model
       query = update.support_queries(index).first
       expect(query.text).to eq \
         'SELECT Tweet.Timestamp FROM Tweet.User WHERE User.UserId = ?'
@@ -138,7 +140,8 @@ module NoSE
       update = Update.new 'UPDATE User SET City = ? WHERE User.UserId = ?',
                           workload.model
       index = NoSE::Index.new [user['Username'], user['UserId']], [],
-                              [user['City']], [user], workload.model
+                              [user['City']], [user.id_fields.first],
+                              workload.model
       expect(update.support_queries(index).first.text).to eq \
         'SELECT User.Username FROM User WHERE User.UserId = ?'
     end

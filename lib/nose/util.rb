@@ -136,6 +136,8 @@ end
 class Cardinality
   # Update the cardinality after traversing the index
   def self.new_cardinality(cardinality, eq_filter, range_filter, path)
+   # TODO Update to use key path instead of entity path
+
     eq_filter = eq_filter.group_by(&:parent)
 
     # Update cardinality via predicates for first (last) entity in path

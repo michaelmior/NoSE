@@ -232,9 +232,66 @@ module NoSE
     end
   end
 
+  class KeyPath
+    include Enumerable
+
+    extend Forwardable
+    def_delegators :@keys, :each,  :inspect, :to_s, :length, :count, :last
+
+    def initialize(keys = [])
+      @keys = keys
+    end
+
+    # Two key paths are equal if their underlying keys are equal
+    def ==(other)
+      @keys == other.instance_variable_get(:@keys)
+    end
+    alias_method :eql?, :==
+
+    # Return a slice of the path
+    def [](index)
+      if index.is_a? Range
+        keys = @keys[index]
+        keys[0] = keys[0].entity.id_fields.first \
+          unless keys.empty? || keys[0].instance_of?(NoSE::Fields::IDField)
+        KeyPath.new(keys)
+      else
+        key = @keys[index]
+        key.entity.id_fields.first \
+          unless key.nil? || key.instance_of?(NoSE::Fields::IDField)
+        key
+      end
+    end
+
+    # Return the reverse of this path
+    def reverse
+      path = @keys.reverse
+      if path.length > 1
+        path[0] = path[0].entity.id_fields.first  # XXX broken for composite
+        path[-1] = @keys[1].reverse
+      end
+
+      KeyPath.new(path)
+    end
+
+    # Simple wrapper so that we continue to be a KeyPath
+    def to_a
+      self
+    end
+
+    # Return all the entities along the path
+    def entities
+      Enumerator.new do |enum|
+        enum.yield @keys.first.parent
+        @keys[1..-1].each { |key| enum.yield key.entity }
+      end
+    end
+  end
+
   # A CQL statement and its associated data
   class Statement
-    attr_reader :from, :longest_entity_path, :text, :eq_fields, :range_field
+    attr_reader :from, :longest_entity_path, :key_path,
+                :text, :eq_fields, :range_field
 
     # Parse either a query or an update
     def self.parse(text, model)
@@ -328,12 +385,16 @@ module NoSE
     def find_longest_path(path_entities)
       path = path_entities.map(&:to_s)[1..-1]
       @longest_entity_path = [@from]
+      keys = [@from.id_fields.first]  # XXX broken for composite keys
 
       path.each do |key|
         # Search through foreign keys
         last_entity = @longest_entity_path.last
         @longest_entity_path << last_entity[key].entity
+        keys << last_entity[key]
       end
+
+      @key_path = KeyPath.new(keys)
     end
   end
 
@@ -473,13 +534,14 @@ module NoSE
 
       # Find where the index path intersects the update path
       # and splice in the path of the where clause from the update
-      query_path = index.path.take_while { |entity| entity != @from }
-      query_path += longest_entity_path
+      query_path = index.path.entities.take_while { |entity| entity != @from }
+      query_path += @longest_entity_path
       query_keys = query_path.each_cons(2).map do |entity, next_entity|
+        # TODO Ensure we use the correct keys
         entity.foreign_key_for(next_entity) || \
         next_entity.foreign_key_for(entity)
       end
-      query_from = [index.path.first.name] + query_keys.map(&:name)
+      query_from = [index.path.first.parent.name] + query_keys.map(&:name)
 
       # Don't require selecting fields given in the WHERE clause or settings
       given_fields = self.is_a?(Insert) ? @settings : @conditions
@@ -487,7 +549,7 @@ module NoSE
       return nil if required_fields.empty?
 
       # Get the full name of each field to be used during selection
-      query_keys.unshift index.path.first
+      query_keys.unshift index.path.first.parent
       required_fields.map! do |field|
         parent = query_keys.find do |key|
           field.parent == key ||
