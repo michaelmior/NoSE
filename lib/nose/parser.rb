@@ -248,6 +248,22 @@ module NoSE
     end
     alias_method :eql?, :==
 
+    # Combine two key paths by gluing together the keys
+    def +(other)
+      fail TypeError unless other.is_a? KeyPath
+      other_keys = other.instance_variable_get(:@keys)
+
+      # Just copy if there's no combining necessary
+      return self.dup if other_keys.empty?
+      return other.dup if @keys.empty?
+
+      # Only allow combining if the entities match
+      fail ArgumentError unless other_keys.first.parent == entities.to_a.last
+
+      # Combine the two paths
+      KeyPath.new(@keys + other_keys[1..-1])
+    end
+
     # Return a slice of the path
     def [](index)
       if index.is_a? Range
@@ -534,14 +550,17 @@ module NoSE
 
       # Find where the index path intersects the update path
       # and splice in the path of the where clause from the update
-      query_path = index.path.entities.take_while { |entity| entity != @from }
-      query_path += @longest_entity_path
-      query_keys = query_path.each_cons(2).map do |entity, next_entity|
-        # TODO Ensure we use the correct keys
-        entity.foreign_key_for(next_entity) || \
-        next_entity.foreign_key_for(entity)
+      if index.path.first.parent == @from
+        query_keys = KeyPath.new([@from.id_fields.first])
+      else
+        query_keys = KeyPath.new(index.path.each_cons(2).take_while do |key, _|
+          next true if key.instance_of?(NoSE::Fields::IDField)
+          key.entity == @from
+        end.flatten(1))
       end
-      query_from = [index.path.first.parent.name] + query_keys.map(&:name)
+      query_keys += @key_path
+      query_from = query_keys.map(&:name)
+      query_from[0] = query_keys.first.parent.name
 
       # Don't require selecting fields given in the WHERE clause or settings
       given_fields = self.is_a?(Insert) ? @settings : @conditions
@@ -549,13 +568,14 @@ module NoSE
       return nil if required_fields.empty?
 
       # Get the full name of each field to be used during selection
-      query_keys.unshift index.path.first.parent
       required_fields.map! do |field|
         parent = query_keys.find do |key|
-          field.parent == key ||
+          field.parent == key.parent ||
           (key.is_a?(NoSE::Fields::ForeignKeyField) &&
            field.parent == key.entity)
         end
+        parent = parent.parent \
+          unless parent.is_a?(NoSE::Fields::ForeignKeyField)
 
         "#{parent.name}.#{field.name}"
       end
