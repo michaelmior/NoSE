@@ -115,7 +115,7 @@ module NoSE
 
     # Add a HasOne operation which is just the opposite of HasMany
     def HasOne(from_name, to_name, entities, **options)
-      HasMany to_name, from_name, [entities.first.reverse].to_h, **options
+      HasMany to_name, from_name, Hash[[entities.first.reverse]], **options
     end
 
     # Shortcut to add a new {Statement} to the workload
