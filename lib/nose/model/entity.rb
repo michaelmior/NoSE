@@ -49,7 +49,7 @@ module NoSE
     end
 
     # Adds a {Fields::Field} to the entity
-    def <<(field)
+    def <<(field, freeze: true)
       if field.is_a? Fields::ForeignKeyField
         @foreign_keys[field.name] = field
       else
@@ -58,7 +58,7 @@ module NoSE
 
       field.instance_variable_set(:@parent, self)
       field.hash
-      field.freeze
+      field.freeze if freeze
 
       self
     end

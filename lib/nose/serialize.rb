@@ -49,7 +49,6 @@ module NoSE::Serialize
       # Extract the entities from the workload
       workload = object.workload
       model = workload.model
-      path = instance['path'].map { |name| model[name] }
 
       # Pull the fields from each entity
       f = lambda do |fields|
@@ -57,7 +56,7 @@ module NoSE::Serialize
       end
 
       NoSE::Index.new f.call('hash_fields'), f.call('order_fields'),
-                      f.call('extra'), path, instance['key']
+                      f.call('extra'), f.call('path'), instance['key']
     end
   end
 
@@ -74,14 +73,9 @@ module NoSE::Serialize
     collection :hash_fields, decorator: FieldRepresenter
     collection :order_fields, decorator: FieldRepresenter
     collection :extra, decorator: FieldRepresenter
+    collection :path, decorator: FieldRepresenter
 
     property :size
-
-    # The names of entities along the path of the index
-    def path
-      represented.path.map(&:name)
-    end
-    property :path, exec_context: :decorator
   end
 
   # Represents all data of a field
@@ -102,6 +96,26 @@ module NoSE::Serialize
         if represented.is_a? NoSE::Fields::ForeignKeyField
     end
     property :entity, exec_context: :decorator
+
+    # The cardinality of the relationship
+    def relationship
+      represented.relationship \
+        if represented.is_a? NoSE::Fields::ForeignKeyField
+    end
+
+    def relationship=(relationship)
+      represented.relationship = relationship.to_sym
+    end
+
+    property :relationship, exec_context: :decorator
+
+    # The reverse
+    def reverse
+      represented.reverse.name \
+        if represented.is_a? NoSE::Fields::ForeignKeyField
+    end
+
+    property :reverse, exec_context: :decorator
   end
 
   # Reconstruct the fields of an entity
@@ -116,7 +130,7 @@ module NoSE::Serialize
       fields = EntityFieldRepresenter.represent([])
       fields = fields.from_hash instance['fields'],
                                 entity_map: options[:entity_map]
-      fields.each { |field| entity << field }
+      fields.each { |field| entity.send(:<<, field, freeze: false) }
 
       entity
     end
@@ -236,6 +250,17 @@ module NoSE::Serialize
       entities = entities.from_hash instance['entities'],
                                     entity_map: entity_map
       entities.each { |entity| workload << entity }
+
+      # Add all the reverse foreign keys
+      instance['entities'].each do |entity|
+        entity['fields'].each do |field_hash|
+          if field_hash['type'] == 'foreign_key'
+            field = entity_map[entity['name']].foreign_keys[field_hash['name']]
+            field.reverse = field.entity.foreign_keys[field_hash['reverse']]
+          end
+          field.freeze
+        end
+      end
 
       # Add all statements to the workload
       instance['statements'].each do |statement|
