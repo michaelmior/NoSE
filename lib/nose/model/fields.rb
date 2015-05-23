@@ -1,6 +1,7 @@
 require 'forwardable'
 require 'zlib'
 
+# Fields attached to each entity in the entity graph model
 module NoSE::Fields
   # A single field on an {Entity}
   class Field
