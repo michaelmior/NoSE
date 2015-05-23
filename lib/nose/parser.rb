@@ -26,6 +26,7 @@ class Parslet::Atoms::Named < Parslet::Atoms::Base
 
   private
 
+  # Optionally wrap the produced single value in an array
   def produce_return_value(val)
     flatval = flatten(val, true)
     flatval = [flatval] if @array and val.last == [:repetition]
@@ -232,6 +233,7 @@ module NoSE
     end
   end
 
+  # A path from a primary key to a chain of foreign keys
   class KeyPath
     include Enumerable
 

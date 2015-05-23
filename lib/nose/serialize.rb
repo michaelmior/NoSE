@@ -103,6 +103,7 @@ module NoSE::Serialize
         if represented.is_a? NoSE::Fields::ForeignKeyField
     end
 
+    # Convert the relationship type to a symbol
     def relationship=(relationship)
       represented.relationship = relationship.to_sym
     end
@@ -342,6 +343,7 @@ module NoSE::Serialize
       represented.cost_model.subtype_name
     end
 
+    # Look up the cost model by name and attach to the results
     def cost_model=(cost_model)
       represented.cost_model = NoSE::Cost::Cost.subtype_class cost_model
     end
@@ -359,6 +361,7 @@ module NoSE::Serialize
       `git rev-parse HEAD 2> /dev/null`.strip
     end
 
+    # Set the revision string on the results object
     def revision=(revision)
       represented.revision = revision
     end
@@ -370,6 +373,7 @@ module NoSE::Serialize
       Time.now.rfc2822
     end
 
+    # Reconstruct the time object from the timestamp
     def time=(time)
       represented.time = Time.rfc2822 time
     end
@@ -381,6 +385,7 @@ module NoSE::Serialize
       "#{$PROGRAM_NAME} #{ARGV.join ' '}"
     end
 
+    # Set the command string on the results object
     def command=(command)
       represented.command = command
     end
