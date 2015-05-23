@@ -548,17 +548,8 @@ module NoSE
     def support_query_for_fields(index, fields)
       return nil if fields.empty?
 
-      # Find where the index path intersects the update path
-      # and splice in the path of the where clause from the update
-      if index.path.first.parent == @from
-        query_keys = KeyPath.new([@from.id_fields.first])
-      else
-        query_keys = KeyPath.new(index.path.each_cons(2).take_while do |key, _|
-          next true if key.instance_of?(NoSE::Fields::IDField)
-          key.entity == @from
-        end.flatten(1))
-      end
-      query_keys += @key_path
+      # Get the new KeyPath for the support query
+      query_keys = splice_path index.path, @key_path, @from
       query_from = query_keys.map(&:name)
       query_from[0] = query_keys.first.parent.name
 
@@ -584,6 +575,22 @@ module NoSE
               "FROM #{query_from.join '.'}"
       query += " #{@where_source}" unless @where_source.empty?
       SupportQuery.new query, @model, self, index
+    end
+
+    private
+
+    # Find where the index path intersects the update path
+    # and splice in the path of the where clause from the update
+    def splice_path(source, target, from)
+      if source.first.parent == from
+        query_keys = KeyPath.new([from.id_fields.first])
+      else
+        query_keys = KeyPath.new(source.each_cons(2).take_while do |key, _|
+          next true if key.instance_of?(NoSE::Fields::IDField)
+          key.entity == from
+        end.flatten(1))
+      end
+      query_keys + target
     end
   end
 
