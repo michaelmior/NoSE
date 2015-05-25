@@ -177,8 +177,7 @@ module NoSE::Search
     # Get the cost of an index update for a given number of entities
     def update_cost(statement, index, cardinality, cost_model)
       cost = 0
-      state = NoSE::Plans::StatementState.new statement, nil
-      state.cardinality = cardinality
+      state = NoSE::Plans::UpdateState.new statement, cardinality
 
       if statement.requires_delete?
         step = NoSE::Plans::DeletePlanStep.new index, state

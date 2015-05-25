@@ -28,10 +28,10 @@ module NoSE::Plans
       # TODO: Apply if have IDs of the last entity set
       #       with no filter/sort needed
 
-      return nil if state.statement.limit.nil?
+      return nil if state.query.limit.nil?
       return nil unless state.answered? check_limit: false
 
-      LimitPlanStep.new state.statement.limit, state
+      LimitPlanStep.new state.query.limit, state
     end
   end
 end
