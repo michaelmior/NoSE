@@ -257,37 +257,27 @@ module NoSE::Plans
       workload.add_statement update
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload \
         [index]
+      planner = NoSE::Plans::QueryPlanner.new workload.model, indexes,
+                                              cost_model
 
-      planner = UpdatePlanner.new workload.model, indexes, cost_model
+      query_plans = {
+        update => {
+          index => update.support_queries(index).map do |query|
+            planner.min_plan(query)
+          end
+        }
+      }
+      planner = UpdatePlanner.new workload.model, query_plans, cost_model
       plans = planner.find_plans_for_update update, [index]
 
-      # XXX indexes[1] is fragile, but ok for now
-      expect(plans.map(&:to_a)).to include [[
-        IndexLookupPlanStep.new(indexes[1]),
+      expect(plans).to have(1).item
+      update_steps = [
         DeletePlanStep.new(index),
         InsertPlanStep.new(index)
-      ]]
-    end
-
-    it 'can produce a simple plan for a delete' do
-      delete = NoSE::Delete.new 'DELETE User WHERE User.UserId = ?',
-                                workload.model
-      index = NoSE::Index.new [tweet['Timestamp']],
-                              [tweet['TweetId'], user['UserId']],
-                              [user['City']],
-                              [tweet.id_fields.first, tweet['User']]
-      workload.add_statement delete
-      indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload \
-        [index]
-
-      planner = UpdatePlanner.new workload.model, indexes, cost_model
-      plans = planner.find_plans_for_update delete, [index]
-
-      # XXX indexes[1] is fragile, but ok for now
-      expect(plans.map(&:to_a)).to include [[
-        IndexLookupPlanStep.new(indexes[1]),
-        DeletePlanStep.new(index)
-      ]]
+      ]
+      expect(plans.first).to eql UpdatePlan.new update, index,
+                                                query_plans[update][index],
+                                                update_steps, cost_model
     end
   end
 end

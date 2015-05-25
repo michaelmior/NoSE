@@ -15,15 +15,64 @@ module NoSE::Plans
     end
   end
 
+  # A plan for executing an update
+  class UpdatePlan
+    attr_accessor :statement, :index, :query_plans, :update_steps, :cost_model
+
+    include Comparable
+
+    def initialize(statement, index, query_plans, update_steps, cost_model)
+      @statement = statement
+      @index = index
+      @query_plans = query_plans
+      @update_steps = update_steps
+      @cost_model = cost_model
+    end
+
+    # Compare all the fields for the plan for equality
+    def eql?(other)
+      return false unless other.is_a? UpdatePlan
+
+      @statement == other.statement &&
+        @index == other.index &&
+        @query_plans == other.query_plans &&
+        @update_steps == other.update_steps && @cost_model == other.cost_model
+    end
+
+    # :nocov:
+    def to_color
+      "\n   statement: " + @statement.to_color +
+        "\n       index: " + @index.to_color +
+        "\n query_plans: " + @query_plans.to_color +
+        "\nupdate_steps: " + @update_steps.to_color +
+        "\n  cost_model: " + @cost_model.to_color
+    end
+    # :nocov:
+
+    # Two plans are compared by their execution cost
+    def <=>(other)
+      cost <=> other.cost
+    end
+
+    # The cost is the sum of all the query costs plus the update costs
+    def cost
+      query_costs = @query_plans.map(&:cost)
+      update_costs = update_steps.map { |step| step.cost @cost_model }
+
+      (query_costs + update_costs).inject(0, &:+)
+    end
+  end
+
   # A planner for update statements in the workload
   class UpdatePlanner
-    def initialize(model, indexes, cost_model)
+    def initialize(model, query_plans, cost_model)
       @logger = Logging.logger['nose::update_planner']
 
       @model = model
-      @indexes = indexes
       @cost_model = cost_model
-      @query_planner = QueryPlanner.new model, indexes, cost_model
+
+      # query_plans is a nested dictionary keyed by statement and then index
+      @query_plans = query_plans
     end
 
     # Find the necessary update plans for a given set of indexes
@@ -32,25 +81,21 @@ module NoSE::Plans
         queries = statement.support_queries(index)
         next [] if queries.empty?
 
-        queries.map do |query|
-          tree = @query_planner.find_plans_for_query query
+        # Get the cardinality of the last step to use for the update state
+        plans = @query_plans[statement][index]
+        last_step = plans.first.last
+        state = UpdateState.new statement, last_step.state.cardinality
 
-          # Walk the tree and add delete and insert steps at the end
-          tree.each do |plan|
-            last_step = plan.last
-            state = UpdateState.new statement, last_step.state.cardinality
-            if statement.requires_delete?
-              last_step.children = [DeletePlanStep.new(index, state)]
-              last_step = last_step.children.first
-            end
-            if statement.requires_insert?
-              last_step.children = [InsertPlanStep.new(index, state)]
-            end
-          end
+        # Find the required update steps
+        update_steps = []
+        update_steps << DeletePlanStep.new(index, state) \
+          if statement.requires_delete?
+        update_steps << InsertPlanStep.new(index, state) \
+          if statement.requires_insert?
 
-          tree
-        end
-      end.flatten(1)
+        UpdatePlan.new statement, index, plans, update_steps,
+                       plans.first.cost_model
+      end
     end
   end
 end
