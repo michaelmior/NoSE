@@ -7,8 +7,8 @@ module NoSE::Plans
       super()
       @index = index
 
-      if state && state.statement
-        all_fields = state.statement.all_fields
+      if state && state.query
+        all_fields = state.query.all_fields
         @fields = (@index.hash_fields + @index.order_fields).to_set + \
           (@index.extra.to_set & all_fields)
       else
@@ -44,7 +44,6 @@ module NoSE::Plans
     # Check if this step can be applied for the given index,
     # returning a possible application of the step
     def self.apply(parent, index, state)
-      # require 'pry'; binding.pry if index.key == "i1781928567" && state.statement.text == "SELECT to_user.id, to_user.nickname, comments.id FROM comments.to_user WHERE to_user.id = ?"
       # Check that this index is a valid jump in the path
       return nil unless state.path[0..index.path.length - 1] == index.path
 
@@ -138,10 +137,10 @@ module NoSE::Plans
       end
 
       # Check if we can apply the limit from the query
-      if @state.answered?(check_limit: false) && !@state.statement.limit.nil?
-        @limit = @state.cardinality = @state.statement.limit
+      if @state.answered?(check_limit: false) && !@state.query.limit.nil?
+        @limit = @state.cardinality = @state.query.limit
       else
-        @state.cardinality = @state.statement.longest_entity_path.last.count \
+        @state.cardinality = @state.query.longest_entity_path.last.count \
           if parent.is_a? RootPlanStep
         @state.cardinality = Cardinality.new_cardinality @state.cardinality,
                                                          eq_filter,
