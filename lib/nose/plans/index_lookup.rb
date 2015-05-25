@@ -52,7 +52,7 @@ module NoSE::Plans
       unless parent_index.nil?
         # If the last step gave an ID, we must use it
         # XXX This doesn't cover all cases
-        parent_ids = parent_index.path.entities.to_a.last.id_fields.to_set
+        parent_ids = parent_index.path.entities.last.id_fields.to_set
         return nil if parent_ids.all?(&parent_index.extra.method(:include?)) &&
                       index.hash_fields.to_set != parent_ids
 
@@ -68,7 +68,7 @@ module NoSE::Plans
       end
 
       # Get fields in the query relevant to this index
-      path_fields = state.fields_for_entities(index.path.entities.to_a).to_set
+      path_fields = state.fields_for_entities(index.path.entities).to_set
       path_fields -= parent.fields  # exclude fields already fetched
       return nil unless path_fields.all?(&index.all_fields.method(:include?))
       return nil if !path_fields.empty? &&
@@ -77,7 +77,7 @@ module NoSE::Plans
       # Get the possible fields we need to select
       # This always includes the ID of the last and next entities
       # as well as the selected fields if we're at the end of the path
-      last_choices = [index.path.entities.to_a.last.id_fields]
+      last_choices = [index.path.entities.last.id_fields]
       next_key = state.path[index.path.length]
       last_choices << next_key.parent.id_fields unless next_key.nil?
       last_choices << state.fields if state.path == index.path
@@ -129,7 +129,7 @@ module NoSE::Plans
 
       # Strip the path for this index, but if we haven't fetched all
       # fields, leave the last one so we can perform a separate ID lookup
-      if @state.fields_for_entities(@index.path.entities.to_a,
+      if @state.fields_for_entities(@index.path.entities,
                                     select: true).empty? &&
          @state.path == index.path
         @state.path = @state.path[index.path.length..-1]
