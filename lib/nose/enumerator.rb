@@ -133,7 +133,7 @@ module NoSE
 
       range_fields = path.entities.map { |entity| range[entity] }.reduce(&:+)
       order_choices = range_fields.prefixes.to_a << []
-      extra_choices = extra_choices path.entities.to_a, select, eq, range
+      extra_choices = extra_choices path.entities, select, eq, range
 
       # Generate all possible indices based on the field choices
       choices = index_choices.product(extra_choices)

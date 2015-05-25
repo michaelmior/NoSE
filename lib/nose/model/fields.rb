@@ -150,6 +150,8 @@ module NoSE::Fields
 
   # Field holding a unique identifier
   class IDField < Field
+    alias_method :entity, :parent
+
     def initialize(name, **options)
       super(name, 16, **options)
       @primary_key = true

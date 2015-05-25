@@ -260,7 +260,7 @@ module NoSE
       return other.dup if @keys.empty?
 
       # Only allow combining if the entities match
-      fail ArgumentError unless other_keys.first.parent == entities.to_a.last
+      fail ArgumentError unless other_keys.first.parent == entities.last
 
       # Combine the two paths
       KeyPath.new(@keys + other_keys[1..-1])
@@ -299,10 +299,7 @@ module NoSE
 
     # Return all the entities along the path
     def entities
-      Enumerator.new do |enum|
-        enum.yield @keys.first.parent
-        @keys[1..-1].each { |key| enum.yield key.entity }
-      end
+      @keys.map(&:entity)
     end
   end
 

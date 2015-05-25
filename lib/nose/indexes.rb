@@ -109,7 +109,7 @@ module NoSE
       entities = @all_fields.map(&:parent).to_set
       fail InvalidIndexException, 'invalid path for index fields' \
         unless entities.include?(path.entities.first) &&
-               entities.include?(path.entities.to_a.last)
+               entities.include?(path.entities.last)
 
       # We must have the primary keys of the all entities on the path
       fail InvalidIndexException, 'missing path entity keys' \
