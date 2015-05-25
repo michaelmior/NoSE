@@ -213,4 +213,46 @@ module NoSE
       expect(connect.target_pk).to eq('B')
     end
   end
+
+  describe KeyPath do
+    include_context 'entities'
+
+    context 'when constructing a KeyPath' do
+      it 'fails if the first field is not a primary key' do
+        expect do
+          KeyPath.new [user['Tweets']]
+        end.to raise_error InvalidKeyPathException
+      end
+
+      it 'fails if keys do not match' do
+        expect do
+          KeyPath.new [user.id_fields.first, tweet['User']]
+        end.to raise_error InvalidKeyPathException
+      end
+    end
+
+    it 'can give the list of entities traversed' do
+      key_path = KeyPath.new [user.id_fields.first, user['Tweets']]
+      expect(key_path.entities).to match_array [user, tweet]
+    end
+
+    it 'can give a key from a single index' do
+      key_path = KeyPath.new [user.id_fields.first, user['Tweets']]
+      expect(key_path[1]).to eq(tweet.id_fields.first)
+    end
+
+    it 'can give a new path from a range' do
+      key_path = KeyPath.new [user.id_fields.first,
+                              user['Tweets'],
+                              tweet['Link']]
+      new_path = KeyPath.new [tweet.id_fields.first, tweet['Link']]
+      expect(key_path[1..2]).to eq(new_path)
+    end
+
+    it 'can reverse itself' do
+      key_path = KeyPath.new [user.id_fields.first, user['Tweets']]
+      reverse_path = KeyPath.new [tweet.id_fields.first, tweet['User']]
+      expect(key_path.reverse).to eq(reverse_path)
+    end
+  end
 end

@@ -241,6 +241,15 @@ module NoSE
     def_delegators :@keys, :each,  :inspect, :to_s, :length, :count, :last
 
     def initialize(keys = [])
+      fail InvalidKeyPathException, 'first key must be an ID' \
+        unless keys.empty? || keys.first.instance_of?(NoSE::Fields::IDField)
+
+      keys_match = keys.each_cons(2).map do |prev_key, key|
+        key.parent == prev_key.entity
+      end.all?
+      fail InvalidKeyPathException, 'keys must match along the path' \
+        unless keys_match
+
       @keys = keys
     end
 
@@ -275,7 +284,7 @@ module NoSE
         KeyPath.new(keys)
       else
         key = @keys[index]
-        key.entity.id_fields.first \
+        key = key.entity.id_fields.first \
           unless key.nil? || key.instance_of?(NoSE::Fields::IDField)
         key
       end
@@ -283,11 +292,8 @@ module NoSE
 
     # Return the reverse of this path
     def reverse
-      path = @keys.reverse
-      if path.length > 1
-        path[0] = path[0].entity.id_fields.first  # XXX broken for composite
-        path[-1] = @keys[1].reverse
-      end
+      path = [@keys.last.entity.id_fields.first]
+      path += @keys[1..-1].reverse.map(&:reverse)
 
       KeyPath.new(path)
     end
@@ -299,8 +305,12 @@ module NoSE
 
     # Return all the entities along the path
     def entities
-      @keys.map(&:entity)
+      @entities ||= @keys.map(&:entity)
     end
+  end
+
+  # Thrown when trying to construct a KeyPath which is not valid
+  class InvalidKeyPathException < StandardError
   end
 
   # A CQL statement and its associated data
