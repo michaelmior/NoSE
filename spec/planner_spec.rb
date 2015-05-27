@@ -263,20 +263,20 @@ module NoSE::Plans
       query_plans = {
         update => {
           index => update.support_queries(index).map do |query|
-            planner.min_plan(query)
+            planner.find_plans_for_query(query)
           end
         }
       }
       planner = UpdatePlanner.new workload.model, query_plans, cost_model
-      plans = planner.find_plans_for_update update, [index]
+      plans = planner.find_plans_for_update update, indexes
 
       expect(plans).to have(1).item
       update_steps = [
         DeletePlanStep.new(index),
         InsertPlanStep.new(index)
       ]
-      expect(plans.first).to eql UpdatePlan.new update, index,
-                                                query_plans[update][index],
+      min_plans = query_plans[update][index].map(&:min)
+      expect(plans.first).to eql UpdatePlan.new update, index, min_plans,
                                                 update_steps, cost_model
     end
   end
