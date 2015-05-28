@@ -24,6 +24,9 @@ module NoSE
         HasOne 'User',    'Tweets',
                'Tweet' => 'User'
 
+        HasOne 'Favourite',    'Favourited',
+               'User'       => 'Tweet'
+
         HasOne 'Link',    'Tweets',
                'Tweet' => 'Link'
       end
