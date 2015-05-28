@@ -35,7 +35,26 @@ module NoSE::Search
 
         query_weights.delete statement
       end
-      costs, cardinality = query_costs query_weights, indexes
+
+      costs, cardinality, trees = query_costs query_weights, indexes
+
+      # Construct a dictionary with the cost of all the updates
+      query_plans = trees.select do |tree|
+        tree.query.is_a? NoSE::SupportQuery
+      end.group_by { |tree| tree.query.statement }
+      query_plans.each do |statement, trees|
+        query_plans[statement] = trees.group_by { |tree| tree.query.index }
+      end
+      planner = NoSE::Plans::UpdatePlanner.new @workload.model, query_plans,
+                                               @cost_model
+      update_costs = Hash.new { |h, k| h[k] = Hash.new }
+      @workload.statements.each do |statement|
+        next if statement.is_a? NoSE::Query
+
+        planner.find_plans_for_update(statement, indexes).each do |plan|
+          update_costs[statement][plan.index] = plan.update_cost
+        end
+      end
 
       @logger.debug do
         "Costs: \n" + pp_s(costs) + "\n" \
@@ -50,6 +69,7 @@ module NoSE::Search
                    max_space: max_space,
                    index_sizes: index_sizes,
                    costs: costs,
+                   update_costs: update_costs,
                    cardinality: cardinality,
                    cost_model: @cost_model
     end
@@ -95,7 +115,7 @@ module NoSE::Search
         cardinality[query] = results[i][1]
       end
 
-      [costs, cardinality]
+      [costs, cardinality, results.map(&:last)]
     end
 
     # Get the cost for indices for an individual query
@@ -103,7 +123,8 @@ module NoSE::Search
       query_costs = {}
       cardinality = 0
 
-      planner.find_plans_for_query(query).each do |plan|
+      tree = planner.find_plans_for_query(query)
+      tree.each do |plan|
         steps_by_index = []
         plan.each do |step|
           if step.is_a? NoSE::Plans::IndexLookupPlanStep
@@ -133,7 +154,7 @@ module NoSE::Search
                              weight, plan
       end
 
-      [query_costs, cardinality]
+      [query_costs, cardinality, tree]
     end
 
     # Store the costs and indexes for this plan in a nested hash
