@@ -90,6 +90,16 @@ module NoSE::Plans
       @cost_model = cost_model
     end
 
+    # Select all plans which use only a given set of indexes
+    def select_using_indexes(indexes)
+      select do |plan|
+        plan.all? do |step|
+          !step.is_a?(NoSE::Plans::IndexLookupPlanStep) ||
+            indexes.include?(step.index)
+        end
+      end
+    end
+
     # Enumerate all plans in the tree
     def each
       nodes = [@root]
