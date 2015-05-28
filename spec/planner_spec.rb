@@ -15,6 +15,24 @@ module NoSE::Plans
       expect(tree.first.cost).to be > 0
     end
 
+    it 'does not use an index with the wrong key path' do
+      query = NoSE::Query.new 'SELECT User.Username FROM Tweet.User' \
+                              ' WHERE Tweet.TweetId = ?', workload.model
+      good_index = query.materialize_view
+      bad_index = good_index.dup
+      bad_index.instance_variable_set :@path,
+                                      [user.id_fields.first, user['Favourite']]
+
+      # With the correct path, this should work
+      planner = QueryPlanner.new workload.model, [good_index], cost_model
+      expect { planner.find_plans_for_query query }.not_to raise_error
+
+      # With the wrong path, this should fail
+      planner = QueryPlanner.new workload.model, [bad_index], cost_model
+      expect { planner.find_plans_for_query query }.to \
+        raise_error NoPlanException
+    end
+
     it 'can perform an external sort if an index does not exist' do
       index = NoSE::Index.new [user['City']],
                               [user['UserId'], tweet['TweetId']],
