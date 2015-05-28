@@ -557,14 +557,19 @@ module NoSE
     def support_query_for_fields(index, fields)
       return nil if fields.empty?
 
-      # Get the new KeyPath for the support query
-      query_keys = splice_path index.path, @key_path, @from
+      # Get the new KeyPath for the support query based on the longest
+      # path from the intersection with the statement and index paths
+      path1 = splice_path index.path, @key_path, @from
+      path2 = splice_path index.path.reverse, @key_path, @from
+      query_keys = [path1, path2].max_by(&:length)
+
       query_from = query_keys.map(&:name)
       query_from[0] = query_keys.first.parent.name
 
       # Don't require selecting fields given in the WHERE clause or settings
       given_fields = self.is_a?(Insert) ? @settings : @conditions
-      required_fields = index.hash_fields - given_fields.map(&:field)
+      required_fields = (index.hash_fields + index.order_fields) -
+                        given_fields.map(&:field)
       return nil if required_fields.empty?
 
       # Get the full name of each field to be used during selection
