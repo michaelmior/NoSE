@@ -100,6 +100,11 @@ module NoSE::Plans
       end
     end
 
+    # The query this tree of plans is generated for
+    def query
+      @root.state.query
+    end
+
     # Enumerate all plans in the tree
     def each
       nodes = [@root]

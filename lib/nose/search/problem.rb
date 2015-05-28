@@ -129,8 +129,7 @@ module NoSE::Search
           next if !update.modifies_index?(index) ||
                   update_divisors[update].include?(index)
 
-          min_cost += Gurobi::LinExpr.new \
-                      update_cost(update, index, 1, data[:cost_model])
+          min_cost += Gurobi::LinExpr.new data[:update_costs][update][index]
         end
       end
     end
@@ -143,9 +142,7 @@ module NoSE::Search
       if query.is_a? NoSE::SupportQuery
         # Add the cost of inserting or deleting data divided by
         # the number of required support queries to avoid double counting
-        query_cost += update_cost(query, query.index,
-                                  data[:cardinality][query],
-                                  data[:cost_model]) /
+        query_cost += data[:update_costs][query.statement][query.index] /
                       update_divisors[query.statement].count
       end
 
@@ -172,23 +169,6 @@ module NoSE::Search
       @logger.debug { "Objective function is #{min_cost.inspect}" }
 
       @model.setObjective min_cost, Gurobi::MINIMIZE
-    end
-
-    # Get the cost of an index update for a given number of entities
-    def update_cost(statement, index, cardinality, cost_model)
-      cost = 0
-      state = NoSE::Plans::UpdateState.new statement, cardinality
-
-      if statement.requires_delete?
-        step = NoSE::Plans::DeletePlanStep.new index, state
-        cost += step.cost cost_model
-      end
-      if statement.requires_insert?
-        step = NoSE::Plans::InsertPlanStep.new index, state
-        cost += step.cost cost_model
-      end
-
-      cost
     end
   end
 

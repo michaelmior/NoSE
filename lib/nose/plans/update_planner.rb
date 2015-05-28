@@ -54,12 +54,14 @@ module NoSE::Plans
       cost <=> other.cost
     end
 
+    # The cost of performing the update on this index
+    def update_cost
+      @update_steps.map { |step| step.cost @cost_model }.inject(0, &:+)
+    end
+
     # The cost is the sum of all the query costs plus the update costs
     def cost
-      query_costs = @query_plans.map(&:cost)
-      update_costs = update_steps.map { |step| step.cost @cost_model }
-
-      (query_costs + update_costs).inject(0, &:+)
+      @query_plans.map(&:cost).inject(update_cost, &:+)
     end
   end
 
