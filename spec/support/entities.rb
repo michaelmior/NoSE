@@ -5,7 +5,7 @@ module NoSE
         (Entity 'User' do
           ID     'UserId'
           String 'Username', 10
-          String 'City'
+          String 'City', count: 5
 
           etc
         end) * 10

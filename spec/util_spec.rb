@@ -119,3 +119,28 @@ describe Object do
     end
   end
 end
+
+describe Cardinality do
+  include_context 'entities'
+
+  it 'estimates one for a simple ID lookup' do
+    cardinality = Cardinality.new_cardinality tweet.count, [tweet['TweetId']],
+                                              nil, [tweet]
+
+    expect(cardinality).to eq(1)
+  end
+
+  it 'correctly estimates based on field cardinality for equality' do
+    cardinality = Cardinality.new_cardinality user.count, [user['City']],
+                                              nil, [user]
+
+    expect(cardinality).to eq(2)
+  end
+
+  it 'uses a static estimate for range filters' do
+    cardinality = Cardinality.new_cardinality tweet.count, [tweet['Body']],
+                                              tweet['Timestamp'], [tweet]
+
+    expect(cardinality).to eq(20)
+  end
+end
