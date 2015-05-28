@@ -279,5 +279,17 @@ module NoSE::Plans
       expect(plans.first).to eql UpdatePlan.new update, index, min_plans,
                                                 update_steps, cost_model
     end
+
+    it 'can produce a plan with no support queries' do
+      update = NoSE::Update.new 'UPDATE User SET City = ? ' \
+                                'WHERE User.UserId = ?', workload.model
+      index = NoSE::Index.new [user['UserId']], [], [user['City']],
+                              [user.id_fields.first]
+      planner = UpdatePlanner.new workload.model, {}, cost_model
+      plans = planner.find_plans_for_update update, [index]
+
+      expect(plans).to have(1).item
+      expect(plans.first.query_plans).to be_empty
+    end
   end
 end

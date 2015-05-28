@@ -78,15 +78,20 @@ module NoSE::Plans
     # Find the necessary update plans for a given set of indexes
     def find_plans_for_update(statement, indexes)
       indexes.map do |index|
-        queries = statement.support_queries(index)
-        next if queries.empty?
+        next unless statement.modifies_index?(index)
 
-        # Get the cardinality of the last step to use for the update state
-        plans = @query_plans[statement][index].map do |tree|
-          tree.select_using_indexes(indexes).min_by(&:cost)
+        unless (@query_plans[statement] && @query_plans[statement][index]).nil?
+          # Get the cardinality of the last step to use for the update state
+          plans = @query_plans[statement][index].map do |tree|
+            tree.select_using_indexes(indexes).min_by(&:cost)
+          end
+          last_step = plans.first.last
+          state = UpdateState.new statement, last_step.state.cardinality
+        else
+          # TODO: Fix estimated cardinality
+          plans = []
+          state = UpdateState.new statement, 1
         end
-        last_step = plans.first.last
-        state = UpdateState.new statement, last_step.state.cardinality
 
         # Find the required update steps
         update_steps = []
@@ -95,8 +100,7 @@ module NoSE::Plans
         update_steps << InsertPlanStep.new(index, state) \
           if statement.requires_insert?
 
-        UpdatePlan.new statement, index, plans, update_steps,
-                       plans.first.cost_model
+        UpdatePlan.new statement, index, plans, update_steps, @cost_model
       end.compact
     end
   end
