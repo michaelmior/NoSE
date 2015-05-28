@@ -38,6 +38,7 @@ module NoSE::CLI
     end
 
     # Execute the app using the injected stuff
+    # https://github.com/erikhuda/thor/wiki/Integrating-with-Aruba-In-Process-Runs
     def execute!
       exit_code = begin
                     # Thor accesses these streams directly rather than
@@ -53,7 +54,7 @@ module NoSE::CLI
                     # assume success if no exception is raised.
                     0
                   rescue StandardError => e
-                    # The ruby interpreter would pipe this to STDERR
+                    # The Ruby interpreter would pipe this to STDERR
                     # and exit 1 in the case of an unhandled exception
                     b = e.backtrace
                     @stderr.puts "#{b.shift}: #{e.message} (#{e.class})"
@@ -62,8 +63,6 @@ module NoSE::CLI
                   rescue SystemExit => e
                     e.status
                   ensure
-                    # TODO: reset app here, free up resources, etc.
-                    # ...then we put the streams back.
                     $stderr = STDERR
                     $stdin = STDIN
                     $stdout = STDOUT
