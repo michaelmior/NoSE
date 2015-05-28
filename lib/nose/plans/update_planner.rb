@@ -83,14 +83,7 @@ module NoSE::Plans
 
         # Get the cardinality of the last step to use for the update state
         plans = @query_plans[statement][index].map do |tree|
-          possible_plans = tree.select do |plan|
-            plan.all? do |step|
-              !step.is_a?(NoSE::Plans::IndexLookupPlanStep) ||
-              indexes.include?(step.index)
-            end
-          end
-
-          possible_plans.min_by(&:cost)
+          tree.select_using_indexes(indexes).min_by(&:cost)
         end
         last_step = plans.first.last
         state = UpdateState.new statement, last_step.state.cardinality
