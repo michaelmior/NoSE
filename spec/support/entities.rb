@@ -10,10 +10,10 @@ module NoSE
           etc
         end) * 10
 
-        Entity 'Link' do
+        (Entity 'Link' do
           ID     'LinkId'
           String 'URL'
-        end
+        end) * 100
 
         (Entity 'Tweet' do
           ID         'TweetId'
