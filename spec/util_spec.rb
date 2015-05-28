@@ -143,4 +143,20 @@ describe Cardinality do
 
     expect(cardinality).to eq(20)
   end
+
+  it 'does not affect cardinality for relationships to-one relationships' do
+    cardinality = Cardinality.new_cardinality tweet.count, [tweet['TweetId']],
+                                              nil, [tweet, link]
+
+    # With one link per tweet, cardinality should be 1
+    expect(cardinality).to eq(1)
+  end
+
+  it 'estimates cardinality for to-many relationships' do
+    cardinality = Cardinality.new_cardinality link.count, [link['LinkId']],
+                                              nil, [link, tweet]
+
+    # With 100 total links and 1000 tweets, there should be 10 tweets per link
+    expect(cardinality).to eq(10)
+  end
 end
