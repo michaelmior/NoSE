@@ -131,7 +131,8 @@ module NoSE
                               workload.model
       query = update.support_queries(index).first
       expect(query.text).to eq \
-        'SELECT Tweet.Timestamp FROM Tweet.User WHERE User.UserId = ?'
+        'SELECT Tweet.Timestamp, Tweet.TweetId ' \
+        'FROM Tweet.User WHERE User.UserId = ?'
       expect(query.statement).to eq(update)
       expect(query.index).to eq(index)
     end
