@@ -159,7 +159,7 @@ class Cardinality
       cardinality *= filter_cardinality eq_filter, range_filter, next_entity
     end
 
-    [1, cardinality.ceil].max
+    [1, cardinality.round].max
   end
 
   # Update the cardinality based on filtering implicit to the index
