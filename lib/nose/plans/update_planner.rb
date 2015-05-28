@@ -88,9 +88,12 @@ module NoSE::Plans
           last_step = plans.first.last
           state = UpdateState.new statement, last_step.state.cardinality
         else
-          # TODO: Fix estimated cardinality
           plans = []
-          state = UpdateState.new statement, 1
+          cardinality = Cardinality.new_cardinality statement.from.count,
+                                                    statement.eq_fields,
+                                                    statement.range_field,
+                                                    statement.longest_entity_path
+          state = UpdateState.new statement, cardinality
         end
 
         # Find the required update steps
