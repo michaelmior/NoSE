@@ -1,93 +1,95 @@
-# Statement planning and abstract models of execution steps
-module NoSE::Plans
-  # A single step in a statement plan
-  class PlanStep
-    include Supertype
+module NoSE
+  # Statement planning and abstract models of execution steps
+  module Plans
+    # A single step in a statement plan
+    class PlanStep
+      include Supertype
 
-    attr_accessor :state, :parent
-    attr_reader :children, :fields
+      attr_accessor :state, :parent
+      attr_reader :children, :fields
 
-    def initialize
-      @children = Set.new
-      @parent = nil
-      @fields = Set.new
-    end
+      def initialize
+        @children = Set.new
+        @parent = nil
+        @fields = Set.new
+      end
 
-    # :nocov:
-    def to_color
-      # Split on capital letters and remove the last two parts (PlanStep)
-      self.class.name.split('::').last.split(/(?=[A-Z])/)[0..-3] \
-        .map(&:downcase).join(' ').capitalize
-    end
-    # :nocov:
+      # :nocov:
+      def to_color
+        # Split on capital letters and remove the last two parts (PlanStep)
+        self.class.name.split('::').last.split(/(?=[A-Z])/)[0..-3] \
+          .map(&:downcase).join(' ').capitalize
+      end
+      # :nocov:
 
-    def children=(children)
-      @children = children.to_set
+      def children=(children)
+        @children = children.to_set
 
-      # Track the parent step of each step
-      children.each do |child|
-        child.instance_variable_set(:@parent, self)
-        fields = child.instance_variable_get(:@fields) + self.fields
-        child.instance_variable_set(:@fields, fields)
+        # Track the parent step of each step
+        children.each do |child|
+          child.instance_variable_set(:@parent, self)
+          fields = child.instance_variable_get(:@fields) + self.fields
+          child.instance_variable_set(:@fields, fields)
+        end
+      end
+
+      # Mark the fields in this index as fetched
+      def add_fields_from_index(index)
+        @fields += index.all_fields
+      end
+
+      # Get the list of steps which led us here
+      # If a cost model is not provided, statement plans using
+      # this step cannot be evaluated on the basis of cost
+      #
+      # (this is to support PlanStep#parent_index which does not need cost)
+      # @return [QueryPlan]
+      def parent_steps(cost_model = nil)
+        steps = nil
+
+        if @parent.nil?
+          steps = QueryPlan.new state.query, cost_model
+        else
+          steps = @parent.parent_steps cost_model
+          steps << self
+        end
+
+        steps
+      end
+
+      # Find the closest index to this step
+      def parent_index
+        step = parent_steps.to_a.reverse.find do |parent_step|
+          parent_step.is_a? IndexLookupPlanStep
+        end
+        step.index unless step.nil?
+      end
+
+      # The cost of executing this step in the plan
+      # @return [Numeric]
+      def cost(cost_model)
+        cost_model.method((subtype_name + '_cost').to_sym).call self
+      end
+
+      # Add the Subtype module to all step classes
+      def self.inherited(child_class)
+        child_class.send(:include, Subtype)
       end
     end
 
-    # Mark the fields in this index as fetched
-    def add_fields_from_index(index)
-      @fields += index.all_fields
-    end
-
-    # Get the list of steps which led us here
-    # If a cost model is not provided, statement plans using
-    # this step cannot be evaluated on the basis of cost
-    #
-    # (this is to support PlanStep#parent_index which does not need cost)
-    # @return [QueryPlan]
-    def parent_steps(cost_model = nil)
-      steps = nil
-
-      if @parent.nil?
-        steps = QueryPlan.new state.query, cost_model
-      else
-        steps = @parent.parent_steps cost_model
-        steps << self
+    # A dummy step used to inspect failed statement plans
+    class PrunedPlanStep < PlanStep
+      def state
+        OpenStruct.new answered?: true
       end
-
-      steps
     end
 
-    # Find the closest index to this step
-    def parent_index
-      step = parent_steps.to_a.reverse.find do |parent_step|
-        parent_step.is_a? IndexLookupPlanStep
+    # The root of a tree of statement plans used as a placeholder
+    class RootPlanStep < PlanStep
+      def initialize(state)
+        super()
+        @state = state
       end
-      step.index unless step.nil?
-    end
-
-    # The cost of executing this step in the plan
-    # @return [Numeric]
-    def cost(cost_model)
-      cost_model.method((subtype_name + '_cost').to_sym).call self
-    end
-
-    # Add the Subtype module to all step classes
-    def self.inherited(child_class)
-      child_class.send(:include, Subtype)
-    end
-  end
-
-  # A dummy step used to inspect failed statement plans
-  class PrunedPlanStep < PlanStep
-    def state
-      OpenStruct.new answered?: true
-    end
-  end
-
-  # The root of a tree of statement plans used as a placeholder
-  class RootPlanStep < PlanStep
-    def initialize(state)
-      super()
-      @state = state
     end
   end
 end

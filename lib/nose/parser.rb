@@ -242,7 +242,7 @@ module NoSE
 
     def initialize(keys = [])
       fail InvalidKeyPathException, 'first key must be an ID' \
-        unless keys.empty? || keys.first.instance_of?(NoSE::Fields::IDField)
+        unless keys.empty? || keys.first.instance_of?(Fields::IDField)
 
       keys_match = keys.each_cons(2).map do |prev_key, key|
         key.parent == prev_key.entity
@@ -280,12 +280,12 @@ module NoSE
       if index.is_a? Range
         keys = @keys[index]
         keys[0] = keys[0].entity.id_fields.first \
-          unless keys.empty? || keys[0].instance_of?(NoSE::Fields::IDField)
+          unless keys.empty? || keys[0].instance_of?(Fields::IDField)
         KeyPath.new(keys)
       else
         key = @keys[index]
         key = key.entity.id_fields.first \
-          unless key.nil? || key.instance_of?(NoSE::Fields::IDField)
+          unless key.nil? || key.instance_of?(Fields::IDField)
         key
       end
     end
@@ -576,11 +576,11 @@ module NoSE
       required_fields.map! do |field|
         parent = query_keys.find do |key|
           field.parent == key.parent ||
-          (key.is_a?(NoSE::Fields::ForeignKeyField) &&
+          (key.is_a?(Fields::ForeignKeyField) &&
            field.parent == key.entity)
         end
         parent = parent.parent \
-          unless parent.is_a?(NoSE::Fields::ForeignKeyField)
+          unless parent.is_a?(Fields::ForeignKeyField)
 
         "#{parent.name}.#{field.name}"
       end
@@ -600,7 +600,7 @@ module NoSE
         query_keys = KeyPath.new([from.id_fields.first])
       else
         query_keys = KeyPath.new(source.each_cons(2).take_while do |key, _|
-          next true if key.instance_of?(NoSE::Fields::IDField)
+          next true if key.instance_of?(Fields::IDField)
           key.entity == from
         end.flatten(1))
       end
