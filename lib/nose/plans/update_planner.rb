@@ -70,14 +70,22 @@ module NoSE
 
     # A planner for update statements in the workload
     class UpdatePlanner
-      def initialize(model, query_plans, cost_model)
+      def initialize(model, trees, cost_model)
         @logger = Logging.logger['nose::update_planner']
 
         @model = model
         @cost_model = cost_model
 
-        # query_plans is a nested dictionary keyed by statement and then index
-        @query_plans = query_plans
+        # Remove anything not a support query then group by statement and index
+        @query_plans = trees.select do |tree|
+          tree.query.is_a? SupportQuery
+        end
+        @query_plans = @query_plans.group_by { |tree| tree.query.statement }
+        @query_plans.each do |plan_stmt, plan_trees|
+          @query_plans[plan_stmt] = plan_trees.group_by do |tree|
+            tree.query.index
+          end
+        end
       end
 
       # Find the necessary update plans for a given set of indexes

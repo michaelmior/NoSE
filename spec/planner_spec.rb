@@ -278,13 +278,9 @@ module NoSE::Plans
       planner = NoSE::Plans::QueryPlanner.new workload.model, indexes,
                                               cost_model
 
-      query_plans = {
-        update => {
-          index => update.support_queries(index).map do |query|
-            planner.find_plans_for_query(query)
-          end
-        }
-      }
+      query_plans = update.support_queries(index).map do |query|
+        planner.find_plans_for_query(query)
+      end
       planner = UpdatePlanner.new workload.model, query_plans, cost_model
       plans = planner.find_plans_for_update update, indexes
 
@@ -293,7 +289,7 @@ module NoSE::Plans
         DeletePlanStep.new(index),
         InsertPlanStep.new(index)
       ]
-      min_plans = query_plans[update][index].map(&:min)
+      min_plans = query_plans.map(&:min)
       expect(plans.first).to eql UpdatePlan.new update, index, min_plans,
                                                 update_steps, cost_model
     end
@@ -303,7 +299,7 @@ module NoSE::Plans
                                 'WHERE User.UserId = ?', workload.model
       index = NoSE::Index.new [user['UserId']], [], [user['City']],
                               [user.id_fields.first]
-      planner = UpdatePlanner.new workload.model, {}, cost_model
+      planner = UpdatePlanner.new workload.model, [], cost_model
       plans = planner.find_plans_for_update update, [index]
 
       expect(plans).to have(1).item
