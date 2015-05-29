@@ -24,18 +24,12 @@ module NoSE
         return [] if indexes.empty?
 
         # Get the cost of all queries
-        query_weights = @workload.statement_weights.clone
-        @workload.statement_weights.each do |statement, weight|
-          next if statement.is_a? Query
-
-          indexes.each do |index|
-            statement.support_queries(index).each do |query|
-              query_weights[query] = weight
-            end
-          end
-
-          query_weights.delete statement
-        end
+        query_weights = Hash[@workload.support_queries(indexes).map do |query|
+          [query, @workload.statement_weights[query.statement]]
+        end]
+        query_weights.merge!(@workload.statement_weights.select do |stmt, _|
+          stmt.is_a? Query
+        end.to_h)
 
         costs, cardinality, trees = query_costs query_weights, indexes
 

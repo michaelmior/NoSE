@@ -59,6 +59,13 @@ module NoSE
       @statement_weights.select! { |stmt, _| stmt.is_a? Query }
     end
 
+    # Get all the support queries for updates in the workload
+    def support_queries(indexes)
+      updates.map do |update|
+        indexes.map { |index| update.support_queries(index) }
+      end.flatten(2)
+    end
+
     # Check if all the fields used by queries in the workload exist
     # @return [Boolean]
     def fields_exist?
