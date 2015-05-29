@@ -155,9 +155,9 @@ module NoSE
       eq = @longest_entity_path.last.id_fields if eq.empty?
       order_fields = materialize_view_order(hash_entity) - eq
 
-      NoSE::Index.new(eq, order_fields,
-                      all_fields - (@eq_fields + @order).to_set,
-                      @key_path.reverse)
+      Index.new(eq, order_fields,
+                all_fields - (@eq_fields + @order).to_set,
+                @key_path.reverse)
     end
 
     # Get the ordered keys for a materialized view

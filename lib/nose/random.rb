@@ -12,7 +12,7 @@ module NoSE
       @nodes = 0..(@nodes_nb - 1)
       num_entities = RandomGaussian.new 10_000, 100
       @entities = @nodes.map do |node|
-        NoSE::Entity.new('E' + random_name(node)) * num_entities.rand
+        Entity.new('E' + random_name(node)) * num_entities.rand
       end
 
       @neighbours = Array.new(@nodes_nb) { Set.new }
