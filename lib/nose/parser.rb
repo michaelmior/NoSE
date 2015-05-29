@@ -661,14 +661,9 @@ module NoSE
       true
     end
 
-    # Get the support queries for inserting into an index
+    # No support queries are required for index insertion
     def support_queries(index)
-      # XXX We should be able to do this with at most two queries,
-      #     one for each side of the branch down the query path
-      return [] if (@from.fields.values.to_set & index.all_fields).empty?
-      index.all_fields.group_by(&:parent).map do |_, fields|
-        support_query_for_fields index, fields
-      end.compact
+      []
     end
   end
 
