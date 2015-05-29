@@ -33,15 +33,7 @@ module NoSE
 
         costs, cardinality, trees = query_costs query_weights, indexes
 
-        # Construct a dictionary with the cost of all the updates
-        query_plans = trees.select do |tree|
-          tree.query.is_a? SupportQuery
-        end.group_by { |tree| tree.query.statement }
-        query_plans.each do |statement, trees|
-          query_plans[statement] = trees.group_by { |tree| tree.query.index }
-        end
-        planner = Plans::UpdatePlanner.new @workload.model, query_plans,
-                                           @cost_model
+        planner = Plans::UpdatePlanner.new @workload.model, trees, @cost_model
         update_costs = Hash.new { |h, k| h[k] = Hash.new }
         @workload.statements.each do |statement|
           next if statement.is_a? Query
