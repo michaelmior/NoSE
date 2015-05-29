@@ -118,7 +118,7 @@ module NoSE
       # Output a list of query plans as text
       def output_plans_txt(plans, file)
         plans.each do |plan|
-          file.puts plan.statement.inspect
+          file.puts plan.query.inspect
           plan.each { |step| file.puts '  ' + step.inspect }
           file.puts
         end
