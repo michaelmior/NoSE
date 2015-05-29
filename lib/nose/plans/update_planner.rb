@@ -96,10 +96,16 @@ module NoSE
           else
             plans = []
             path = statement.longest_entity_path
-            cardinality = Cardinality.new_cardinality statement.from.count,
-                                                      statement.eq_fields,
-                                                      statement.range_field,
-                                                      path
+
+            if statement.is_a? Insert
+              cardinality = 1
+            else
+              cardinality = Cardinality.new_cardinality statement.from.count,
+                                                        statement.eq_fields,
+                                                        statement.range_field,
+                                                        path
+            end
+
             state = UpdateState.new statement, cardinality
           end
 
