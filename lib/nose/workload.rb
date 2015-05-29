@@ -54,6 +54,11 @@ module NoSE
       @statement_weights.keys.reject { |statement| statement.is_a? Query }
     end
 
+    # Remove any updates from the workload
+    def remove_updates
+      @statement_weights.select! { |stmt, _| stmt.is_a? Query }
+    end
+
     # Check if all the fields used by queries in the workload exist
     # @return [Boolean]
     def fields_exist?

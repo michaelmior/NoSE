@@ -52,5 +52,20 @@ module NoSE
         receive(:output).with(png: '/tmp/rubis.png')
       workload.model.output :png, '/tmp/rubis.png'
     end
+
+    it 'can remove updates' do
+      entity << Fields::IntegerField.new('Bar')
+
+      valid_query = Query.new 'SELECT Foo.Id FROM Foo WHERE Foo.Id = ?',
+                              workload.model
+      workload.add_statement valid_query
+      update = Update.new 'UPDATE Foo SET Bar = ? WHERE Foo.Id = ?',
+                          workload.model
+      workload.add_statement update
+
+      workload.remove_updates
+      expect(workload.queries).not_to be_empty
+      expect(workload.updates).to be_empty
+    end
   end
 end
