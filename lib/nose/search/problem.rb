@@ -52,11 +52,11 @@ module NoSE
       def selected_indexes
         return if @status.nil?
 
-        @indexes.select.with_index do |_, i|
+        @indexes.select do |index|
           # Even though we specifed the variables as binary, rounding
           # error means the value won't be exactly one
           # (the check exists to catch weird values if they arise)
-          val = @index_vars[i].get_double Gurobi::DoubleAttr::X
+          val = @index_vars[index].get_double Gurobi::DoubleAttr::X
           fail if val > 0.01 && val < 0.99
           val > 0.99
         end
@@ -100,14 +100,16 @@ module NoSE
 
       # Initialize query and index variables
       def add_variables
-        @index_vars = []
-        @query_vars = []
-        (0...@indexes.length).each do |i|
-          @index_vars[i] = @model.addVar 0, 1, 0, Gurobi::BINARY, "i#{i}"
-          @query_vars[i] = []
-          (0...@queries.length).each do |q|
-            @query_vars[i][q] = @model.addVar 0, 1, 0, Gurobi::BINARY,
-                                              "q#{q}i#{i}"
+        @index_vars = {}
+        @query_vars = {}
+        @indexes.each do |index|
+          @index_vars[index] = @model.addVar 0, 1, 0, Gurobi::BINARY,
+                                             "#{index.key}"
+          @query_vars[index] = {}
+          @queries.each_with_index do |query, q|
+            query_var = "q#{q}_#{index.key}"
+            @query_vars[index][query] = @model.addVar 0, 1, 0, Gurobi::BINARY,
+                                                      query_var
           end
         end
       end
@@ -161,11 +163,12 @@ module NoSE
           update_divisors[query.statement].add query.index
         end
 
-        min_cost = (0...@query_vars.length).to_a \
-          .product((0...@queries.length).to_a).map do |i, q|
-          total_query_cost @queries[q], @data[:costs][q][i],
-                           @query_vars[i][q], data, update_divisors
-        end.compact.reduce(&:+)
+        min_cost = @queries.each_with_index.map do |query, q|
+          @indexes.each_with_index.map do |index, i|
+            total_query_cost query, @data[:costs][q][i],
+                             @query_vars[index][query], data, update_divisors
+          end.compact
+        end.flatten.inject(&:+)
 
         add_update_costs min_cost, data, update_divisors
 

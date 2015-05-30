@@ -20,11 +20,11 @@ module NoSE
     class IndexPresenceConstraints < Constraint
       # Add constraint for indices being present
       def self.apply(problem)
-        (0...problem.indexes.length).each do |i|
-          (0...problem.queries.length).each do |q|
-            problem.model.addConstr problem.query_vars[i][q] +
-                                    problem.index_vars[i] * -1 <= 0,
-                                    "i#{i}q#{q}_avail"
+        problem.indexes.each do |index|
+          problem.queries.each_with_index do |query, q|
+            problem.model.addConstr problem.query_vars[index][query] +
+                                    problem.index_vars[index] * -1 <= 0,
+                                    "q#{q}_#{index.key}_avail"
           end
         end
       end
@@ -36,8 +36,8 @@ module NoSE
       def self.apply(problem)
         return unless problem.data[:max_space].finite?
 
-        space = problem.indexes.each_with_index.map do |index, i|
-          problem.index_vars[i] * (index.size * 1.0)
+        space = problem.indexes.map do |index|
+          problem.index_vars[index] * (index.size * 1.0)
         end.reduce(&:+)
         problem.model.addConstr space <= problem.data[:max_space] * 1.0,
                                 'max_space'
@@ -55,7 +55,7 @@ module NoSE
           if query.is_a? SupportQuery
             # Find the index associated with the support query and make
             # the requirement of a plan conditional on this index
-            index_var = problem.index_vars[problem.indexes.index(query.index)]
+            index_var = problem.index_vars[query.index]
             problem.model.addConstr(constraint == index_var * 1.0)
           else
             problem.model.addConstr(constraint == 1)
@@ -70,7 +70,9 @@ module NoSE
 
         problem.data[:costs][q].each do |i, (step_indexes, _)|
           problem.indexes[i].entity_range(entities).each do |part|
-            index_var = problem.query_vars[i][q]
+            index = problem.indexes[i]
+            query = problem.queries[q]
+            index_var = problem.query_vars[index][query]
             query_constraints[part] += index_var
           end
 
@@ -79,20 +81,26 @@ module NoSE
             if step_indexes.last.is_a? Array
               # We have multiple possible last steps, so add an auxiliary
               # variable which allows us to select between them
-              first_var = problem.query_vars[step_indexes.first][q]
+              index = problem.indexes[step_indexes.first]
+              query = problem.queries[q]
+              first_var = problem.query_vars[index][query]
               step_var = problem.model.addVar 0, 1, 0, Gurobi::BINARY,
                                               "q#{q}s#{step_indexes.first}"
               problem.model.update
               problem.model.addConstr(step_var * 1 >= first_var * 1)
 
               # Force exactly one of the indexes for the last step to be chosen
-              vars = step_indexes.last.map do |index|
-                problem.query_vars[index][q]
+              vars = step_indexes.last.map do |i2|
+                index = problem.indexes[i2]
+                problem.query_vars[index][query]
               end
               problem.model.addConstr(vars.inject(Gurobi::LinExpr.new, &:+) ==
                                                   step_var)
             else
-              vars = step_indexes.map { |index| problem.query_vars[index][q] }
+              vars = step_indexes.map do |i2|
+                index = problem.indexes[i2]
+                problem.query_vars[index][query]
+              end
               vars.reverse.each_cons(2).each do |first_var, last_var|
                 problem.model.addConstr(last_var * 1 == first_var * 1)
               end
