@@ -18,7 +18,8 @@ module NoSE::Search
       workload.add_statement query
 
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
-      indexes = Search.new(workload, cost_model).search_overlap indexes
+      result = Search.new(workload, cost_model).search_overlap indexes
+      indexes = result.indexes
       expect(indexes).to include query.materialize_view
     end
 
@@ -50,7 +51,8 @@ module NoSE::Search
       # Enumerate the indexes and select those actually used
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
       cost_model = NoSE::Cost::EntityCountCost
-      indexes = Search.new(workload, cost_model).search_overlap indexes
+      result = Search.new(workload, cost_model).search_overlap indexes
+      indexes = result.indexes
 
       # Get the indexes actually used by the generated plans
       planner = NoSE::Plans::QueryPlanner.new workload, indexes, cost_model

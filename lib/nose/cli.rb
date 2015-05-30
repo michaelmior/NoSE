@@ -73,31 +73,8 @@ module NoSE
       def search_result(workload, cost_model, max_space = Float::INFINITY)
         enumerated_indexes = IndexEnumerator.new(workload) \
           .indexes_for_workload.to_a
-        indexes = find_indexes workload, enumerated_indexes, max_space,
-          cost_model
-
-        # Find the final plans for each query
-        planner = Plans::QueryPlanner.new workload, indexes, cost_model
-        plans = {}
-        workload.queries.each { |query| plans[query] = planner.min_plan query }
-
-        # Get the indexes which are actually used
-        indexes = plans.map(&:to_a).flatten.select do |step|
-          step.is_a? Plans::IndexLookupPlanStep
-        end.map(&:index).to_set
-
-        return OpenStruct.new(
-          workload: workload,
-          enumerated_indexes: enumerated_indexes,
-          indexes: indexes.to_set,
-          plans: plans.values,
-          cost_model: cost_model,
-          total_size: indexes.map(&:size).inject(0, :+),
-          total_cost: workload.statement_weights.map do |statement, weight|
-            next 0 unless statement.is_a? Query
-            weight * plans[statement].cost
-          end.inject(0, &:+)
-        )
+        Search::Search.new(workload, cost_model) \
+          .search_overlap enumerated_indexes, max_space
       end
 
       # Load results of a previous search operation

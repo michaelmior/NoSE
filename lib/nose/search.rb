@@ -52,15 +52,31 @@ module NoSE
         end
 
         # Solve the LP using Gurobi
-        solve_gurobi query_weights.keys, indexes,
-                     max_space: max_space,
-                     index_sizes: index_sizes,
-                     costs: costs,
-                     update_costs: update_costs,
-                     cost_model: @cost_model
+        result = solve_gurobi query_weights.keys, indexes,
+                              max_space: max_space,
+                              index_sizes: index_sizes,
+                              costs: costs,
+                              update_costs: update_costs,
+                              cost_model: @cost_model
+        result.workload = @workload
+        result.plans = select_plans trees, result.indexes
+        result.cost_model = @cost_model
+        result
       end
 
       private
+
+      # Select the plans to use for a given set of indexes
+      def select_plans(trees, indexes)
+        trees.map do |tree|
+          # Exclude unnecessary support queries
+          query = tree.query
+          next if query.is_a?(SupportQuery) && !indexes.include?(query.index)
+
+          # Select the exact plan to use for these indexes
+          tree.select_using_indexes(indexes).min_by(&:cost)
+        end.compact
+      end
 
       # Solve the index selection problem using Gurobi
       def solve_gurobi(queries, indexes, data)
@@ -81,7 +97,7 @@ module NoSE
           end.join("\n")
         end
 
-        selected_indexes
+        problem.result
       end
 
       # Get the cost of using each index for each query in a workload

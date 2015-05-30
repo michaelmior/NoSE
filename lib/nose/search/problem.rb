@@ -51,8 +51,9 @@ module NoSE
       # Return the selected indices
       def selected_indexes
         return if @status.nil?
+        return @selected_indexes if @selected_indexes
 
-        @indexes.select do |index|
+        @selected_indexes = @indexes.select do |index|
           # Even though we specifed the variables as binary, rounding
           # error means the value won't be exactly one
           # (the check exists to catch weird values if they arise)
@@ -60,6 +61,16 @@ module NoSE
           fail if val > 0.01 && val < 0.99
           val > 0.99
         end
+      end
+
+      # Return relevant data on the results of the ILP
+      def result
+        OpenStruct.new(
+          enumerated_indexes: indexes,
+          indexes: selected_indexes,
+          total_size: selected_indexes.map(&:size).inject(0, &:+),
+          total_cost: objective_value
+        )
       end
 
       private
