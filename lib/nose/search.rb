@@ -31,7 +31,7 @@ module NoSE
           stmt.is_a? Query
         end.to_h)
 
-        costs, cardinality, trees = query_costs query_weights, indexes
+        costs, trees = query_costs query_weights, indexes
 
         planner = Plans::UpdatePlanner.new @workload.model, trees, @cost_model
         update_costs = Hash.new { |h, k| h[k] = Hash.new }
@@ -57,7 +57,6 @@ module NoSE
                      index_sizes: index_sizes,
                      costs: costs,
                      update_costs: update_costs,
-                     cardinality: cardinality,
                      cost_model: @cost_model
       end
 
@@ -98,18 +97,12 @@ module NoSE
         end
         costs = results.map(&:first)
 
-        cardinality = {}
-        query_weights.keys.each_with_index do |query, i|
-          cardinality[query] = results[i][1]
-        end
-
-        [costs, cardinality, results.map(&:last)]
+        [costs, results.map(&:last)]
       end
 
       # Get the cost for indices for an individual query
       def query_cost(planner, index_pos, query, weight)
         query_costs = {}
-        cardinality = 0
 
         tree = planner.find_plans_for_query(query)
         tree.each do |plan|
@@ -134,15 +127,11 @@ module NoSE
             end
           end
 
-          # The cardinality estimates may be slightly different but we take
-          # the max since we always change he same number of entries
-          cardinality = [cardinality, plan.last.state.cardinality].max
-
           populate_query_costs query_costs, index_pos, steps_by_index,
                                weight, plan
         end
 
-        [query_costs, cardinality, tree]
+        [query_costs, tree]
       end
 
       # Store the costs and indexes for this plan in a nested hash
