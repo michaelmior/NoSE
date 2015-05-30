@@ -163,9 +163,9 @@ module NoSE
           update_divisors[query.statement].add query.index
         end
 
-        min_cost = @queries.each_with_index.map do |query, q|
-          @indexes.each_with_index.map do |index, i|
-            total_query_cost query, @data[:costs][q][i],
+        min_cost = @queries.map do |query|
+          @indexes.map do |index|
+            total_query_cost query, @data[:costs][query][index],
                              @query_vars[index][query], data, update_divisors
           end.compact
         end.flatten.inject(&:+)

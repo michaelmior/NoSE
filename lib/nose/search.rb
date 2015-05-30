@@ -88,20 +88,18 @@ module NoSE
       def query_costs(query_weights, indexes)
         planner = Plans::QueryPlanner.new @workload, indexes, @cost_model
 
-        # Create a hash to allow efficient lookup of the numerical index
-        # of a particular index within the array of indexes
-        index_pos = Hash[indexes.each_with_index.to_a]
-
         results = Parallel.map(query_weights) do |query, weight|
-          query_cost planner, index_pos, query, weight
+          query_cost planner, query, weight
         end
-        costs = results.map(&:first)
+        costs = Hash[query_weights.keys.each_with_index.map do |query, q|
+          [query, results[q].first]
+        end]
 
         [costs, results.map(&:last)]
       end
 
       # Get the cost for indices for an individual query
-      def query_cost(planner, index_pos, query, weight)
+      def query_cost(planner, query, weight)
         query_costs = {}
 
         tree = planner.find_plans_for_query(query)
@@ -127,16 +125,14 @@ module NoSE
             end
           end
 
-          populate_query_costs query_costs, index_pos, steps_by_index,
-                               weight, plan
+          populate_query_costs query_costs, steps_by_index, weight, plan
         end
 
         [query_costs, tree]
       end
 
       # Store the costs and indexes for this plan in a nested hash
-      def populate_query_costs(query_costs, index_pos, steps_by_index, weight,
-                               plan)
+      def populate_query_costs(query_costs, steps_by_index, weight, plan)
         # The first key is the number of the query and the second is the
         # number of the index
         #
@@ -147,7 +143,6 @@ module NoSE
           step_indexes = steps.select do |step|
             step.is_a? Plans::IndexLookupPlanStep
           end.map(&:index)
-          step_indexes.map! { |index| index_pos[index] }
 
           cost = steps.map do |step|
             step.cost @cost_model

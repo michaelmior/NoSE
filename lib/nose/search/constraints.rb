@@ -68,10 +68,8 @@ module NoSE
         entities = query.longest_entity_path
         query_constraints = Array.new(entities.length) { Gurobi::LinExpr.new }
 
-        problem.data[:costs][q].each do |i, (step_indexes, _)|
-          problem.indexes[i].entity_range(entities).each do |part|
-            index = problem.indexes[i]
-            query = problem.queries[q]
+        problem.data[:costs][query].each do |index, (step_indexes, _)|
+          index.entity_range(entities).each do |part|
             index_var = problem.query_vars[index][query]
             query_constraints[part] += index_var
           end
@@ -81,25 +79,21 @@ module NoSE
             if step_indexes.last.is_a? Array
               # We have multiple possible last steps, so add an auxiliary
               # variable which allows us to select between them
-              index = problem.indexes[step_indexes.first]
-              query = problem.queries[q]
-              first_var = problem.query_vars[index][query]
+              first_var = problem.query_vars[step_indexes.first][query]
               step_var = problem.model.addVar 0, 1, 0, Gurobi::BINARY,
                                               "q#{q}s#{step_indexes.first}"
               problem.model.update
               problem.model.addConstr(step_var * 1 >= first_var * 1)
 
               # Force exactly one of the indexes for the last step to be chosen
-              vars = step_indexes.last.map do |i2|
-                index = problem.indexes[i2]
-                problem.query_vars[index][query]
+              vars = step_indexes.last.map do |index2|
+                problem.query_vars[index2][query]
               end
               problem.model.addConstr(vars.inject(Gurobi::LinExpr.new, &:+) ==
                                                   step_var)
             else
-              vars = step_indexes.map do |i2|
-                index = problem.indexes[i2]
-                problem.query_vars[index][query]
+              vars = step_indexes.map do |index2|
+                problem.query_vars[index2][query]
               end
               vars.reverse.each_cons(2).each do |first_var, last_var|
                 problem.model.addConstr(last_var * 1 == first_var * 1)
