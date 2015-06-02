@@ -656,6 +656,12 @@ module NoSE
       freeze
     end
 
+    # Determine if this insert modifies an index
+    def modifies_index?(index)
+      !(@settings.map(&:field).to_set & index.all_fields).empty? &&
+      index.path.length == 1 && index.path.first.parent == @from
+    end
+
     # Specifies that inserts require insertion
     def requires_insert?
       true
