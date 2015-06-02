@@ -143,6 +143,25 @@ NoSE::Workload.new do
   Q 'SELECT comments.id, comments.rating, comments.date, comments.comment FROM comments.to_user WHERE to_user.id = ?', 4.41 / 3
   Q 'SELECT comments.id, item.id FROM comments.item WHERE comments.id = ?', 4.41 / 3
   Q 'SELECT to_user.id, to_user.nickname, comments.id FROM comments.to_user WHERE to_user.id = ?', 4.41 / 3
+
+  # RegisterItem
+  Q 'INSERT INTO items SET id=?, name=?, description=?, initial_price=?, quantity=?, reserve_price=?, buy_now=?, nb_of_bids=0, max_bid=0, start_date=?, end_date=?'
+  # TODO Add CONNECT to set item category and seller
+
+  # RegisterUser
+  Q 'INSERT INTO users SET id=?, firstname=?, lastname=?, nickname=?, password=?, email=?, rating=0, balance=0, creation_date=?'
+  # TODO Add CONNECT to set user region
+
+  # StoreBid
+  Q 'INSERT INTO bids SET id=?, qty=?, bid=?, date=?'
+  # TODO Add CONNECT to set item and bidder
+  Q 'SELECT items.nb_of_bids FROM items WHERE items.id=?'
+  Q 'UPDATE items SET nb_of_bids=? WHERE items.id=?'
+
+  # StoreComment
+  Q 'UPDATE users SET rating=? WHERE users.id=?'
+  Q 'INSERT INTO comments SET id=?, rating=?, date=?, comment=?'
+  # TODO Add CONNECT to set commenters and item
 end
 
 # rubocop:enable all

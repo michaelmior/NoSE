@@ -35,11 +35,13 @@ module NoSE
 
         planner = Plans::UpdatePlanner.new @workload.model, trees, @cost_model
         update_costs = Hash.new { |h, k| h[k] = Hash.new }
+        update_plans = Hash.new { |h, k| h[k] = [] }
         @workload.statements.each do |statement|
           next if statement.is_a? Query
 
           planner.find_plans_for_update(statement, indexes).each do |plan|
             update_costs[statement][plan.index] = plan.update_cost
+            update_plans[statement] << plan
           end
         end
 
@@ -58,6 +60,11 @@ module NoSE
                               costs: costs,
                               update_costs: update_costs,
                               cost_model: @cost_model
+
+        # Select the relevant update plans
+        update_plans.values.select! { |index| result.indexes.include? index }
+        result.update_plans = update_plans
+
         result.workload = @workload
         result.plans = select_plans trees, result.indexes
         result.cost_model = @cost_model
@@ -69,9 +76,9 @@ module NoSE
       # Select the plans to use for a given set of indexes
       def select_plans(trees, indexes)
         trees.map do |tree|
-          # Exclude unnecessary support queries
+          # Exclude support queries since they will be in update plans
           query = tree.query
-          next if query.is_a?(SupportQuery) && !indexes.include?(query.index)
+          next if query.is_a?(SupportQuery)
 
           # Select the exact plan to use for these indexes
           tree.select_using_indexes(indexes).min_by(&:cost)

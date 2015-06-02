@@ -120,7 +120,28 @@ module NoSE
         file.puts Formatador.parse("[blue]#{header}[/]")
         output_plans_txt result.plans, file
 
-        file.puts Formatador.parse("  Total cost: " \
+        unless result.update_plans.empty?
+          header = "Update plans\n" + '━' * 50
+          file.puts Formatador.parse("[blue]#{header}[/]")
+        end
+
+        result.update_plans.each do |statement, plans|
+          file.puts statement.inspect
+          plans.each do |plan|
+            file.puts " for #{plan.index.key}"
+            output_plans_txt plan.query_plans, file
+
+            plan.update_steps.each do |step|
+              file.puts '  ' + step.inspect
+            end
+
+            file.puts
+          end
+
+          file.puts "\n"
+        end
+
+        file.puts Formatador.parse('  Total cost: ' \
                                    "[blue]#{result.total_cost}[/]\n")
       end
 
