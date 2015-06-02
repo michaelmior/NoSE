@@ -554,7 +554,7 @@ module NoSE
 
     # Get the support query for updating a given
     # set of fields for a particular index
-    def support_query_for_fields(index, fields)
+    def support_query_for_fields(index, fields, all = false)
       return nil if fields.empty?
 
       # Get the new KeyPath for the support query based on the longest
@@ -568,8 +568,9 @@ module NoSE
 
       # Don't require selecting fields given in the WHERE clause or settings
       given_fields = self.is_a?(Insert) ? @settings : @conditions
-      required_fields = (index.hash_fields + index.order_fields) -
-                        given_fields.map(&:field)
+      required_fields = index.hash_fields + index.order_fields
+      required_fields += index.extra if all
+      required_fields -= given_fields.map(&:field)
       return nil if required_fields.empty?
 
       # Get the full name of each field to be used during selection
@@ -636,8 +637,9 @@ module NoSE
     # Get the support queries for updating an index
     def support_queries(index)
       # Get the updated fields and check if an update is necessary
+      # XXX: We really only need all fields if we are updating a key
       updated_fields = settings.map(&:field).to_set & index.all_fields
-      [support_query_for_fields(index, updated_fields)].compact
+      [support_query_for_fields(index, updated_fields, true)].compact
     end
   end
 

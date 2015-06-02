@@ -284,7 +284,8 @@ module NoSE::Plans
       planner = UpdatePlanner.new workload.model, query_plans, cost_model
       plans = planner.find_plans_for_update update, indexes
 
-      expect(plans).to have(1).item
+      # We have three plans because of the permutations of attributes
+      expect(plans).to have(3).items
       update_steps = [
         DeletePlanStep.new(index),
         InsertPlanStep.new(index)

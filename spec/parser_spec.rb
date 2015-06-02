@@ -131,7 +131,7 @@ module NoSE
                               workload.model
       query = update.support_queries(index).first
       expect(query.text).to eq \
-        'SELECT Tweet.Timestamp, Tweet.TweetId ' \
+        'SELECT Tweet.Timestamp, Tweet.TweetId, User.City ' \
         'FROM Tweet.User WHERE User.UserId = ?'
       expect(query.statement).to eq(update)
       expect(query.index).to eq(index)
@@ -144,7 +144,7 @@ module NoSE
                               [user['City']], [user.id_fields.first],
                               workload.model
       expect(update.support_queries(index).first.text).to eq \
-        'SELECT User.Username FROM User WHERE User.UserId = ?'
+        'SELECT User.Username, User.City FROM User WHERE User.UserId = ?'
     end
 
     it 'fails if the FROM clause does not start with the updated entity' do
