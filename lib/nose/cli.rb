@@ -93,10 +93,10 @@ module NoSE
       end
 
       # Output a list of query plans as text
-      def output_plans_txt(plans, file)
+      def output_plans_txt(plans, file, indent = 1)
         plans.each do |plan|
-          file.puts plan.query.inspect
-          plan.each { |step| file.puts '  ' + step.inspect }
+          file.puts '  ' * (indent - 1) + plan.query.inspect
+          plan.each { |step| file.puts '  ' * indent + step.inspect }
           file.puts
         end
       end
@@ -129,7 +129,7 @@ module NoSE
           file.puts statement.inspect
           plans.each do |plan|
             file.puts " for #{plan.index.key}"
-            output_plans_txt plan.query_plans, file
+            output_plans_txt plan.query_plans, file, 2
 
             plan.update_steps.each do |step|
               file.puts '  ' + step.inspect
