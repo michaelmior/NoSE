@@ -60,7 +60,7 @@ module NoSE
           val = @index_vars[index].get_double Gurobi::DoubleAttr::X
           fail if val > 0.01 && val < 0.99
           val > 0.99
-        end
+        end.to_set
       end
 
       # Return relevant data on the results of the ILP
