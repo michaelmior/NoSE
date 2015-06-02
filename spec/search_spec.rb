@@ -67,7 +67,7 @@ module NoSE::Search
                         [user.id_fields.first]),
         NoSE::Index.new([user['City']], [user['UserId']], [],
                         [user.id_fields.first]),
-        NoSE::Index.new([user['UserId']], [], [user['Username'], user['City']],
+        NoSE::Index.new([user['UserId']], [], [user['City'], user['Username']],
                         [user.id_fields.first])
       ]
     end
