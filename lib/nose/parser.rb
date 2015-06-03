@@ -307,6 +307,20 @@ module NoSE
     def entities
       @entities ||= @keys.map(&:entity)
     end
+
+    # Find where the path intersects the given
+    # entity and splice in the target path
+    def splice(target, entity)
+      if first.parent == entity
+        query_keys = KeyPath.new([entity.id_fields.first])
+      else
+        query_keys = KeyPath.new(each_cons(2).take_while do |key, _|
+          next true if key.instance_of?(Fields::IDField)
+          key.entity == entity
+        end.flatten(1))
+      end
+      query_keys + target
+    end
   end
 
   # Thrown when trying to construct a KeyPath which is not valid
@@ -559,8 +573,8 @@ module NoSE
 
       # Get the new KeyPath for the support query based on the longest
       # path from the intersection with the statement and index paths
-      path1 = splice_path index.path, @key_path, @from
-      path2 = splice_path index.path.reverse, @key_path, @from
+      path1 = index.path.splice @key_path, @from
+      path2 = index.path.reverse.splice @key_path, @from
       query_keys = [path1, path2].max_by(&:length)
 
       query_from = query_keys.map(&:name)
