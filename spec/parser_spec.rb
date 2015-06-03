@@ -255,6 +255,15 @@ module NoSE
       expect(connect.target).to eq(tweet['User'])
       expect(connect.target_pk).to eq('B')
     end
+
+    it 'can parse parameterized connect statements' do
+      connect = Connect.new 'CONNECT Tweet(?) TO User(?)', workload.model
+
+      expect(connect.source).to eq(tweet)
+      expect(connect.source_pk).to be_nil
+      expect(connect.target).to eq(tweet['User'])
+      expect(connect.target_pk).to be_nil
+    end
   end
 
   describe Disconnect do

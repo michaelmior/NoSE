@@ -151,7 +151,7 @@ module NoSE
         context.captures[:type] == 'CONNECT' ? str('TO') : str('FROM')
       end >>
       space >> identifier.as(:target) >> space? >> str('(') >> space? >>
-      literal.as_array(:target_pk) >> space? >> str(')')
+      literal.as(:target_pk) >> space? >> str(')')
     }
 
     rule(:statement) {
