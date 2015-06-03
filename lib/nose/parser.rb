@@ -594,17 +594,22 @@ module NoSE
       query_from[0] = query_keys.first.parent.name
 
       # Don't require selecting fields given in the WHERE clause or settings
-      given_fields = self.is_a?(Insert) ? @settings : @conditions
       required_fields = index.hash_fields + index.order_fields
       required_fields += index.extra if all
-      required_fields -= given_fields.map(&:field)
+      required_fields -= given_fields
       return nil if required_fields.empty?
 
       # Get the full name of each field to be used during selection
       required_fields.map! do |field|
         parent = query_keys.find_field_parent field
+        next if parent.nil?
+
         "#{parent.name}.#{field.name}"
       end
+
+      # These fields may not be in this part of path
+      required_fields.delete_if(&:nil?)
+      return nil if required_fields.empty?
 
       query = "SELECT #{required_fields.to_a.join ', ' } " \
               "FROM #{query_from.join '.'} #{where}"
@@ -675,6 +680,12 @@ module NoSE
       updated_fields = settings.map(&:field).to_set & index.all_fields
       [support_query_for_fields(index, updated_fields, true)].compact
     end
+
+    private
+
+    def given_fields
+      @conditions.map(&:field)
+    end
   end
 
   # A representation of an insert in the workload
@@ -707,6 +718,10 @@ module NoSE
     def support_queries(index)
       []
     end
+
+    def given_fields
+      @settings.map(&:field)
+    end
   end
 
   # A representation of a delete in the workload
@@ -731,16 +746,50 @@ module NoSE
     def support_queries(index)
       [support_query_for_fields(index, @from.fields)].compact
     end
+
+    def given_fields
+      @conditions.map(&:field)
+    end
   end
 
   # Superclass for connect and disconnect statements
   class Connection < Statement
+    include StatementSupportQuery
+
     attr_reader :source_pk, :target, :target_pk
     alias_method :source, :from
 
     # A connection modifies an index if the relationship is in the path
     def modifies_index?(index)
       index.path.include?(@target) || index.path.include?(@target.reverse)
+    end
+
+    # Get the support queries for updating an index
+    def support_queries(index)
+      # Get the key in the correct order
+      reversed = !index.path.include?(@target)
+      foreign_key = @target
+      foreign_key = @target.reverse if reversed
+
+      # Get the two path components
+      entity_index = index.path.entities.index foreign_key.parent
+      path1 = index.path[0..entity_index]
+      path2 = index.path[entity_index + 1..-1].reverse
+
+      # Construct the two where clauses
+      key1 = (reversed ? target.entity : target.parent).id_fields.first
+      parent1 = path1.find_field_parent key1
+      where1 = "WHERE #{parent1.name}.#{parent1.id_fields.first.name} = ?"
+
+      key2 = (reversed ? target.parent : target.entity).id_fields.first
+      parent2 = path2.find_field_parent key2
+      where2 = "WHERE #{parent2.name}.#{parent2.id_fields.first.name} = ?"
+
+      # Get the actual support queries
+      [
+        support_query_for_path(index, path1, where1, requires_insert?),
+        support_query_for_path(index, path2, where2, requires_insert?)
+      ].compact
     end
 
     protected
@@ -760,6 +809,12 @@ module NoSE
       fail TypeError unless target_type.nil? || target_pk.nil? ||
                             target_pk.is_a?(type)
     end
+
+    private
+
+    def given_fields
+      [@target.parent.id_fields.first, @target.entity.id_fields.first]
+    end
   end
 
   # A representation of a connect in the workload
@@ -771,6 +826,11 @@ module NoSE
       populate_keys
       freeze
     end
+
+    # Specifies that connections require insertion
+    def requires_insert?
+      true
+    end
   end
 
   # A representation of a disconnect in the workload
@@ -781,6 +841,11 @@ module NoSE
         unless @text.split.first == 'DISCONNECT'
       populate_keys
       freeze
+    end
+
+    # Specifies that disconnections require deletion
+    def requires_delete?
+      true
     end
   end
 

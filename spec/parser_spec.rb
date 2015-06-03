@@ -214,6 +214,34 @@ module NoSE
 
       expect(connect.modifies_index? index).to be false
     end
+
+    it 'can generate support queries' do
+      index = Index.new [user['UserId']], [tweet['TweetId']], [user['City']],
+                        [user['UserId'], user['Favourite']]
+      connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
+
+      queries = connect.support_queries index
+      expect(queries).to have(1).item
+      expect(queries.first.text).to eq \
+        'SELECT User.City FROM User WHERE User.UserId = ?'
+    end
+
+    it 'does not require support queries if all fields are given' do
+      index = Index.new [user['UserId']], [tweet['TweetId']], [],
+                        [user['UserId'], user['Favourite']]
+      connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
+
+      expect(connect.support_queries(index)).to be_empty
+    end
+
+    it 'can generate support queries' do
+      index = Index.new [user['UserId']], [tweet['TweetId']], [user['City']],
+                        [user['UserId'], user['Favourite']]
+      disconnect = Disconnect.new 'DISCONNECT Tweet("A") FROM User("B")',
+                                  workload.model
+
+      expect(disconnect.support_queries(index)).to be_empty
+    end
   end
 
   describe Connect do
