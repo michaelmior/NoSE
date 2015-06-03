@@ -292,10 +292,12 @@ module NoSE
 
     # Return the reverse of this path
     def reverse
-      path = [@keys.last.entity.id_fields.first]
-      path += @keys[1..-1].reverse.map(&:reverse)
+      KeyPath.new reverse_path
+    end
 
-      KeyPath.new(path)
+    # Reverse this path in place
+    def reverse!
+      @keys = reverse_path
     end
 
     # Simple wrapper so that we continue to be a KeyPath
@@ -320,6 +322,27 @@ module NoSE
         end.flatten(1))
       end
       query_keys + target
+    end
+
+    # Find the parent of a given field
+    def find_field_parent(field)
+      parent = find do |key|
+        field.parent == key.parent ||
+        (key.is_a?(Fields::ForeignKeyField) && field.parent == key.entity)
+      end
+
+      # This field is not on this portion of the path, so skip
+      return nil if parent.nil?
+
+      parent = parent.parent unless parent.is_a?(Fields::ForeignKeyField)
+      parent
+    end
+
+    private
+
+    # Get the reverse path
+    def reverse_path
+      [@keys.last.entity.id_fields.first] + @keys[1..-1].reverse.map(&:reverse)
     end
   end
 
@@ -566,17 +589,7 @@ module NoSE
 
     protected
 
-    # Get the support query for updating a given
-    # set of fields for a particular index
-    def support_query_for_fields(index, fields, all = false)
-      return nil if fields.empty?
-
-      # Get the new KeyPath for the support query based on the longest
-      # path from the intersection with the statement and index paths
-      path1 = index.path.splice @key_path, @from
-      path2 = index.path.reverse.splice @key_path, @from
-      query_keys = [path1, path2].max_by(&:length)
-
+    def support_query_for_path(index, query_keys, where, all = false)
       query_from = query_keys.map(&:name)
       query_from[0] = query_keys.first.parent.name
 
@@ -589,21 +602,28 @@ module NoSE
 
       # Get the full name of each field to be used during selection
       required_fields.map! do |field|
-        parent = query_keys.find do |key|
-          field.parent == key.parent ||
-          (key.is_a?(Fields::ForeignKeyField) &&
-           field.parent == key.entity)
-        end
-        parent = parent.parent \
-          unless parent.is_a?(Fields::ForeignKeyField)
-
+        parent = query_keys.find_field_parent field
         "#{parent.name}.#{field.name}"
       end
 
       query = "SELECT #{required_fields.to_a.join ', ' } " \
-              "FROM #{query_from.join '.'}"
-      query += " #{@where_source}" unless @where_source.empty?
+              "FROM #{query_from.join '.'} #{where}"
       SupportQuery.new query, @model, self, index
+    end
+
+    # Get the support query for updating a given
+    # set of fields for a particular index
+    def support_query_for_fields(index, fields, all = false)
+      # Simple check to see if no fields are updated
+      return nil if fields.empty?
+
+      # Get the new KeyPath for the support query based on the longest
+      # path from the intersection with the statement and index paths
+      path1 = index.path.splice @key_path, @from
+      path2 = index.path.reverse.splice @key_path, @from
+
+      query_keys = [path1, path2].max_by(&:length)
+      support_query_for_path index, query_keys, @where_source, all
     end
 
     private
