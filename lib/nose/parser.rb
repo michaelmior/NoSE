@@ -325,7 +325,7 @@ module NoSE
     end
 
     # Find the parent of a given field
-    def find_field_parent(field)
+    def find_field_parent(field, id = false)
       parent = find do |key|
         field.parent == key.parent ||
         (key.is_a?(Fields::ForeignKeyField) && field.parent == key.entity)
@@ -335,6 +335,7 @@ module NoSE
       return nil if parent.nil?
 
       parent = parent.parent unless parent.is_a?(Fields::ForeignKeyField)
+      parent = parent.entity if id && parent.is_a?(Fields::ForeignKeyField)
       parent
     end
 
@@ -783,11 +784,11 @@ module NoSE
 
       # Construct the two where clauses
       key1 = (reversed ? target.entity : target.parent).id_fields.first
-      parent1 = path1.find_field_parent key1
+      parent1 = path1.find_field_parent key1, true
       where1 = "WHERE #{parent1.name}.#{parent1.id_fields.first.name} = ?"
 
       key2 = (reversed ? target.parent : target.entity).id_fields.first
-      parent2 = path2.find_field_parent key2
+      parent2 = path2.find_field_parent key2, true
       where2 = "WHERE #{parent2.name}.#{parent2.id_fields.first.name} = ?"
 
       # Get the actual support queries
