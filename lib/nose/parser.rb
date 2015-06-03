@@ -814,6 +814,10 @@ module NoSE
       target_type = @target.class.const_get 'TYPE'
       fail TypeError unless target_type.nil? || target_pk.nil? ||
                             target_pk.is_a?(type)
+
+      # This is needed later when planning updates
+      @eq_fields = [@target.parent.id_fields.first,
+                    @target.entity.id_fields.first]
     end
 
     private
