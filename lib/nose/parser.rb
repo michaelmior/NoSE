@@ -619,6 +619,9 @@ module NoSE
     # Get the support query for updating a given
     # set of fields for a particular index
     def support_query_for_fields(index, fields, all = false)
+      # If this index is not modified, definitely no support queries needed
+      return nil unless modifies_index?(index)
+
       # Simple check to see if no fields are updated
       return nil if fields.empty?
 
@@ -766,6 +769,8 @@ module NoSE
 
     # Get the support queries for updating an index
     def support_queries(index)
+      return [] unless modifies_index?(index)
+
       # Get the key in the correct order
       reversed = !index.path.include?(@target)
       foreign_key = @target
