@@ -188,6 +188,34 @@ module NoSE
     end
   end
 
+  describe Connection do
+    include_context 'entities'
+
+    it 'modifies an index if it crosses the path' do
+      index = Index.new [user['UserId']], [tweet['TweetId']], [],
+                        [user['UserId'], user['Tweets']]
+      connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
+
+      expect(connect.modifies_index? index).to be true
+    end
+
+    it 'modifies an index if crosses the path backwards' do
+      index = Index.new [user['UserId']], [tweet['TweetId']], [],
+                        [tweet['TweetId'], tweet['User']]
+      connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
+
+      expect(connect.modifies_index? index).to be true
+    end
+
+    it 'does not modify an index with a different path' do
+      index = Index.new [user['UserId']], [tweet['TweetId']], [],
+                        [user['UserId'], user['Favourite']]
+      connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
+
+      expect(connect.modifies_index? index).to be false
+    end
+  end
+
   describe Connect do
     include_context 'entities'
 

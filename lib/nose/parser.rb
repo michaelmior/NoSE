@@ -704,6 +704,11 @@ module NoSE
     attr_reader :source_pk, :target, :target_pk
     alias_method :source, :from
 
+    # A connection modifies an index if the relationship is in the path
+    def modifies_index?(index)
+      index.path.include?(@target) || index.path.include?(@target.reverse)
+    end
+
     protected
 
     # Populate the keys and entities
