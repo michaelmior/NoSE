@@ -532,6 +532,12 @@ module NoSE
 
       super query, model
     end
+
+    # Support queries must also have their statement and index checked
+    def ==(other)
+      super(other) && @statement == other.statement && @index == other.index
+    end
+    alias_method :eql?, :==
   end
 
   # The setting of a field from an {Update} statement
