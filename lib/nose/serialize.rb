@@ -219,6 +219,51 @@ module NoSE
       end)
     end
 
+    # Represent update plan steps
+    class UpdatePlanStepRepresenter < PlanStepRepresenter
+      property :index, decorator: IndexRepresenter
+
+      # Set the hidden type variable
+      def type
+        represented.instance_variable_get(:@type)
+      end
+
+      # Set the hidden type variable
+      def type=(type)
+        represented.instance_variable_set(:@type, type)
+      end
+
+      property :type, exec_context: :decorator
+    end
+
+    # Represent an update plan
+    class UpdatePlanRepresenter < Representable::Decorator
+      include Representable::JSON
+      include Representable::YAML
+
+      property :statement, decorator: StatementRepresenter
+      property :index, decorator: IndexRepresenter
+      collection :query_plans, decorator: QueryPlanRepresenter, class: Object
+      collection :update_steps, decorator: UpdatePlanStepRepresenter
+
+      # The backend cost model used to cost the updates
+      def cost_model
+        represented.cost_model.subtype_name
+      end
+
+      # Look up the cost model by name and attach to the results
+      def cost_model=(cost_model)
+        represented.cost_model = Cost::Cost.subtype_class cost_model
+      end
+
+      property :cost_model, exec_context: :decorator
+    end
+
+    # Reconstruct the steps of an update plan
+    class UpdatePlanBuilder
+      include Uber::Callable
+    end
+
     # Represent entities and statements in a workload
     class WorkloadRepresenter < Representable::Decorator
       include Representable::JSON
@@ -355,6 +400,9 @@ module NoSE
       collection :plans, decorator: QueryPlanRepresenter,
                          class: Object,
                          deserialize: QueryPlanBuilder.new
+      collection :update_plans, decorator: UpdatePlanRepresenter,
+                                class: Object,
+                                deserialize: UpdatePlanBuilder.new
       property :total_size
       property :total_cost
 

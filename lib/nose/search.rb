@@ -63,7 +63,7 @@ module NoSE
 
         # Select the relevant update plans
         update_plans.values.select! { |index| result.indexes.include? index }
-        result.update_plans = update_plans
+        result.update_plans = update_plans.values.flatten(1)
 
         result.workload = @workload
         result.plans = select_plans trees, result.indexes
