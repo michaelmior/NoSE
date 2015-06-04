@@ -46,7 +46,7 @@ module NoSE::Search
       workload.add_statement 'SELECT User.Username FROM User ' \
                              'WHERE User.City = ?', 0.01
       workload.add_statement 'SELECT User.Username FROM User ' \
-                             'WHERE User.Username = ?', 0.01
+                             'WHERE User.Country = ?', 0.01
 
       # Enumerate the indexes and select those actually used
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
@@ -63,11 +63,11 @@ module NoSE::Search
       end.map(&:index).to_set
 
       expect(indexes).to match_array [
-        NoSE::Index.new([user['Username']], [user['UserId']], [],
+        NoSE::Index.new([user['Country']], [user['UserId']], [],
                         [user.id_fields.first]),
         NoSE::Index.new([user['City']], [user['UserId']], [],
                         [user.id_fields.first]),
-        NoSE::Index.new([user['UserId']], [], [user['City'], user['Username']],
+        NoSE::Index.new([user['UserId']], [], [user['Username']],
                         [user.id_fields.first])
       ]
     end

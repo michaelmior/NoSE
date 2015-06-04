@@ -6,6 +6,7 @@ module NoSE
           ID     'UserId'
           String 'Username', 10
           String 'City', count: 5
+          String 'Country'
 
           etc
         end) * 10
