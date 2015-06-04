@@ -125,7 +125,7 @@ module NoSE
           file.puts Formatador.parse("[blue]#{header}[/]")
         end
 
-        result.update_plans.each do |statement, plans|
+        result.update_plans.group_by(&:statement).each do |statement, plans|
           file.puts statement.inspect
           plans.each do |plan|
             file.puts " for #{plan.index.key}"
