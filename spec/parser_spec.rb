@@ -217,7 +217,7 @@ module NoSE
 
     it 'can generate support queries' do
       index = Index.new [user['UserId']], [tweet['TweetId']], [user['City']],
-                        [user['UserId'], user['Favourite']]
+                        [tweet['TweetId'], tweet['User']]
       connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
 
       queries = connect.support_queries index
