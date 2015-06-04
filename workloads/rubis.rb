@@ -146,22 +146,26 @@ NoSE::Workload.new do
 
   # RegisterItem
   Q 'INSERT INTO items SET id=?, name=?, description=?, initial_price=?, quantity=?, reserve_price=?, buy_now=?, nb_of_bids=0, max_bid=0, start_date=?, end_date=?'
-  # TODO Add CONNECT to set item category and seller
+  Q 'CONNECT items(?) TO category(?)'
+  Q 'CONNECT items(?) TO seller(?)'
 
   # RegisterUser
   Q 'INSERT INTO users SET id=?, firstname=?, lastname=?, nickname=?, password=?, email=?, rating=0, balance=0, creation_date=?'
-  # TODO Add CONNECT to set user region
+  Q 'CONNECT users(?) TO region(?)'
 
   # StoreBid
   Q 'INSERT INTO bids SET id=?, qty=?, bid=?, date=?'
-  # TODO Add CONNECT to set item and bidder
+  Q 'CONNECT bids(?) TO item(?)'
+  Q 'CONNECT bids(?) TO user(?)'
   Q 'SELECT items.nb_of_bids FROM items WHERE items.id=?'
   Q 'UPDATE items SET nb_of_bids=? WHERE items.id=?'
 
   # StoreComment
   Q 'UPDATE users SET rating=? WHERE users.id=?'
   Q 'INSERT INTO comments SET id=?, rating=?, date=?, comment=?'
-  # TODO Add CONNECT to set commenters and item
+  Q 'CONNECT comments(?) TO to_user(?)'
+  # Q 'CONNECT comments(?) TO from_user(?)'
+  Q 'CONNECT comments(?) TO item(?)'
 end
 
 # rubocop:enable all
