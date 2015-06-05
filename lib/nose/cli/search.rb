@@ -23,6 +23,7 @@ module NoSE
 
         # Execute the advisor
         result = search_result workload, cost_model, options[:max_space]
+        return if result.nil?
 
         # Output the results in the specified format
         file = options[:output].nil? ? $stdout :
