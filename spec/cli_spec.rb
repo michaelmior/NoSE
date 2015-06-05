@@ -34,19 +34,20 @@ module NoSE::CLI
     end
 
     it 'can search with no limits', gurobi: true do
-      search_cmd = 'nose search rubis --format=json'
+      search_cmd = 'nose search rubis-synthetic --format=json'
       run_simple search_cmd
       expect { JSON.parse get_process(search_cmd).stdout }.to_not raise_error
     end
 
     it 'can search with a limit', gurobi: true do
-      search_cmd = 'nose search rubis --format=json --max-space=1000000000000'
+      search_cmd = 'nose search rubis-synthetic ' \
+                   '--format=json --max-space=1000000000000'
       run_simple search_cmd
       expect { JSON.parse get_process(search_cmd).stdout }.to_not raise_error
     end
 
     it 'fails with not enough space', gurobi: true do
-      run 'nose search rubis --max-space=1'
+      run 'nose search rubis-synthetic --max-space=1'
       expect(last_exit_status).to eq(1)
     end
   end

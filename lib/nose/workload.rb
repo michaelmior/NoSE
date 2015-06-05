@@ -36,6 +36,7 @@ module NoSE
       statement = Statement.parse(statement, @model) if statement.is_a? String
       statement.freeze
 
+      mixes = { default: mixes } if mixes.is_a? Numeric
       mixes = { default: 1.0 } if mixes.empty?
       mixes.each do |mix, weight|
         @statement_weights[mix] = {} unless @statement_weights.key? mix
