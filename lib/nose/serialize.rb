@@ -270,6 +270,7 @@ module NoSE
       include Representable::YAML
 
       collection :statements, decorator: StatementRepresenter
+      property :mix
 
       # A simple array of the entities in the workload
       def entities

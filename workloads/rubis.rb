@@ -115,23 +115,34 @@ NoSE::Workload.new do
 
   # BrowseCategories
   # XXX Must have at least one equality predicate
-  Q 'SELECT categories.id, categories.name FROM categories WHERE categories.dummy = 1', (4.44 + 3.21)
+  Q 'SELECT categories.id, categories.name FROM categories WHERE categories.dummy = 1',
+    browsing: (4.44 + 3.21)
 
   # ViewBidHistory
-  Q 'SELECT items.name FROM items WHERE items.id = ?', 2.38 / 4
-  Q 'SELECT olditems.name FROM olditems WHERE olditems.id = ?', 2.38 / 4
-  Q 'SELECT bids.id, item.id, bids.qty, bids.bid, bids.date FROM bids.item WHERE item.id = ? ORDER BY bids.date', 2.38 / 4
-  Q 'SELECT users.id, users.nickname, bids.id FROM users.bids.item WHERE item.id = ?', 2.38 / 4
+  Q 'SELECT items.name FROM items WHERE items.id = ?',
+    browsing: 2.38 / 4
+  Q 'SELECT olditems.name FROM olditems WHERE olditems.id = ?',
+    browsing: 2.38 / 4
+  Q 'SELECT bids.id, item.id, bids.qty, bids.bid, bids.date FROM bids.item WHERE item.id = ? ORDER BY bids.date',
+    browsing: 2.38 / 4
+  Q 'SELECT users.id, users.nickname, bids.id FROM users.bids.item WHERE item.id = ?',
+    browsing: 2.38 / 4
 
   # ViewItem
-  Q 'SELECT items.* FROM items WHERE items.id = ?', 22.95 / 4.0 * 0.75
-  Q 'SELECT olditems.* FROM olditems WHERE olditems.id = ?', 22.95 / 4.0 * 0.25
-  Q 'SELECT bids.bid FROM bids.item WHERE item.id = ? ORDER BY bids.bid LIMIT 1', 22.95 / 4.0
-  Q 'SELECT bids.bid, bids.qty FROM bids.item WHERE item.id = ? ORDER BY bids.bid LIMIT 5', 22.95 / 4.0
-  Q 'SELECT bids.id FROM bids.item WHERE item.id = ?', 22.95 / 4.0 # XXX: total bids
+  Q 'SELECT items.* FROM items WHERE items.id = ?',
+    browsing: 22.95 / 4.0 * 0.75
+  Q 'SELECT olditems.* FROM olditems WHERE olditems.id = ?',
+    browsing: 22.95 / 4.0 * 0.25
+  Q 'SELECT bids.bid FROM bids.item WHERE item.id = ? ORDER BY bids.bid LIMIT 1',
+    browsing: 22.95 / 4.0
+  Q 'SELECT bids.bid, bids.qty FROM bids.item WHERE item.id = ? ORDER BY bids.bid LIMIT 5',
+    browsing: 22.95 / 4.0
+  Q 'SELECT bids.id FROM bids.item WHERE item.id = ?', # XXX: total bids
+    browsing: 22.95 / 4.0
 
   # SearchItemsByCategory
-  Q 'SELECT items.id, items.name, items.initial_price, items.max_bid, items.nb_of_bids, items.end_date FROM items.category WHERE category.id = ? AND items.end_date >= ?', (27.77 + 8.26)
+  Q 'SELECT items.id, items.name, items.initial_price, items.max_bid, items.nb_of_bids, items.end_date FROM items.category WHERE category.id = ? AND items.end_date >= ?',
+    browsing: (27.77 + 8.26)
 
   # XXX Not currently supported
   # # SearchItemsByRegion
@@ -140,9 +151,12 @@ NoSE::Workload.new do
   # Q 'SELECT id, name FROM regions', (0.03 + 0.02)
 
   # ViewUserInfo
-  Q 'SELECT comments.id, comments.rating, comments.date, comments.comment FROM comments.to_user WHERE to_user.id = ?', 4.41 / 3
-  Q 'SELECT comments.id, item.id FROM comments.item WHERE comments.id = ?', 4.41 / 3
-  Q 'SELECT to_user.id, to_user.nickname, comments.id FROM comments.to_user WHERE to_user.id = ?', 4.41 / 3
+  Q 'SELECT comments.id, comments.rating, comments.date, comments.comment FROM comments.to_user WHERE to_user.id = ?',
+    browsing: 4.41 / 3
+  Q 'SELECT comments.id, item.id FROM comments.item WHERE comments.id = ?',
+    browsing: 4.41 / 3
+  Q 'SELECT to_user.id, to_user.nickname, comments.id FROM comments.to_user WHERE to_user.id = ?',
+    browsing: 4.41 / 3
 
   # RegisterItem
   Q 'INSERT INTO items SET id=?, name=?, description=?, initial_price=?, quantity=?, reserve_price=?, buy_now=?, nb_of_bids=0, max_bid=0, start_date=?, end_date=?'

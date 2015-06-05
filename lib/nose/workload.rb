@@ -7,12 +7,14 @@ require 'graphviz'
 module NoSE
   # A representation of a query workload over a given set of entities
   class Workload
-    attr_reader :model, :statement_weights
+    attr_reader :model
+    attr_accessor :mix
 
-    def initialize(model=nil, &block)
+    def initialize(model = nil, &block)
       @statement_weights = {}
       @model = model || Model.new
       @entities = {}
+      @mix = :default
 
       # Apply the DSL
       WorkloadDSL.new(self).instance_eval(&block) if block_given?
@@ -30,33 +32,47 @@ module NoSE
     end
 
     # Add a new {Statement} to the workload or parse a string
-    def add_statement(statement, weight = 1)
+    def add_statement(statement, mixes = {})
       statement = Statement.parse(statement, @model) if statement.is_a? String
+      statement.freeze
 
-      @statement_weights[statement.freeze] = weight
+      mixes = { default: 1.0 } if mixes.empty?
+      mixes.each do |mix, weight|
+        @statement_weights[mix] = {} unless @statement_weights.key? mix
+        @statement_weights[mix][statement] = weight
+      end
     end
 
     # Strip the weights from the query dictionary and return a list of queries
     # @return [Array<Statement>]
     def queries
-      @statement_weights.keys.select { |statement| statement.is_a? Query }
+      @statement_weights[@mix].keys.select do |statement|
+        statement.is_a? Query
+      end
     end
 
     # Strip the weights and return a list of statements
     # @return [Array<Statement>]
     def statements
-      @statement_weights.keys
+      @statement_weights[@mix].keys
+    end
+
+    # Retrieve the weights for the current mix
+    def statement_weights
+      @statement_weights[@mix]
     end
 
     # Strip the weights from the query dictionary and return a list of updates
     # @return [Array<Statement>]
     def updates
-      @statement_weights.keys.reject { |statement| statement.is_a? Query }
+      @statement_weights[@mix].keys.reject do |statement|
+        statement.is_a? Query
+      end
     end
 
     # Remove any updates from the workload
     def remove_updates
-      @statement_weights.select! { |stmt, _| stmt.is_a? Query }
+      @statement_weights[@mix].select! { |stmt, _| stmt.is_a? Query }
     end
 
     # Get all the support queries for updates in the workload
@@ -69,7 +85,7 @@ module NoSE
     # Check if all the fields used by queries in the workload exist
     # @return [Boolean]
     def fields_exist?
-      @statement_weights.keys.each do |query|
+      @statement_weights[@mix].keys.each do |query|
         # Projected fields and fields in the where clause exist
         fields = query.where.map { |condition| condition.field } + query.fields
         fields.each do |field|
@@ -131,8 +147,10 @@ module NoSE
     end
 
     # Shortcut to add a new {Statement} to the workload
-    def Q(statement, weight = 1.0)
-      @workload.add_statement statement, weight
+    def Q(statement, weight = 1.0, **mixes)
+      return if weight == 0 && mixes.empty?
+      mixes = { default: weight } if mixes.empty?
+      @workload.add_statement statement, mixes
     end
 
     # rubocop:enable MethodName

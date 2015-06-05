@@ -8,11 +8,15 @@ module NoSE
            'output all possible schemas for the workload NAME under ' \
            'different storage constraints to DIRECTORY'
       option :enumerated, type: :boolean, aliases: '-e'
+      option :read_only, type: :boolean, default: false
+      option :mix, type: :string, default: 'default'
       option :format, type: :string, default: 'txt',
                       enum: %w(txt json yml), aliases: '-f'
       def search_all(name, directory)
         # Load the workload and cost model and create the output directory
         workload = get_workload name
+        workload.remove_updates if options[:read_only]
+        workload.mix = options[:mix].to_sym
         config = load_config
         cost_model = get_class 'cost', config[:cost_model][:name]
         FileUtils.mkdir_p(directory) unless Dir.exist?(directory)
