@@ -99,8 +99,11 @@ module NoSE
             plans = @query_plans[statement][index].map do |tree|
               tree.select_using_indexes(indexes).min_by(&:cost)
             end
-            last_step = plans.first.last
-            state = UpdateState.new statement, last_step.state.cardinality
+
+            # Multiply the cardinalities because we are crossing multiple
+            # relationships and need the cross-product
+            cardinalities = plans.map { |plan| plan.last.state.cardinality }
+            state = UpdateState.new statement, cardinalities.inject(1, &:*)
           else
             plans = []
             path = statement.longest_entity_path
