@@ -47,7 +47,7 @@ module NoSE
             @logger.info "Running search with size #{size}"
 
             result = search_result workload, cost_model, size
-            next if sizes.include? result.total_size
+            next if sizes.include?(result.total_size) || result.nil?
           rescue Search::NoSolutionException, Plans::NoPlanException
             # No result was found, so only explore the larger side
           else

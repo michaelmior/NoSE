@@ -21,7 +21,7 @@ module NoSE
       # @return [Array<Index>]
       def search_overlap(indexes, max_space = Float::INFINITY)
         index_sizes = indexes.map(&:size)
-        return [] if indexes.empty?
+        return if indexes.empty?
 
         # Get the cost of all queries
         query_weights = Hash[@workload.support_queries(indexes).map do |query|
