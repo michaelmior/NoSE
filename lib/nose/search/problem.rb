@@ -145,9 +145,11 @@ module NoSE
             next if !update.modifies_index?(index) ||
                     update_divisors[update].include?(index)
 
-            min_cost += Gurobi::LinExpr.new data[:update_costs][update][index]
+            min_cost += @index_vars[index] * data[:update_costs][update][index]
           end
         end
+
+        min_cost
       end
 
       # Get the total cost of the query for the objective function
@@ -181,7 +183,7 @@ module NoSE
           end.compact
         end.flatten.inject(&:+)
 
-        add_update_costs min_cost, data, update_divisors
+        min_cost = add_update_costs min_cost, data, update_divisors
 
         @logger.debug { "Objective function is #{min_cost.inspect}" }
 
