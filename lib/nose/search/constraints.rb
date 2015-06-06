@@ -81,7 +81,7 @@ module NoSE
               # variable which allows us to select between them
               first_var = problem.query_vars[step_indexes.first][query]
               step_var = problem.model.addVar 0, 1, 0, Gurobi::BINARY,
-                                              "q#{q}s#{step_indexes.first}"
+                                              "q#{q}s#{step_indexes.first.key}"
               problem.model.update
               problem.model.addConstr(step_var * 1 >= first_var * 1)
 
