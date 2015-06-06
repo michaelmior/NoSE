@@ -23,17 +23,29 @@ module NoSE
 
       include Comparable
 
-      def initialize(statement, index, query_plans, update_steps, cost_model)
+      def initialize(statement, index, trees, update_steps, cost_model)
         @statement = statement
         @index = index
-        @query_plans = query_plans
+        @trees = trees
+        @query_plans = nil  # these will be set later when we pick indexes
         @update_steps = update_steps
         @cost_model = cost_model
+      end
+
+      # Select query plans to actually use here
+      def select_query_plans(indexes)
+        @query_plans = @trees.map do |tree|
+          tree.select_using_indexes(indexes).min_by(&:cost)
+        end
+        @trees = nil
+        freeze
       end
 
       # Compare all the fields for the plan for equality
       def eql?(other)
         return false unless other.is_a? UpdatePlan
+        fail 'plans must be resolved before checking equality' \
+          if @query_plans.nil? || other.query_plans.nil?
 
         @statement == other.statement &&
           @index == other.index &&
@@ -96,7 +108,8 @@ module NoSE
           unless (@query_plans[statement] &&
                   @query_plans[statement][index]).nil?
             # Get the cardinality of the last step to use for the update state
-            plans = @query_plans[statement][index].map do |tree|
+            trees = @query_plans[statement][index]
+            plans = trees.map do |tree|
               tree.select_using_indexes(indexes).min_by(&:cost)
             end
 
@@ -105,7 +118,7 @@ module NoSE
             cardinalities = plans.map { |plan| plan.last.state.cardinality }
             state = UpdateState.new statement, cardinalities.inject(1, &:*)
           else
-            plans = []
+            trees = []
             path = statement.longest_entity_path
 
             if statement.is_a? Insert
@@ -127,7 +140,7 @@ module NoSE
           update_steps << InsertPlanStep.new(index, state) \
             if statement.requires_insert?
 
-          UpdatePlan.new statement, index, plans, update_steps, @cost_model
+          UpdatePlan.new statement, index, trees, update_steps, @cost_model
         end.compact
       end
     end
