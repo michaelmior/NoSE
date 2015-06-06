@@ -66,6 +66,9 @@ module NoSE
         update_plans = update_plans.values.flatten(1).select do |plan|
           result.indexes.include? plan.index
         end
+        update_plans.each do |plan|
+          plan.select_query_plans result.indexes
+        end
         result.update_plans = update_plans
 
         result.workload = @workload
