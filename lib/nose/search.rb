@@ -40,7 +40,8 @@ module NoSE
           next if statement.is_a? Query
 
           planner.find_plans_for_update(statement, indexes).each do |plan|
-            update_costs[statement][plan.index] = plan.update_cost
+            weight = @workload.statement_weights[statement]
+            update_costs[statement][plan.index] = plan.update_cost * weight
             update_plans[statement] << plan
           end
         end
