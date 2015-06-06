@@ -1,5 +1,6 @@
 require_relative 'search/constraints'
 require_relative 'search/problem'
+require_relative 'search/results'
 
 require 'logging'
 require 'ostruct'
@@ -74,6 +75,7 @@ module NoSE
         result.workload = @workload
         result.plans = select_plans trees, result.indexes
         result.cost_model = @cost_model
+
         result
       end
 

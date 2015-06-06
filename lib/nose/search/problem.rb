@@ -65,12 +65,13 @@ module NoSE
 
       # Return relevant data on the results of the ILP
       def result
-        OpenStruct.new(
-          enumerated_indexes: indexes,
-          indexes: selected_indexes,
-          total_size: selected_indexes.map(&:size).inject(0, &:+),
-          total_cost: objective_value
-        )
+        result = Results.new
+        result.enumerated_indexes = indexes
+        result.indexes = selected_indexes
+        result.total_size = selected_indexes.map(&:size).inject(0, &:+)
+        result.total_cost = objective_value
+
+        result
       end
 
       private
