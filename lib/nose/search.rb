@@ -63,8 +63,10 @@ module NoSE
                               cost_model: @cost_model
 
         # Select the relevant update plans
-        update_plans.values.select! { |index| result.indexes.include? index }
-        result.update_plans = update_plans.values.flatten(1)
+        update_plans = update_plans.values.flatten(1).select do |plan|
+          result.indexes.include? plan.index
+        end
+        result.update_plans = update_plans
 
         result.workload = @workload
         result.plans = select_plans trees, result.indexes
