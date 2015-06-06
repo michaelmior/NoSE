@@ -93,9 +93,10 @@ module NoSE
       end
 
       # Output a list of query plans as text
-      def output_plans_txt(plans, file, indent = 1)
+      def output_plans_txt(plans, file, indent, weights)
         plans.each do |plan|
-          file.puts '  ' * (indent - 1) + plan.query.inspect
+          weight = weights.nil? ? '' : "* #{weights[plan.query]}"
+          file.puts '  ' * (indent - 1) + plan.query.inspect + weight
           plan.each { |step| file.puts '  ' * indent + step.inspect }
           file.puts
         end
@@ -118,7 +119,8 @@ module NoSE
         # Output query plans for the discovered indices
         header = "Query plans\n" + '━' * 50
         file.puts Formatador.parse("[blue]#{header}[/]")
-        output_plans_txt result.plans, file
+        output_plans_txt result.plans, file, 1,
+                         result.workload.statement_weights
 
         unless result.update_plans.empty?
           header = "Update plans\n" + '━' * 50
@@ -126,10 +128,11 @@ module NoSE
         end
 
         result.update_plans.group_by(&:statement).each do |statement, plans|
-          file.puts statement.inspect
+          weight = result.workload.statement_weights[statement]
+          file.puts statement.inspect + " * #{weight}"
           plans.each do |plan|
             file.puts " for #{plan.index.key}"
-            output_plans_txt plan.query_plans, file, 2
+            output_plans_txt plan.query_plans, file, 2, nil
 
             plan.update_steps.each do |step|
               file.puts '  ' + step.inspect

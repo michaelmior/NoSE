@@ -16,7 +16,7 @@ module NoSE
 
       # :nocov:
       def to_color
-        "#{super} #{@index.to_color}"
+        "#{super} #{@index.to_color} * #{@state.cardinality}"
       end
       # :nocov:
 
