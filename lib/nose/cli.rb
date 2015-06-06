@@ -131,7 +131,8 @@ module NoSE
           weight = result.workload.statement_weights[statement]
           file.puts statement.inspect + " * #{weight}"
           plans.each do |plan|
-            file.puts " for #{plan.index.key}"
+            file.puts Formatador.parse(" for [magenta]#{plan.index.key}[/] " \
+                                       "[yellow]$#{plan.cost}[/]")
             output_plans_txt plan.query_plans, file, 2, nil
 
             plan.update_steps.each do |step|
