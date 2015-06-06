@@ -12,6 +12,7 @@ module NoSE
       option :enumerated, type: :boolean, default: false, aliases: '-e'
       option :read_only, type: :boolean, default: false
       option :mix, type: :string, default: 'default'
+      option :scale_writes, type: :numeric, default: nil
       option :format, type: :string, default: 'txt',
                       enum: %w(txt json yml), aliases: '-f'
       option :output, type: :string, default: nil, aliases: '-o'
@@ -20,6 +21,7 @@ module NoSE
         workload = get_workload name
         workload.remove_updates if options[:read_only]
         workload.mix = options[:mix].to_sym
+        workload.scale_writes(options[:scale_writes]) if options[:scale_writes]
         config = load_config
         cost_model = get_class 'cost', config[:cost_model][:name]
 
