@@ -76,6 +76,7 @@ module NoSE
         result.plans = select_plans trees, result.indexes
         result.cost_model = @cost_model
 
+        result.validate
         result
       end
 
