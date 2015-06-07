@@ -39,6 +39,11 @@ module NoSE
           log_model 'IIS', '.ilp'
         end
 
+        @logger.debug do
+          "Final objective value is #{@objective.active.inspect}" \
+            " = #{objective_value}"
+        end
+
         fail NoSolutionException if @status != Gurobi::OPTIMAL
       end
 
@@ -188,6 +193,7 @@ module NoSE
 
         @logger.debug { "Objective function is #{min_cost.inspect}" }
 
+        @objective = min_cost
         @model.setObjective min_cost, Gurobi::MINIMIZE
       end
     end
@@ -207,6 +213,20 @@ if Object.const_defined? 'Gurobi'
         var = getVar(i).get_string Gurobi::StringAttr::VAR_NAME
         "#{coeff} * #{var}"
       end.join ' + '
+    end
+
+    # Reduce this expression to one only involving active variables
+    def active
+      active_expr = Gurobi::LinExpr.new
+      0.upto(size - 1).each do |i|
+        coeff = getCoeff i
+        var = getVar i
+        val = var.get_double Gurobi::DoubleAttr::X
+        active = val > 0.99
+        active_expr += var * coeff if active
+      end
+
+      active_expr
     end
   end
 end
