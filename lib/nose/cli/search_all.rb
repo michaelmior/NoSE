@@ -16,8 +16,8 @@ module NoSE
       def search_all(name, directory)
         # Load the workload and cost model and create the output directory
         workload = get_workload name
-        workload.remove_updates if options[:read_only]
         workload.mix = options[:mix].to_sym
+        workload.remove_updates if options[:read_only]
         workload.scale_writes(options[:scale_writes]) if options[:scale_writes]
         config = load_config
         cost_model = get_class 'cost', config[:cost_model][:name]
