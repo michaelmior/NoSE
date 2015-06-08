@@ -145,11 +145,10 @@ module NoSE
       end
 
       # Deal with updates which do not require support queries
-      def add_update_costs(min_cost, data, update_divisors)
+      def add_update_costs(min_cost, data)
         @updates.each do |update|
           @indexes.each do |index|
-            next if !update.modifies_index?(index) ||
-                    update_divisors[update].include?(index)
+            next if !update.modifies_index?(index)
 
             min_cost += @index_vars[index] * data[:update_costs][update][index]
           end
@@ -159,37 +158,23 @@ module NoSE
       end
 
       # Get the total cost of the query for the objective function
-      def total_query_cost(query, cost, query_var, data, update_divisors)
+      def total_query_cost(query, cost, query_var, data)
         return if cost.nil?
         query_cost = cost.last * 1.0
-
-        if query.is_a? SupportQuery
-          # Add the cost of inserting or deleting data divided by
-          # the number of required support queries to avoid double counting
-          query_cost += data[:update_costs][query.statement][query.index] /
-                        update_divisors[query.statement].count
-        end
 
         query_var * query_cost
       end
 
       # Set the value of the objective function (workload cost)
       def set_objective
-        # Get divisors whih we later use for support queries
-        update_divisors = Hash.new { |h, k| h[k] = Set.new }
-        @queries.map do |query|
-          next unless query.is_a? SupportQuery
-          update_divisors[query.statement].add query.index
-        end
-
         min_cost = @queries.map do |query|
           @indexes.map do |index|
             total_query_cost query, @data[:costs][query][index],
-                             @query_vars[index][query], data, update_divisors
+                             @query_vars[index][query], data
           end.compact
         end.flatten.inject(&:+)
 
-        min_cost = add_update_costs min_cost, data, update_divisors
+        min_cost = add_update_costs min_cost, data
 
         @logger.debug { "Objective function is #{min_cost.inspect}" }
 
