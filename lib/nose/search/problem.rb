@@ -208,11 +208,18 @@ end
 if Object.const_defined? 'Gurobi'
   Gurobi::LinExpr.class_eval do
     def inspect
-      0.upto(size - 1).map do |i|
+      # Get all the coefficients of variable terms
+      expr = 0.upto(size - 1).map do |i|
         coeff = getCoeff i
         var = getVar(i).get_string Gurobi::StringAttr::VAR_NAME
         "#{coeff} * #{var}"
-      end.join ' + '
+      end.join(' + ')
+
+      # Possibly add a constant
+      const = getConstant
+      expr += " + #{const}" if const != 0
+
+      expr
     end
 
     # Reduce this expression to one only involving active variables
