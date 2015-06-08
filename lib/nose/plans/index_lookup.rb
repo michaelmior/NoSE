@@ -48,6 +48,9 @@ module NoSE
         # Check that this index is a valid jump in the path
         return nil unless state.path[0..index.path.length - 1] == index.path
 
+        # We must move forward on paths at each lookup
+        return nil if index.path.length == 1 && state.path.length > 1
+
         parent_index = parent.parent_index
         unless parent_index.nil?
           # If the last step gave an ID, we must use it
