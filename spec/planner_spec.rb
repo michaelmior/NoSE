@@ -278,11 +278,12 @@ module NoSE::Plans
       planner = NoSE::Plans::QueryPlanner.new workload.model, indexes,
                                               cost_model
 
-      query_plans = update.support_queries(index).map do |query|
+      trees = update.support_queries(index).map do |query|
         planner.find_plans_for_query(query)
       end
-      planner = UpdatePlanner.new workload.model, query_plans, cost_model
+      planner = UpdatePlanner.new workload.model, trees, cost_model
       plans = planner.find_plans_for_update update, indexes
+      plans.each { |plan| plan.select_query_plans indexes }
 
       # We have three plans because of the permutations of attributes
       expect(plans).to have(3).items
@@ -290,9 +291,9 @@ module NoSE::Plans
         DeletePlanStep.new(index),
         InsertPlanStep.new(index)
       ]
-      min_plans = query_plans.map(&:min)
-      expect(plans.first).to eql UpdatePlan.new update, index, min_plans,
-                                                update_steps, cost_model
+      plan =  UpdatePlan.new update, index, trees, update_steps, cost_model
+      plan.select_query_plans indexes
+      expect(plans.first).to eql plan
     end
 
     it 'can produce a plan with no support queries' do
@@ -302,6 +303,7 @@ module NoSE::Plans
                               [user.id_fields.first]
       planner = UpdatePlanner.new workload.model, [], cost_model
       plans = planner.find_plans_for_update update, [index]
+      plans.each { |plan| plan.select_query_plans index }
 
       expect(plans).to have(1).item
       expect(plans.first.query_plans).to be_empty
