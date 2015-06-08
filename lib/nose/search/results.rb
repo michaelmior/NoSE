@@ -7,10 +7,10 @@ module NoSE
 
       # Validate that the results of the search are consistent
       def validate
-        fail unless valid_indexes?
-        fail unless valid_query_plans? @plans
-        fail unless valid_update_plans?
-        fail unless valid_cost?
+        validate_indexes
+        validate_query_plans @plans
+        validate_update_plans
+        validate_cost
 
         freeze
       end
@@ -18,19 +18,22 @@ module NoSE
       private
 
       # Check that the indexes selected were actually enumerated
-      def valid_indexes?
-        (@indexes - @enumerated_indexes).empty?
+      def validate_indexes
+        fail InvalidResultsException unless \
+          (@indexes - @enumerated_indexes).empty?
       end
 
       # Ensure we only have necessary update plans which use available indexes
-      def valid_update_plans?
+      def validate_update_plans
         @update_plans.each do |plan|
-          @indexes.include?(plan.index) && valid_query_plans?(plan.query_plans)
+          validate_query_plans plan.query_plans
+          valid_plan = @indexes.include?(plan.index)
+          fail InvalidResultsException unless valid_plan
         end
       end
 
       # Check that the cost has the expected value
-      def valid_cost?
+      def validate_cost
         query_cost = @plans.reduce 0 do |sum, plan|
           sum + @workload.statement_weights[plan.query] * plan.cost
         end
@@ -39,18 +42,23 @@ module NoSE
         end
         cost = query_cost + update_cost
 
-        (cost - @total_cost).abs < 0.001
+        fail InvalidResultsException unless (cost - @total_cost).abs < 0.001
       end
 
       # Ensure that all the query plans use valid indexes
-      def valid_query_plans?(plans)
-        plans.all? do |plan|
-          plan.all? do |step|
-            !step.is_a?(Plans::IndexLookupPlanStep) ||
-              @indexes.include?(step.index)
+      def validate_query_plans(plans)
+        plans.each do |plan|
+          plan.each do |step|
+            valid_plan = !step.is_a?(Plans::IndexLookupPlanStep) ||
+                         @indexes.include?(step.index)
+            fail InvalidResultsException unless valid_plan
           end
         end
       end
+    end
+
+    # Thrown when a search produces invalid results
+    class InvalidResultsException < StandardError
     end
   end
 end
