@@ -174,7 +174,13 @@ module NoSE
       def cost
         @steps.map { |step| step.cost @cost_model }.inject(0, &:+)
       end
+
+      # Get the indexes used by this query plan
+      def indexes
+        @steps.select { |step| step.is_a? IndexLookupPlanStep }.map(&:index)
+      end
     end
+
     # A query planner which can construct a tree of query plans
     class QueryPlanner
       def initialize(model, indexes, cost_model)
