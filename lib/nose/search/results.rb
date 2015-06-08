@@ -31,8 +31,15 @@ module NoSE
 
       # Check that the cost has the expected value
       def valid_cost?
-        # TODO: Check that the ILP-generated cost matches
-        true
+        query_cost = @plans.reduce 0 do |sum, plan|
+          sum + @workload.statement_weights[plan.query] * plan.cost
+        end
+        update_cost = @update_plans.reduce 0 do |sum, plan|
+          sum + @workload.statement_weights[plan.statement] * plan.cost
+        end
+        cost = query_cost + update_cost
+
+        (cost - @total_cost).abs < 0.001
       end
 
       # Ensure that all the query plans use valid indexes
