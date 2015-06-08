@@ -59,12 +59,7 @@ module NoSE
         return @selected_indexes if @selected_indexes
 
         @selected_indexes = @indexes.select do |index|
-          # Even though we specifed the variables as binary, rounding
-          # error means the value won't be exactly one
-          # (the check exists to catch weird values if they arise)
-          val = @index_vars[index].get_double Gurobi::DoubleAttr::X
-          fail if val > 0.01 && val < 0.99
-          val > 0.99
+          @index_vars[index].active?
         end.to_set
       end
 
@@ -213,12 +208,22 @@ if Object.const_defined? 'Gurobi'
       0.upto(size - 1).each do |i|
         coeff = getCoeff i
         var = getVar i
-        val = var.get_double Gurobi::DoubleAttr::X
-        active = val > 0.99
-        active_expr += var * coeff if active
+        active_expr += var * coeff if var.active?
       end
 
       active_expr
+    end
+  end
+
+  Gurobi::Var.class_eval do
+    # Check if this variable is active
+    def active?
+      # Even though we specifed the variables as binary, rounding
+      # error means the value won't be exactly one
+      # (the check exists to catch weird values if they arise)
+      val = get_double Gurobi::DoubleAttr::X
+      fail if val > 0.01 && val < 0.99
+      val > 0.99
     end
   end
 end
