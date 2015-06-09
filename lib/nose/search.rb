@@ -178,7 +178,7 @@ module NoSE
             step.cost @cost_model
           end.inject(0, &:+) * weight
 
-          fail 'No more than three indexes per step' if step_indexes.length > 3
+          fail 'No more than two indexes per step' if step_indexes.length > 2
 
           if query_costs.key? step_indexes.first
             current_cost = query_costs[step_indexes.first].last
