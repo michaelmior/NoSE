@@ -170,10 +170,12 @@ module NoSE
         # jointly used to answer a step in the query plan along with
         # the cost of all plan steps for the part of the query path
         steps_by_index.each do |steps|
+          # Get the indexes for these plan steps
           step_indexes = steps.select do |step|
             step.is_a? Plans::IndexLookupPlanStep
           end.map(&:index)
 
+          # Calculate the cost for just these steps in the plan
           cost = steps.map do |step|
             step.cost @cost_model
           end.inject(0, &:+) * weight
