@@ -186,34 +186,22 @@ module NoSE
             current_cost = query_costs[step_indexes.first].last
             current_steps = query_costs[step_indexes.first].first
 
-            if step_indexes.length == 1 && (current_steps != step_indexes ||
-                                            current_cost != cost)
-              # # We should only have one step if there
-              # # exists a step with length 1
-              # fail 'Invalid query plan found when calculating cost: ' +
-              #   plan.inspect.to_s
-
-              # XXX This is wrong, but the costs are broken for now
-              query_costs[step_indexes.first] = [step_indexes,
-                                                 [cost, current_cost].max]
-            else
-              # Take the minimum cost index for the second step
-              if current_steps.length > 1
-                if cost < current_cost
-                  query_costs[step_indexes.first] = [step_indexes, cost]
-                elsif cost == current_cost
-                  # Cost is the same, so keep track of multiple possible last
-                  # steps by making the second element an array
-                  if current_steps.last.is_a? Array
-                    new_steps = current_steps.clone
-                    new_steps.last.push step_indexes.last
-                    step_indexes = new_steps
-                  else
-                    step_indexes = [step_indexes.first,
-                                    [current_steps.last, step_indexes.last]]
-                  end
-                  query_costs[step_indexes.first] = [step_indexes, cost]
+            # Take the minimum cost index for the second step
+            if current_steps.length > 1
+              if cost < current_cost
+                query_costs[step_indexes.first] = [step_indexes, cost]
+              elsif cost == current_cost
+                # Cost is the same, so keep track of multiple possible last
+                # steps by making the second element an array
+                if current_steps.last.is_a? Array
+                  new_steps = current_steps.clone
+                  new_steps.last.push step_indexes.last
+                  step_indexes = new_steps
+                else
+                  step_indexes = [step_indexes.first,
+                                  [current_steps.last, step_indexes.last]]
                 end
+                query_costs[step_indexes.first] = [step_indexes, cost]
               end
             end
           else
