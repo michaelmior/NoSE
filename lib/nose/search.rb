@@ -186,6 +186,9 @@ module NoSE
             current_cost = query_costs[step_indexes.first].last
             current_steps = query_costs[step_indexes.first].first
 
+            # We must always have the same number of steps
+            fail if current_steps.length != step_indexes.length
+
             # Take the minimum cost index for the second step
             if current_steps.length > 1
               if cost < current_cost
