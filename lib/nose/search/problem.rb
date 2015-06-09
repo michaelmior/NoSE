@@ -65,7 +65,7 @@ module NoSE
 
       # Return relevant data on the results of the ILP
       def result
-        result = Results.new
+        result = Results.new self
         result.enumerated_indexes = indexes
         result.indexes = selected_indexes
         result.total_size = selected_indexes.map(&:size).inject(0, &:+)

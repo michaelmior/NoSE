@@ -33,10 +33,8 @@ module NoSE
       end
 
       # Select query plans to actually use here
-      def select_query_plans(indexes)
-        @query_plans = @trees.map do |tree|
-          tree.select_using_indexes(indexes).min_by(&:cost)
-        end
+      def select_query_plans(&block)
+        @query_plans = @trees.map &block
         @trees = nil
         freeze
       end

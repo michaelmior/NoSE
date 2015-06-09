@@ -68,12 +68,12 @@ module NoSE
           result.indexes.include? plan.index
         end
         update_plans.each do |plan|
-          plan.select_query_plans result.indexes
+          plan.select_query_plans(&result.method(:select_plan))
         end
         result.update_plans = update_plans
 
         result.workload = @workload
-        result.plans = select_plans trees, result.indexes
+        result.plans_from_trees trees
         result.cost_model = @cost_model
 
         result.validate
