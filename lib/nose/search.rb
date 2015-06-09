@@ -191,21 +191,21 @@ module NoSE
 
             # Take the minimum cost index for the second step
             if current_steps.length > 1
-              if cost < current_cost
-                query_costs[step_indexes.first] = [step_indexes, cost]
-              elsif cost == current_cost
-                # Cost is the same, so keep track of multiple possible last
-                # steps by making the second element an array
-                if current_steps.last.is_a? Array
-                  new_steps = current_steps.clone
-                  new_steps.last.push step_indexes.last
-                  step_indexes = new_steps
-                else
-                  step_indexes = [step_indexes.first,
-                                  [current_steps.last, step_indexes.last]]
-                end
-                query_costs[step_indexes.first] = [step_indexes, cost]
+              # Cost must be the same here
+              fail unless cost == current_cost
+
+              # Cost is the same, so keep track of multiple possible last
+              # steps by making the second element an array
+              if current_steps.last.is_a? Array
+                new_steps = current_steps.clone
+                new_steps.last.push step_indexes.last
+                step_indexes = new_steps
+              else
+                step_indexes = [step_indexes.first,
+                                [current_steps.last, step_indexes.last]]
               end
+
+              query_costs[step_indexes.first] = [step_indexes, cost]
             end
           else
             query_costs[step_indexes.first] = [step_indexes, cost]
