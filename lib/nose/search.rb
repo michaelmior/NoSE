@@ -164,12 +164,11 @@ module NoSE
 
       # Store the costs and indexes for this plan in a nested hash
       def populate_query_costs(query_costs, steps_by_index, weight, plan)
-        # The first key is the number of the query and the second is the
-        # number of the index
+        # The first key is the query and the second is the index
         #
-        # The value is a two-element array with the numbers of the indices
-        # which are jointly used to answer a step in the query plan along
-        # with the cost of all plan steps for the part of the query path
+        # The value is a two-element array with the indices which are
+        # jointly used to answer a step in the query plan along with
+        # the cost of all plan steps for the part of the query path
         steps_by_index.each do |steps|
           step_indexes = steps.select do |step|
             step.is_a? Plans::IndexLookupPlanStep
