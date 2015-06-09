@@ -303,7 +303,7 @@ module NoSE::Plans
                               [user.id_fields.first]
       planner = UpdatePlanner.new workload.model, [], cost_model
       plans = planner.find_plans_for_update update, [index]
-      plans.each { |plan| plan.select_query_plans index }
+      plans.each { |plan| plan.select_query_plans [index] }
 
       expect(plans).to have(1).item
       expect(plans.first.query_plans).to be_empty
