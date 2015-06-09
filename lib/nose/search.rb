@@ -145,8 +145,8 @@ module NoSE
               # is a lookup of extra fields for an entity
               last_step = steps_by_index.last.last unless steps_by_index.empty?
               if last_step.is_a?(Plans::IndexLookupPlanStep) &&
-                 (last_step.index.path.entities ==
-                  [step.index.path.entities.first])
+                  ([last_step.index.path.entities.last] ==
+                   step.index.path.entities)
                 steps_by_index.last.push step
               else
                 steps_by_index.push [step]
