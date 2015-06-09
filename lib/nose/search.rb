@@ -141,17 +141,16 @@ module NoSE
             if step.is_a? Plans::IndexLookupPlanStep
               # If one of two adjacent steps is just a lookup on
               # a single entity, we should bundle them together
+              # This happens when the final step in a query plan
+              # is a lookup of extra fields for an entity
               last_step = steps_by_index.last.last unless steps_by_index.empty?
               if last_step.is_a?(Plans::IndexLookupPlanStep) &&
-                 (step.index.path.entities ==
-                  [last_step.index.path.entities.last] ||
-                  last_step.index.path.entities ==
+                 (last_step.index.path.entities ==
                   [step.index.path.entities.first])
                 steps_by_index.last.push step
-                next
+              else
+                steps_by_index.push [step]
               end
-
-              steps_by_index.push [step]
             else
               steps_by_index.last.push step
             end
