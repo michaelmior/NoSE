@@ -74,31 +74,36 @@ module NoSE
             query_constraints[part] += index_var
           end
 
-          # All indices used at this step must either all be used, or none used
-          if step_indexes.length > 1
-            if step_indexes.last.is_a? Array
-              # We have multiple possible last steps, so add an auxiliary
-              # variable which allows us to select between them
-              first_var = problem.query_vars[step_indexes.first][query]
-              step_var = problem.model.addVar 0, 1, 0, Gurobi::BINARY,
-                                              "q#{q}s#{step_indexes.first.key}"
-              problem.model.update
-              problem.model.addConstr(step_var * 1 >= first_var * 1)
+          # No additional work is necessary if we only have one step here
+          next if step_indexes.length == 1
 
-              # Force exactly one of the indexes for the last step to be chosen
-              vars = step_indexes.last.map do |index2|
-                problem.query_vars[index2][query]
-              end
-              problem.model.addConstr(vars.inject(Gurobi::LinExpr.new, &:+) ==
-                                                  step_var)
-            else
-              vars = step_indexes.map do |index2|
-                problem.query_vars[index2][query]
-              end
-              vars.reverse.each_cons(2).each do |first_var, last_var|
-                problem.model.addConstr(last_var * 1 == first_var * 1)
-              end
+          # All indices used at this step must either all be used, or none used
+          if step_indexes.last.is_a? Array
+            # We have multiple possible last steps, so add an auxiliary
+            # variable which allows us to select between them
+            step_var = problem.model.addVar 0, 1, 0, Gurobi::BINARY,
+                                            "q#{q}s#{step_indexes.first.key}"
+            problem.model.update
+
+            # Force exactly one of the indexes for the last step to be chosen
+            last_vars = step_indexes.last.map do |index2|
+              problem.query_vars[index2][query]
+            end.inject(Gurobi::LinExpr.new, &:+)
+            problem.model.addConstr(last_vars == step_var)
+
+            # Replace the collection of last variables by the step variable
+            vars = step_indexes[0..-2].map do |index2|
+              problem.query_vars[index2][query]
+            end + [step_var]
+          else
+            vars = step_indexes.map do |index2|
+              problem.query_vars[index2][query]
             end
+          end
+
+          # Chain all steps together so we have a complete plan
+          vars.reverse.each_cons(2).each do |prev_var, next_var|
+            problem.model.addConstr(next_var * 1 == prev_var * 1)
           end
         end
 
