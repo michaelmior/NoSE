@@ -170,7 +170,7 @@ module NoSE
     def generate_index(hash, order, extra, path)
       begin
         index = Index.new hash, order, extra, path
-        @logger.debug "Enumerated #{index}"
+        @logger.debug "Enumerated #{index.inspect}"
       rescue InvalidIndexException
         # This combination of fields is not valid, that's ok
         index = nil
