@@ -24,6 +24,15 @@ module NoSE
                   [tweet['Body']], [user.id_fields.first, user['Tweets']]
     end
 
+    it 'produces an index for intermediate query steps' do
+      query = NoSE::Query.new 'SELECT Link.URL FROM Link.Tweets.User ' \
+                              'WHERE User.Username = ?', workload.model
+      indexes = enum.indexes_for_query query
+      expect(indexes).to include \
+        Index.new [user['UserId']], [tweet['TweetId']], [],
+                  [user.id_fields.first, user['Tweets']]
+    end
+
     it 'produces a simple index for a filter within a workload' do
       query = Query.new 'SELECT User.Username FROM User WHERE User.City = ?',
                         workload.model

@@ -112,7 +112,7 @@ module NoSE
     # Get fields which should be included in an index for the given path
     def extra_choices(path_entities, select, eq, range)
       filter_choices = eq[path_entities.last] + range[path_entities.last]
-      choices = []
+      choices = [[]]
 
       # Include any fields which might be selected
       select_fields = select.select do |field|
