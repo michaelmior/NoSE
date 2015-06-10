@@ -241,7 +241,8 @@ module NoSE::Plans
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload
       planner = QueryPlanner.new workload.model, indexes, cost_model
 
-      max_steps = planner.find_plans_for_query(query).map(&:length).length
+      tree = planner.find_plans_for_query(query)
+      max_steps = tree.max_by(&:length).length
       expect(max_steps).to be >= query.longest_entity_path.length
     end
 
