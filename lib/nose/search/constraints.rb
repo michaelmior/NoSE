@@ -49,16 +49,18 @@ module NoSE
       private
 
       # Add the discovered constraints to the problem
-      def self.add_query_constraints(query, constraints, problem)
-        constraints.each do |constraint|
+      def self.add_query_constraints(query, q, constraints, problem)
+        constraints.each_with_index do |constraint, c|
           # If this is a support query, then we might not need a plan
           if query.is_a? SupportQuery
             # Find the index associated with the support query and make
             # the requirement of a plan conditional on this index
             index_var = problem.index_vars[query.index]
-            problem.model.addConstr(constraint == index_var * 1.0)
+            problem.model.addConstr constraint == index_var * 1.0,
+                                    "q#{q}_c#{c}"
           else
-            problem.model.addConstr(constraint == 1)
+            problem.model.addConstr constraint == 1,
+                                    "q#{q}_c#{c}"
           end
         end
       end
@@ -82,7 +84,7 @@ module NoSE
             # We have multiple possible last steps, so add an auxiliary
             # variable which allows us to select between them
             step_var = problem.model.addVar 0, 1, 0, Gurobi::BINARY,
-                                            "q#{q}s#{step_indexes.first.key}"
+                                            "q#{q}_s#{step_indexes.first.key}"
             problem.model.update
 
             # Force exactly one of the indexes for the last step to be chosen
@@ -108,7 +110,7 @@ module NoSE
         end
 
         # Ensure we have exactly one index on each component of the query path
-        add_query_constraints query, query_constraints, problem
+        add_query_constraints query, q, query_constraints, problem
       end
     end
   end
