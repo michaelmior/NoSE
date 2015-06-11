@@ -44,7 +44,12 @@ module NoSE
       # Select the single query plan from a tree of plans
       def select_plan(tree)
         query = tree.query
-        tree.find { |plan| plan.indexes.to_set ==  @query_indexes[query] }
+        plan = tree.find do |plan|
+          plan.indexes.to_set ==  @query_indexes[query]
+        end
+
+        fail InvalidResultsException if plan.nil?
+        plan
       end
 
       private
