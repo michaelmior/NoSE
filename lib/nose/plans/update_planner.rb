@@ -38,7 +38,9 @@ module NoSE
           @query_plans = @trees.map &block
         else
           @query_plans = @trees.map do |tree|
-            tree.select_using_indexes(indexes).min_by(&:cost)
+            plan = tree.select_using_indexes(indexes).min_by(&:cost)
+            fail if plan.nil?
+            plan
           end
         end
 
