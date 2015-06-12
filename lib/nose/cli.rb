@@ -88,7 +88,7 @@ module NoSE
       # Output a list of indexes as text
       def output_indexes_txt(header, indexes, file)
         file.puts Formatador.parse("[blue]#{header}[/]")
-        indexes.each { |index| file.puts index.inspect }
+        indexes.sort_by(&:key).each { |index| file.puts index.inspect }
         file.puts
       end
 
