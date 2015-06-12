@@ -76,7 +76,14 @@ module NoSE
     # @see Entity#id_fields
     # @return [Boolean]
     def identity_for?(entity)
-      @hash_fields == entity.id_fields.to_set
+      @hash_fields == entity.id_fields.to_set && @path.length == 1
+    end
+
+    # Check if this index maps from the primary
+    # key to fields from  a single index
+    # @return [Boolean]
+    def identity?
+      identity_for? @path.entities.first
     end
 
     # Check if the index contains a given field
