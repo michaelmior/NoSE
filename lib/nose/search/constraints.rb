@@ -50,17 +50,17 @@ module NoSE
 
       # Add the discovered constraints to the problem
       def self.add_query_constraints(query, q, constraints, problem)
-        constraints.each_with_index do |constraint, c|
+        constraints.each do |entity, constraint|
           # If this is a support query, then we might not need a plan
           if query.is_a? SupportQuery
             # Find the index associated with the support query and make
             # the requirement of a plan conditional on this index
             index_var = problem.index_vars[query.index]
             problem.model.addConstr constraint == index_var * 1.0,
-                                    "q#{q}_c#{c}"
+                                    "q#{q}_#{entity.name}"
           else
             problem.model.addConstr constraint == 1,
-                                    "q#{q}_c#{c}"
+                                    "q#{q}_#{entity.name}"
           end
         end
       end
@@ -68,12 +68,14 @@ module NoSE
       # Add complete query plan constraints
       def self.apply_query(query, q, problem)
         entities = query.longest_entity_path
-        query_constraints = Array.new(entities.length) { Gurobi::LinExpr.new }
+        query_constraints = Hash[entities.map do |entity|
+          [entity, Gurobi::LinExpr.new]
+        end]
 
         problem.data[:costs][query].each do |index, (step_indexes, _)|
-          index.entity_range(entities).each do |part|
+          index.path.entities.each do |entity|
             index_var = problem.query_vars[index][query]
-            query_constraints[part] += index_var
+            query_constraints[entity] += index_var
           end
 
           # No additional work is necessary if we only have one step here
