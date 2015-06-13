@@ -123,6 +123,29 @@ NoSE::Workload.new do
   Q 'SELECT comments.comment FROM comments.item.category WHERE category.id = ? ORDER BY comments.date'
   # 8. SELECT category AS E_category, date AS O_date, comment FROM comments join items ON comments.item_id=items.id;
   # I127205473
+
+  # RegisterItem
+  Q 'INSERT INTO items SET id=?, name=?, description=?, initial_price=?, quantity=?, reserve_price=?, buy_now=?, nb_of_bids=0, max_bid=0, start_date=?, end_date=?'
+  Q 'CONNECT items(?) TO category(?)'
+  Q 'CONNECT items(?) TO seller(?)'
+
+  # RegisterUser
+  Q 'INSERT INTO users SET id=?, firstname=?, lastname=?, nickname=?, password=?, email=?, rating=0, balance=0, creation_date=?'
+  Q 'CONNECT users(?) TO region(?)'
+
+  # StoreBid
+  Q 'INSERT INTO bids SET id=?, qty=?, bid=?, date=?'
+  Q 'CONNECT bids(?) TO item(?)'
+  Q 'CONNECT bids(?) TO user(?)'
+  Q 'SELECT items.nb_of_bids FROM items WHERE items.id=?'
+  Q 'UPDATE items SET nb_of_bids=? WHERE items.id=?'
+
+  # StoreComment
+  Q 'UPDATE users SET rating=? WHERE users.id=?'
+  Q 'INSERT INTO comments SET id=?, rating=?, date=?, comment=?'
+  # Q 'CONNECT comments(?) TO to_user(?)'
+  Q 'CONNECT comments(?) TO from_user(?)'
+  Q 'CONNECT comments(?) TO item(?)'
 end
 
 # rubocop:enable all
