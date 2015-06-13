@@ -537,6 +537,12 @@ module NoSE
       super(other) && @statement == other.statement && @index == other.index
     end
     alias_method :eql?, :==
+
+    # :nocov:
+    def to_color
+      super.to_color + ' for [magenta]' + @index.key + '[/]'
+    end
+    # :nocov:
   end
 
   # The setting of a field from an {Update} statement
