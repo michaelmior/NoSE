@@ -51,6 +51,8 @@ module NoSE
         # We must move forward on paths at each lookup
         # XXX This disallows plans which look up additional attributes
         #     for entities other than the final one in the query path
+        return nil if index.path.length == 1 && state.path.length > 1 &&
+                      !parent.is_a?(RootPlanStep)
         return nil if index.identity? && state.path.length > 1
 
         parent_index = parent.parent_index
