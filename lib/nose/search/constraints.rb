@@ -50,32 +50,43 @@ module NoSE
 
       # Add the discovered constraints to the problem
       def self.add_query_constraints(query, q, constraints, problem)
-        constraints.each do |entity, constraint|
+        constraints.each do |entities, constraint|
+          name = "q#{q}_#{entities.map(&:name).join '_'}"
+
           # If this is a support query, then we might not need a plan
           if query.is_a? SupportQuery
             # Find the index associated with the support query and make
             # the requirement of a plan conditional on this index
             index_var = problem.index_vars[query.index]
-            problem.model.addConstr constraint == index_var * 1.0,
-                                    "q#{q}_#{entity.name}"
+            problem.model.addConstr constraint == index_var * 1.0, name
           else
-            problem.model.addConstr constraint == 1,
-                                    "q#{q}_#{entity.name}"
+            problem.model.addConstr constraint == 1, name
           end
         end
       end
 
       # Add complete query plan constraints
       def self.apply_query(query, q, problem)
-        entities = query.longest_entity_path
-        query_constraints = Hash[entities.map do |entity|
-          [entity, Gurobi::LinExpr.new]
-        end]
+        entities = query.longest_entity_path.reverse
+        if entities.length == 1
+          query_constraints = { entities => Gurobi::LinExpr.new }
+        else
+          query_constraints = Hash[entities.each_cons(2).map do |e, next_e|
+            [[e, next_e], Gurobi::LinExpr.new]
+          end]
+        end
 
         problem.data[:costs][query].each do |index, (step_indexes, _)|
-          index.path.entities.each do |entity|
-            index_var = problem.query_vars[index][query]
-            query_constraints[entity] += index_var
+          # All indexes should advance a step if possible
+          fail if entities.length > 1 && index.path.length == 1
+
+          index_var = problem.query_vars[index][query]
+          if entities.length == 1
+            query_constraints[index.path.entities] += index_var
+          else
+            index.path.entities.each_cons(2) do |entity, next_entity|
+              query_constraints[[entity, next_entity]] += index_var
+            end
           end
 
           # No additional work is necessary if we only have one step here
