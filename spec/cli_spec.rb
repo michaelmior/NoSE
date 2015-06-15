@@ -16,7 +16,7 @@ module NoSE::CLI
 
     it 'can reformat output', gurobi: true do
       # Run a simple search and output as JSON
-      run_simple 'nose search rubis-synthetic --format=json'
+      run_simple 'nose search rubis-synthetic --read-only --format=json'
       json = all_output
 
       # Save the JSON to a file and reformat
