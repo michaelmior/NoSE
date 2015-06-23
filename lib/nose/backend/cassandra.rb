@@ -187,6 +187,12 @@ module NoSE
           end.join ' AND '
 
           # Add the ORDER BY clause
+          # TODO: CQL3 requires all clustered columns before the one actually
+          #       ordered on also be specified
+          #
+          #       Example:
+          #
+          #         SELECT * FROM cf WHERE id=? AND col1=? ORDER by col1, col2
           unless order.empty?
             query += ' ORDER BY ' + order.map(&:id).join(', ')
           end
