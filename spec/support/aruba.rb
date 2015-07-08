@@ -9,18 +9,20 @@ require 'nose/cli'
 
 module NoSE::CLI
   class NoSECLI
+    CONFIG_FILE_NAME = 'nose.yml.example'
+
+    def initialize(*args)
+      suppress_warnings do
+        file = File.join File.dirname(__FILE__), '..', '..', 'nose.yml.example'
+        NoSECLI.const_set 'CONFIG_FILE_NAME', file
+      end
+
+      super(*args)
+    end
+
     # Override so we don't look like RSpec
     def self.basename
       'nose'
-    end
-
-    private
-
-    # Use example config for tests
-    def load_config
-      file = File.join File.dirname(__FILE__), '..', '..', 'nose.yml.example'
-      config = YAML.load_file file
-      config.deep_symbolize_keys
     end
   end
 

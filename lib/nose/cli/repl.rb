@@ -13,8 +13,7 @@ module NoSE
       desc 'repl PLAN_FILE', 'start the REPL with the given PLAN_FILE'
       def repl(plan_file)
         result = load_results plan_file
-        config = load_config
-        backend = get_backend(config, result)
+        backend = get_backend(options, result)
 
         loop do
           begin

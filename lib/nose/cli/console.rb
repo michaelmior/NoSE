@@ -14,11 +14,10 @@ module NoSE
         # Also extract the model as a variable
         TOPLEVEL_BINDING.local_variable_set :model, result.workload.model
 
-        # Load the config and backend as variables
-        config = load_config
-        TOPLEVEL_BINDING.local_variable_set :config, config
+        # Load the options and backend as variables
+        TOPLEVEL_BINDING.local_variable_set :options, options
         TOPLEVEL_BINDING.local_variable_set :backend,
-                                            get_backend(config, result)
+                                            get_backend(options, result)
 
         TOPLEVEL_BINDING.pry
       end
