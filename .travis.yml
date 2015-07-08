@@ -8,6 +8,9 @@ rvm:
   - 2.1.5
   - 2.0.0
   - jruby-head
+matrix:
+  allow_failures:
+    - rvm: jruby-head
 script: bundle exec rspec --tag ~gurobi
 addons:
   code_climate:
