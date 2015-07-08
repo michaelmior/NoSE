@@ -50,7 +50,7 @@ module NoSE::Search
 
       # Enumerate the indexes and select those actually used
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
-      cost_model = NoSE::Cost::EntityCountCost
+      cost_model = NoSE::Cost::EntityCountCost.new
       result = Search.new(workload, cost_model).search_overlap indexes
       indexes = result.indexes
 

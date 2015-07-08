@@ -6,20 +6,20 @@ module NoSE
       include Supertype
 
       # The cost of filtering intermediate results
-      def self.filter_cost(_step)
+      def filter_cost(_step)
         # Assume this has no cost and the cost is captured in the fact that we
         # have to retrieve more data earlier. All this does is skip records.
         1
       end
 
       # The cost of limiting a result set
-      def self.limit_cost(_step)
+      def limit_cost(_step)
         # This is basically free since we just discard data
         0
       end
 
       # The cost of sorting a set of results
-      def self.sort_cost(_step)
+      def sort_cost(_step)
         # TODO: Find some estimate of sort cost
         #       This could be partially captured by the fact that sort + limit
         #       effectively removes the limit
@@ -27,22 +27,22 @@ module NoSE
       end
 
       # The cost of performing a lookup via an index
-      def self.index_lookup_cost(_step)
+      def index_lookup_cost(_step)
         fail NotImplementedError, 'Must be implemented in a subclass'
       end
 
       # The cost of performing a deletion from an index
-      def self.delete_cost(_step)
+      def delete_cost(_step)
         fail NotImplementedError, 'Must be implemented in a subclass'
       end
 
       # The cost of performing an insert into an index
-      def self.insert_cost(_step)
+      def insert_cost(_step)
         fail NotImplementedError, 'Must be implemented in a subclass'
       end
 
       # This is here for debugging purposes because we need a cost
-      def self.pruned_cost(_step)
+      def pruned_cost(_step)
         0
       end
     end

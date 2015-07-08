@@ -23,7 +23,7 @@ module NoSE
         workload.remove_updates if options[:read_only]
         workload.scale_writes(options[:scale_writes]) if options[:scale_writes]
         config = load_config
-        cost_model = get_class 'cost', config[:cost_model][:name]
+        cost_model = get_class('cost', config[:cost_model][:name]).new
 
         # Execute the advisor
         result = search_result workload, cost_model, options[:max_space]
