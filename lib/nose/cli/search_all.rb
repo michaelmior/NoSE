@@ -19,8 +19,7 @@ module NoSE
         workload.mix = options[:mix].to_sym
         workload.remove_updates if options[:read_only]
         workload.scale_writes(options[:scale_writes]) if options[:scale_writes]
-        config = load_config
-        cost_model = get_class('cost', config[:cost_model][:name]).new
+        cost_model = get_class('cost', options[:cost_model][:name]).new
         FileUtils.mkdir_p(directory) unless Dir.exist?(directory)
 
         # Run the search and output the results

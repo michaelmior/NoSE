@@ -8,8 +8,7 @@ module NoSE
       option :drop_existing, type: :boolean, default: false, aliases: '-d'
       def create(plan_file)
         result = load_results(plan_file)
-        config = load_config
-        backend = get_backend(config, result)
+        backend = get_backend(options, result)
 
         # Produce the DDL and execute unless the dry run option was given
         backend.indexes_ddl(!options[:dry_run], options[:skip_existing],

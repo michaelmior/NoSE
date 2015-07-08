@@ -213,4 +213,16 @@ class Object
   end
 end
 
+# Extend the kernel to allow warning suppression
+module Kernel
+  # Allow the suppression of warnings for a block of code
+  def suppress_warnings
+    original_verbosity = $VERBOSE
+    $VERBOSE = nil
+    result = yield
+    $VERBOSE = original_verbosity
+    return result
+  end
+end
+
 # rubocop:enable Documentation

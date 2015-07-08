@@ -8,6 +8,8 @@ module NoSE
   module CLI
     # A command-line interface to running the advisor tool
     class NoSECLI < Thor
+      CONFIG_FILE_NAME = 'nose.yml'
+
       check_unknown_options!
 
       class_option :debug, type: :boolean, aliases: '-d'
@@ -36,17 +38,20 @@ module NoSE
 
       private
 
+      # Add the possibility to set defaults via configuration
+      def options
+        original_options = super
+        return original_options unless File.exist? CONFIG_FILE_NAME
+        defaults = YAML.load_file(CONFIG_FILE_NAME).deep_symbolize_keys || {}
+        Thor::CoreExt::HashWithIndifferentAccess \
+          .new(defaults.merge(original_options))
+      end
+
       # Find the workload with the given name
       def get_workload(name)
         filename = File.expand_path "../../../workloads/#{name}.rb", __FILE__
         contents = File.read(filename)
         binding.eval contents, filename
-      end
-
-      # Load the configuration to use for a backend
-      def load_config
-        config = YAML.load_file File.join(Dir.pwd, 'nose.yml')
-        config.deep_symbolize_keys
       end
 
       # Get a backend instance for a given configuration and dataset

@@ -6,8 +6,7 @@ module NoSE
       option :num_iterations, type: :numeric, default: 100
       def benchmark(plan_file)
         result = load_results plan_file
-        config = load_config
-        backend = get_backend(config, result)
+        backend = get_backend(options, result)
 
         index_values = index_values result.indexes, backend,
                                     options[:num_iterations]
