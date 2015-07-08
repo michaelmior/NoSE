@@ -2,8 +2,6 @@ module NoSE::Cost
   describe RequestCountCost do
     include_context 'entities'
 
-    let(:subject) { RequestCountCost }
-
     it 'counts a single request for a single step plan' do
       planner = NoSE::Plans::QueryPlanner.new workload.model,
                                               [tweet.simple_index], subject
@@ -17,8 +15,6 @@ module NoSE::Cost
   describe EntityCountCost do
     include_context 'entities'
 
-    let(:subject) { EntityCountCost }
-
     it 'counts multiple requests when multiple entities are selected' do
       query = NoSE::Query.new 'SELECT Tweet.* FROM Tweet.User ' \
                               'WHERE User.UserId = ?', workload.model
@@ -31,8 +27,6 @@ module NoSE::Cost
 
   describe FieldSizeCost do
     include_context 'entities'
-
-    let(:subject) { FieldSizeCost }
 
     it 'measures the size of the selected data' do
       index = tweet.simple_index

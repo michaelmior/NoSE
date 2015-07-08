@@ -8,7 +8,7 @@ module NoSE
         result = load_results plan_file
 
         # Get the new cost model and recost all the queries
-        new_cost_model = get_class 'cost', cost_model
+        new_cost_model = get_class('cost', cost_model).new
         result.plans.each { |plan| plan.cost_model = new_cost_model }
 
         # Update the cost values
@@ -22,11 +22,11 @@ module NoSE
 
       # Get the total cost for a set of plans in a given workload
       def total_cost(workload, plans)
-        plan_hash = Hash[plans.map { |plan| [plan.statement, plan] }]
+        plan_hash = Hash[plans.map { |plan| [plan.query, plan] }]
 
-        workload.statement_weights.map do |statement, weight|
+        workload.statement_weights.map do |query, weight|
           next 0 unless statement.is_a? Query
-          weight * plan_hash[statement].cost
+          weight * plan_hash[query].cost
         end.inject(0, &:+)
       end
     end

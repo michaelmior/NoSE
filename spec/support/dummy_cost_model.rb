@@ -5,12 +5,12 @@ module NoSE
         include Subtype
 
         # Simple cost model which just counts the number of indexes
-        def self.index_lookup_cost(_step)
+        def index_lookup_cost(_step)
           1
         end
       end
 
-      DummyCost
+      DummyCost.new
     end
   end
 end

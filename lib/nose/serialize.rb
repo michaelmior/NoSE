@@ -253,7 +253,7 @@ module NoSE
 
       # Look up the cost model by name and attach to the results
       def cost_model=(cost_model)
-        represented.cost_model = Cost::Cost.subtype_class cost_model
+        represented.cost_model = Cost::Cost.subtype_class(cost_model).new
       end
 
       property :cost_model, exec_context: :decorator
@@ -393,7 +393,7 @@ module NoSE
 
       # Look up the cost model by name and attach to the results
       def cost_model=(cost_model)
-        represented.cost_model = Cost::Cost.subtype_class cost_model
+        represented.cost_model = Cost::Cost.subtype_class(cost_model).new
       end
 
       property :cost_model, exec_context: :decorator
