@@ -190,6 +190,7 @@ module NoSE
 
             # We must always have the same number of steps and cost
             next if current_cost > cost
+            fail if step_indexes.length > 2
             fail if current_steps.length != step_indexes.length
 
             # If cost is the same, so keep track of multiple possible last
