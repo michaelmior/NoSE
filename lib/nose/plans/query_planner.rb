@@ -134,7 +134,9 @@ module NoSE
       # :nocov:
       def to_color(step = nil, indent = 0)
         step = @root if step.nil?
-        this_step = '  ' * indent + step.to_color + "\n"
+        this_step = '  ' * indent + step.to_color
+        this_step += " [yellow]$#{step.cost(@cost_model).round 5}[/]" + "\n" \
+          unless step.is_a? RootPlanStep
         this_step + step.children.map do |child_step|
           to_color child_step, indent + 1
         end.reduce('', &:+)
