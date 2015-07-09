@@ -2,7 +2,7 @@ module NoSE
   # A representation of materialized views over fields in an entity
   class Index
     attr_reader :hash_fields, :order_fields, :extra, :all_fields, :path,
-                :entry_size, :size
+                :entry_size, :size, :hash_count, :per_hash_count
 
     def initialize(hash_fields, order_fields, extra, path, saved_key = nil)
       @hash_fields = hash_fields.to_set
@@ -126,11 +126,12 @@ module NoSE
 
     # Precalculate the size of the index
     def calculate_size
+      @hash_count = @hash_fields.map(&:cardinality).inject(1, &:*)
+      @per_hash_count =  Cardinality.new_cardinality(@path.first.parent.count,
+                                                     @hash_fields, nil,
+                                                     @path.entities)
       @entry_size = @all_fields.map(&:size).inject(0, :+)
-      num_entries = @hash_fields.map(&:cardinality).inject(1, &:*)
-      @size =  Cardinality.new_cardinality(@path.first.parent.count,
-                                           @hash_fields, nil, @path.entities)
-      @size *= @entry_size * num_entries
+      @size = @hash_count * @per_hash_count * @entry_size
     end
   end
 

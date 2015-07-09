@@ -248,12 +248,16 @@ module NoSE
 
       # The backend cost model used to cost the updates
       def cost_model
-        represented.cost_model.subtype_name
+        options = represented.cost_model.instance_variable_get(:@options)
+        options[:name] = represented.cost_model.subtype_name
+        options
       end
 
       # Look up the cost model by name and attach to the results
-      def cost_model=(cost_model)
-        represented.cost_model = Cost::Cost.subtype_class(cost_model).new
+      def cost_model=(options)
+        options = options.deep_symbolize_keys
+        represented.cost_model = Cost::Cost.subtype_class(options[:name]) \
+          .new(**options)
       end
 
       property :cost_model, exec_context: :decorator
@@ -388,12 +392,16 @@ module NoSE
 
       # The backend cost model used to generate the schema
       def cost_model
-        represented.cost_model.subtype_name
+        options = represented.cost_model.instance_variable_get(:@options)
+        options[:name] = represented.cost_model.subtype_name
+        options
       end
 
       # Look up the cost model by name and attach to the results
-      def cost_model=(cost_model)
-        represented.cost_model = Cost::Cost.subtype_class(cost_model).new
+      def cost_model=(options)
+        options = options.deep_symbolize_keys
+        represented.cost_model = Cost::Cost.subtype_class(options[:name]) \
+          .new(**options)
       end
 
       property :cost_model, exec_context: :decorator

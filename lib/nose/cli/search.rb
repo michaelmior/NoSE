@@ -22,7 +22,7 @@ module NoSE
         workload.mix = options[:mix].to_sym
         workload.remove_updates if options[:read_only]
         workload.scale_writes(options[:scale_writes]) if options[:scale_writes]
-        cost_model = get_class('cost', options[:cost_model][:name]).new
+        cost_model = get_class('cost', options[:cost_model][:name]).new(**options[:cost_model])
 
         # Execute the advisor
         result = search_result workload, cost_model, options[:max_space]
