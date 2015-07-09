@@ -6,7 +6,7 @@ module NoSE
     # Ongoing state of a query throughout the execution plan
     class QueryState
       attr_accessor :from, :fields, :eq, :range, :order_by, :path,
-                    :cardinality, :given_fields
+                    :cardinality, :hash_cardinality, :given_fields
       attr_reader :query, :model
 
       def initialize(query, model)
@@ -24,6 +24,7 @@ module NoSE
         @order_by -= @eq.to_a
 
         @cardinality = 1  # this will be updated on the first index lookup
+        @hash_cardinality = 1
         @given_fields = @eq.dup
       end
 

@@ -5,6 +5,10 @@ module NoSE
     class Cost
       include Supertype
 
+      def initialize(**options)
+        @options = options
+      end
+
       # The cost of filtering intermediate results
       def filter_cost(_step)
         # Assume this has no cost and the cost is captured in the fact that we
@@ -49,6 +53,7 @@ module NoSE
   end
 end
 
+require_relative 'cost/cassandra'
 require_relative 'cost/entity_count'
 require_relative 'cost/field_size'
 require_relative 'cost/request_count'
