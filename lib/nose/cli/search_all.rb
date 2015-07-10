@@ -11,7 +11,7 @@ module NoSE
       option :read_only, type: :boolean, default: false
       option :mix, type: :string, default: 'default'
       option :scale_writes, type: :numeric, default: nil
-      option :format, type: :string, default: 'txt',
+      option :format, type: :string, default: 'json',
                       enum: %w(txt json yml), aliases: '-f'
       def search_all(name, directory)
         # Load the workload and cost model and create the output directory
