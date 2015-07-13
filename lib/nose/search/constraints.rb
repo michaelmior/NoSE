@@ -72,9 +72,11 @@ module NoSE
           [[e, next_e], Gurobi::LinExpr.new]
         end]
 
-        # Add the sentinel entity at the end
+        # Add the sentinel entities at the end and beginning
         last = Entity.new '__LAST__'
         query_constraints[[entities.last, last]] = Gurobi::LinExpr.new
+        first = Entity.new '__FIRST__'
+        query_constraints[[entities.first, first]] = Gurobi::LinExpr.new
 
         problem.data[:costs][query].each do |index, (index_step, _)|
           # All indexes should advance a step if possible
@@ -90,6 +92,10 @@ module NoSE
           # If this query has been answered, add the jump to the last step
           query_constraints[[index.path.entities.last, last]] += index_var \
             if index_step.state.answered?
+
+          # If this index is the first step, add this index to the beginning
+          query_constraints[[index.path.entities.first, first]] += index_var \
+            if index_step.parent.is_a?(Plans::RootPlanStep)
         end
 
         # Ensure we have exactly one index on each component of the query path
