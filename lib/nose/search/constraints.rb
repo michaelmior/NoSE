@@ -36,9 +36,7 @@ module NoSE
       def self.apply(problem)
         return unless problem.data[:max_space].finite?
 
-        space = problem.indexes.map do |index|
-          problem.index_vars[index] * (index.size * 1.0)
-        end.reduce(&:+)
+        space = problem.total_size
         problem.model.addConstr space <= problem.data[:max_space] * 1.0,
                                 'max_space'
       end
