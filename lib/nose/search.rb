@@ -173,43 +173,43 @@ module NoSE
         # the cost of all plan steps for the part of the query path
         steps_by_index.each do |steps|
           # Get the indexes for these plan steps
-          step_indexes = steps.select do |step|
+          index_steps = steps.select do |step|
             step.is_a? Plans::IndexLookupPlanStep
-          end.map(&:index)
+          end
 
           # Calculate the cost for just these steps in the plan
           cost = steps.map do |step|
             step.cost @cost_model
           end.inject(0, &:+) * weight
 
-          fail 'No more than two indexes per step' if step_indexes.length > 2
+          fail 'No more than two indexes per step' if index_steps.length > 2
 
-          if query_costs.key? step_indexes.first
-            current_cost = query_costs[step_indexes.first].last
-            current_steps = query_costs[step_indexes.first].first
+          if query_costs.key? index_steps.first.index
+            current_cost = query_costs[index_steps.first.index].last
+            current_steps = query_costs[index_steps.first.index].first
 
             # We must always have the same number of steps and cost
             next if current_cost > cost
-            fail if step_indexes.length > 2
-            fail if current_steps.length != step_indexes.length
+            fail if index_steps.length > 2
+            fail if current_steps.length != index_steps.length
 
             # If cost is the same, so keep track of multiple possible last
             # steps by making the second element an array
             if current_steps.length > 1 && current_cost == cost
               if current_steps.last.is_a? Array
                 new_steps = current_steps.clone
-                new_steps.last.push step_indexes.last
-                step_indexes = new_steps
+                new_steps.last.push index_steps.last
+                index_steps = new_steps
               else
-                step_indexes = [step_indexes.first,
-                                [current_steps.last, step_indexes.last]]
+                index_steps = [index_steps.first,
+                               [current_steps.last, index_steps.last]]
               end
 
-              query_costs[step_indexes.first] = [step_indexes, cost]
+              query_costs[index_steps.first.index] = [index_steps, cost]
             end
           else
             # We either found a new plan or something cheaper
-            query_costs[step_indexes.first] = [step_indexes, cost]
+            query_costs[index_steps.first.index] = [index_steps, cost]
           end
         end
       end
