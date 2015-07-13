@@ -76,9 +76,10 @@ module NoSE
         last = Entity.new '__LAST__'
         query_constraints[[entities.last, last]] = Gurobi::LinExpr.new
 
-        problem.data[:costs][query].each do |index, (index_steps, _)|
+        problem.data[:costs][query].each do |index, (index_step, _)|
           # All indexes should advance a step if possible
-          fail if entities.length > 1 && index.path.length == 1
+          fail if entities.length > 1 && index.path.length == 1 && \
+                  !index_step.state.answered?
 
           # Join each step along the entity path
           index_var = problem.query_vars[index][query]
@@ -87,41 +88,8 @@ module NoSE
           end
 
           # If this query has been answered, add the jump to the last step
-          if index_steps.last.is_a?(Array) ? index_steps.last.any? { |step| step.state.answered? } : index_steps.last.state.answered?
-            query_constraints[[index.path.entities.last, last]] += index_var
-          end
-
-          # No additional work is necessary if we only have one step here
-          next if index_steps.length == 1
-
-          # All indices used at this step must either all be used, or none used
-          if index_steps.last.is_a? Array
-            # We have multiple possible last steps, so add an auxiliary
-            # variable which allows us to select between them
-            step_var = problem.model.addVar 0, 1, 0, Gurobi::BINARY,
-                                            "q#{q}_s#{index_steps.first.index.key}"
-            problem.model.update
-
-            # Force exactly one of the indexes for the last step to be chosen
-            last_vars = index_steps.last.map do |step2|
-              problem.query_vars[step2.index][query]
-            end.inject(Gurobi::LinExpr.new, &:+)
-            problem.model.addConstr(last_vars == step_var)
-
-            # Replace the collection of last variables by the step variable
-            vars = index_steps[0..-2].map do |step2|
-              problem.query_vars[step2.index][query]
-            end + [step_var]
-          else
-            vars = index_steps.map do |step2|
-              problem.query_vars[step2.index][query]
-            end
-          end
-
-          # Chain all steps together so we have a complete plan
-          vars.reverse.each_cons(2).each do |prev_var, next_var|
-            problem.model.addConstr(next_var * 1 == prev_var * 1)
-          end
+          query_constraints[[index.path.entities.last, last]] += index_var \
+            if index_step.state.answered?
         end
 
         # Ensure we have exactly one index on each component of the query path

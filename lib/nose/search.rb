@@ -139,33 +139,20 @@ module NoSE
           steps_by_index = []
           plan.each do |step|
             if step.is_a? Plans::IndexLookupPlanStep
-              # If one of two adjacent steps is just a lookup on
-              # a single entity, we should bundle them together
-              # This happens when the final step in a query plan
-              # is a lookup of extra fields for an entity
-              last_index_step = steps_by_index.last.reverse.find do |step|
-                step.is_a? Plans::IndexLookupPlanStep
-              end unless steps_by_index.empty?
-              if !last_index_step.nil? &&
-                 [last_index_step.index.path.entities.last] ==
-                 step.index.path.entities
-                steps_by_index.last.push step
-              else
-                steps_by_index.push [step]
-              end
+              steps_by_index.push [step]
             else
               steps_by_index.last.push step
             end
           end
 
-          populate_query_costs query_costs, steps_by_index, weight, plan
+          populate_query_costs query_costs, steps_by_index, weight
         end
 
         [query_costs, tree]
       end
 
       # Store the costs and indexes for this plan in a nested hash
-      def populate_query_costs(query_costs, steps_by_index, weight, plan)
+      def populate_query_costs(query_costs, steps_by_index, weight)
         # The first key is the query and the second is the index
         #
         # The value is a two-element array with the indices which are
@@ -173,43 +160,21 @@ module NoSE
         # the cost of all plan steps for the part of the query path
         steps_by_index.each do |steps|
           # Get the indexes for these plan steps
-          index_steps = steps.select do |step|
-            step.is_a? Plans::IndexLookupPlanStep
-          end
+          index_step = steps.first
 
           # Calculate the cost for just these steps in the plan
           cost = steps.map do |step|
             step.cost @cost_model
           end.inject(0, &:+) * weight
 
-          fail 'No more than two indexes per step' if index_steps.length > 2
+          if query_costs.key? index_step.index
+            current_cost = query_costs[index_step.index].last
 
-          if query_costs.key? index_steps.first.index
-            current_cost = query_costs[index_steps.first.index].last
-            current_steps = query_costs[index_steps.first.index].first
-
-            # We must always have the same number of steps and cost
-            next if current_cost > cost
-            fail if index_steps.length > 2
-            fail if current_steps.length != index_steps.length
-
-            # If cost is the same, so keep track of multiple possible last
-            # steps by making the second element an array
-            if current_steps.length > 1 && current_cost == cost
-              if current_steps.last.is_a? Array
-                new_steps = current_steps.clone
-                new_steps.last.push index_steps.last
-                index_steps = new_steps
-              else
-                index_steps = [index_steps.first,
-                               [current_steps.last, index_steps.last]]
-              end
-
-              query_costs[index_steps.first.index] = [index_steps, cost]
-            end
+            # We must always have the same cost
+            fail if current_cost != cost
           else
             # We either found a new plan or something cheaper
-            query_costs[index_steps.first.index] = [index_steps, cost]
+            query_costs[index_step.index] = [index_step, cost]
           end
         end
       end
