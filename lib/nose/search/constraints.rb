@@ -68,25 +68,27 @@ module NoSE
       # Add complete query plan constraints
       def self.apply_query(query, q, problem)
         entities = query.longest_entity_path.reverse
-        if entities.length == 1
-          query_constraints = { entities => Gurobi::LinExpr.new }
-        else
-          query_constraints = Hash[entities.each_cons(2).map do |e, next_e|
-            [[e, next_e], Gurobi::LinExpr.new]
-          end]
-        end
+        query_constraints = Hash[entities.each_cons(2).map do |e, next_e|
+          [[e, next_e], Gurobi::LinExpr.new]
+        end]
+
+        # Add the sentinel entity at the end
+        last = Entity.new '__LAST__'
+        query_constraints[[entities.last, last]] = Gurobi::LinExpr.new
 
         problem.data[:costs][query].each do |index, (index_steps, _)|
           # All indexes should advance a step if possible
           fail if entities.length > 1 && index.path.length == 1
 
+          # Join each step along the entity path
           index_var = problem.query_vars[index][query]
-          if entities.length == 1
-            query_constraints[index.path.entities] += index_var
-          else
-            index.path.entities.each_cons(2) do |entity, next_entity|
-              query_constraints[[entity, next_entity]] += index_var
-            end
+          index.path.entities.each_cons(2) do |entity, next_entity|
+            query_constraints[[entity, next_entity]] += index_var
+          end
+
+          # If this query has been answered, add the jump to the last step
+          if index_steps.last.is_a?(Array) ? index_steps.last.any? { |step| step.state.answered? } : index_steps.last.state.answered?
+            query_constraints[[index.path.entities.last, last]] += index_var
           end
 
           # No additional work is necessary if we only have one step here
