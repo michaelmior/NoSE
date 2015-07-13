@@ -11,10 +11,11 @@ module NoSE
   module Search
     # Searches for the optimal indices for a given workload
     class Search
-      def initialize(workload, cost_model)
+      def initialize(workload, cost_model, objective = Objective::COST)
         @logger = Logging.logger['nose::search']
         @workload = workload
         @cost_model = cost_model
+        @objective = objective
       end
 
       # Search for optimal indices using an ILP which searches for
@@ -97,7 +98,8 @@ module NoSE
       # Solve the index selection problem using Gurobi
       def solve_gurobi(queries, indexes, data)
         # Construct and solve the ILP
-        problem = Problem.new queries, @workload.updates, indexes, data
+        problem = Problem.new queries, @workload.updates, indexes, data,
+                              @objective
         problem.solve
 
         # We won't get here if there's no valdi solution

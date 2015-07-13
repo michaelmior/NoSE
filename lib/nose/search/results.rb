@@ -25,7 +25,7 @@ module NoSE
         validate_update_indexes
         validate_query_plans @plans
         validate_update_plans
-        validate_cost
+        validate_objective
 
         freeze
       end
@@ -69,17 +69,22 @@ module NoSE
         end
       end
 
-      # Check that the cost has the expected value
-      def validate_cost
-        query_cost = @plans.reduce 0 do |sum, plan|
-          sum + @workload.statement_weights[plan.query] * plan.cost
-        end
-        update_cost = @update_plans.reduce 0 do |sum, plan|
-          sum + @workload.statement_weights[plan.statement] * plan.cost
-        end
-        cost = query_cost + update_cost
+      # Check that the objective function has the expected value
+      def validate_objective
+        if @problem.objective_type == Objective::COST
+          query_cost = @plans.reduce 0 do |sum, plan|
+            sum + @workload.statement_weights[plan.query] * plan.cost
+          end
+          update_cost = @update_plans.reduce 0 do |sum, plan|
+            sum + @workload.statement_weights[plan.statement] * plan.cost
+          end
+          cost = query_cost + update_cost
 
-        fail InvalidResultsException unless (cost - @total_cost).abs < 0.001
+          fail InvalidResultsException unless (cost - @total_cost).abs < 0.001
+        elsif @problem.objective_type == Objective::SPACE
+          size = @indexes.map(&:size).inject(0, &:+)
+          fail InvalidResultsException unless (size - @total_size).abs < 0.001
+        end
       end
 
       # Ensure that all the query plans use valid indexes
