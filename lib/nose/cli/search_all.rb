@@ -11,6 +11,7 @@ module NoSE
       option :read_only, type: :boolean, default: false
       option :mix, type: :string, default: 'default'
       option :scale_writes, type: :numeric, default: nil
+      option :max_results, type: :numeric, default: Float::INFINITY
       option :format, type: :string, default: 'json',
                       enum: %w(txt json yml), aliases: '-f'
       def search_all(name, directory)
@@ -24,21 +25,30 @@ module NoSE
         FileUtils.mkdir_p(directory) unless Dir.exist?(directory)
 
         # Run the search and output the results
-        results = search_results workload, cost_model
+        results = search_results workload, cost_model, options[:max_results]
         output_results results, directory, options
       end
 
       private
 
       # Get a list of all possible search results
-      def search_results(workload, cost_model)
+      def search_results(workload, cost_model, max_results)
         # Start with the maximum possible size and divide in two
         max_result = search_result workload, cost_model
         max_size = max_result.total_size
-        results = [max_result]
-        sizes = Set.new [0, max_size]
-        size_queue = [max_size / 2.0]
+        min_result = search_result workload, cost_model,
+                                   Float::INFINITY, Search::Objective::SPACE
+        min_size = min_result.total_size
+        min_result = search_result workload, cost_model, min_size
+
+        results = [max_result, min_result]
+        num_results = 2
+        sizes = Set.new [min_size, max_size]
+        size_queue = [(max_size - min_size) / 2.0 + min_size]
         until size_queue.empty?
+          # Stop if we found the appropriate number of results
+          return results if num_results >= max_results
+
           # Find a new size to examine
           size = size_queue.pop
 
@@ -56,10 +66,12 @@ module NoSE
             next if sizes.include?(result.total_size) || result.nil?
           rescue Search::NoSolutionException, Plans::NoPlanException
             # No result was found, so only explore the larger side
+            @logger.info "No solution for size #{size}"
           else
             # Add the smaller size to the queue and save the result
             size_queue.push prev_size unless sizes.include? prev_size
             results.push result
+            num_results += 1
           end
 
           # Add the larger size to the queue
