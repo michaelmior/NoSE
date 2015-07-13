@@ -76,7 +76,7 @@ module NoSE
           end]
         end
 
-        problem.data[:costs][query].each do |index, (step_indexes, _)|
+        problem.data[:costs][query].each do |index, (index_steps, _)|
           # All indexes should advance a step if possible
           fail if entities.length > 1 && index.path.length == 1
 
@@ -90,29 +90,29 @@ module NoSE
           end
 
           # No additional work is necessary if we only have one step here
-          next if step_indexes.length == 1
+          next if index_steps.length == 1
 
           # All indices used at this step must either all be used, or none used
-          if step_indexes.last.is_a? Array
+          if index_steps.last.is_a? Array
             # We have multiple possible last steps, so add an auxiliary
             # variable which allows us to select between them
             step_var = problem.model.addVar 0, 1, 0, Gurobi::BINARY,
-                                            "q#{q}_s#{step_indexes.first.key}"
+                                            "q#{q}_s#{index_steps.first.index.key}"
             problem.model.update
 
             # Force exactly one of the indexes for the last step to be chosen
-            last_vars = step_indexes.last.map do |index2|
-              problem.query_vars[index2][query]
+            last_vars = index_steps.last.map do |step2|
+              problem.query_vars[step2.index][query]
             end.inject(Gurobi::LinExpr.new, &:+)
             problem.model.addConstr(last_vars == step_var)
 
             # Replace the collection of last variables by the step variable
-            vars = step_indexes[0..-2].map do |index2|
-              problem.query_vars[index2][query]
+            vars = index_steps[0..-2].map do |step2|
+              problem.query_vars[step2.index][query]
             end + [step_var]
           else
-            vars = step_indexes.map do |index2|
-              problem.query_vars[index2][query]
+            vars = index_steps.map do |step2|
+              problem.query_vars[step2.index][query]
             end
           end
 
