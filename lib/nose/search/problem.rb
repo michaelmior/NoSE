@@ -110,13 +110,35 @@ module NoSE
         log_model 'Model', '.lp'
       end
 
+      # Get the cost of all queries in the workload
+      def total_cost
+        cost = @queries.map do |query|
+          @indexes.map do |index|
+            total_query_cost @data[:costs][query][index],
+                             @query_vars[index][query]
+          end.compact
+        end.flatten.inject(&:+)
+
+        cost = add_update_costs cost, data
+        cost
+      end
+
+      # Set the value of the objective function (workload cost)
+      def set_objective
+        min_cost = total_cost
+        @logger.debug { "Objective function is #{min_cost.inspect}" }
+        @objective = min_cost
+        @model.setObjective min_cost, Gurobi::MINIMIZE
+      end
+
+      private
+
       # Initialize query and index variables
       def add_variables
         @index_vars = {}
         @query_vars = {}
         @indexes.each do |index|
-          @index_vars[index] = @model.addVar 0, 1, 0, Gurobi::BINARY,
-                                             "#{index.key}"
+          @index_vars[index] = @model.addVar 0, 1, 0, Gurobi::BINARY, index.key
           @query_vars[index] = {}
           @queries.each_with_index do |query, q|
             query_var = "q#{q}_#{index.key}"
@@ -153,28 +175,11 @@ module NoSE
       end
 
       # Get the total cost of the query for the objective function
-      def total_query_cost(query, cost, query_var, data)
+      def total_query_cost(cost, query_var)
         return if cost.nil?
         query_cost = cost.last * 1.0
 
         query_var * query_cost
-      end
-
-      # Set the value of the objective function (workload cost)
-      def set_objective
-        min_cost = @queries.map do |query|
-          @indexes.map do |index|
-            total_query_cost query, @data[:costs][query][index],
-                             @query_vars[index][query], data
-          end.compact
-        end.flatten.inject(&:+)
-
-        min_cost = add_update_costs min_cost, data
-
-        @logger.debug { "Objective function is #{min_cost.inspect}" }
-
-        @objective = min_cost
-        @model.setObjective min_cost, Gurobi::MINIMIZE
       end
     end
 
