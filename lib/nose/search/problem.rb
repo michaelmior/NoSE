@@ -74,6 +74,26 @@ module NoSE
         result
       end
 
+      # Get the size of all indexes in the workload
+      def total_size
+        @indexes.map do |index|
+          @index_vars[index] * (index.size * 1.0)
+        end.reduce(&:+)
+      end
+
+      # Get the cost of all queries in the workload
+      def total_cost
+        cost = @queries.map do |query|
+          @indexes.map do |index|
+            total_query_cost @data[:costs][query][index],
+              @query_vars[index][query]
+          end.compact
+        end.flatten.inject(&:+)
+
+        cost = add_update_costs cost, data
+        cost
+      end
+
       private
 
       # Write a model to a temporary file and log the file name
@@ -108,19 +128,6 @@ module NoSE
         @model.update
 
         log_model 'Model', '.lp'
-      end
-
-      # Get the cost of all queries in the workload
-      def total_cost
-        cost = @queries.map do |query|
-          @indexes.map do |index|
-            total_query_cost @data[:costs][query][index],
-                             @query_vars[index][query]
-          end.compact
-        end.flatten.inject(&:+)
-
-        cost = add_update_costs cost, data
-        cost
       end
 
       # Set the value of the objective function (workload cost)
