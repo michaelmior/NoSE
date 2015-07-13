@@ -29,7 +29,7 @@ module NoSE
           Plans::QueryState.new(query, @workload)
         steps = [first_step] + plan.to_a + [nil]
         steps.each_cons(3) do |prev_step, step, next_step|
-          step_class = QueryStep.subtype_class step.subtype_name
+          step_class = StatementStep.subtype_class step.subtype_name
 
           # Check if the subclass has overridden this step
           subclass_step_name = step_class.name.sub 'NoSE::Backend::BackendBase',
@@ -43,13 +43,13 @@ module NoSE
         results
       end
 
-      # Superclass for all query execution steps
-      class QueryStep
+      # Superclass for all statement execution steps
+      class StatementStep
         include Supertype
       end
 
       # Look up data on an index in the backend
-      class IndexLookupQueryStep < QueryStep
+      class IndexLookupStatementStep < StatementStep
         # @abstract Subclasses should return an array of row hashes
         # :nocov:
         def self.process(_client, _query, _results, _step,
@@ -60,7 +60,7 @@ module NoSE
       end
 
       # Perform filtering external to the backend
-      class FilterQueryStep < QueryStep
+      class FilterStatementStep < StatementStep
         # Filter results by a list of fields given in the step
         def self.process(_client, query, results, step,
                          _prev_step, _next_step)
@@ -89,7 +89,7 @@ module NoSE
       end
 
       # Perform sorting external to the backend
-      class SortQueryStep < QueryStep
+      class SortStatementStep < StatementStep
         # Sort results by a list of fields given in the step
         def self.process(_client, _query, results, step,
                          _prev_step, _next_step)
