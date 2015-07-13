@@ -9,18 +9,26 @@ end
 
 module NoSE
   module Search
+    # Simple enum for possible objective functions
+    module Objective
+      COST  = 1
+      SPACE = 2
+    end
+
     # A representation of a search problem as an ILP
     class Problem
       attr_reader :model, :status, :queries, :updates,
-                  :index_vars, :query_vars, :indexes, :data
+                  :index_vars, :query_vars, :indexes, :data, :objective_type
 
-      def initialize(queries, updates, indexes, data)
+      def initialize(queries, updates, indexes, data,
+                     objective = Objective::COST)
         @queries = queries
         @updates = updates
         @indexes = indexes
         @data = data
         @logger = Logging.logger['nose::search::problem']
         @status = nil
+        @objective_type = objective
 
         setup_model
       end
@@ -124,21 +132,21 @@ module NoSE
         add_variables
         @model.update
         add_constraints
-        set_objective
+        define_objective
         @model.update
 
         log_model 'Model', '.lp'
       end
 
-      # Set the value of the objective function (workload cost)
-      def set_objective
-        min_cost = total_cost
-        @logger.debug { "Objective function is #{min_cost.inspect}" }
-        @objective = min_cost
-        @model.setObjective min_cost, Gurobi::MINIMIZE
-      end
-
       private
+
+      # Set the value of the objective function (workload cost)
+      def define_objective
+        obj = @objective_type == Objective::COST ? total_cost : total_size
+        @logger.debug { "Objective function is #{obj.inspect}" }
+        @objective = obj
+        @model.setObjective obj, Gurobi::MINIMIZE
+      end
 
       # Initialize query and index variables
       def add_variables
