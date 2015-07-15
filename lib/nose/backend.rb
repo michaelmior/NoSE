@@ -3,10 +3,11 @@ module NoSE
   module Backend
     # Superclass of all database backends
     class BackendBase
-      def initialize(workload, indexes, plans, _config)
+      def initialize(workload, indexes, plans, update_plans, _config)
         @workload = workload
         @indexes = indexes
         @plans = plans
+        @update_plans = update_plans
       end
 
       # @abstract Subclasses implement to allow inserting
@@ -43,14 +44,118 @@ module NoSE
         results
       end
 
+      # Execute an update with the stored plans
+      def update(update, plans = [])
+        # Search for plans if they were not given
+        if plans.empty?
+          plans = @update_plans.select do |possible_plan|
+            possible_plan.statement == update
+          end
+        end
+        fail PlanNotFound if plans.empty?
+
+        plans.map do |plan|
+          index_keys = plan.index.hash_fields + plan.index.order_fields.to_set
+
+          # Execute all the support queries
+          support = plan.query_plans.map do |query_plan|
+            # Substitute values into the support query
+            support_query = query_plan.query.dup
+            support_query.settings.each do |setting|
+              setting.value = update.settings.find do |update_setting|
+                update_setting.field == setting.field
+              end.value
+            end
+
+            # Execute the support query and return the results
+            query(support_query, query_plan).select do |key|
+              index_keys.include? key
+            end
+          end
+
+          # Combine the results from multiple support queries
+          if support.length > 1
+            support = support.first.product(*support[1..-1])
+            support.map! { |results| results.reduce(&:merge) }
+          end
+
+          if update.requires_delete?
+            step_class = DeleteStatementStep
+            subclass_step_name = step_class.name.sub \
+              'NoSE::Backend::BackendBase', self.class.name
+            step_class = Object.const_get subclass_step_name
+            step_class.process client, plan.index, support
+          end
+          return if update.is_a? Delete
+
+          # Populate the data to insert for Insert statements
+          settings = Hash[update.settings.map do |setting|
+            [setting.field.id, setting.value]
+          end]
+          if update.is_a? Insert
+            support = [settings]
+          else
+            support.each { |row| row.merge settings }
+          end
+
+          step_class = InsertStatementStep
+          subclass_step_name = step_class.name.sub \
+            'NoSE::Backend::BackendBase', self.class.name
+          step_class = Object.const_get subclass_step_name
+          step_class.process client, plan.index, support
+        end
+      end
+
       # Superclass for all statement execution steps
       class StatementStep
         include Supertype
       end
 
+      # Insert data into an index on the backend
+      class InsertStatementStep < StatementStep
+        # @abstract Subclasses should insert data matching the provided results
+        # :nocov:
+        def self.process(_client, _index, _results)
+          fail NotImplementedError, 'Must be provided by a subclass'
+        end
+        # :nocov:
+      end
+
+      # Delete data from an index on the backend
+      class DeleteStatementStep < StatementStep
+        # @abstract Subclasses should delete data matching the provided results
+        # :nocov:
+        def self.process(_client, _index, _results)
+          fail NotImplementedError, 'Must be provided by a subclass'
+        end
+        # :nocov:
+      end
+
       # Look up data on an index in the backend
       class IndexLookupStatementStep < StatementStep
         # @abstract Subclasses should return an array of row hashes
+        # :nocov:
+        def self.process(_client, _query, _results, _step,
+                         _prev_step, _next_step)
+          fail NotImplementedError, 'Must be provided by a subclass'
+        end
+        # :nocov:
+      end
+
+      # Delete data from an index in the backend
+      class IndexDeleteStatementStep < StatementStep
+        # @abstract Subclasses should remove data from the indexes
+        # :nocov:
+        def self.process(_client, _query, _results, _step,
+                         _prev_step, _next_step)
+          fail NotImplementedError, 'Must be provided by a subclass'
+        end
+        # :nocov:
+      end
+
+      # Insert data into an index in the backend
+      class IndexInsertStatementStep < StatementStep
+        # @abstract Subclasses should remove data from the indexes
         # :nocov:
         def self.process(_client, _query, _results, _step,
                          _prev_step, _next_step)
@@ -102,7 +207,7 @@ module NoSE
       end
     end
 
-    # Raised when a query is executed that we have no plan for
+    # Raised when a statement is executed that we have no plan for
     class PlanNotFound < StandardError
     end
 

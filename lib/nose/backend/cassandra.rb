@@ -5,7 +5,7 @@ module NoSE
   module Backend
     # A backend which communicates with Cassandra via CQL
     class CassandraBackend < BackendBase
-      def initialize(workload, indexes, plans, config)
+      def initialize(workload, indexes, plans, update_plans, config)
         super
 
         @hosts = config[:hosts]
@@ -121,6 +121,45 @@ module NoSE
              [Fields::ForeignKeyField]
           # TODO: Decide on UUID
           :int
+        end
+      end
+
+      # Insert data into an index on the backend
+      class InsertStatementStep < StatementStep
+        def self.process(client, index, results)
+          # Prepare the statement required to perform the deletion
+          insert_keys = results.first.keys & index.all_fields.map(&:id)
+          insert = "INSERT INTO #{index.key} ("
+          insert += insert_keys.join(', ') + ') VALUES ('
+          insert += (['?'] * insert_keys.length).join(', ') + ')'
+          statement = client.prepare insert
+
+          # Insert each row into the index
+          generator = Cassandra::Uuid::Generator.new
+          results.each do |result|
+            values = insert_keys.map do |key|
+              field = index.all_fields.find { |field| field.id == key }
+              field.is_a?(Fields::IDField) ? generator.now : result[key]
+            end
+            client.execute(statement, *values)
+          end
+        end
+      end
+
+      # Delete data from an index on the backend
+      class DeleteStatementStep < StatementStep
+        def self.process(client, index, results)
+          # Prepare the statement required to perform the deletion
+          index_keys = index.hash_fields + index.order_fields.to_set
+          delete = "DELETE FROM #{index.key} WHERE "
+          delete += index_keys.map { |key| "#{key.id} = ?" }.join ' AND '
+          statement = client.prepare delete
+
+          # Delete each row from the index
+          results.each do |result|
+            values = index_keys.map { |key| result[key.id] }
+            client.execute(statement, *values)
+          end
         end
       end
 
