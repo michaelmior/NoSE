@@ -839,6 +839,10 @@ module NoSE
       @target = @from.foreign_keys[@tree[:target].to_s]
       @target_pk = @tree[:target_pk]
 
+      # Remove keys from the tree so we match on equality comparisons
+      @tree.delete :source_pk
+      @tree.delete :target_pk
+
       # XXX Only works for non-composite PKs
       source_type = @from.id_fields.first.class.const_get 'TYPE'
       fail TypeError unless source_type.nil? || source_pk.nil? ||
