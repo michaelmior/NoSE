@@ -11,12 +11,13 @@ module NoSE::Backend
                       [tweet['Body']],
                       [user.id_fields.first, user['Tweets']], 'TweetIndex'
     end
-    let(:backend) { CassandraBackend.new workload, [index], [], {} }
+    let(:backend) { CassandraBackend.new workload, [index], [], [], {} }
 
     it 'can generate DDL for a simple index' do
       expect(backend.indexes_ddl).to match_array [
         'CREATE COLUMNFAMILY "TweetIndex" ("User_Username" text, ' \
-        '"Tweet_Timestamp" int, "User_UserId" int, "Tweet_TweetId" int, ' \
+        '"Tweet_Timestamp" int, "User_UserId" timeuuid, '\
+        '"Tweet_TweetId" timeuuid, ' \
         '"Tweet_Body" text, PRIMARY KEY(("User_Username"), ' \
         '"Tweet_Timestamp", "User_UserId", "Tweet_TweetId"));'
       ]
