@@ -156,7 +156,11 @@ module NoSE
 
           # Delete each row from the index
           results.each do |result|
-            values = index_keys.map { |key| result[key.id] }
+            values = index_keys.map do |key|
+              field = index.all_fields.find { |field| field.id == key.id }
+              field.is_a?(Fields::IDField) ? \
+                Cassandra::TimeUuid.new(result[key.id]): result[key.id]
+            end
             client.execute(statement, *values)
           end
         end

@@ -79,6 +79,13 @@ module NoSE
             support.map! { |results| results.reduce(&:merge) }
           end
 
+          # Populate the data to remove for Delete statements
+          if update.is_a? Delete
+            support = [Hash[update.conditions.map do |condition|
+              [condition.field.id, condition.value]
+            end]]
+          end
+
           if update.requires_delete?
             step_class = DeleteStatementStep
             subclass_step_name = step_class.name.sub \
