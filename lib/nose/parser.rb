@@ -226,6 +226,7 @@ module NoSE
         fail InvalidStatementException, 'Predicates cannot use foreign keys' \
           if field.is_a? Fields::ForeignKeyField
 
+        condition.delete :value
         Condition.new field, condition[:op].to_sym, value
       end
 
@@ -754,6 +755,11 @@ module NoSE
       populate_conditions
 
       freeze
+    end
+
+    # Index contains the single entity to be deleted
+    def modifies_index?(index)
+      index.path.entities == [@from]
     end
 
     # Specifies that deletes require deletion
