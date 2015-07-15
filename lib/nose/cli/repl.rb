@@ -26,7 +26,7 @@ module NoSE
           line.chomp!
           next if line.empty?
 
-          execute_query line, result, backend
+          execute_statement line, result, backend
         end
       end
 
@@ -49,29 +49,36 @@ module NoSE
         line
       end
 
-      # Parse a query from a given string of text
-      def parse_query(text, workload)
+      # Parse a statement from a given string of text
+      def parse_statement(text, workload)
         begin
-          query = Statement.parse text, workload
+          statement = Statement.parse text, workload.model
         rescue ParseFailed => e
           puts '! ' + e.message
-          query = nil
+          statement = nil
         end
 
-        query
+        statement
       end
 
-      # Try to execute a query read from the REPL
-      def execute_query(line, result, backend)
-        # Parse the query
-        query = parse_query line, result.workload
-        return if query.nil?
+      # Try to execute a statement read from the REPL
+      def execute_statement(line, result, backend)
+        # Parse the statement
+        statement = parse_statement line, result.workload
+        return if statement.nil?
 
         begin
           start_time = Time.now
-          results = backend.query query
+
+          if statement.is_a? Query
+            results = backend.query statement
+          else
+            backend.update statement
+            results = []
+          end
+
           elapsed = Time.now - start_time
-        rescue NotImplementedError => e
+        rescue NotImplementedError, Backend::PlanNotFound => e
           puts '! ' + e.message
         else
           Formatador.display_compact_table results unless results.empty?
