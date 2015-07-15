@@ -234,6 +234,13 @@ module NoSE
       end
 
       property :type, exec_context: :decorator
+
+      # The estimated cardinality of entities being update
+      def cardinality
+        represented.instance_variable_get(:@state).cardinality
+      end
+
+      property :cardinality, exec_context: :decorator
     end
 
     # Represent an update plan
@@ -266,6 +273,28 @@ module NoSE
     # Reconstruct the steps of an update plan
     class UpdatePlanBuilder
       include Uber::Callable
+
+      def call(object, _fragment, instance, **_options)
+        workload = object.workload
+        statement = Statement.parse instance['statement'], workload.model
+        update_steps = instance['update_steps'].map do |step_hash|
+          step_class = Plans::PlanStep.subtype_class step_hash['type']
+          index_key = step_hash['index']['key']
+          step_index = object.indexes.find { |index| index.key == index_key }
+
+          state = Plans::UpdateState.new statement, step_hash['cardinality']
+          step_class.new step_index, state
+        end
+
+        # TODO: Deserialize query plans
+        index_key = instance['index']['key']
+        index = object.indexes.find { |index| index.key == index_key }
+        update_plan = Plans::UpdatePlan.new statement, index, [], update_steps,
+                                            object.cost_model
+        update_plan.instance_variable_set(:@query_plans, [])
+
+        update_plan
+      end
     end
 
     # Represent entities and statements in a workload
