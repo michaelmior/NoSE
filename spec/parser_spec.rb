@@ -68,7 +68,7 @@ module NoSE
 
       it 'fails if the value is the wrong type' do
         expect do
-          Query.new 'SELECT User.* FROM User WHERE User.City = 3',
+          Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Timestamp = 3',
                     workload.model
         end.to raise_error TypeError
       end
