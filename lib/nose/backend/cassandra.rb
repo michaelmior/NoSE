@@ -119,8 +119,7 @@ module NoSE
           :timestamp
         when [Fields::IDField],
              [Fields::ForeignKeyField]
-          # TODO: Decide on UUID
-          :int
+          :timeuuid
         end
       end
 

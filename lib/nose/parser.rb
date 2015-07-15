@@ -168,8 +168,8 @@ module NoSE
     rule(field: sequence(:id)) { id.map(&:to_s) }
     rule(path: sequence(:id)) { id.map(&:to_s) }
     rule(str: simple(:string)) { string.to_s }
-    rule(int: simple(:integer)) { integer.to_i }
     rule(statement: subtree(:stmt)) { stmt.first.last }
+    rule(int: simple(:integer)) { integer }
     rule(unknown: simple(:val)) { nil }
   end
 
@@ -217,8 +217,10 @@ module NoSE
                                        condition[:field]
         value = condition[:value]
 
+        # Convert the value to the correct type
         type = field.class.const_get 'TYPE'
-        fail TypeError unless type.nil? || value.nil? || value.is_a?(type)
+        value = field.class.value_from_string(value.to_s) \
+          unless type.nil? || value.nil?
 
         # Don't allow predicates on foreign keys
         fail InvalidStatementException, 'Predicates cannot use foreign keys' \
@@ -585,8 +587,10 @@ module NoSE
         value = setting[:value]
 
         type = field.class.const_get 'TYPE'
-        fail TypeError unless type.nil? || value.nil? || value.is_a?(type)
+        value = field.class.value_from_string(value.to_s) \
+          unless type.nil? || value.nil?
 
+        setting.delete :value
         FieldSetting.new field, value
       end
     end

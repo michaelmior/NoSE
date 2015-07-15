@@ -1,3 +1,4 @@
+require 'date'
 require 'forwardable'
 require 'zlib'
 
@@ -133,6 +134,8 @@ module NoSE
 
     # Field holding a date
     class DateField < Field
+      TYPE = DateTime
+
       def initialize(name, **options)
         super(name, 8, **options)
       end
