@@ -47,6 +47,22 @@ module NoSE::Backend
                                                          step, step.parent, nil
     end
 
+    it 'can insert into an index' do
+      client = double('client')
+      index = link.simple_index
+      values = [{
+        'Link_LinkId' => nil,
+        'Link_URL' => 'http://www.example.com/'
+      }]
+      backend_insert = "INSERT INTO #{index.key} (Link_LinkId, Link_URL) " \
+                       "VALUES (?, ?)"
+      expect(client).to receive(:prepare).with(backend_insert) \
+        .and_return(backend_insert)
+      expect(client).to receive(:execute) \
+        .with(backend_insert, kind_of(Cassandra::TimeUuid), 'http://www.example.com/')
+
+      CassandraBackend::InsertStatementStep.process client, index, values
+    end
   end
 
   describe BackendBase::SortStatementStep do
