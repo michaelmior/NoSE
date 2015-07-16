@@ -38,9 +38,10 @@ module NoSE::Backend
       backend_query = "SELECT User_Username, Tweet_Timestamp, Tweet_Body " \
                       "FROM \"#{index.key}\" WHERE User_Username = ? " \
                       "ORDER BY Tweet_Timestamp LIMIT 10"
-      expect(client).to receive(:prepare) { backend_query } \
+      expect(client).to receive(:prepare).with(backend_query) \
         .and_return(backend_query)
-      expect(client).to receive(:execute) { backend_query }.and_return([])
+      expect(client).to receive(:execute) \
+        .with(backend_query, 'Bob').and_return([])
 
       CassandraBackend::IndexLookupStatementStep.process client, query, nil,
                                                          step, step.parent, nil
