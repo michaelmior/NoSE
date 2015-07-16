@@ -55,26 +55,39 @@ module NoSE
         fail PlanNotFound if plans.empty?
 
         plans.map do |plan|
-          index_keys = plan.index.hash_fields + plan.index.order_fields.to_set
+          if update.is_a? Insert
+            # Populate the data to insert for Insert statements
+            settings = Hash[update.settings.map do |setting|
+              [setting.field.id, setting.value]
+            end]
+          elsif update.is_a? Connection
+            # Populate the data to insert for Connection statements
+            settings = {
+              update.source.id_fields.first.id => update.source_pk,
+              update.target.entity.id_fields.first.id => update.target_pk
+            }
+          else
+            # Get values for updates and deletes
+            settings = Hash[update.conditions.map do |condition|
+              [condition.field.id, condition.value]
+            end]
+          end
 
           # Execute all the support queries
           support = plan.query_plans.map do |query_plan|
             # Substitute values into the support query
             support_query = query_plan.query.dup
-            support_query.settings.each do |setting|
-              setting.value = update.settings.find do |update_setting|
-                update_setting.field == setting.field
-              end.value
+            support_query.conditions.each do |condition|
+              condition.instance_variable_set :@value,
+                                              settings[condition.field.id]
             end
 
             # Execute the support query and return the results
-            query(support_query, query_plan).select do |key|
-              index_keys.include? key
-            end
+            query(support_query, query_plan)
           end
 
           # Combine the results from multiple support queries
-          if support.length > 1
+          if support.length > 0
             support = support.first.product(*support[1..-1])
             support.map! { |results| results.reduce(&:merge) }
           end
@@ -96,22 +109,9 @@ module NoSE
           return if update.is_a? Delete
 
           if update.is_a? Insert
-            # Populate the data to insert for Insert statements
-            settings = Hash[update.settings.map do |setting|
-              [setting.field.id, setting.value]
-            end]
-          elsif update.is_a? Connection
-            # Populate the data to insert for Connection statements
-            settings = {
-              update.source.id_fields.first.id => update.source_pk,
-              update.target.entity.id_fields.first.id => update.target_pk
-            }
-          end
-
-          if update.is_a? Update
-            support.each { |row| row.merge settings }
-          else
             support = [settings]
+          else
+            support.each { |row| row.merge! settings }
           end
 
           step_class = InsertStatementStep

@@ -126,7 +126,7 @@ module NoSE
       # Insert data into an index on the backend
       class InsertStatementStep < StatementStep
         def self.process(client, index, results)
-          # Prepare the statement required to perform the deletion
+          # Prepare the statement required to perform the insertion
           insert_keys = results.first.keys & index.all_fields.map(&:id)
           insert = "INSERT INTO #{index.key} ("
           insert += insert_keys.join(', ') + ') VALUES ('
@@ -138,7 +138,13 @@ module NoSE
           results.each do |result|
             values = insert_keys.map do |key|
               field = index.all_fields.find { |field| field.id == key }
-              field.is_a?(Fields::IDField) ? generator.now : result[key]
+              value = result[key]
+              if field.is_a?(Fields::IDField)
+                value = value.nil? ? generator.now : \
+                                     Cassandra::TimeUuid.new(value)
+              end
+
+              value
             end
             client.execute(statement, *values)
           end
@@ -247,7 +253,10 @@ module NoSE
           # TODO: Chain enumerables of results instead
           result = []
           condition_list.each do |conditions|
-            values = conditions.map(&:value)
+            values = conditions.map do |condition|
+              condition.field.is_a?(Fields::IDField) ? \
+                Cassandra::TimeUuid.new(condition.value): condition.value
+            end
             result += client.execute(statement, *values).to_a
           end
 
