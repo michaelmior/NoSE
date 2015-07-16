@@ -95,6 +95,14 @@ module NoSE
           # If this index is the first step, add this index to the beginning
           query_constraints[[index.path.entities.first, first]] += index_var \
             if index_step.parent.is_a?(Plans::RootPlanStep)
+
+          # Ensure the previous index is available
+          parent_index = index_step.parent.parent_index
+          next if parent_index.nil?
+
+          parent_var = problem.query_vars[parent_index][query]
+          problem.model.addConstr (index_var * 1.0) <= (parent_var * 1.0),
+                                  "q#{q}_#{index.key}_parent"
         end
 
         # Ensure we have exactly one index on each component of the query path
