@@ -286,12 +286,17 @@ module NoSE
           step_class.new step_index, state
         end
 
-        # TODO: Deserialize query plans
         index_key = instance['index']['key']
         index = object.indexes.find { |index| index.key == index_key }
         update_plan = Plans::UpdatePlan.new statement, index, [], update_steps,
                                             object.cost_model
-        update_plan.instance_variable_set(:@query_plans, [])
+
+        # Reconstruct and assign the query plans
+        builder = QueryPlanBuilder.new
+        query_plans = instance['query_plans'].map do |plan|
+          builder.call object, OpenStruct.new, plan
+        end
+        update_plan.instance_variable_set(:@query_plans, query_plans)
 
         update_plan
       end
