@@ -135,9 +135,9 @@ module NoSE
       def to_color(step = nil, indent = 0)
         step = @root if step.nil?
         this_step = '  ' * indent + step.to_color
-        this_step += " [yellow]$#{step.cost(@cost_model).round 5}[/]" + "\n" \
+        this_step += " [yellow]$#{step.cost(@cost_model).round 5}[/]" \
           unless step.is_a? RootPlanStep
-        this_step + step.children.map do |child_step|
+        this_step + "\n" + step.children.map do |child_step|
           to_color child_step, indent + 1
         end.reduce('', &:+)
       end
