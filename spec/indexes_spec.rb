@@ -87,7 +87,11 @@ module NoSE
       index = tweet.simple_index
       expect(index.hash_fields).to eq([tweet['TweetId']].to_set)
       expect(index.order_fields).to eq([])
-      expect(index.extra).to eq([tweet['Body'], tweet['Timestamp']].to_set)
+      expect(index.extra).to eq([
+        tweet['Body'],
+        tweet['Timestamp'],
+        tweet['Retweets']
+      ].to_set)
       expect(index.key).to eq 'Tweet'
     end
 

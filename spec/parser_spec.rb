@@ -45,9 +45,9 @@ module NoSE
     end
 
     it 'compares equal regardless of constant values' do
-      stmt1 = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Timestamp = 3',
+      stmt1 = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Retweets = 3',
                         workload.model
-      stmt2 = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Timestamp = 2',
+      stmt2 = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Retweets = 2',
                         workload.model
 
       expect(stmt1).to eq stmt2
@@ -61,7 +61,7 @@ module NoSE
       end
 
       it 'can find integers' do
-        stmt = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Timestamp = 3',
+        stmt = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Retweets = 3',
                          workload.model
         expect(stmt.conditions.first.value).to eq 3
       end

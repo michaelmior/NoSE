@@ -16,7 +16,7 @@ module NoSE::Backend
     it 'can generate DDL for a simple index' do
       expect(backend.indexes_ddl).to match_array [
         'CREATE COLUMNFAMILY "TweetIndex" ("User_Username" text, ' \
-        '"Tweet_Timestamp" int, "User_UserId" timeuuid, '\
+        '"Tweet_Timestamp" timestamp, "User_UserId" timeuuid, '\
         '"Tweet_TweetId" timeuuid, ' \
         '"Tweet_Body" text, PRIMARY KEY(("User_Username"), ' \
         '"Tweet_Timestamp", "User_UserId", "Tweet_TweetId"));'

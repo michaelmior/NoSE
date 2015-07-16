@@ -142,7 +142,11 @@ module NoSE
 
       # Parse a DateTime from the provided parameter
       def self.value_from_string(string)
-        DateTime.parse(string).to_time
+        begin
+          DateTime.parse(string).to_time
+        rescue ArgumentError
+          fail TypeError
+        end
       end
     end
 

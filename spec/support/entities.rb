@@ -19,7 +19,8 @@ module NoSE
         (Entity 'Tweet' do
           ID         'TweetId'
           String     'Body', 140, count: 5
-          Integer    'Timestamp'
+          Date       'Timestamp'
+          Integer    'Retweets'
         end) * 1000
 
         HasOne 'User',    'Tweets',
