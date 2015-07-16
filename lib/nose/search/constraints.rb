@@ -76,10 +76,11 @@ module NoSE
         first = Entity.new '__FIRST__'
         query_constraints[[entities.first, first]] = Gurobi::LinExpr.new
 
-        problem.data[:costs][query].each do |index, (index_step, _)|
+        problem.data[:costs][query].each do |index, (steps, _)|
           # All indexes should advance a step if possible
+          index_step = steps.first
           fail if entities.length > 1 && index.path.length == 1 && \
-                  !index_step.state.answered?
+                  !steps.last.state.answered?
 
           # Join each step along the entity path
           index_var = problem.query_vars[index][query]
@@ -89,7 +90,7 @@ module NoSE
 
           # If this query has been answered, add the jump to the last step
           query_constraints[[index.path.entities.last, last]] += index_var \
-            if index_step.state.answered?
+            if steps.last.state.answered?
 
           # If this index is the first step, add this index to the beginning
           query_constraints[[index.path.entities.first, first]] += index_var \

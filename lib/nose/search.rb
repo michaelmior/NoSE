@@ -176,7 +176,7 @@ module NoSE
             fail if current_cost != cost
           else
             # We either found a new plan or something cheaper
-            query_costs[index_step.index] = [index_step, cost]
+            query_costs[index_step.index] = [steps, cost]
           end
         end
       end
