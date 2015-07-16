@@ -95,14 +95,23 @@ module NoSE
           end
           return if update.is_a? Delete
 
-          # Populate the data to insert for Insert statements
-          settings = Hash[update.settings.map do |setting|
-            [setting.field.id, setting.value]
-          end]
           if update.is_a? Insert
-            support = [settings]
-          else
+            # Populate the data to insert for Insert statements
+            settings = Hash[update.settings.map do |setting|
+              [setting.field.id, setting.value]
+            end]
+          elsif update.is_a? Connection
+            # Populate the data to insert for Connection statements
+            settings = {
+              update.source.id_fields.first.id => update.source_pk,
+              update.target.entity.id_fields.first.id => update.target_pk
+            }
+          end
+
+          if update.is_a? Update
             support.each { |row| row.merge settings }
+          else
+            support = [settings]
           end
 
           step_class = InsertStatementStep
