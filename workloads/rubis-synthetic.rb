@@ -58,7 +58,7 @@ NoSE::Workload.new do
     ID         'id'
     Integer    'qty', count: 50
     Date       'date', count: 100_000
-  end) * 20_00_000
+  end) * 20_000_000
 
   HasOne 'region',       'users',
          'users'      => 'regions'
