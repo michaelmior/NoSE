@@ -119,7 +119,7 @@ module NoSE
           :timestamp
         when [Fields::IDField],
              [Fields::ForeignKeyField]
-          :timeuuid
+          :uuid
         end
       end
 
@@ -140,8 +140,8 @@ module NoSE
               field = index.all_fields.find { |field| field.id == key }
               value = result[key]
               if field.is_a?(Fields::IDField)
-                value = value.nil? ? generator.now : \
-                                     Cassandra::TimeUuid.new(value)
+                value = value.nil? ? generator.uuid : \
+                                     Cassandra::Uuid.new(value.to_i)
               end
 
               value
@@ -165,7 +165,7 @@ module NoSE
             values = index_keys.map do |key|
               field = index.all_fields.find { |field| field.id == key.id }
               field.is_a?(Fields::IDField) ? \
-                Cassandra::TimeUuid.new(result[key.id]): result[key.id]
+                Cassandra::Uuid.new(result[key.id].to_i): result[key.id]
             end
             client.execute(statement, *values)
           end
@@ -255,7 +255,7 @@ module NoSE
           condition_list.each do |conditions|
             values = conditions.map do |condition|
               condition.field.is_a?(Fields::IDField) ? \
-                Cassandra::TimeUuid.new(condition.value): condition.value
+                Cassandra::Uuid.new(condition.value.to_i): condition.value
             end
             result += client.execute(statement, *values).to_a
           end
