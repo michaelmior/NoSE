@@ -103,12 +103,6 @@ module NoSE
         represented.relationship \
           if represented.is_a? Fields::ForeignKeyField
       end
-
-      # Convert the relationship type to a symbol
-      def relationship=(relationship)
-        represented.relationship = relationship.to_sym
-      end
-
       property :relationship, exec_context: :decorator
 
       # The reverse
@@ -116,7 +110,6 @@ module NoSE
         represented.reverse.name \
           if represented.is_a? Fields::ForeignKeyField
       end
-
       property :reverse, exec_context: :decorator
     end
 
@@ -344,6 +337,8 @@ module NoSE
               field = entity_map[entity['name']] \
                 .foreign_keys[field_hash['name']]
               field.reverse = field.entity.foreign_keys[field_hash['reverse']]
+              field.instance_variable_set :@relationship,
+                                          field_hash['relationship'].to_sym
             end
             field.freeze
           end
