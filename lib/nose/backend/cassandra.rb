@@ -54,7 +54,11 @@ module NoSE
         futures = []
         chunk.each do |row|
           index_row = fields.map do |field|
-            row["#{field.parent.name}_#{field.name}"]
+            value = row["#{field.parent.name}_#{field.name}"]
+            value = Cassandra::Uuid.new(value.to_i) \
+              if field.is_a?(Fields::IDField)
+
+            value
           end
 
           futures.push client.execute_async(prepared, *index_row)
