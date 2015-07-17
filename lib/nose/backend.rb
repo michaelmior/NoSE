@@ -104,7 +104,8 @@ module NoSE
             subclass_step_name = step_class.name.sub \
               'NoSE::Backend::BackendBase', self.class.name
             step_class = Object.const_get subclass_step_name
-            step_class.process client, plan.index, support
+            step_class.process client, plan.index, support \
+              unless support.empty?
           end
           return if update.is_a? Delete
 
@@ -114,6 +115,7 @@ module NoSE
             support.each { |row| row.merge! settings }
           end
 
+          return if support.empty?
           step_class = InsertStatementStep
           subclass_step_name = step_class.name.sub \
             'NoSE::Backend::BackendBase', self.class.name
