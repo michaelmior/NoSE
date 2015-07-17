@@ -115,7 +115,7 @@ module NoSE
       # Get all the fields selected by this index
       def index_sql_select(index)
         fields = index.hash_fields.to_a + index.order_fields + index.extra.to_a
-        fields += index.path.last.id_fields
+        fields += index.path.entities.last.id_fields
 
         fields.map do |field|
           "#{field.parent.name}.#{field.name} AS " \
@@ -124,17 +124,16 @@ module NoSE
       end
 
       # Get the list of tables along with the join condition
-      # for a query to fetch index data over a given set of keys
-      def index_sql_tables(index, keys)
-        tables = index.path.first.name
-        ([nil] + keys).each_cons(2) do |prev_key, key|
-          # Check which side of the entity we should be joining on
-          if !prev_key.nil? && prev_key.parent == key.parent
-            entity = key.entity
-          else
-            entity = key.parent
-          end
-
+      # for a query to fetch index data
+      def index_sql_tables(index)
+        path = index.path
+        path = path.reverse if path.length > 1 &&
+                               path.each.to_a[1].relationship == :many
+        tables = path.entities.first.name
+        keys = path.map { |x| x }[1..-1]
+        keys.each do |key|
+          key = key.reverse if key.relationship == :one
+          entity = key.parent
           tables += " JOIN #{entity.name} ON " \
             "#{key.parent.name}.#{key.name}=" \
             "#{key.entity.name}.#{key.entity.id_fields.first.name}"
@@ -148,14 +147,8 @@ module NoSE
         # Get all the necessary fields
         fields = index_sql_select index
 
-        # Find the series of foreign keys along the index path
-        keys = index.path.each_cons(2).map do |first, second|
-          second.foreign_key_for(first) ||
-          first.foreign_key_for(second)
-        end
-
         # Construct the join condition
-        tables = index_sql_tables index, keys
+        tables = index_sql_tables index
 
         query = "SELECT #{fields.join ', '} FROM #{tables}"
         query += " LIMIT #{limit}" unless limit.nil?
