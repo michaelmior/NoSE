@@ -67,7 +67,7 @@ module NoSE
       @hash ||= Zlib.crc32 [
         @hash_fields.map(&:id),
         @order_fields.map(&:id),
-        @extra.to_set.map(&:id),
+        @extra.map(&:id).sort,
         @path.map(&:id)
       ].to_s
     end
