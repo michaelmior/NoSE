@@ -16,8 +16,8 @@ module NoSE::Backend
     it 'can generate DDL for a simple index' do
       expect(backend.indexes_ddl).to match_array [
         'CREATE COLUMNFAMILY "TweetIndex" ("User_Username" text, ' \
-        '"Tweet_Timestamp" timestamp, "User_UserId" timeuuid, '\
-        '"Tweet_TweetId" timeuuid, ' \
+        '"Tweet_Timestamp" timestamp, "User_UserId" uuid, '\
+        '"Tweet_TweetId" uuid, ' \
         '"Tweet_Body" text, PRIMARY KEY(("User_Username"), ' \
         '"Tweet_Timestamp", "User_UserId", "Tweet_TweetId"));'
       ]
@@ -59,7 +59,7 @@ module NoSE::Backend
       expect(client).to receive(:prepare).with(backend_insert) \
         .and_return(backend_insert)
       expect(client).to receive(:execute) \
-        .with(backend_insert, kind_of(Cassandra::TimeUuid), 'http://www.example.com/')
+        .with(backend_insert, kind_of(Cassandra::Uuid), 'http://www.example.com/')
 
       CassandraBackend::InsertStatementStep.process client, index, values
     end
