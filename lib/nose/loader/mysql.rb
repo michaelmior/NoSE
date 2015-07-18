@@ -1,4 +1,4 @@
-require 'mysql'
+require 'mysql2'
 
 module NoSE
   module Loader
@@ -19,36 +19,21 @@ module NoSE
             puts "Skipping index #{index.inspect}"
             next
           end
+          puts "#{index.inspect}" if show_progress
 
           sql = index_sql index, config[:limit]
-          query = Mysql::Stmt.new client.protocol,
-                                  Mysql::Charset.by_name('utf8')
-          results = query.prepare(sql).execute
+          results = client.query(sql, stream: true, cache_rows: false)
 
-          if show_progress
-            puts "Loading index #{i + 1}/#{indexes.count} #{index.inspect}"
-
-            Formatador.new.redisplay_progressbar 0, results.size
-            width = 50 - results.size.to_s.length * 2
-            progress = Formatador::ProgressBar.new results.size,
-                                                   started_at: Time.now,
-                                                   width: width
-          else
-            progress = nil
-          end
-
-          results.each_hash.each_slice(100) do |chunk|
-            chunk.map! { |row| convert_values row }
-            @backend.index_insert_chunk index, chunk
-
-            if show_progress
-              inc = [progress.total - progress.current, 100].min
-              progress.increment inc
+          result_chunk = []
+          results.each do |result|
+            result_chunk.push result
+            if result_chunk.length >= 100
+              @backend.index_insert_chunk index, result_chunk
+              result_chunk = []
             end
           end
-
-          # Add a blank line to separate progress bars
-          puts if progress
+          @backend.index_insert_chunk index, result_chunk \
+            unless result_chunk.empty?
         end
       end
 
@@ -60,9 +45,10 @@ module NoSE
         client.query('SHOW TABLES').each do |table, |
           entity = Entity.new table
           entity.count = client.query("SELECT COUNT(*) FROM #{table}") \
-              .first.first
+            .first.values.first
 
-          client.query("DESCRIBE #{table}").each do |name, type, _, key, _, _|
+          describe = client.query("DESCRIBE #{table}")
+          describe.each(as: array) do |name, type, _, key, _, _|
             if key == 'PRI'
               field_class = Fields::IDField
             else
@@ -96,20 +82,10 @@ module NoSE
 
       # Create a new client from the given configuration
       def new_client(config)
-         Mysql.connect config[:host],
-                       config[:username],
-                       config[:password],
-                       config[:database]
-      end
-
-      # Convert values to standard Ruby data types
-      def convert_values(row)
-        row.each do |key, value|
-          case value
-          when Mysql::Time
-            row[key] = Time.at value.to_f
-          end
-        end
+         Mysql2::Client.new host: config[:host],
+                            username: config[:username],
+                            password: config[:password],
+                            database: config[:database]
       end
 
       # Get all the fields selected by this index

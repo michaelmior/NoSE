@@ -80,6 +80,7 @@ GEM
     mini_portile (0.6.1)
     multi_json (1.10.1)
     multi_test (0.1.1)
+    mysql2 (0.3.18)
     nenv (0.1.1)
     nokogiri (1.6.5)
       mini_portile (~> 0.6.0)
@@ -154,6 +155,7 @@ DEPENDENCIES
   guard-rspec
   gurobi!
   logging
+  mysql2
   parallel
   parslet
   pry
