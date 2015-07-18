@@ -11,9 +11,10 @@ module NoSE
 
       # Load a generated set of indexes with data from MySQL
       def load(indexes, config, show_progress = false)
-        client = new_client config
+        # XXX Assuming backend is thread-safe
+        Parallel.each(indexes, in_threads: 2) do |index|
+          client = new_client config
 
-        indexes.each_with_index do |index, i|
           # Skip this index if it's not empty
           unless @backend.index_empty? index
             puts "Skipping index #{index.inspect}"
