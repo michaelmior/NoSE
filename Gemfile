@@ -7,7 +7,7 @@ gem 'parslet'
 gem 'rake', require: false
 gem 'representable'
 gem 'ruby-graphviz'
-gem 'ruby-mysql'
+gem 'ruby-mysql'  # this is used for the proxy because it's pure Ruby
 gem 'smarter_csv'
 gem 'thor', require: false
 
@@ -16,6 +16,8 @@ platform :ruby do
     gem 'gurobi', git: 'https://github.com/michaelmior/gurobi.git',
                   ref: '57e0e58'
   end
+
+  gem 'mysql2'  # this is used for the loader for performance
 end
 
 group :test do
