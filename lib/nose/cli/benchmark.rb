@@ -14,7 +14,7 @@ module NoSE
         result.workload.queries.each do |query|
           # Get the plan and indexes used for this query
           plan = result.plans.find do |possible_plan|
-            possible_plan.statement == query
+            possible_plan.query == query
           end
           indexes = plan.select do |step|
             step.is_a? Plans::IndexLookupPlanStep
