@@ -216,14 +216,12 @@ module NoSE
           #       filtering and sorting and use only those + query.select
           select = query.all_fields
           select += next_step.index.hash_fields \
-            unless next_step.nil? || !next_step.is_a?(IndexLookupPlanStep)
+            unless next_step.nil? ||
+                   !next_step.is_a?(Plans::IndexLookupPlanStep)
           select &= step.index.all_fields
 
-          results = index_lookup client, step.index, select, condition_list,
-                                 step.order_by, step.limit
-          return [] if results.empty?
-
-          results
+          index_lookup client, step.index, select, condition_list,
+                       step.order_by, step.limit
         end
 
         private
