@@ -39,6 +39,9 @@ module NoSE
 
           results = step_class.process client, query, results,
                                        step, prev_step, next_step
+
+          # The query can't return any results at this point, so we're done
+          break if results.empty?
         end
 
         results
