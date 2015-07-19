@@ -62,14 +62,18 @@ module NoSE
     alias_method :eql?, :==
 
     # Hash based on the fields, their keys, and the path
-    # @return [Fixnum]
-    def hash
-      @hash ||= Zlib.crc32 [
+    # @return [String]
+    def hash_str
+      @hash_str ||= [
         @hash_fields.map(&:id),
         @order_fields.map(&:id),
         @extra.map(&:id).sort,
         @path.map(&:id)
       ].to_s
+    end
+
+    def hash
+      @hash ||= Zlib.crc32 hash_str
     end
 
     # Check if this index is a mapping from the key of the given entity

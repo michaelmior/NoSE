@@ -537,9 +537,14 @@ module NoSE
 
     # Support queries must also have their statement and index checked
     def ==(other)
-      super(other) && @statement == other.statement && @index == other.index
+      other.is_a?(SupportQuery) && @statement == other.statement &&
+                                   @index == other.index
     end
     alias_method :eql?, :==
+
+    def hash
+      Zlib.crc32_combine super, @index.hash, @index.hash_str.length
+    end
 
     # :nocov:
     def to_color
