@@ -19,13 +19,20 @@ module NoSE::Loader
     end
 
     it 'can generate a workload from a database' do
+      # Simple Array subclass so we can use .each(as: :array)
+      class EachArray < Array
+        def each(*args, **options)
+          super()
+        end
+      end
+
       loader = mock_loader({
-        'SHOW TABLES' => [['Foo']],
-        'SELECT COUNT(*) FROM Foo' => [[10]],
-        'DESCRIBE Foo' => [
+        'SHOW TABLES' => EachArray.new([['Foo']]),
+        'SELECT COUNT(*) FROM Foo' => [{ 'COUNT()*)' => 10 }],
+        'DESCRIBE Foo' => EachArray.new([
           ['FooId', 'int(10) unsigned', 'NO', 'PRI', 'NULL', ''],
           ['Bar', 'int(10) unsigned', 'NO', '', 'NULL', '']
-        ]
+        ])
       }, 3)
 
       workload = loader.workload({})

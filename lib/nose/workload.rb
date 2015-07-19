@@ -11,7 +11,7 @@ module NoSE
     attr_accessor :mix
 
     def initialize(model = nil, &block)
-      @statement_weights = {}
+      @statement_weights = { default: Hash.new { |*| 1 } }
       @model = model || Model.new
       @entities = {}
       @mix = :default

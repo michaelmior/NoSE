@@ -43,13 +43,13 @@ module NoSE
         client = new_client config
 
         workload = Workload.new
-        client.query('SHOW TABLES').each do |table, |
+        client.query('SHOW TABLES').each(as: :array) do |table, |
           entity = Entity.new table
           entity.count = client.query("SELECT COUNT(*) FROM #{table}") \
             .first.values.first
 
           describe = client.query("DESCRIBE #{table}")
-          describe.each(as: array) do |name, type, _, key, _, _|
+          describe.each(as: :array) do |name, type, _, key, _, _|
             if key == 'PRI'
               field_class = Fields::IDField
             else
