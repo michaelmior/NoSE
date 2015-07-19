@@ -41,6 +41,9 @@ module NoSE
         min_size = min_result.total_size
         min_result = search_result workload, cost_model, min_size
 
+        # If we only have one result, return
+        return [max_result] if max_size == min_size
+
         results = [max_result, min_result]
         num_results = 2
         sizes = Set.new [min_size, max_size]
