@@ -23,7 +23,12 @@ module NoSE
         validate_indexes
         validate_query_indexes @plans
         validate_update_indexes
+
+        planned_queries = plans.map(&:query).to_set
+        fail InvalidResultsException unless \
+          (@workload.queries.to_set - planned_queries).empty?
         validate_query_plans @plans
+
         validate_update_plans
         validate_objective
 
