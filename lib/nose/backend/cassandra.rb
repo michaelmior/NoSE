@@ -129,21 +129,22 @@ module NoSE
 
       # Insert data into an index on the backend
       class InsertStatementStep < StatementStep
+        @prepared = {}
+
         def self.process(client, index, results)
-          # Prepare the statement required to perform the insertion
-          insert_keys = results.first.keys & index.all_fields.map(&:id)
-          insert = "INSERT INTO #{index.key} ("
-          insert += insert_keys.join(', ') + ') VALUES ('
-          insert += (['?'] * insert_keys.length).join(', ') + ')'
-          statement = client.prepare insert
+          fields = results.first.keys.sort
+          @prepared[[index, fields]] ||= self.prepare client, index, fields
+          statement = @prepared[[index, fields]]
 
           # Insert each row into the index
           generator = Cassandra::Uuid::Generator.new
           results.each do |result|
-            values = insert_keys.map do |key|
-              field = index.all_fields.find { |field| field.id == key }
+            values = fields.map do |key|
+              cur_field = index.all_fields.find { |field| field.id == key }
               value = result[key]
-              if field.is_a?(Fields::IDField)
+
+              # If this is an ID, generate or construct a UUID object
+              if cur_field.is_a?(Fields::IDField)
                 value = value.nil? ? generator.uuid : \
                                      Cassandra::Uuid.new(value.to_i)
               end
@@ -153,38 +154,61 @@ module NoSE
             client.execute(statement, *values)
           end
         end
+
+        private
+
+        def self.prepare(client, index, fields)
+          # Prepare the statement required to perform the insertion
+          insert_keys = fields & index.all_fields.map(&:id)
+          insert = "INSERT INTO #{index.key} ("
+          insert += insert_keys.join(', ') + ') VALUES ('
+          insert += (['?'] * insert_keys.length).join(', ') + ')'
+          client.prepare insert
+        end
       end
 
       # Delete data from an index on the backend
       class DeleteStatementStep < StatementStep
+        @prepared = {}
+
+        # Execute the delete for a given set of keys
         def self.process(client, index, results)
-          # Prepare the statement required to perform the deletion
-          index_keys = index.hash_fields + index.order_fields.to_set
-          delete = "DELETE FROM #{index.key} WHERE "
-          delete += index_keys.map { |key| "#{key.id} = ?" }.join ' AND '
-          statement = client.prepare delete
+          @prepared[index] ||= self.prepare client, index
+          statement = @prepared[index]
 
           # Delete each row from the index
+          index_keys = index.hash_fields + index.order_fields.to_set
           results.each do |result|
             values = index_keys.map do |key|
-              field = index.all_fields.find { |field| field.id == key.id }
-              field.is_a?(Fields::IDField) ? \
+              cur_field = index.all_fields.find { |field| field.id == key.id }
+              cur_field.is_a?(Fields::IDField) ? \
                 Cassandra::Uuid.new(result[key.id].to_i): result[key.id]
             end
             client.execute(statement, *values)
           end
         end
+
+        private
+
+        # Prepare the statement to execute the query
+        def self.prepare(client, index)
+          # Prepare the statement required to perform the deletion
+          index_keys = index.hash_fields + index.order_fields.to_set
+          delete = "DELETE FROM #{index.key} WHERE "
+          delete += index_keys.map { |key| "#{key.id} = ?" }.join ' AND '
+          client.prepare delete
+        end
       end
 
       # A query step to look up data from a particular column family
       class IndexLookupStatementStep < StatementStep
+        @prepared = {}
+
         # Perform a column family lookup in Cassandra
         def self.process(client, query, results, step, prev_step, next_step)
-          # Get the fields which are used for lookups at this step
-          # TODO: Check if we can apply the next filter via ALLOW FILTERING
-          eq_fields = (prev_step.state.eq - step.state.eq).to_set
-          eq_fields += step.index.hash_fields
-          range_field = prev_step.state.range if step.state.range.nil?
+          @prepared[[query, step.index]] ||= self.prepare client, query, step,
+                                                           prev_step, next_step
+          statement = @prepared[[query, step.index]]
 
           # If this is the first lookup, get the lookup values from the query
           if results.nil?
@@ -194,6 +218,12 @@ module NoSE
           end
 
           # Construct a list of conditions from the results
+
+          # TODO: Check if we can apply the next filter via ALLOW FILTERING
+          eq_fields = (prev_step.state.eq - step.state.eq).to_set
+          eq_fields += step.index.hash_fields
+          range_field = prev_step.state.range if step.state.range.nil?
+
           condition_list = results.map do |result|
             conditions = eq_fields.map do |field|
               Condition.new field, :'=', result[field.id]
@@ -208,50 +238,8 @@ module NoSE
             conditions
           end
 
-          # Decide which fields should be selected
-          # We just pick whatever is contained in the index that is either
-          # mentioned in the query or required for the next lookup
-          # TODO: Potentially try query.all_fields for those not required
-          #       It should be sufficient to check what is needed for future
-          #       filtering and sorting and use only those + query.select
-          select = query.all_fields
-          select += next_step.index.hash_fields \
-            unless next_step.nil? ||
-                   !next_step.is_a?(Plans::IndexLookupPlanStep)
-          select &= step.index.all_fields
-
-          index_lookup client, step.index, select, condition_list,
-                       step.order_by, step.limit
-        end
-
-        private
-
-        # Lookup values from an index selecting the given
-        # fields and filtering on the given conditions
-        def self.index_lookup(client, index, select, condition_list,
-                              order, limit)
-          query = "SELECT #{select.map(&:id).join ', '} FROM \"#{index.key}\""
-          query += ' WHERE ' if condition_list.first.length > 0
-          query += condition_list.first.map do |condition|
-            "#{condition.field.id} #{condition.operator} ?"
-          end.join ' AND '
-
-          # Add the ORDER BY clause
-          # TODO: CQL3 requires all clustered columns before the one actually
-          #       ordered on also be specified
-          #
-          #       Example:
-          #
-          #         SELECT * FROM cf WHERE id=? AND col1=? ORDER by col1, col2
-          unless order.empty?
-            query += ' ORDER BY ' + order.map(&:id).join(', ')
-          end
-
-          # Add an optional limit
-          query += " LIMIT #{limit}" unless limit.nil?
-
-          statement = client.prepare query
-
+          # Lookup values from an index selecting the given
+          # fields and filtering on the given conditions
           # TODO: Chain enumerables of results instead
           result = []
           condition_list.each do |conditions|
@@ -263,6 +251,53 @@ module NoSE
           end
 
           result
+        end
+
+        private
+
+        # Construct a prepared statement for the query
+        def self.prepare(client, query, step, prev_step, next_step)
+          # Decide which fields should be selected
+          # We just pick whatever is contained in the index that is either
+          # mentioned in the query or required for the next lookup
+          # TODO: Potentially try query.all_fields for those not required
+          #       It should be sufficient to check what is needed for future
+          #       filtering and sorting and use only those + query.select
+          select = query.all_fields
+          select += next_step.index.hash_fields \
+            unless next_step.nil? ||
+              !next_step.is_a?(Plans::IndexLookupPlanStep)
+          select &= step.index.all_fields
+
+          # XXX Duplicated from #process
+          eq_fields = (prev_step.state.eq - step.state.eq).to_set
+          eq_fields += step.index.hash_fields
+          range_field = prev_step.state.range if step.state.range.nil?
+
+          cql = "SELECT #{select.map(&:id).join ', '} FROM " \
+                "\"#{step.index.key}\" WHERE "
+          cql += eq_fields.map do |field|
+            "#{field.id} = ?"
+          end.join ' AND '
+          unless range_field.nil?
+            condition = query.conditions.find(&:range?)
+            cql += " AND #{condition.field.id} #{condition.operator} ?"
+          end
+
+          # Add the ORDER BY clause
+          # TODO: CQL3 requires all clustered columns before the one actually
+          #       ordered on also be specified
+          #
+          #       Example:
+          #
+          #         SELECT * FROM cf WHERE id=? AND col1=? ORDER by col1, col2
+          cql += ' ORDER BY ' + step.order_by.map(&:id).join(', ') \
+            unless step.order_by.empty?
+
+          # Add an optional limit
+          cql += " LIMIT #{step.limit}" unless step.limit.nil?
+
+          client.prepare cql
         end
       end
     end
