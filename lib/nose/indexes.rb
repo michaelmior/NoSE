@@ -67,7 +67,7 @@ module NoSE
       @hash_str ||= [
         @hash_fields.map(&:id),
         @order_fields.map(&:id),
-        @extra.map(&:id).sort,
+        @extra.to_set.map(&:id),
         @path.map(&:id)
       ].to_s
     end
