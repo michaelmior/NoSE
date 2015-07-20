@@ -166,6 +166,7 @@ module NoSE
       include Representable::YAML
 
       property :subtype_name, as: :type
+      property :cost
 
       # The estimated cardinality at this step in the plan
       def cardinality
@@ -389,8 +390,8 @@ module NoSE
           # Copy the correct cardinality
           # XXX This may not preserve all the necessary state
           state = step.state.dup
-          state.instance_variable_set :@cardinality,
-                                      step_hash['cardinality']
+          state.instance_variable_set :@cardinality, step_hash['cardinality']
+          step.instance_variable_set :@cost, step_hash['cost']
           step.state = state.freeze
 
           # Force setting of the parent step

@@ -48,6 +48,7 @@ module NoSE::Plans
         IndexLookupPlanStep.new(index),
         SortPlanStep.new([tweet['Timestamp']])
       ]
+      steps.each { |step| step.calculate_cost cost_model }
       expect(tree.first).to eq steps
       expect(tree).to have(1).plan
     end
@@ -79,6 +80,7 @@ module NoSE::Plans
         SortPlanStep.new([tweet['Timestamp']]),
         LimitPlanStep.new(5)
       ]
+      steps.each { |step| step.calculate_cost cost_model }
       expect(tree.first).to eq steps
       expect(tree).to have(1).plan
     end

@@ -165,9 +165,7 @@ module NoSE
           index_step = steps.first
 
           # Calculate the cost for just these steps in the plan
-          cost = steps.map do |step|
-            step.cost @cost_model
-          end.inject(0, &:+) * weight
+          cost = steps.map(&:cost).inject(0, &:+) * weight
 
           if query_costs.key? index_step.index
             current_cost = query_costs[index_step.index].last
