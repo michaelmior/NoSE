@@ -135,8 +135,8 @@ module NoSE
       def to_color(step = nil, indent = 0)
         step = @root if step.nil?
         this_step = '  ' * indent + step.to_color
-        this_step += " [yellow]$#{step.cost(@cost_model).round 5}[/]" \
-          unless step.is_a? RootPlanStep
+        this_step += " [yellow]$#{step.cost.round 5}[/]" \
+          unless step.is_a?(RootPlanStep) || step.cost.nil?
         this_step + "\n" + step.children.map do |child_step|
           to_color child_step, indent + 1
         end.reduce('', &:+)
@@ -175,7 +175,7 @@ module NoSE
       # The estimated cost of executing the query using this plan
       # @return [Numeric]
       def cost
-        @steps.map { |step| step.cost @cost_model }.inject(0, &:+)
+        @steps.map(&:cost).inject(0, &:+)
       end
 
       # Get the indexes used by this query plan
@@ -260,6 +260,7 @@ module NoSE
 
         if steps.length > 0
           step.children = steps
+          steps.each { |new_step| new_step.calculate_cost @cost_model }
           new_used = used_indexes.clone
           steps.each do |child_step|
             find_plans_for_step child_step, indexes_by_path, new_used
@@ -308,6 +309,7 @@ module NoSE
             steps.push new_step
           end
         end
+
         steps
       end
     end

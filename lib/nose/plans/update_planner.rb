@@ -28,6 +28,7 @@ module NoSE
         @index = index
         @trees = trees
         @query_plans = nil  # these will be set later when we pick indexes
+        update_steps.each { |step| step.calculate_cost cost_model }
         @update_steps = update_steps
         @cost_model = cost_model
       end
@@ -78,7 +79,7 @@ module NoSE
 
       # The cost of performing the update on this index
       def update_cost
-        @update_steps.map { |step| step.cost @cost_model }.inject(0, &:+)
+        @update_steps.map(&:cost).inject(0, &:+)
       end
 
       # The cost is the sum of all the query costs plus the update costs

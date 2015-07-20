@@ -6,7 +6,7 @@ module NoSE
       include Supertype
 
       attr_accessor :state, :parent
-      attr_reader :children, :fields
+      attr_reader :children, :cost, :fields
 
       def initialize
         @children = Set.new
@@ -65,10 +65,9 @@ module NoSE
         step.index unless step.nil?
       end
 
-      # The cost of executing this step in the plan
-      # @return [Numeric]
-      def cost(cost_model)
-        cost_model.method((subtype_name + '_cost').to_sym).call self
+      # Calculate the cost of executing this step in the plan
+      def calculate_cost(cost_model)
+        @cost = cost_model.method((subtype_name + '_cost').to_sym).call self
       end
 
       # Add the Subtype module to all step classes
@@ -89,6 +88,7 @@ module NoSE
       def initialize(state)
         super()
         @state = state
+        @cost = 0
       end
     end
   end
