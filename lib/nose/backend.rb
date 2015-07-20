@@ -57,74 +57,7 @@ module NoSE
         end
         fail PlanNotFound if plans.empty?
 
-        plans.map do |plan|
-          if update.is_a? Insert
-            # Populate the data to insert for Insert statements
-            settings = Hash[update.settings.map do |setting|
-              [setting.field.id, setting.value]
-            end]
-          elsif update.is_a? Connection
-            # Populate the data to insert for Connection statements
-            settings = {
-              update.source.id_fields.first.id => update.source_pk,
-              update.target.entity.id_fields.first.id => update.target_pk
-            }
-          else
-            # Get values for updates and deletes
-            settings = Hash[update.conditions.map do |condition|
-              [condition.field.id, condition.value]
-            end]
-          end
-
-          # Execute all the support queries
-          support = plan.query_plans.map do |query_plan|
-            # Substitute values into the support query
-            support_query = query_plan.query.dup
-            support_query.conditions.each do |condition|
-              condition.instance_variable_set :@value,
-                                              settings[condition.field.id]
-            end
-
-            # Execute the support query and return the results
-            query(support_query, query_plan)
-          end
-
-          # Combine the results from multiple support queries
-          if support.length > 0
-            support = support.first.product(*support[1..-1])
-            support.map! { |results| results.reduce(&:merge) }
-          end
-
-          # Populate the data to remove for Delete statements
-          if update.is_a? Delete
-            support = [Hash[update.conditions.map do |condition|
-              [condition.field.id, condition.value]
-            end]]
-          end
-
-          if update.requires_delete?
-            step_class = DeleteStatementStep
-            subclass_step_name = step_class.name.sub \
-              'NoSE::Backend::BackendBase', self.class.name
-            step_class = Object.const_get subclass_step_name
-            step_class.process client, plan.index, support \
-              unless support.empty?
-          end
-          return if update.is_a? Delete
-
-          if update.is_a? Insert
-            support = [settings]
-          else
-            support.each { |row| row.merge! settings }
-          end
-
-          return if support.empty?
-          step_class = InsertStatementStep
-          subclass_step_name = step_class.name.sub \
-            'NoSE::Backend::BackendBase', self.class.name
-          step_class = Object.const_get subclass_step_name
-          step_class.process client, plan.index, support
-        end
+        plans.each { |plan| execute_update_plan update, plan }
       end
 
       # Superclass for all statement execution steps
@@ -225,6 +158,98 @@ module NoSE
             end
           end
         end
+      end
+
+      private
+
+      # Execute a single update plan as part of an update
+      def execute_update_plan(update, plan)
+        # Execute all the support queries
+        settings = initial_update_settings update
+        support = support_results plan.query_plans, settings
+
+        # Populate the data to remove for Delete statements
+        if update.is_a? Delete
+          support = [Hash[update.conditions.map do |condition|
+            [condition.field.id, condition.value]
+          end]]
+        end
+
+        if update.requires_delete?
+          step_class = DeleteStatementStep
+          subclass_step_name = step_class.name.sub \
+            'NoSE::Backend::BackendBase', self.class.name
+          step_class = Object.const_get subclass_step_name
+          step_class.process client, plan.index, support \
+            unless support.empty?
+        end
+        return if update.is_a? Delete
+
+        if update.is_a? Insert
+          support = [settings]
+        else
+          support.each { |row| row.merge! settings }
+        end
+
+        # Stop if we have nothing to insert
+        return if support.empty?
+
+        step_class = InsertStatementStep
+        subclass_step_name = step_class.name.sub \
+          'NoSE::Backend::BackendBase', self.class.name
+        step_class = Object.const_get subclass_step_name
+        step_class.process client, plan.index, support
+      end
+
+      # Get the initial values which will be used in the first plan step
+      def initial_update_settings(update)
+        if update.is_a? Insert
+          # Populate the data to insert for Insert statements
+          settings = Hash[update.settings.map do |setting|
+            [setting.field.id, setting.value]
+          end]
+        elsif update.is_a? Connection
+          # Populate the data to insert for Connection statements
+          settings = {
+            update.source.id_fields.first.id => update.source_pk,
+            update.target.entity.id_fields.first.id => update.target_pk
+          }
+        else
+          # Get values for updates and deletes
+          settings = Hash[update.conditions.map do |condition|
+            [condition.field.id, condition.value]
+          end]
+        end
+
+        settings
+      end
+
+      # Execute all the support queries
+      def support_results(query_plans, settings)
+        support = query_plans.map do |query_plan|
+          execute_support_query query_plan, settings
+        end
+
+        # Combine the results from multiple support queries
+        if support.length > 0
+          support = support.first.product(*support[1..-1])
+          support.map! { |results| results.reduce(&:merge) }
+        end
+
+        support
+      end
+
+      # Execute a support query for an update
+      def execute_support_query(query_plan, settings)
+        # Substitute values into the support query
+        support_query = query_plan.query.dup
+        support_query.conditions.each do |condition|
+          condition.instance_variable_set :@value,
+            settings[condition.field.id]
+        end
+
+        # Execute the support query and return the results
+        query(support_query, query_plan)
       end
     end
 
