@@ -55,19 +55,7 @@ module NoSE
                       !parent.is_a?(RootPlanStep)
         return nil if index.identity? && state.path.length > 1
 
-        parent_index = parent.parent_index
-        unless parent_index.nil?
-          # If the last step gave an ID, we must use it
-          # XXX This doesn't cover all cases
-          parent_ids = parent_index.path.entities.last.id_fields.to_set
-          has_ids = parent_ids.all?(&parent_index.extra.method(:include?))
-          return nil if has_ids && index.hash_fields.to_set != parent_ids
-
-          # If we're looking up from a previous step, only allow lookup by ID
-          return nil unless (index.path.length == 1 &&
-                             parent_index.path != index.path) ||
-                            index.hash_fields == parent_ids
-        end
+        return nil if invalid_parent_index? index, parent.parent_index
 
         # We need all hash fields to perform the lookup
         return nil unless index.hash_fields.all? do |field|
@@ -75,12 +63,37 @@ module NoSE
         end
 
         # Get fields in the query relevant to this index
+        # and check that they are provided for us here
         path_fields = state.fields_for_entities(index.path.entities).to_set
         path_fields -= parent.fields  # exclude fields already fetched
         return nil unless path_fields.all?(&index.all_fields.method(:include?))
-        return nil if !path_fields.empty? &&
-                      path_fields.all?(&parent.fields.method(:include?))
 
+        return IndexLookupPlanStep.new(index, state, parent) \
+          if has_last_fields?(index, state)
+
+        nil
+      end
+
+      private
+
+      # Check if this index can be used after the current parent
+      def self.invalid_parent_index?(index, parent_index)
+        return false if parent_index.nil?
+
+        # If the last step gave an ID, we must use it
+        # XXX This doesn't cover all cases
+        parent_ids = parent_index.path.entities.last.id_fields.to_set
+        has_ids = parent_ids.all?(&parent_index.extra.method(:include?))
+        return true if has_ids && index.hash_fields.to_set != parent_ids
+
+        # If we're looking up from a previous step, only allow lookup by ID
+        return true unless (index.path.length == 1 &&
+                           parent_index.path != index.path) ||
+                          index.hash_fields == parent_ids
+      end
+
+      # Check that we have the required fields to move on with the next lookup
+      def self.has_last_fields?(index, state)
         # Get the possible fields we need to select
         # This always includes the ID of the last and next entities
         # as well as the selected fields if we're at the end of the path
@@ -89,16 +102,10 @@ module NoSE
         last_choices << next_key.parent.id_fields unless next_key.nil?
         last_choices << state.fields if state.path == index.path
 
-        has_last_fields = last_choices.any? do |fields|
+        last_choices.any? do |fields|
           fields.all?(&index.all_fields.method(:include?))
         end
-
-        return IndexLookupPlanStep.new(index, state, parent) if has_last_fields
-
-        nil
       end
-
-      private
 
       # Modify the state to reflect the fields looked up by the index
       def update_state(parent)
