@@ -7,7 +7,7 @@ NoSE::Workload.new do
   (Entity 'categories' do
     ID     'id'
     String 'name', 20
-  end) * 500
+  end) * 50
 
   (Entity 'regions' do
     ID     'id'
@@ -16,49 +16,49 @@ NoSE::Workload.new do
 
   (Entity 'users' do
     ID         'id'
-    String     'firstname', 20, count: 900_000
-    String     'lastname', 20, count: 900_000
-    String     'nickname', 20
-    String     'password', 20
-    String     'email', 20
+    String     'firstname', 6
+    String     'lastname', 7
+    String     'nickname', 12
+    String     'password', 15
+    String     'email', 23
     Integer    'rating', count: 50
     Float      'balance', count: 10_000
-    Date       'creation_date', count: 100_000
-  end) * 1_000_000
+    Date       'creation_date'
+  end) * 200_000
 
   (Entity 'items' do
     ID         'id'
-    String     'name', 100
-    String     'description'
-    Float      'initial_price', count: 10_000
+    String     'name', 19
+    String     'description', 197
+    Float      'initial_price'
     Integer    'quantity', count: 100
-    Float      'reserve_price', count: 10_000
-    Float      'buy_now', count: 10_000
-    Integer    'nb_of_bids', count: 200
-    Float      'max_bid', count: 10_000
-    Date       'start_date', count: 100_000
-    Date       'end_date', count: 100_000
-  end) * 10_000_000
+    Float      'reserve_price'
+    Float      'buy_now'
+    Integer    'nb_of_bids', count: 100
+    Float      'max_bid'
+    Date       'start_date'
+    Date       'end_date'
+  end) * 2_000_000
 
   (Entity 'bids' do
     ID         'id'
-    Integer    'qty', count: 50
-    Float      'bid', count: 10_000
-    Date       'date', count: 10_0000
-  end) * 100_000_000
+    Integer    'qty', count: 5
+    Float      'bid'
+    Date       'date'
+  end) * 20_000_000
 
   (Entity 'comments' do
     ID         'id'
     Integer    'rating', count: 10
-    Date       'date', count: 100_000
-    String     'comment', 250
-  end) * 50_000_000
+    Date       'date'
+    String     'comment', 130
+  end) * 10_000_000
 
   (Entity 'buynow' do
     ID         'id'
-    Integer    'qty', count: 50
-    Date       'date', count: 100_000
-  end) * 20_000_000
+    Integer    'qty', count: 4
+    Date       'date'
+  end) * 4_000_000
 
   HasOne 'region',       'users',
          'users'      => 'regions'
@@ -70,13 +70,13 @@ NoSE::Workload.new do
          'items'      => 'categories'
 
   HasOne 'user',         'bids',
-         'bids'       => 'users', count: 900_000
+         'bids'       => 'users'
 
   HasOne 'item',         'bids',
-         'bids'       => 'items', count: 90_000_000
+         'bids'       => 'items'
 
   HasOne 'from_user',    'comments_sent',
-         'comments'   => 'users', count: 500_000
+         'comments'   => 'users'
 
   # HasOne 'to_user',      'comments_received'
   #        'comments'   => 'users'
@@ -85,10 +85,10 @@ NoSE::Workload.new do
          'comments'   => 'items'
 
   HasOne 'buyer',        'bought_now',
-         'buynow'     => 'users', count: 500_000
+         'buynow'     => 'users'
 
   HasOne 'item',         'bought_now',
-         'buynow'     => 'items', count: 5_000_000
+         'buynow'     => 'items'
 
   # Define queries and their relative weights
 
