@@ -76,7 +76,10 @@ module NoSE
       collection :extra, decorator: FieldRepresenter
       collection :path, decorator: FieldRepresenter
 
+      property :entry_size
       property :size
+      property :hash_count
+      property :per_hash_count
     end
 
     # Represents all data of a field
