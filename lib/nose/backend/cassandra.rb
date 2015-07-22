@@ -89,7 +89,9 @@ module NoSE
       def index_sample(index, count)
         query = "SELECT #{index.all_fields.map(&:id).join ', '} " \
                 "FROM \"#{index.key}\" LIMIT #{count}"
-        client.execute(query).rows
+        rows = client.execute(query).rows
+        fail if rows.any? { |row| row.values.any?(&:nil?) }
+        rows
       end
 
       private
