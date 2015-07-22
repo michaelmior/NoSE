@@ -2,7 +2,7 @@ module NoSE
   # A representation of materialized views over fields in an entity
   class Index
     attr_reader :hash_fields, :order_fields, :extra, :all_fields, :path,
-                :entry_size, :size, :hash_count, :per_hash_count
+                :entries, :entry_size, :size, :hash_count, :per_hash_count
 
     def initialize(hash_fields, order_fields, extra, path, saved_key = nil)
       @hash_fields = hash_fields.to_set
@@ -135,7 +135,8 @@ module NoSE
                                                      @hash_fields, nil,
                                                      @path.entities)
       @entry_size = @all_fields.map(&:size).inject(0, :+)
-      @size = @hash_count * @per_hash_count * @entry_size
+      @entries = @hash_count * @per_hash_count
+      @size = @entries * @entry_size
     end
   end
 
