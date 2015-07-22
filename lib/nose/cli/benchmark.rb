@@ -21,7 +21,7 @@ module NoSE
           end.map(&:index)
 
           # Construct a list of values to be substituted in the query
-          condition_fields = query.conditions.map(&:field)
+          condition_fields = query.conditions.values.map(&:field)
           condition_values = 1.upto(options[:num_iterations]).map do |i|
             condition_fields.map do |field|
               indexes.each do |index|
@@ -35,7 +35,7 @@ module NoSE
           # Execute each query and measure the time
           start_time = Time.now
           condition_values.each do |values|
-            query.conditions.each_with_index do |condition, i|
+            query.conditions.values.each_with_index do |condition, i|
               condition.instance_variable_set :@value, values[i]
             end
             backend.query query, plan

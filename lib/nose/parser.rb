@@ -211,8 +211,8 @@ module NoSE
 
     # Populate the list of condition objects
     def populate_conditions
-      @conditions = @tree[:where].nil? ? [] : @tree[:where][:expression]
-      @conditions = @conditions.map do |condition|
+      conditions = @tree[:where].nil? ? [] : @tree[:where][:expression]
+      conditions = conditions.map do |condition|
         field = find_field_with_prefix @tree[:path],
                                        condition[:field]
         value = condition[:value]
@@ -230,9 +230,13 @@ module NoSE
         Condition.new field, condition[:op].to_sym, value
       end
 
-      @eq_fields = @conditions.reject(&:range?).map(&:field).to_set
-      @range_field = @conditions.find(&:range?)
+      @eq_fields = conditions.reject(&:range?).map(&:field).to_set
+      @range_field = conditions.find(&:range?)
       @range_field = @range_field.field unless @range_field.nil?
+
+      @conditions = Hash[conditions.map do |condition|
+        [condition.field.id, condition]
+      end]
     end
   end
 
@@ -476,7 +480,7 @@ module NoSE
       populate_fields
 
       fail InvalidStatementException, 'must have an equality predicate' \
-        if @conditions.empty? || @conditions.all?(&:is_range)
+        if @conditions.empty? || @conditions.values.all?(&:is_range)
 
       @limit = @tree[:limit].to_i if @tree[:limit]
 
@@ -494,7 +498,7 @@ module NoSE
 
     # All fields referenced anywhere in the query
     def all_fields
-      (@select + @conditions.map(&:field) + @order).to_set
+      (@select + @conditions.values.map(&:field) + @order).to_set
     end
 
     private
@@ -709,7 +713,7 @@ module NoSE
     private
 
     def given_fields
-      @conditions.map(&:field)
+      @conditions.values.map(&:field)
     end
   end
 
@@ -778,7 +782,7 @@ module NoSE
     end
 
     def given_fields
-      @conditions.map(&:field)
+      @conditions.values.map(&:field)
     end
   end
 
