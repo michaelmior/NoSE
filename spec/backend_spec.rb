@@ -40,8 +40,14 @@ module NoSE::Backend
                       "ORDER BY Tweet_Timestamp LIMIT 10"
       expect(client).to receive(:prepare).with(backend_query) \
         .and_return(backend_query)
+
+      # Define a simple array providing empty results
+      results = []
+      def results.last_page?
+        true
+      end
       expect(client).to receive(:execute) \
-        .with(backend_query, 'Bob').and_return([])
+        .with(backend_query, 'Bob').and_return(results)
 
       CassandraBackend::IndexLookupStatementStep.process client, query, nil,
                                                          step, step.parent, nil
