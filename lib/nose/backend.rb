@@ -124,13 +124,13 @@ module NoSE
         def self.process(_client, query, results, step,
                          _prev_step, _next_step)
           # Extract the equality conditions
-          eq_conditions = query.conditions.select do |condition|
+          eq_conditions = query.conditions.values.select do |condition|
             !condition.range? && step.eq.include?(condition.field)
           end
 
           # XXX: This assumes that the range filter step is the same as
           #      the one in the query, which is always true for now
-          range = step.range && query.conditions.find(&:range?)
+          range = step.range && query.conditions.values.find(&:range?)
 
           results.select! do |row|
             select = eq_conditions.all? do |condition|
@@ -170,8 +170,8 @@ module NoSE
 
         # Populate the data to remove for Delete statements
         if update.is_a? Delete
-          support = [Hash[update.conditions.map do |condition|
-            [condition.field.id, condition.value]
+          support = [Hash[update.conditions.map do |field_id, condition|
+            [field_id, condition.value]
           end]]
         end
 
@@ -216,8 +216,8 @@ module NoSE
           }
         else
           # Get values for updates and deletes
-          settings = Hash[update.conditions.map do |condition|
-            [condition.field.id, condition.value]
+          settings = Hash[update.conditions.map do |field_id, condition|
+            [field_id, condition.value]
           end]
         end
 
@@ -243,9 +243,8 @@ module NoSE
       def execute_support_query(query_plan, settings)
         # Substitute values into the support query
         support_query = query_plan.query.dup
-        support_query.conditions.each do |condition|
-          condition.instance_variable_set :@value,
-            settings[condition.field.id]
+        support_query.conditions.each do |field_id, condition|
+          condition.instance_variable_set :@value, settings[field_id]
         end
 
         # Execute the support query and return the results

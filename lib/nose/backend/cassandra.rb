@@ -212,8 +212,9 @@ module NoSE
 
           # If this is the first lookup, get the lookup values from the query
           if results.nil?
-            results = [Hash[query.conditions.map do |condition|
-              [condition.field.id, condition.value]
+            results = [Hash[query.conditions.map do |field_id, condition|
+              fail if condition.value.nil?
+              [field_id, condition.value]
             end]]
           end
 
@@ -230,7 +231,7 @@ module NoSE
             end
 
             unless range_field.nil?
-              operator = query.conditions.select(&:range?).first.operator
+              operator = query.conditions.values.find(&:range?).operator
               conditions << Condition.new(range_field, operator,
                                           result[range_field.id])
             end
@@ -243,9 +244,11 @@ module NoSE
           # TODO: Chain enumerables of results instead
           result = []
           condition_list.each do |conditions|
-            values = conditions.map do |condition|
+            values = conditions.map do |condition| value = condition.value ||
+                      query.conditions[condition.field.id].value
+              fail if value.nil?
               condition.field.is_a?(Fields::IDField) ? \
-                Cassandra::Uuid.new(condition.value.to_i): condition.value
+                Cassandra::Uuid.new(value.to_i): value
             end
             result += client.execute(statement, *values).to_a
           end
@@ -280,7 +283,7 @@ module NoSE
             "#{field.id} = ?"
           end.join ' AND '
           unless range_field.nil?
-            condition = query.conditions.find(&:range?)
+            condition = query.conditions.values.find(&:range?)
             cql += " AND #{condition.field.id} #{condition.operator} ?"
           end
 

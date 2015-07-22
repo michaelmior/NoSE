@@ -57,13 +57,13 @@ module NoSE
       it 'can find strings' do
         stmt = Query.new 'SELECT User.* FROM User WHERE User.City = "NY"',
                          workload.model
-        expect(stmt.conditions.first.value).to eq 'NY'
+        expect(stmt.conditions['User_City'].value).to eq 'NY'
       end
 
       it 'can find integers' do
         stmt = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Retweets = 3',
                          workload.model
-        expect(stmt.conditions.first.value).to eq 3
+        expect(stmt.conditions['Tweet_Retweets'].value).to eq 3
       end
 
       it 'fails if the value is the wrong type' do
