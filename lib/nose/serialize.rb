@@ -176,11 +176,19 @@ module NoSE
         represented.instance_variable_get(:@state).cardinality
       end
       property :cardinality, exec_context: :decorator
+
+      # The estimated hash cardinality at this step in the plan
+      def hash_cardinality
+        state = represented.instance_variable_get(:@state)
+        state.hash_cardinality if state.is_a?(Plans::QueryState)
+      end
+      property :hash_cardinality, exec_context: :decorator
     end
 
     # Represent the index for index lookup plan steps
     class IndexLookupStepRepresenter < PlanStepRepresenter
       property :index, decorator: IndexRepresenter
+      property :limit
     end
 
     # Represent the filtered fields in filter plan steps
