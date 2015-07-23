@@ -134,49 +134,14 @@ end
 
 # Simple helper class to facilitate cardinality estimates
 class Cardinality
-  # Update the cardinality after traversing the index
-  def self.new_cardinality(cardinality, eq_filter, range_filter, path)
-   # TODO Update to use key path instead of entity path
-
-    eq_filter = eq_filter.group_by(&:parent)
-
-    # Update cardinality via predicates for first (last) entity in path
-    cardinality *= filter_cardinality eq_filter, range_filter, path.first
-
-    path.each_cons(2) do |entity, next_entity|
-      # TODO: Fix and add sampling for M2M relationships
-      # TODO: Track path of foreign keys and don't rely on relation direction
-
-      # Update with the new cardinality of the relationship
-      if next_entity.foreign_key_for(entity).relationship == :many
-        cardinality *= next_entity.count * 1.0 / entity.count
-      else
-        cardinality *= sample cardinality,
-                              entity.foreign_key_for(next_entity).cardinality
-      end
-
-      # Update cardinality via the filtering implicit to the index
-      cardinality *= filter_cardinality eq_filter, range_filter, next_entity
-    end
-
-    [1, cardinality.round].max
-  end
-
   # Update the cardinality based on filtering implicit to the index
-  def self.filter_cardinality(eq_filter, range_filter, entity)
-    filter = range_filter && range_filter.parent == entity ? 0.1 : 1.0
-    filter *= (eq_filter[entity] || []).map do |field|
+  def self.filter(cardinality, eq_filter, range_filter)
+    filtered = (range_filter.nil? ? 1.0 : 0.1) * cardinality
+    filtered *= eq_filter.map do |field|
       1.0 / field.cardinality
     end.inject(1.0, &:*)
 
-    filter
-  end
-
-  # Get the estimated cardinality of the set of samples of m items with
-  # replacement from a set of cardinality n
-  def self.sample(m, n)
-    # http://math.stackexchange.com/a/32816/130124
-    n * (1 - (1 - (1.0 / n))**m)
+    [1, filtered.round].max
   end
 end
 

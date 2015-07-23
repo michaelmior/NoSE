@@ -131,11 +131,13 @@ module NoSE
     # Precalculate the size of the index
     def calculate_size
       @hash_count = @hash_fields.map(&:cardinality).inject(1, &:*)
-      @per_hash_count =  Cardinality.new_cardinality(@path.first.parent.count,
-                                                     @hash_fields, nil,
-                                                     @path.entities)
+
+      # XXX This only works if foreign keys span all possible keys
+      #     Take the maximum possible count at each join and multiply
+      @entries = @path.entities.map(&:count).inject(1, &:*) * 1.0
+      @per_hash_count = (@entries * 1.0 / @hash_count).round
+
       @entry_size = @all_fields.map(&:size).inject(0, :+)
-      @entries = @hash_count * @per_hash_count
       @size = @entries * @entry_size
     end
   end

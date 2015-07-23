@@ -124,39 +124,21 @@ describe Cardinality do
   include_context 'entities'
 
   it 'estimates one for a simple ID lookup' do
-    cardinality = Cardinality.new_cardinality tweet.count, [tweet['TweetId']],
-                                              nil, [tweet]
+    cardinality = Cardinality.filter tweet.count, [tweet['TweetId']], nil
 
     expect(cardinality).to eq(1)
   end
 
   it 'correctly estimates based on field cardinality for equality' do
-    cardinality = Cardinality.new_cardinality user.count, [user['City']],
-                                              nil, [user]
+    cardinality = Cardinality.filter user.count, [user['City']], nil
 
     expect(cardinality).to eq(2)
   end
 
   it 'uses a static estimate for range filters' do
-    cardinality = Cardinality.new_cardinality tweet.count, [tweet['Body']],
-                                              tweet['Timestamp'], [tweet]
+    cardinality = Cardinality.filter tweet.count, [tweet['Body']],
+                                     tweet['Timestamp']
 
     expect(cardinality).to eq(20)
-  end
-
-  it 'does not affect cardinality for relationships to-one relationships' do
-    cardinality = Cardinality.new_cardinality tweet.count, [tweet['TweetId']],
-                                              nil, [tweet, link]
-
-    # With one link per tweet, cardinality should be 1
-    expect(cardinality).to eq(1)
-  end
-
-  it 'estimates cardinality for to-many relationships' do
-    cardinality = Cardinality.new_cardinality link.count, [link['LinkId']],
-                                              nil, [link, tweet]
-
-    # With 100 total links and 1000 tweets, there should be 10 tweets per link
-    expect(cardinality).to eq(10)
   end
 end

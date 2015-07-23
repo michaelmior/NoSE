@@ -154,21 +154,21 @@ module NoSE
 
         # Check if we can apply the limit from the query
         if @state.answered?(check_limit: false) && !@state.query.limit.nil?
-          @limit = @state.cardinality = @state.hash_cardinality = \
+          # XXX Assume that everything is limited by the limit value
+          #     which should be fine if the limit is small enough
+          @limit = @state.cardinality = @state.hash_cardinality =
             @state.query.limit
         else
-          @state.cardinality = @state.query.longest_entity_path.last.count \
-            if parent.is_a? RootPlanStep
-          @state.cardinality = Cardinality.new_cardinality @state.cardinality,
-                                                           eq_filter,
-                                                           range_filter,
-                                                           @index.path.entities
+          # Hash cardinality starts at 1 or is the previous cardinality
+          @state.hash_cardinality = parent.is_a?(RootPlanStep) ?
+            1 : parent.state.cardinality
 
-          # Track the cardinality of hash fields by updating
-          # using only the hash fields of the index
-          @state.hash_cardinality = Cardinality.new_cardinality \
-            @state.hash_cardinality, @state.eq & @index.hash_fields, nil,
-            @index.path.entities
+          # Filter the total number of rows by filtering on non-hash fields
+          cardinality = @index.per_hash_count * @state.hash_cardinality
+          @state.cardinality = Cardinality.filter cardinality,
+                                                  eq_filter -
+                                                    @index.hash_fields,
+                                                  range_filter
         end
       end
     end
