@@ -134,7 +134,7 @@ module NoSE
 
       # XXX This only works if foreign keys span all possible keys
       #     Take the maximum possible count at each join and multiply
-      @entries = @path.entities.map(&:count).inject(1, &:*) * 1.0
+      @entries = @path.entities.map(&:count).max
       @per_hash_count = (@entries * 1.0 / @hash_count).round
 
       @entry_size = @all_fields.map(&:size).inject(0, :+)
