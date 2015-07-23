@@ -175,6 +175,11 @@ module NoSE
       @workload.add_statement statement, mixes
     end
 
+    # Allow setting the default workload mix
+    def DefaultMix(mix)
+      @workload.mix = mix
+    end
+
     # rubocop:enable MethodName
   end
 end

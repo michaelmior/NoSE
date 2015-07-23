@@ -112,6 +112,7 @@ NoSE::Workload.new do
          'buynow'    => 'items', count: 1549
 
   # Define queries and their relative weights
+  DefaultMix :browsing
 
   # BrowseCategories
   # XXX Must have at least one equality predicate
