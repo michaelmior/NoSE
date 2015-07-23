@@ -20,7 +20,8 @@ module NoSE
       def search(name)
         # Get the workload and cost model
         workload = get_workload name
-        workload.mix = options[:mix].to_sym
+        workload.mix = options[:mix].to_sym \
+          unless options[:mix] == 'default' && workload.mix != :default
         workload.remove_updates if options[:read_only]
         workload.scale_writes(options[:scale_writes]) if options[:scale_writes]
         cost_model = get_class('cost', options[:cost_model][:name]).new(**options[:cost_model])
