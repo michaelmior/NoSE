@@ -76,6 +76,7 @@ module NoSE
       collection :extra, decorator: FieldRepresenter
       collection :path, decorator: FieldRepresenter
 
+      property :entries
       property :entry_size
       property :size
       property :hash_count
