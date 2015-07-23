@@ -247,6 +247,8 @@ module NoSE
           # TODO: Chain enumerables of results instead
           result = []
           @logger.debug { "  #{statement.cql} * #{condition_list.size}" }
+
+          # Limit the total number of queries as well as the query limit
           condition_list.each do |conditions|
             values = conditions.map do |condition| value = condition.value ||
                       query.conditions[condition.field.id].value
@@ -261,14 +263,16 @@ module NoSE
               rows = new_results.to_a
               fail if rows.any? { |row| row.values.any?(&:nil?) }
               result += rows
-              break if new_results.last_page?
+              break if new_results.last_page? ||
+                       (!step.limit.nil? && result.length >= step.limit)
               new_results = new_results.next_page
               @logger.debug "Fetched #{result.length} results"
             end
           end
           @logger.debug "Total result size = #{result.size}"
 
-          result
+          # Limit the size of the results in case we fetched multiple keys
+          result[0..(step.limit.nil? ? -1 : step.limit)]
         end
 
         private
