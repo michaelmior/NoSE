@@ -388,6 +388,9 @@ module NoSE
             index_key = step_hash['index']['key']
             step_index = object.indexes.find { |index| index.key == index_key }
             step = step_class.new step_index, state, parent
+
+            limit = step_hash['limit']
+            step.instance_variable_set(:@limit, limit.to_i) unless limit.nil?
           elsif step_class == Plans::FilterPlanStep
             eq = step_hash['eq'].map(&f)
             range = f.call(step_hash['range']) if step_hash['range']
