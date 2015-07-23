@@ -12,7 +12,7 @@ NoSE::Workload.new do
   (Entity 'regions' do
     ID     'id'
     String 'name', 25
-  end) * 50
+  end) * 5
 
   (Entity 'users' do
     ID         'id'
