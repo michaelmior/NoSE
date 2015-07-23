@@ -245,6 +245,8 @@ module NoSE
       include Representable::JSON
       include Representable::YAML
 
+      property :cost
+      property :update_cost
       property :statement, decorator: StatementRepresenter
       property :index, decorator: IndexRepresenter
       collection :query_plans, decorator: QueryPlanRepresenter, class: Object
@@ -377,17 +379,17 @@ module NoSE
           if step_class == Plans::IndexLookupPlanStep
             index_key = step_hash['index']['key']
             step_index = object.indexes.find { |index| index.key == index_key }
-            step = step_class.new step_index, state, parent.state
+            step = step_class.new step_index, state, parent
           elsif step_class == Plans::FilterPlanStep
             eq = step_hash['eq'].map(&f)
             range = f.call(step_hash['range']) if step_hash['range']
-            step = step_class.new eq, range, parent.state
+            step = step_class.new eq, range, parent
           elsif step_class == Plans::SortPlanStep
             sort_fields = step_hash['sort_fields'].map(&f)
-            step = step_class.new sort_fields, parent.state
+            step = step_class.new sort_fields, parent
           elsif step_class == Plans::LimitPlanStep
             limit = step_hash['limit'].to_i
-            step = step_class.new limit, parent.state
+            step = step_class.new limit, parent
           end
 
           # Copy the correct cardinality
@@ -396,9 +398,6 @@ module NoSE
           state.instance_variable_set :@cardinality, step_hash['cardinality']
           step.instance_variable_set :@cost, step_hash['cost']
           step.state = state.freeze
-
-          # Force setting of the parent step
-          step.instance_variable_set :@parent, parent
 
           plan << step
           parent = step

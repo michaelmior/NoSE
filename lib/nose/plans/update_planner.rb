@@ -132,10 +132,9 @@ module NoSE
             if statement.is_a? Insert
               cardinality = 1
             else
-              cardinality = Cardinality.new_cardinality statement.from.count,
-                                                        statement.eq_fields,
-                                                        statement.range_field,
-                                                        path
+              cardinality = Cardinality.filter index.entries,
+                                               statement.eq_fields,
+                                               statement.range_field
             end
 
             state = UpdateState.new statement, cardinality
