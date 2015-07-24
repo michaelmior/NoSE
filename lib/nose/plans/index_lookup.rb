@@ -27,7 +27,8 @@ module NoSE
         if @state.nil?
           "#{super} #{@index.to_color}"
         else
-          "#{super} #{@index.to_color} * #{@state.cardinality} "
+          "#{super} #{@index.to_color} * " \
+            "#{@state.cardinality}/#{@state.hash_cardinality} "
         end
       end
       # :nocov:
@@ -153,11 +154,29 @@ module NoSE
         end
 
         # Check if we can apply the limit from the query
-        if @state.answered?(check_limit: false) && !@state.query.limit.nil?
+        # This occurs either when we are on the first or last index lookup
+        # and the ordering of the query has already been resolved
+        order_resolved = @state.order_by.empty? && @state.path.length == 1
+        if (@state.answered?(check_limit: false) ||
+            parent.is_a?(RootPlanStep) && order_resolved) &&
+           !@state.query.limit.nil?
           # XXX Assume that everything is limited by the limit value
           #     which should be fine if the limit is small enough
-          @limit = @state.cardinality = @state.hash_cardinality =
-            @state.query.limit
+          @limit = @state.query.limit
+          if parent.is_a?(RootPlanStep)
+            @state.cardinality /= @state.query.limit
+            @state.cardinality = [1, @state.cardinality.round].max
+            @state.hash_cardinality = 1
+          else
+            @limit = @state.cardinality = @state.query.limit
+
+            # If this is a final lookup by ID, go with the limit
+            if index.path.length == 1 && indexed_by_id
+              @state.hash_cardinality = @limit
+            else
+              @state.hash_cardinality = parent.state.cardinality
+            end
+          end
         else
           # Hash cardinality starts at 1 or is the previous cardinality
           @state.hash_cardinality = parent.is_a?(RootPlanStep) ?
