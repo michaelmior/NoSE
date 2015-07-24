@@ -7,18 +7,9 @@ module NoSE
       # Rough cost estimate as the number of requests made
       # @return [Numeric]
       def index_lookup_cost(step)
-        # We always start with a single lookup, then the number
-        # of lookups is determined by the cardinality at the preceding step
-        if step.parent.is_a?(Plans::RootPlanStep)
-          cardinality = 1
-        else
-          cardinality = step.parent.state.cardinality
-        end
-        parts = step.index.hash_count
-        rows = step.index.per_hash_count
+        rows = step.state.cardinality
+        parts = step.state.hash_cardinality
 
-        # Scale by the percentage of data actually accessed
-        parts *= cardinality * 1.0 / (rows + parts)
         @options[:partition_overhead] + parts * @options[:partition_cost] + \
           @options[:row_overhead] + rows * @options[:row_cost]
       end
