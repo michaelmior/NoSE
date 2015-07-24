@@ -268,6 +268,9 @@ module NoSE
               new_results = new_results.next_page
               @logger.debug "Fetched #{result.length} results"
             end
+
+            # Don't continue with further queries
+            break if (!step.limit.nil? && result.length >= step.limit)
           end
           @logger.debug "Total result size = #{result.size}"
 
