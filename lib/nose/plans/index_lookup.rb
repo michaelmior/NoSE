@@ -153,6 +153,17 @@ module NoSE
           @state.path = @state.path[index.path.length - 1..-1]
         end
 
+        # Calculate the new cardinality assuming no limit
+        # Hash cardinality starts at 1 or is the previous cardinality
+        @state.hash_cardinality = parent.is_a?(RootPlanStep) ?
+          1 : parent.state.cardinality
+
+        # Filter the total number of rows by filtering on non-hash fields
+        cardinality = @index.per_hash_count * @state.hash_cardinality
+        @state.cardinality = Cardinality.filter cardinality,
+                                                eq_filter - @index.hash_fields,
+                                                range_filter
+
         # Check if we can apply the limit from the query
         # This occurs either when we are on the first or last index lookup
         # and the ordering of the query has already been resolved
@@ -164,8 +175,7 @@ module NoSE
           #     which should be fine if the limit is small enough
           @limit = @state.query.limit
           if parent.is_a?(RootPlanStep)
-            @state.cardinality /= @state.query.limit
-            @state.cardinality = [1, @state.cardinality.round].max
+            @state.cardinality = [@limit, @state.cardinality].min
             @state.hash_cardinality = 1
           else
             @limit = @state.cardinality = @state.query.limit
@@ -177,17 +187,6 @@ module NoSE
               @state.hash_cardinality = parent.state.cardinality
             end
           end
-        else
-          # Hash cardinality starts at 1 or is the previous cardinality
-          @state.hash_cardinality = parent.is_a?(RootPlanStep) ?
-            1 : parent.state.cardinality
-
-          # Filter the total number of rows by filtering on non-hash fields
-          cardinality = @index.per_hash_count * @state.hash_cardinality
-          @state.cardinality = Cardinality.filter cardinality,
-                                                  eq_filter -
-                                                    @index.hash_fields,
-                                                  range_filter
         end
       end
     end
