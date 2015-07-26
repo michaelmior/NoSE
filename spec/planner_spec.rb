@@ -54,10 +54,10 @@ module NoSE::Plans
     end
 
     it 'can apply a limit directly' do
-      index = tweet.simple_index
+      query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User WHERE ' \
+                              'User.UserId = ? LIMIT 5', workload.model
+      index = query.materialize_view
       planner = QueryPlanner.new workload.model, [index], cost_model
-      query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet WHERE ' \
-                              'Tweet.TweetId = ? LIMIT 5', workload.model
 
       tree = planner.find_plans_for_query query
       expect(tree.first).to eq([IndexLookupPlanStep.new(index)])
