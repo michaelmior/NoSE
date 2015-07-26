@@ -10,7 +10,7 @@ module NoSE
         # We always start with a single lookup, then the number
         # of lookups is determined by the cardinality at the preceding step
         step.parent.is_a?(Plans::RootPlanStep) ? \
-          1 : step.parent.state.cardinality
+          1 : step.state.cardinality
       end
 
       # Cost estimate as number of entities deleted
