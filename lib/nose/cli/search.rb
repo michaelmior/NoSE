@@ -19,7 +19,7 @@ module NoSE
       option :output, type: :string, default: nil, aliases: '-o'
       def search(name)
         # Get the workload and cost model
-        workload = get_workload name
+        workload = Workload.load name
         workload.mix = options[:mix].to_sym \
           unless options[:mix] == 'default' && workload.mix != :default
         workload.remove_updates if options[:read_only]

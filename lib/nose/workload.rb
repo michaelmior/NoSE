@@ -20,6 +20,13 @@ module NoSE
       WorkloadDSL.new(self).instance_eval(&block) if block_given?
     end
 
+    # Find the workload with the given name
+    def self.load(name)
+      filename = File.expand_path "../../../workloads/#{name}.rb", __FILE__
+      contents = File.read(filename)
+      binding.eval contents, filename
+    end
+
     # Adjust the percentage of writes in the workload
     def scale_writes(scale)
       @statement_weights.values.each do |weights|
