@@ -19,7 +19,6 @@ NoSE::Workload.new do
 
   Group 'ViewItem', browsing: 22.95, bidding: 14.17 do
     Q 'SELECT items.* FROM items WHERE items.id = ?'
-    Q 'SELECT bids.bid FROM bids.item WHERE item.id = ? ORDER BY bids.bid LIMIT 1'
     Q 'SELECT bids.bid, bids.qty FROM bids.item WHERE item.id = ? ORDER BY bids.bid LIMIT 5'
     Q 'SELECT bids.id FROM bids.item WHERE item.id = ?' # XXX: total bids
   end
@@ -51,12 +50,36 @@ NoSE::Workload.new do
     Q 'CONNECT users(?) TO region(?)'
   end
 
+  Group 'BuyNow', bidding: 1.16 do
+    Q 'SELECT users.nickname FROM users WHERE users.id=?'
+    Q 'SELECT items.* FROM items WHERE items.id=?'
+  end
+
+  Group 'StoreBuyNow', bidding: 1.10 do
+    Q 'SELECT users.nickname FROM users WHERE users.id=?'
+    Q 'UPDATE items SET quantity=?, end_date=? WHERE items.id=?'
+    Q 'INSERT INTO buynow SET id=?, qty=?, date=?'
+    Q 'CONNECT buynow(?) TO item(?)'
+    Q 'CONNECT buynow(?) TO buyer(?)'
+  end
+
+  Group 'PutBid', bidding: 5.40 do
+    Q 'SELECT items.* FROM items WHERE items.id=?'
+    Q 'SELECT bids.qty, bids.date FROM bids.item WHERE item.id=? ORDER BY bids.bid LIMIT 2'
+    Q 'SELECT users.nickname FROM users WHERE users.id=?'
+  end
+
   Group 'StoreBid', bidding: 3.74 do
     Q 'INSERT INTO bids SET id=?, qty=?, bid=?, date=?'
     Q 'CONNECT bids(?) TO item(?)'
     Q 'CONNECT bids(?) TO user(?)'
-    Q 'SELECT items.nb_of_bids FROM items WHERE items.id=?'
-    Q 'UPDATE items SET nb_of_bids=? WHERE items.id=?'
+    Q 'SELECT items.nb_of_bids, items.max_bid FROM items WHERE items.id=?'
+    Q 'UPDATE items SET nb_of_bids=?, max_bid=? WHERE items.id=?'
+  end
+
+  Group 'PutComment', bidding: 0.46 do
+    Q 'SELECT items.* FROM items WHERE items.id=?'
+    Q 'SELECT users.* FROM users WHERE users.id=?'
   end
 
   Group 'StoreComment', bidding: 0.45 do
@@ -65,6 +88,22 @@ NoSE::Workload.new do
     Q 'CONNECT comments(?) TO to_user(?)'
     # Q 'CONNECT comments(?) TO from_user(?)'
     Q 'CONNECT comments(?) TO item(?)'
+  end
+
+  Group 'AboutMe', bidding: 1.71 do
+    Q 'SELECT users.* FROM users WHERE users.id=?'
+    Q 'SELECT items.id, items.max_bid FROM items.bids.user WHERE user.id=? AND items.end_date>=?'
+    Q 'SELECT items_sold.*, users.nickname FROM users.items_sold WHERE items_sold.id=?'
+
+
+    # XXX No seller nickname
+    Q 'SELECT buynow.* FROM buynow.buyer WHERE buyer.id=? AND buynow.date>=?'
+    Q 'SELECT item.* FROM buynow.item WHERE buynow.id=?'
+
+    Q 'SELECT items.* FROM items.seller WHERE seller.id=? AND items.end_date >=?'
+
+    # XXX No received nickname
+    Q 'SELECT comments_received.* FROM users.comments_received WHERE users.id = ?'
   end
 end
 
