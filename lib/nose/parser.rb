@@ -323,10 +323,12 @@ module NoSE
       if first.parent == entity
         query_keys = KeyPath.new([entity.id_fields.first])
       else
-        query_keys = KeyPath.new(each_cons(2).take_while do |key, _|
-          next true if key.instance_of?(Fields::IDField)
-          key.entity == entity
-        end.flatten(1))
+        query_keys = []
+        each do |key|
+          query_keys << key
+          break if key.is_a?(Fields::ForeignKeyField) && key.entity == entity
+        end
+        query_keys = KeyPath.new(query_keys)
       end
       query_keys + target
     end
@@ -615,7 +617,7 @@ module NoSE
 
     protected
 
-    def support_query_for_path(index, query_keys, where, all = false)
+    def support_query_for_path(index, query_keys, where = nil, all = false)
       query_from = query_keys.map(&:name)
       query_from[0] = query_keys.first.parent.name
 
@@ -637,6 +639,14 @@ module NoSE
       required_fields.delete_if(&:nil?)
       return nil if required_fields.empty?
 
+      # Reconstruct a valid where clause with the new path
+      where = 'WHERE ' + @conditions.values.map do |condition|
+        parent = query_keys.find_field_parent condition.field
+        value = condition.value.nil? ? '?' : condition.value
+
+        "#{parent.name}.#{condition.field.name} #{condition.operator} #{value}"
+      end.join(' AND ') if where.nil?
+
       query = "SELECT #{required_fields.to_a.join ', ' } " \
               "FROM #{query_from.join '.'} #{where}"
       SupportQuery.new query, @model, self, index
@@ -657,7 +667,7 @@ module NoSE
       path2 = index.path.reverse.splice @key_path, @from
 
       query_keys = [path1, path2].max_by(&:length)
-      support_query_for_path index, query_keys, @where_source, all
+      support_query_for_path index, query_keys, nil, all
     end
 
     private
