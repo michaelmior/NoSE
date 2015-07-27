@@ -16,7 +16,7 @@ module NoSE
                       enum: %w(txt json yml), aliases: '-f'
       def search_all(name, directory)
         # Load the workload and cost model and create the output directory
-        workload = get_workload name
+        workload = Workload.load name
         workload.mix = options[:mix].to_sym \
           unless options[:mix] == 'default' && workload.mix != :default
         workload.remove_updates if options[:read_only]

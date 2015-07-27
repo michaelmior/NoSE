@@ -47,13 +47,6 @@ module NoSE
           .new(defaults.merge(original_options))
       end
 
-      # Find the workload with the given name
-      def get_workload(name)
-        filename = File.expand_path "../../../workloads/#{name}.rb", __FILE__
-        contents = File.read(filename)
-        binding.eval contents, filename
-      end
-
       # Get a backend instance for a given configuration and dataset
       def get_backend(config, result)
         be_class = get_class 'backend', config

@@ -26,7 +26,7 @@ module NoSE
     # Compare by name
     # @return [Boolean]
     def ==(other)
-      @name == other.name
+      @name == other.instance_variable_get(:@name)
     end
     alias_method :eql?, :==
 

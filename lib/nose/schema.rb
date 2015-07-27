@@ -26,12 +26,12 @@ module NoSE
             if field_name == '*'
               entity.fields.values
             else
-              entity.fields[field_name]
+              entity.fields[field_name] || entity.foreign_keys[field_name]
             end
           end
 
           # Define methods named for fields so things like 'user.id' work
-          entity.fields.each do |field_name, field|
+          entity.fields.merge(entity.foreign_keys).each do |field_name, field|
             metaclass.send :define_method, field_name.to_sym, -> { field }
           end
 
