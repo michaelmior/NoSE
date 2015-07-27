@@ -187,6 +187,34 @@ module NoSE
       @workload.mix = mix
     end
 
+    def Group(_name, weight = 1.0, **mixes, &block)
+      # Apply the DSL
+      dsl = GroupDSL.new
+      dsl.instance_eval(&block) if block_given?
+      mixes.keys.each { |mix| mixes[mix] /= dsl.statements.length }
+      dsl.statements.each do |statement|
+        Q(statement, weight, **mixes)
+      end
+    end
+
+    # rubocop:enable MethodName
+  end
+
+  # A helper class for DSL creation to allow groups of statements
+  class GroupDSL
+    attr_reader :statements
+
+    def initialize
+      @statements = []
+    end
+
+    # rubocop:disable MethodName
+
+    # Track a new statement to be added
+    def Q(statement)
+      @statements << statement
+    end
+
     # rubocop:enable MethodName
   end
 end

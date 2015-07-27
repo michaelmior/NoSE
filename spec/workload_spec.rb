@@ -67,5 +67,31 @@ module NoSE
       expect(workload.queries).not_to be_empty
       expect(workload.updates).to be_empty
     end
+
+    it 'can group statements' do
+      query1 = 'SELECT Foo.Bar FROM Foo WHERE Foo.Id = ?'
+      query2 = 'SELECT Foo.Baz FROM Foo WHERE Foo.Id = ?'
+
+      workload = Workload.new do
+        Entity 'Foo' do
+          ID 'Id'
+          String 'Bar'
+          String 'Baz'
+        end
+
+        Group 'Test1', 0.5 do
+          Q query1
+        end
+
+        Group 'Test2', 0.5 do
+          Q query2
+        end
+      end
+
+      expect(workload.statement_weights).to eq(
+        Statement.parse(query1, workload.model) => 0.5,
+        Statement.parse(query2, workload.model) => 0.5
+      )
+    end
   end
 end
