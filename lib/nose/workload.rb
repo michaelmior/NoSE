@@ -138,36 +138,46 @@ module NoSE
 
   # A helper class for DSL creation to avoid messing with {Workload}
   class WorkloadDSL
-    def initialize(workload)
-      @workload = workload
+    def initialize(arg)
+      if arg.is_a? Workload
+        @workload = arg
+        @model = arg.model
+      elsif arg.is_a? Model
+        @model = arg
+      end
     end
 
     # rubocop:disable MethodName
 
+    # Allow the use of an external model
+    def Model(name)
+      @workload.instance_variable_set(:@model, NoSE::Model.load(name))
+    end
+
     # Shortcut to add a new {Entity} to the workload
     def Entity(*args, &block)
-      @workload.model.add_entity Entity.new(*args, &block)
+      @model.add_entity Entity.new(*args, &block)
     end
 
     # Separate function for foreign keys to avoid circular dependencies
     def HasMany(from_name, to_name, entities, **options)
       from_entity, to_entity = entities.first
       from_field = Fields::ForeignKeyField.new from_name,
-                                               @workload.model[to_entity],
+                                               @model[to_entity],
                                                **options
 
       # Add the key in the opposite direction
-      options[:count] = @workload.model[from_entity].count
+      options[:count] = @model[from_entity].count
       options[:relationship] = :many
       to_field = Fields::ForeignKeyField.new to_name,
-                                             @workload.model[from_entity],
+                                             @model[from_entity],
                                              **options
 
       # Set the opposite keys and add to entities
       to_field.reverse = from_field
       from_field.reverse = to_field
-      @workload.model[from_entity] << from_field
-      @workload.model[to_entity] << to_field
+      @model[from_entity] << from_field
+      @model[to_entity] << to_field
     end
 
     # Add a HasOne operation which is just the opposite of HasMany
@@ -177,6 +187,8 @@ module NoSE
 
     # Shortcut to add a new {Statement} to the workload
     def Q(statement, weight = 1.0, **mixes)
+      fail 'Statements require a workload' if @workload.nil?
+
       return if weight == 0 && mixes.empty?
       mixes = { default: weight } if mixes.empty?
       @workload.add_statement statement, mixes
@@ -188,6 +200,8 @@ module NoSE
     end
 
     def Group(_name, weight = 1.0, **mixes, &block)
+      fail 'Groups require a workload' if @workload.nil?
+
       # Apply the DSL
       dsl = GroupDSL.new
       dsl.instance_eval(&block) if block_given?
