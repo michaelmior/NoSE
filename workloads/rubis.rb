@@ -41,20 +41,6 @@ NoSE::Workload.new do
     Date       'end_date', count: 1
   end) * 33721
 
-  (Entity 'olditems' do
-    ID         'id'
-    String     'name', 100, count: 500000
-    String     'description', 255, count: 500000
-    Float      'initial_price', count: 5000
-    Integer    'quantity', count: 10
-    Float      'reserve_price', count: 5974
-    Float      'buy_now', count: 11310
-    Integer    'nb_of_bids', count: 58
-    Float      'max_bid', count: 5125
-    Date       'start_date', count: 48436
-    Date       'end_date', count: 239737
-  end) * 500000
-
   (Entity 'bids' do
     ID         'id'
     Integer    'qty', count: 10
@@ -83,12 +69,6 @@ NoSE::Workload.new do
 
   HasOne 'category',    'items',
          'items'     => 'categories'
-
-  HasOne 'seller',      'olditems_sold',
-         'olditems'  => 'users'
-
-  HasOne 'category',    'olditems',
-         'olditems'  => 'categories'
 
   HasOne 'user',        'bids',
          'bids'      => 'users', count: 993655
@@ -122,8 +102,6 @@ NoSE::Workload.new do
   # ViewBidHistory
   Q 'SELECT items.name FROM items WHERE items.id = ?',
     browsing: 2.38 / 4, bidding: 1.54 / 4
-  Q 'SELECT olditems.name FROM olditems WHERE olditems.id = ?',
-    browsing: 2.38 / 4, bidding: 1.54 / 4
   Q 'SELECT bids.id, item.id, bids.qty, bids.bid, bids.date FROM bids.item WHERE item.id = ? ORDER BY bids.date',
     browsing: 2.38 / 4, bidding: 1.54 / 4
   Q 'SELECT users.id, users.nickname, bids.id FROM users.bids.item WHERE item.id = ?',
@@ -131,9 +109,7 @@ NoSE::Workload.new do
 
   # ViewItem
   Q 'SELECT items.* FROM items WHERE items.id = ?',
-    browsing: 22.95 / 4 * 0.75, bidding: 14.17 / 4 * 0.75
-  Q 'SELECT olditems.* FROM olditems WHERE olditems.id = ?',
-    browsing: 22.95 / 4 * 0.25, bidding: 14.17 / 4 * 0.25
+    browsing: 22.95 / 4 * 0.75, bidding: 14.17 / 4
   Q 'SELECT bids.bid FROM bids.item WHERE item.id = ? ORDER BY bids.bid LIMIT 1',
     browsing: 22.95 / 4, bidding: 14.17 / 4
   Q 'SELECT bids.bid, bids.qty FROM bids.item WHERE item.id = ? ORDER BY bids.bid LIMIT 5',
