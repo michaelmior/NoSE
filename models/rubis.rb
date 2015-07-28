@@ -6,90 +6,90 @@ NoSE::Model.new do
 
   (Entity 'categories' do
     ID     'id'
-    String 'name', 20, count: 20
+    String 'name', 20
     Integer 'dummy', count: 1
-  end) * 20
+  end) * 50
 
   (Entity 'regions' do
     ID     'id'
-    String 'name', 25, count: 62
-  end) * 62
+    String 'name', 25
+  end) * 5
 
   (Entity 'users' do
     ID         'id'
-    String     'firstname', 20, count: 1001848
-    String     'lastname', 20, count: 1001848
-    String     'nickname', 20, count: 1001848
-    String     'password', 20, count: 1001848
-    String     'email', 20, count: 1001848
-    Integer    'rating', count: 5
-    Float      'balance', count: 1
-    Date       'creation_date', count: 10381
-  end) * 1001848
+    String     'firstname', 6
+    String     'lastname', 7
+    String     'nickname', 12
+    String     'password', 15
+    String     'email', 23
+    Integer    'rating', count: 50
+    Float      'balance', count: 10_000
+    Date       'creation_date'
+  end) * 200_000
 
   (Entity 'items' do
     ID         'id'
-    String     'name', 100, count: 33721
-    String     'description', 255, count: 33721
-    Float      'initial_price', count: 4494
-    Integer    'quantity', count: 11
-    Float      'reserve_price', count: 389
-    Float      'buy_now', count: 97
-    Integer    'nb_of_bids', count: 15
-    Float      'max_bid', count: 2167
-    Date       'start_date', count: 1
-    Date       'end_date', count: 1
-  end) * 33721
+    String     'name', 19
+    String     'description', 197
+    Float      'initial_price'
+    Integer    'quantity', count: 100
+    Float      'reserve_price'
+    Float      'buy_now'
+    Integer    'nb_of_bids', count: 100
+    Float      'max_bid'
+    Date       'start_date'
+    Date       'end_date'
+  end) * 2_000_000
 
   (Entity 'bids' do
     ID         'id'
-    Integer    'qty', count: 10
-    Float      'bid', count: 5121
-    Date       'date', count: 52913
-  end) * 5060576
+    Integer    'qty', count: 5
+    Float      'bid'
+    Date       'date'
+  end) * 20_000_000
 
   (Entity 'comments' do
     ID         'id'
-    Integer    'rating', count: 5
-    Date       'date', count: 51399
-    String     'comment', 255, count: 533426
-  end) * 533426
+    Integer    'rating', count: 10
+    Date       'date'
+    String     'comment', 130
+  end) * 10_000_000
 
   (Entity 'buynow' do
     ID         'id'
-    Integer    'qty', count: 10
-    Date       'date', count: 915
-  end) * 1882
+    Integer    'qty', count: 4
+    Date       'date'
+  end) * 4_000_000
 
-  HasOne 'region',      'users',
-         'users'     => 'regions', count: 62
+  HasOne 'region',       'users',
+         'users'      => 'regions'
 
-  HasOne 'seller',      'items_sold',
-         'items'     => 'users'
+  HasOne 'seller',       'items_sold',
+         'items'      => 'users'
 
-  HasOne 'category',    'items',
-         'items'     => 'categories'
+  HasOne 'category',     'items',
+         'items'      => 'categories'
 
-  HasOne 'user',        'bids',
-         'bids'      => 'users', count: 993655
+  HasOne 'user',         'bids',
+         'bids'       => 'users'
 
-  HasOne 'item',        'bids',
-         'bids'      => 'items', count: 426931
+  HasOne 'item',         'bids',
+         'bids'       => 'items'
 
-  # HasOne 'from_user',   'comments_sent',
-  #        'comments'  => 'users', count: 41603
+  HasOne 'from_user',    'comments_sent',
+         'comments'   => 'users'
 
-  HasOne 'to_user',     'comments_received',
-         'comments'  => 'users', count: 443798
+  HasOne 'to_user',      'comments_received',
+         'comments'   => 'users'
 
-  HasOne 'item',        'comments',
-         'comments'  => 'items', count: 533426
+  HasOne 'item',         'comments',
+         'comments'   => 'items'
 
-  HasOne 'buyer',       'bought_now',
-         'buynow'    => 'users', count: 1519
+  HasOne 'buyer',        'bought_now',
+         'buynow'     => 'users'
 
-  HasOne 'item',        'bought_now',
-         'buynow'    => 'items', count: 1549
+  HasOne 'item',         'bought_now',
+         'buynow'     => 'items'
 end
 
 # rubocop:enable all
