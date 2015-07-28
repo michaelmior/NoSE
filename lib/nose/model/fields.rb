@@ -32,19 +32,18 @@ module NoSE
       # Hash by entity and name
       # @return [Fixnum]
       def hash
-        @hash ||= Zlib.crc32 [@parent.instance_variable_get(:@name),
-                              @name].to_s
+        @hash ||= Zlib.crc32 [@parent.name, @name].to_s
       end
 
       # :nocov:
       def to_color
-        "[blue]#{@parent.instance_variable_get(:@name)}[/].[blue]#{@name}[/]"
+        "[blue]#{@parent.name}[/].[blue]#{@name}[/]"
       end
       # :nocov:
 
       # A simple string representing the field
       def id
-        "#{@parent.instance_variable_get(:@name)}_#{@name}"
+        "#{@parent.name}_#{@name}"
       end
 
       # Set the estimated cardinality of the field
@@ -57,7 +56,7 @@ module NoSE
       # Return the previously set cardinality, falling back to the number of
       # entities for the field if set, or just 1
       def cardinality
-        @cardinality || @parent.instance_variable_get(:@count) || 1
+        @cardinality || @parent.count || 1
       end
 
       # @abstract Subclasses should produce a typed value from a string
