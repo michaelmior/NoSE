@@ -17,9 +17,12 @@ module NoSE
       @workload = binding.eval contents, filename
 
       @workload.model.entities.each do |entity_name, entity|
+        # Add fake entity object for the DSL
+        fake = Object.new
+
         # Add a method named by the entity to allow field creation
         IndexDSL.send :define_method, entity_name.to_sym, (proc do
-          metaclass = class << entity; self; end
+          metaclass = class << fake; self; end
 
           # Allow fields to be defined using [] access
           metaclass.send :define_method, :[] do |field_name|
@@ -35,7 +38,7 @@ module NoSE
             metaclass.send :define_method, field_name.to_sym, -> { field }
           end
 
-          entity
+          fake
         end)
       end
     end
