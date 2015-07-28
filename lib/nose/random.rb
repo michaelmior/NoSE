@@ -153,7 +153,8 @@ module NoSE
       path_end = path.index(field.parent)
       last_entity = path.first
       path[1..path_end].each do |entity|
-        field_path += '.' + last_entity.foreign_key_for(entity).name
+        fk = last_entity.foreign_keys.find { |key| key.entity == entity }
+        field_path += '.' + fk.name
         last_entity = entity
       end
 
