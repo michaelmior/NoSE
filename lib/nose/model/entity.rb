@@ -42,12 +42,6 @@ module NoSE
       fields.values.select(&:primary_key?)
     end
 
-    # Find the foreign key to a particular entity
-    # @return [Fields::Field, nil]
-    def foreign_key_for(entity)
-      @foreign_keys.values.find { |field| field.entity == entity }
-    end
-
     # Adds a {Fields::Field} to the entity
     def <<(field, freeze: true)
       if field.is_a? Fields::ForeignKeyField
