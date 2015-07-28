@@ -20,7 +20,6 @@ NoSE::Workload.new do
   Group 'ViewItem', browsing: 22.95, bidding: 14.17 do
     Q 'SELECT items.* FROM items WHERE items.id = ?'
     Q 'SELECT bids.bid, bids.qty FROM bids.item WHERE item.id = ? ORDER BY bids.bid LIMIT 5'
-    Q 'SELECT bids.id FROM bids.item WHERE item.id = ?' # XXX: total bids
   end
 
   Group 'SearchItemsByCategory', browsing: 27.77 + 8.26, bidding: 15.94 + 6.34 do
@@ -87,7 +86,7 @@ NoSE::Workload.new do
     Q 'UPDATE users SET rating=? WHERE users.id=?'
     Q 'INSERT INTO comments SET id=?, rating=?, date=?, comment=?'
     Q 'CONNECT comments(?) TO to_user(?)'
-    # Q 'CONNECT comments(?) TO from_user(?)'
+    Q 'CONNECT comments(?) TO from_user(?)'
     Q 'CONNECT comments(?) TO item(?)'
   end
 
@@ -97,14 +96,14 @@ NoSE::Workload.new do
     Q 'SELECT items_sold.*, users.nickname FROM users.items_sold WHERE items_sold.id=?'
 
 
-    # XXX No seller nickname
     Q 'SELECT buynow.* FROM buynow.buyer WHERE buyer.id=? AND buynow.date>=?'
+    Q 'SELECT seller.nickname FROM buynow.item.seller WHERE buynow.id=?'
     Q 'SELECT item.* FROM buynow.item WHERE buynow.id=?'
 
     Q 'SELECT items.* FROM items.seller WHERE seller.id=? AND items.end_date >=?'
 
-    # XXX No received nickname
     Q 'SELECT comments_received.* FROM users.comments_received WHERE users.id = ?'
+    Q 'SELECT users.nickname FROM users.comments_sent WHERE comments_sent.id=?'
   end
 end
 
