@@ -83,6 +83,7 @@ NoSE::Workload.new do
   end
 
   Group 'StoreComment', bidding: 0.45 do
+    Q 'SELECT users.rating FROM users WHERE users.id=?'
     Q 'UPDATE users SET rating=? WHERE users.id=?'
     Q 'INSERT INTO comments SET id=?, rating=?, date=?, comment=?'
     Q 'CONNECT comments(?) TO to_user(?)'
