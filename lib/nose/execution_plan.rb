@@ -8,6 +8,13 @@ module NoSE
       instance_eval(&block) if block_given?
     end
 
+    # Find the plans with the given name
+    def self.load(name)
+      filename = File.expand_path "../../../plans/#{name}.rb", __FILE__
+      contents = File.read(filename)
+      binding.eval contents, filename
+    end
+
     # rubocop:disable MethodName
 
     # Set the schema to be used by the execution plans
@@ -42,7 +49,7 @@ module NoSE
     def initialize(schema)
       @schema = schema
       @select = []
-      @params = []
+      @params = {}
       @steps = []
     end
 
@@ -50,13 +57,13 @@ module NoSE
 
     # Identify fields to be selected
     def Select(*fields)
-      @select = fields
+      @select = fields.flatten.to_set
     end
 
     # Add parameters which are used as input to the plan
     def Param(field, operator, value = nil)
       operator = :'=' if operator == :==
-      @params << Condition.new(field, operator, value)
+      @params[field.id] = Condition.new(field, operator, value)
     end
 
     # Create a new index lookup step with a particular set of conditions
@@ -76,6 +83,9 @@ module NoSE
 
       step.instance_variable_set :@eq_filter, eq_fields
       step.instance_variable_set :@range_filter, range_field
+
+      # XXX No ordering supported for now
+      step.instance_variable_set :@order_by, []
 
       @steps << step
     end
