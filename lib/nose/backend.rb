@@ -18,33 +18,39 @@ module NoSE
       end
       # :nocov:
 
+      # Prepare a query to be executed with the given plans
+      def prepare_query(query, fields, conditions, plans = [])
+        if plans.empty?
+          plan = @plans.find do |possible_plan|
+            possible_plan.query == query
+          end unless query.nil?
+          fail PlanNotFound if plan.nil?
+        else
+          plan = plans.first
+        end
+
+        state = Plans::QueryState.new(query, @workload) unless query.nil?
+        first_step = Plans::RootPlanStep.new state
+        steps = [first_step] + plan.to_a + [nil]
+        exec_steps = steps.each_cons(3).map do |prev_step, step, next_step|
+          step_class = StatementStep.subtype_class step.subtype_name
+
+          # Check if the subclass has overridden this step
+          subclass_step_name = step_class.name.sub \
+            'NoSE::Backend::BackendBase', self.class.name
+          step_class = Object.const_get subclass_step_name
+          step_class.new client, fields, conditions,
+                         step, next_step, prev_step
+        end
+
+        PreparedQuery.new query, exec_steps
+      end
+
       # Prepare a statement to be executed with the given plans
       def prepare(statement, plans = [])
         if statement.is_a? Query
-          if plans.empty?
-            plan = @plans.find do |possible_plan|
-              possible_plan.query == statement
-            end
-            fail PlanNotFound if plan.nil?
-          else
-            plan = plans.first
-          end
-
-          first_step = Plans::RootPlanStep.new \
-            Plans::QueryState.new(statement, @workload)
-          steps = [first_step] + plan.to_a + [nil]
-          exec_steps = steps.each_cons(3).map do |prev_step, step, next_step|
-            step_class = StatementStep.subtype_class step.subtype_name
-
-            # Check if the subclass has overridden this step
-            subclass_step_name = step_class.name.sub \
-              'NoSE::Backend::BackendBase', self.class.name
-            step_class = Object.const_get subclass_step_name
-            step_class.new client, statement.all_fields, statement.conditions,
-                           step, next_step, prev_step
-          end
-
-          prepared = PreparedQuery.new statement, exec_steps
+          prepared = prepare_query statement, statement.all_fields,
+                                   statement.conditions, plans
         else
           fail NotImplementedError
         end
