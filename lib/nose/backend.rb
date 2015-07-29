@@ -65,24 +65,16 @@ module NoSE
         include Supertype
       end
 
+      # Look up data on an index in the backend
+      class IndexLookupStatementStep < StatementStep
+      end
+
       # Insert data into an index on the backend
       class InsertStatementStep < StatementStep
-        # @abstract Subclasses should insert data matching the provided results
-        # :nocov:
-        def self.process(_client, _index, _results)
-          fail NotImplementedError, 'Must be provided by a subclass'
-        end
-        # :nocov:
       end
 
       # Delete data from an index on the backend
       class DeleteStatementStep < StatementStep
-        # @abstract Subclasses should delete data matching the provided results
-        # :nocov:
-        def self.process(_client, _index, _results)
-          fail NotImplementedError, 'Must be provided by a subclass'
-        end
-        # :nocov:
       end
 
       # Perform filtering external to the backend
