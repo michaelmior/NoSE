@@ -2,11 +2,18 @@ module NoSE
   module CLI
     # Add a command to load index data into a backend from a configured loader
     class NoSECLI < Thor
-      desc 'load PLAN_FILE', 'create indexes from the given PLAN_FILE'
+      desc 'load PLAN_FILE_OR_SCHEMA', 'create indexes from the given PLAN_FILE_OR_SCHEMA'
       option :progress, type: :boolean, default: true, aliases: '-p'
       option :limit, type: :numeric, default: nil, aliases: '-l'
       def load(plan_file)
-        result = load_results(plan_file)
+        if File.exist? plan_file
+          result = load_results(plan_file)
+        else
+          schema = Schema.load plan_file
+          result = OpenStruct.new
+          result.workload = schema.workload
+          result.indexes = schema.indexes.values
+        end
         backend = get_backend(options, result)
 
         # Create a new instance of the loader class
