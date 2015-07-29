@@ -25,26 +25,21 @@ module NoSE
           fail PlanNotFound if plan.nil?
         end
 
-        results = nil
         first_step = Plans::RootPlanStep.new \
           Plans::QueryState.new(query, @workload)
         steps = [first_step] + plan.to_a + [nil]
-        steps.each_cons(3) do |prev_step, step, next_step|
+        exec_steps = steps.each_cons(3).map do |prev_step, step, next_step|
           step_class = StatementStep.subtype_class step.subtype_name
 
           # Check if the subclass has overridden this step
           subclass_step_name = step_class.name.sub 'NoSE::Backend::BackendBase',
                                                    self.class.name
           step_class = Object.const_get subclass_step_name
-
-          prepared = step_class.new client, query, step, next_step, prev_step
-          results = prepared.process query.conditions, results
-
-          # The query can't return any results at this point, so we're done
-          break if results.empty?
+          step_class.new client, query, step, next_step, prev_step
         end
 
-        results
+        prepared = PreparedQuery.new query, exec_steps
+        prepared.execute query.conditions
       end
 
       # Execute an update with the stored plans
@@ -215,6 +210,30 @@ module NoSE
 
         # Execute the support query and return the results
         query(support_query, query_plan)
+      end
+    end
+
+    # A prepared query which can be executed against the backend
+    class PreparedQuery
+      attr_reader :query
+
+      def initialize(query, steps)
+        @query = query
+        @steps = steps
+      end
+
+      # Execute the query for the given set of conditions
+      def execute(conditions)
+        results = nil
+
+        @steps.each do |step|
+          results = step.process conditions, results
+
+          # The query can't return any results at this point, so we're done
+          break if results.empty?
+        end
+
+        results
       end
     end
 
