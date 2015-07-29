@@ -13,32 +13,47 @@ module NoSE
       # @abstract Subclasses implement to allow inserting
       #           data into the backend database
       # :nocov:
-      def index_insert_chunk(index, chunk)
-        raise NotImplementedError
+      def index_insert_chunk(_index, _chunk)
+        fail NotImplementedError
       end
       # :nocov:
 
+      # Prepare a statement to be executed with the given plans
+      def prepare(statement, plans = [])
+        if statement.is_a? Query
+          if plans.empty?
+            plan = @plans.find do |possible_plan|
+              possible_plan.query == statement
+            end
+            fail PlanNotFound if plan.nil?
+          else
+            plan = plans.first
+          end
+
+          first_step = Plans::RootPlanStep.new \
+            Plans::QueryState.new(statement, @workload)
+          steps = [first_step] + plan.to_a + [nil]
+          exec_steps = steps.each_cons(3).map do |prev_step, step, next_step|
+            step_class = StatementStep.subtype_class step.subtype_name
+
+            # Check if the subclass has overridden this step
+            subclass_step_name = step_class.name.sub \
+              'NoSE::Backend::BackendBase', self.class.name
+            step_class = Object.const_get subclass_step_name
+            step_class.new client, statement, step, next_step, prev_step
+          end
+
+          prepared = PreparedQuery.new statement, exec_steps
+        else
+          fail NotImplementedError
+        end
+
+        prepared
+      end
+
       # Execute a query with the stored plans
-      def query(query, plan = nil)
-        if plan.nil?
-          plan = @plans.find { |possible_plan| possible_plan.query == query }
-          fail PlanNotFound if plan.nil?
-        end
-
-        first_step = Plans::RootPlanStep.new \
-          Plans::QueryState.new(query, @workload)
-        steps = [first_step] + plan.to_a + [nil]
-        exec_steps = steps.each_cons(3).map do |prev_step, step, next_step|
-          step_class = StatementStep.subtype_class step.subtype_name
-
-          # Check if the subclass has overridden this step
-          subclass_step_name = step_class.name.sub 'NoSE::Backend::BackendBase',
-                                                   self.class.name
-          step_class = Object.const_get subclass_step_name
-          step_class.new client, query, step, next_step, prev_step
-        end
-
-        prepared = PreparedQuery.new query, exec_steps
+      def query(query, plans = nil)
+        prepared = prepare query, plans
         prepared.execute query.conditions
       end
 
