@@ -213,9 +213,8 @@ module NoSE
           select &= step.index.all_fields
 
           # TODO: Check if we can apply the next filter via ALLOW FILTERING
-          @eq_fields = (prev_step.state.eq - step.state.eq).to_set
-          @eq_fields += step.index.hash_fields
-          @range_field = prev_step.state.range if step.state.range.nil?
+          @eq_fields = step.eq_filter
+          @range_field = step.range_filter
 
           cql = "SELECT #{select.map(&:id).join ', '} FROM " \
             "\"#{step.index.key}\" WHERE "

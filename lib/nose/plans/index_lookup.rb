@@ -2,7 +2,7 @@ module NoSE
   module Plans
     # Superclass for steps using indices
     class IndexLookupPlanStep < PlanStep
-      attr_reader :index, :limit, :order_by
+      attr_reader :index, :eq_filter, :range_filter, :limit, :order_by
 
       def initialize(index, state = nil, parent = nil)
         super()
@@ -117,17 +117,18 @@ module NoSE
         order_prefix = order_prefix.take_while { |x, y| x == y }.map(&:first)
 
         # Find fields which are filtered by the index
-        eq_filter = @state.eq & (@index.hash_fields + order_prefix).to_set
+        @eq_filter = @state.eq & (@index.hash_fields + order_prefix).to_set
+        @eq_filter += @index.hash_fields
         if order_prefix.include?(@state.range)
-          range_filter = @state.range
+          @range_filter = @state.range
           @state.range = nil
         else
-          range_filter = nil
+          @range_filter = nil
         end
 
         # Remove fields resolved by this index
         @state.fields -= @index.all_fields
-        @state.eq -= eq_filter
+        @state.eq -= @eq_filter
 
         # We can't resolve ordering if we're doing an ID lookup
         # since only one record exists per row (if it's the same entity)
@@ -161,8 +162,9 @@ module NoSE
         # Filter the total number of rows by filtering on non-hash fields
         cardinality = @index.per_hash_count * @state.hash_cardinality
         @state.cardinality = Cardinality.filter cardinality,
-                                                eq_filter - @index.hash_fields,
-                                                range_filter
+                                                @eq_filter -
+                                                  @index.hash_fields,
+                                                @range_filter
 
         # Check if we can apply the limit from the query
         # This occurs either when we are on the first or last index lookup
