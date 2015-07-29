@@ -40,7 +40,8 @@ module NoSE
             subclass_step_name = step_class.name.sub \
               'NoSE::Backend::BackendBase', self.class.name
             step_class = Object.const_get subclass_step_name
-            step_class.new client, statement, step, next_step, prev_step
+            step_class.new client, statement.all_fields, statement.conditions,
+                           step, next_step, prev_step
           end
 
           prepared = PreparedQuery.new statement, exec_steps
