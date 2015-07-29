@@ -49,8 +49,9 @@ module NoSE::Backend
       expect(client).to receive(:execute) \
         .with(backend_query, 'Bob').and_return(results)
 
-      CassandraBackend::IndexLookupStatementStep.process client, query, nil,
-                                                         step, step.parent, nil
+      step_class = CassandraBackend::IndexLookupStatementStep
+      prepared = step_class.new client, query, step, nil, step.parent
+      prepared.process query.conditions, nil
     end
 
     it 'can insert into an index' do
@@ -67,7 +68,9 @@ module NoSE::Backend
       expect(client).to receive(:execute) \
         .with(backend_insert, kind_of(Cassandra::Uuid), 'http://www.example.com/')
 
-      CassandraBackend::InsertStatementStep.process client, index, values
+      step_class = CassandraBackend::InsertStatementStep
+      prepared = step_class.new client, index, values.first.keys
+      prepared.process values
     end
   end
 
@@ -76,16 +79,18 @@ module NoSE::Backend
 
     it 'can sort a list of results' do
       results = [
-        {'User_Username' => 'Bob'},
-        {'User_Username' => 'Alice'}
+        { 'User_Username' => 'Bob' },
+        { 'User_Username' => 'Alice' }
       ]
       step = NoSE::Plans::SortPlanStep.new [user['Username']]
 
-      BackendBase::SortStatementStep.process nil, nil, results, step, nil, nil
+      step_class = BackendBase::SortStatementStep
+      prepared = step_class.new nil, nil, step, nil, nil
+      results = prepared.process nil, results
 
       expect(results).to eq [
-        {'User_Username' => 'Alice'},
-        {'User_Username' => 'Bob'}
+        { 'User_Username' => 'Alice' },
+        { 'User_Username' => 'Bob' }
       ]
     end
   end
@@ -95,33 +100,35 @@ module NoSE::Backend
 
     it 'can filter results by an equality predicate' do
       results = [
-        {'User_Username' => 'Alice'},
-        {'User_Username' => 'Bob'}
+        { 'User_Username' => 'Alice' },
+        { 'User_Username' => 'Bob' }
       ]
       step = NoSE::Plans::FilterPlanStep.new [user['Username']], nil
       query = NoSE::Query.new 'SELECT User.* FROM User ' \
                               'WHERE User.Username = "Bob"', workload.model
 
-      BackendBase::FilterStatementStep.process nil, query, results, step,
-                                               nil, nil
+      step_class = BackendBase::FilterStatementStep
+      prepared = step_class.new nil, query, step, nil, nil
+      results = prepared.process query.conditions, results
 
       expect(results).to eq [
-        {'User_Username' => 'Bob'}
+        { 'User_Username' => 'Bob' }
       ]
     end
 
     it 'can filter results by a range predicate' do
       results = [
-        {'User_Username' => 'Alice'},
-        {'User_Username' => 'Bob'}
+        { 'User_Username' => 'Alice' },
+        { 'User_Username' => 'Bob' }
       ]
       step = NoSE::Plans::FilterPlanStep.new [], [user['Username']]
       query = NoSE::Query.new 'SELECT User.* FROM User WHERE ' \
                               'User.Username < "B" AND User.City = "New York"',
                               workload.model
 
-      BackendBase::FilterStatementStep.process nil, query, results, step,
-                                               nil, nil
+      step_class = BackendBase::FilterStatementStep
+      prepared = step_class.new nil, query, step, nil, nil
+      results = prepared.process query.conditions, results
 
       expect(results).to eq [
         {'User_Username' => 'Alice'}
