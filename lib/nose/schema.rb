@@ -8,14 +8,18 @@ module NoSE
       instance_eval(&block) if block_given?
     end
 
+    # Find the schema with the given name
+    def self.load(name)
+      filename = File.expand_path "../../../schemas/#{name}.rb", __FILE__
+      contents = File.read(filename)
+      binding.eval contents, filename
+    end
+
     # rubocop:disable MethodName
 
     # Set the workload to be used by the schema
     def Workload(name)
-      filename = File.expand_path "../../../workloads/#{name}.rb", __FILE__
-      contents = File.read(filename)
-      @workload = binding.eval contents, filename
-
+      @workload = Workload.load name
       NoSE::DSL.mixin_fields @workload.model.entities, IndexDSL
     end
 
