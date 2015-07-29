@@ -50,7 +50,8 @@ module NoSE::Backend
         .with(backend_query, 'Bob').and_return(results)
 
       step_class = CassandraBackend::IndexLookupStatementStep
-      prepared = step_class.new client, query, step, nil, step.parent
+      prepared = step_class.new client, query.all_fields, query.conditions,
+                                step, nil, step.parent
       prepared.process query.conditions, nil
     end
 
