@@ -20,29 +20,31 @@ module NoSE
             step.is_a? Plans::IndexLookupPlanStep
           end.map(&:index)
 
+          # Construct a prepared statement for the query
+          prepared = backend.prepare(query, [plan])
+
           # Construct a list of values to be substituted in the query
-          condition_fields = query.conditions.values.map(&:field)
-          condition_values = 1.upto(options[:num_iterations]).map do |i|
-            condition_fields.map do |field|
-              indexes.each do |index|
+          condition_list = 1.upto(options[:num_iterations]).map do |i|
+            Hash[query.conditions.map do |field_id, condition|
+              value = indexes.each do |index|
                 values = index_values[index]
-                value = values[i % values.length][field.id]
+                value = values[i % values.length][condition.field.id]
                 break value unless value.nil?
               end
-            end
+
+              [
+                field_id,
+                Condition.new(condition.field, condition.operator, value)
+              ]
+            end]
           end
 
           # Execute each query and measure the time
           start_time = Time.now
-          condition_values.each do |values|
-            query.conditions.values.each_with_index do |condition, i|
-              condition.instance_variable_set :@value, values[i]
-            end
-            backend.query query, plan
-          end
+          condition_list.each { |conditions| prepared.execute conditions }
+          elapsed = Time.now - start_time
 
           # Report the time taken
-          elapsed = Time.now - start_time
           puts "#{query.text} executed in " \
                "#{elapsed / options[:num_iterations]} average"
         end
