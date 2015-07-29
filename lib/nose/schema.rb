@@ -16,31 +16,7 @@ module NoSE
       contents = File.read(filename)
       @workload = binding.eval contents, filename
 
-      @workload.model.entities.each do |entity_name, entity|
-        # Add fake entity object for the DSL
-        fake = Object.new
-
-        # Add a method named by the entity to allow field creation
-        IndexDSL.send :define_method, entity_name.to_sym, (proc do
-          metaclass = class << fake; self; end
-
-          # Allow fields to be defined using [] access
-          metaclass.send :define_method, :[] do |field_name|
-            if field_name == '*'
-              entity.fields.values
-            else
-              entity.fields[field_name] || entity.foreign_keys[field_name]
-            end
-          end
-
-          # Define methods named for fields so things like 'user.id' work
-          entity.fields.merge(entity.foreign_keys).each do |field_name, field|
-            metaclass.send :define_method, field_name.to_sym, -> { field }
-          end
-
-          fake
-        end)
-      end
+      NoSE::DSL.mixin_fields @workload.model.entities, IndexDSL
     end
 
     # Wrap commands for defining index attributes
