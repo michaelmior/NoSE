@@ -14,7 +14,8 @@ module NoSE
         loader = loader_class.new result.workload, backend
 
         # Remove the name from the options and execute the loader
-        loader.load result.indexes, options[:loader], options[:progress]
+        loader.load result.indexes,
+                    options[:loader], options[:progress], options[:limit]
       end
     end
   end

@@ -10,7 +10,7 @@ module NoSE
       end
 
       # Load a generated set of indexes with data from MySQL
-      def load(indexes, config, show_progress = false)
+      def load(indexes, config, show_progress = false, limit = nil)
         # XXX Assuming backend is thread-safe
         Parallel.each(indexes, in_threads: 2) do |index|
           client = new_client config
@@ -22,7 +22,7 @@ module NoSE
           end
           puts "#{index.inspect}" if show_progress
 
-          sql = index_sql index, config[:limit]
+          sql = index_sql index, limit
           results = client.query(sql, stream: true, cache_rows: false)
 
           result_chunk = []
