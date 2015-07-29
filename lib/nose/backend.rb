@@ -37,8 +37,8 @@ module NoSE
                                                    self.class.name
           step_class = Object.const_get subclass_step_name
 
-          results = step_class.process client, query, results,
-                                       step, prev_step, next_step
+          prepared = step_class.new client, query, step, next_step, prev_step
+          results = prepared.process query.conditions, results
 
           # The query can't return any results at this point, so we're done
           break if results.empty?
@@ -85,52 +85,22 @@ module NoSE
         # :nocov:
       end
 
-      # Look up data on an index in the backend
-      class IndexLookupStatementStep < StatementStep
-        # @abstract Subclasses should return an array of row hashes
-        # :nocov:
-        def self.process(_client, _query, _results, _step,
-                         _prev_step, _next_step)
-          fail NotImplementedError, 'Must be provided by a subclass'
-        end
-        # :nocov:
-      end
-
-      # Delete data from an index in the backend
-      class IndexDeleteStatementStep < StatementStep
-        # @abstract Subclasses should remove data from the indexes
-        # :nocov:
-        def self.process(_client, _query, _results, _step,
-                         _prev_step, _next_step)
-          fail NotImplementedError, 'Must be provided by a subclass'
-        end
-        # :nocov:
-      end
-
-      # Insert data into an index in the backend
-      class IndexInsertStatementStep < StatementStep
-        # @abstract Subclasses should remove data from the indexes
-        # :nocov:
-        def self.process(_client, _query, _results, _step,
-                         _prev_step, _next_step)
-          fail NotImplementedError, 'Must be provided by a subclass'
-        end
-        # :nocov:
-      end
-
       # Perform filtering external to the backend
       class FilterStatementStep < StatementStep
+        def initialize(_client, _query, step, _next_step, _prev_step)
+          @step = step
+        end
+
         # Filter results by a list of fields given in the step
-        def self.process(_client, query, results, step,
-                         _prev_step, _next_step)
+        def process(conditions, results)
           # Extract the equality conditions
-          eq_conditions = query.conditions.values.select do |condition|
-            !condition.range? && step.eq.include?(condition.field)
+          eq_conditions = conditions.values.select do |condition|
+            !condition.range? && @step.eq.include?(condition.field)
           end
 
           # XXX: This assumes that the range filter step is the same as
           #      the one in the query, which is always true for now
-          range = step.range && query.conditions.values.find(&:range?)
+          range = @step.range && conditions.values.find(&:range?)
 
           results.select! do |row|
             select = eq_conditions.all? do |condition|
@@ -149,11 +119,14 @@ module NoSE
 
       # Perform sorting external to the backend
       class SortStatementStep < StatementStep
+        def initialize(_client, _query, step, _next_step, _prev_step)
+          @step = step
+        end
+
         # Sort results by a list of fields given in the step
-        def self.process(_client, _query, results, step,
-                         _prev_step, _next_step)
+        def process(_conditions, results)
           results.sort_by! do |row|
-            step.sort_fields.map do |field|
+            @step.sort_fields.map do |field|
               row[field.id]
             end
           end
@@ -180,8 +153,8 @@ module NoSE
           subclass_step_name = step_class.name.sub \
             'NoSE::Backend::BackendBase', self.class.name
           step_class = Object.const_get subclass_step_name
-          step_class.process client, plan.index, support \
-            unless support.empty?
+          prepared = step_class.new client, plan.index
+          prepared.process support unless support.empty?
         end
         return if update.is_a? Delete
 
@@ -198,7 +171,8 @@ module NoSE
         subclass_step_name = step_class.name.sub \
           'NoSE::Backend::BackendBase', self.class.name
         step_class = Object.const_get subclass_step_name
-        step_class.process client, plan.index, support
+        prepared = step_class.new client, index, results.first.keys.sort
+        prepared.process support
       end
 
       # Get the initial values which will be used in the first plan step

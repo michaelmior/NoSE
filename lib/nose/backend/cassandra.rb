@@ -131,157 +131,76 @@ module NoSE
 
       # Insert data into an index on the backend
       class InsertStatementStep < StatementStep
-        @prepared = {}
+        def initialize(client, index, fields)
+          @client = client
+          @index = index
+          @fields = fields
 
-        def self.process(client, index, results)
-          fields = results.first.keys.sort
-          @prepared[[index, fields]] ||= self.prepare client, index, fields
-          statement = @prepared[[index, fields]]
-
-          # Insert each row into the index
-          generator = Cassandra::Uuid::Generator.new
-          results.each do |result|
-            values = fields.map do |key|
-              cur_field = index.all_fields.find { |field| field.id == key }
-              value = result[key]
-
-              # If this is an ID, generate or construct a UUID object
-              if cur_field.is_a?(Fields::IDField)
-                value = value.nil? ? generator.uuid : \
-                                     Cassandra::Uuid.new(value.to_i)
-              end
-
-              value
-            end
-            client.execute(statement, *values)
-          end
-        end
-
-        private
-
-        def self.prepare(client, index, fields)
           # Prepare the statement required to perform the insertion
           insert_keys = fields & index.all_fields.map(&:id)
           insert = "INSERT INTO #{index.key} ("
           insert += insert_keys.join(', ') + ') VALUES ('
           insert += (['?'] * insert_keys.length).join(', ') + ')'
-          client.prepare insert
+          @prepared = client.prepare insert
+          @generator = Cassandra::Uuid::Generator.new
+        end
+
+        def process(results)
+          # Insert each row into the index
+          results.each do |result|
+            values = @fields.map do |key|
+              cur_field = @index.all_fields.find { |field| field.id == key }
+              value = result[key]
+
+              # If this is an ID, generate or construct a UUID object
+              if cur_field.is_a?(Fields::IDField)
+                value = value.nil? ? @generator.uuid : \
+                                     Cassandra::Uuid.new(value.to_i)
+              end
+
+              value
+            end
+            @client.execute(@prepared, *values)
+          end
         end
       end
 
       # Delete data from an index on the backend
       class DeleteStatementStep < StatementStep
-        @prepared = {}
+        def initialize(client, index)
+          @client = client
+          @index = index
+          @index_keys = @index.hash_fields + @index.order_fields.to_set
+
+          # Prepare the statement required to perform the deletion
+          delete = "DELETE FROM #{index.key} WHERE "
+          delete += @index_keys.map { |key| "#{key.id} = ?" }.join ' AND '
+          @prepared = client.prepare delete
+        end
 
         # Execute the delete for a given set of keys
-        def self.process(client, index, results)
-          @prepared[index] ||= self.prepare client, index
-          statement = @prepared[index]
-
+        def process(results)
           # Delete each row from the index
-          index_keys = index.hash_fields + index.order_fields.to_set
           results.each do |result|
-            values = index_keys.map do |key|
-              cur_field = index.all_fields.find { |field| field.id == key.id }
+            values = @index_keys.map do |key|
+              cur_field = @index.all_fields.find { |field| field.id == key.id }
               cur_field.is_a?(Fields::IDField) ? \
                 Cassandra::Uuid.new(result[key.id].to_i): result[key.id]
             end
-            client.execute(statement, *values)
+            @client.execute(@prepared, *values)
           end
-        end
-
-        private
-
-        # Prepare the statement to execute the query
-        def self.prepare(client, index)
-          # Prepare the statement required to perform the deletion
-          index_keys = index.hash_fields + index.order_fields.to_set
-          delete = "DELETE FROM #{index.key} WHERE "
-          delete += index_keys.map { |key| "#{key.id} = ?" }.join ' AND '
-          client.prepare delete
         end
       end
 
       # A query step to look up data from a particular column family
       class IndexLookupStatementStep < StatementStep
-        @prepared = {}
-        @logger = Logging.logger['nose::backend::cassandra::indexlookupstep']
+        def initialize(client, query, step, next_step, prev_step)
+          @logger = Logging.logger['nose::backend::cassandra::indexlookupstep']
+          @client = client
+          @step = step
+          @prev_step = prev_step
+          @next_step = next_step
 
-        # Perform a column family lookup in Cassandra
-        def self.process(client, query, results, step, prev_step, next_step)
-          @prepared[[query, step.index]] ||= self.prepare client, query, step,
-                                                           prev_step, next_step
-          statement = @prepared[[query, step.index]]
-
-          # If this is the first lookup, get the lookup values from the query
-          if results.nil?
-            results = [Hash[query.conditions.map do |field_id, condition|
-              fail if condition.value.nil?
-              [field_id, condition.value]
-            end]]
-          end
-
-          # Construct a list of conditions from the results
-
-          # TODO: Check if we can apply the next filter via ALLOW FILTERING
-          eq_fields = (prev_step.state.eq - step.state.eq).to_set
-          eq_fields += step.index.hash_fields
-          range_field = prev_step.state.range if step.state.range.nil?
-
-          condition_list = results.map do |result|
-            conditions = eq_fields.map do |field|
-              Condition.new field, :'=', result[field.id]
-            end
-
-            unless range_field.nil?
-              operator = query.conditions.values.find(&:range?).operator
-              conditions << Condition.new(range_field, operator,
-                                          result[range_field.id])
-            end
-
-            conditions
-          end
-
-          # Lookup values from an index selecting the given
-          # fields and filtering on the given conditions
-          # TODO: Chain enumerables of results instead
-          result = []
-          @logger.debug { "  #{statement.cql} * #{condition_list.size}" }
-
-          # Limit the total number of queries as well as the query limit
-          condition_list.each do |conditions|
-            values = conditions.map do |condition| value = condition.value ||
-                      query.conditions[condition.field.id].value
-              fail if value.nil?
-              condition.field.is_a?(Fields::IDField) ? \
-                Cassandra::Uuid.new(value.to_i): value
-            end
-
-            # Loop over all pages to fetch results
-            new_results = client.execute(statement, *values)
-            loop do
-              rows = new_results.to_a
-              fail if rows.any? { |row| row.values.any?(&:nil?) }
-              result += rows
-              break if new_results.last_page? ||
-                       (!step.limit.nil? && result.length >= step.limit)
-              new_results = new_results.next_page
-              @logger.debug "Fetched #{result.length} results"
-            end
-
-            # Don't continue with further queries
-            break if (!step.limit.nil? && result.length >= step.limit)
-          end
-          @logger.debug "Total result size = #{result.size}"
-
-          # Limit the size of the results in case we fetched multiple keys
-          result[0..(step.limit.nil? ? -1 : step.limit)]
-        end
-
-        private
-
-        # Construct a prepared statement for the query
-        def self.prepare(client, query, step, prev_step, next_step)
           # Decide which fields should be selected
           # We just pick whatever is contained in the index that is either
           # mentioned in the query or required for the next lookup
@@ -294,17 +213,17 @@ module NoSE
               !next_step.is_a?(Plans::IndexLookupPlanStep)
           select &= step.index.all_fields
 
-          # XXX Duplicated from #process
-          eq_fields = (prev_step.state.eq - step.state.eq).to_set
-          eq_fields += step.index.hash_fields
-          range_field = prev_step.state.range if step.state.range.nil?
+          # TODO: Check if we can apply the next filter via ALLOW FILTERING
+          @eq_fields = (prev_step.state.eq - step.state.eq).to_set
+          @eq_fields += step.index.hash_fields
+          @range_field = prev_step.state.range if step.state.range.nil?
 
           cql = "SELECT #{select.map(&:id).join ', '} FROM " \
-                "\"#{step.index.key}\" WHERE "
-          cql += eq_fields.map do |field|
+            "\"#{step.index.key}\" WHERE "
+          cql += @eq_fields.map do |field|
             "#{field.id} = ?"
           end.join ' AND '
-          unless range_field.nil?
+          unless @range_field.nil?
             condition = query.conditions.values.find(&:range?)
             cql += " AND #{condition.field.id} #{condition.operator} ?"
           end
@@ -322,8 +241,72 @@ module NoSE
           # Add an optional limit
           cql += " LIMIT #{step.limit}" unless step.limit.nil?
 
-          client.prepare cql
+          @prepared = client.prepare cql
         end
+
+        # Perform a column family lookup in Cassandra
+        def process(conditions, results)
+          # If this is the first lookup, get the lookup values from the query
+          if results.nil?
+            results = [Hash[conditions.map do |field_id, condition|
+              fail if condition.value.nil?
+              [field_id, condition.value]
+            end]]
+          end
+
+          # Construct a list of conditions from the results
+          condition_list = results.map do |result|
+            conditions = @eq_fields.map do |field|
+              Condition.new field, :'=', result[field.id]
+            end
+
+            unless @range_field.nil?
+              operator = conditions.values.find(&:range?).operator
+              conditions << Condition.new(@range_field, operator,
+                                          result[@range_field.id])
+            end
+
+            conditions
+          end
+
+          # Lookup values from an index selecting the given
+          # fields and filtering on the given conditions
+          # TODO: Chain enumerables of results instead
+          result = []
+          @logger.debug { "  #{@prepared.cql} * #{condition_list.size}" }
+
+          # Limit the total number of queries as well as the query limit
+          condition_list.each do |conditions|
+            values = conditions.map do |condition| value = condition.value ||
+                      conditions[condition.field.id].value
+              fail if value.nil?
+              condition.field.is_a?(Fields::IDField) ? \
+                Cassandra::Uuid.new(value.to_i): value
+            end
+
+            # Loop over all pages to fetch results
+            new_results = @client.execute(@prepared, *values)
+            loop do
+              rows = new_results.to_a
+              fail if rows.any? { |row| row.values.any?(&:nil?) }
+              result += rows
+              break if new_results.last_page? ||
+                       (!@step.limit.nil? && result.length >= @step.limit)
+              new_results = new_results.next_page
+              @logger.debug "Fetched #{result.length} results"
+            end
+
+            # Don't continue with further queries
+            break if (!@step.limit.nil? && result.length >= @step.limit)
+          end
+          @logger.debug "Total result size = #{result.size}"
+
+          # Limit the size of the results in case we fetched multiple keys
+          result[0..(@step.limit.nil? ? -1 : @step.limit)]
+        end
+
+        private
+
       end
     end
   end
