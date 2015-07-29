@@ -256,17 +256,17 @@ module NoSE
 
           # Construct a list of conditions from the results
           condition_list = results.map do |result|
-            conditions = @eq_fields.map do |field|
+            result_condition = @eq_fields.map do |field|
               Condition.new field, :'=', result[field.id]
             end
 
             unless @range_field.nil?
               operator = conditions.values.find(&:range?).operator
-              conditions << Condition.new(@range_field, operator,
-                                          result[@range_field.id])
+              result_condition << Condition.new(@range_field, operator,
+                                                result[@range_field.id])
             end
 
-            conditions
+            result_condition
           end
 
           # Lookup values from an index selecting the given
