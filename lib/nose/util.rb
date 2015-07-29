@@ -190,4 +190,39 @@ module Kernel
   end
 end
 
+module NoSE
+  module DSL
+    # Add methods to the class which can be used to access entities and fields
+    def mixin_fields(entities, cls)
+      entities.each do |entity_name, entity|
+        # Add fake entity object for the DSL
+        fake = Object.new
+
+        # Add a method named by the entity to allow field creation
+        cls.send :define_method, entity_name.to_sym, (proc do
+          metaclass = class << fake; self; end
+
+          # Allow fields to be defined using [] access
+          metaclass.send :define_method, :[] do |field_name|
+            if field_name == '*'
+              entity.fields.values
+            else
+              entity.fields[field_name] || entity.foreign_keys[field_name]
+            end
+          end
+
+          # Define methods named for fields so things like 'user.id' work
+          entity.fields.merge(entity.foreign_keys).each do |field_name, field|
+            metaclass.send :define_method, field_name.to_sym, -> { field }
+          end
+
+          fake
+        end)
+      end
+    end
+
+    module_function :mixin_fields
+  end
+end
+
 # rubocop:enable Documentation
