@@ -1,3 +1,5 @@
+require_relative '../lib/nose.rb'
+
 # rubocop:disable SingleSpaceBeforeFirstArg
 
 NoSE::Schema.new do
@@ -14,7 +16,7 @@ NoSE::Schema.new do
     Hash    users.id
     Ordered regions.id
     Extra   users['*']
-    Path    users.id
+    Path    users.id, users.region
   end
 
   Index 'user_region' do
