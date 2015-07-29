@@ -103,18 +103,16 @@ module NoSE
       # Get the list of tables along with the join condition
       # for a query to fetch index data
       def index_sql_tables(index)
-        path = index.path
-        path = path.reverse if path.length > 1 &&
-                               path.each.to_a[1].relationship == :many
-        tables = path.entities.first.name
-        keys = path.map { |x| x }[1..-1]
-        keys.each do |key|
+        # Create JOIN statements
+        tables = index.path.entities.map(&:name).join ' JOIN '
+        return tables if index.path.length == 1
+
+        tables += ' WHERE '
+        tables += index.path.each_cons(2).map do |prev_key, key|
           key = key.reverse if key.relationship == :one
-          entity = key.parent
-          tables += " JOIN #{entity.name} ON " \
-            "#{key.parent.name}.#{key.name}=" \
+          "#{key.parent.name}.#{key.name}=" \
             "#{key.entity.name}.#{key.entity.id_fields.first.name}"
-        end
+        end.join ' AND '
 
         tables
       end
