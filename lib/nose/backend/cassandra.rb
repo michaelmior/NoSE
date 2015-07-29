@@ -194,7 +194,7 @@ module NoSE
 
       # A query step to look up data from a particular column family
       class IndexLookupStatementStep < StatementStep
-        def initialize(client, query, step, next_step, prev_step)
+        def initialize(client, select, conditions, step, next_step, prev_step)
           @logger = Logging.logger['nose::backend::cassandra::indexlookupstep']
           @client = client
           @step = step
@@ -207,7 +207,6 @@ module NoSE
           # TODO: Potentially try query.all_fields for those not required
           #       It should be sufficient to check what is needed for future
           #       filtering and sorting and use only those + query.select
-          select = query.all_fields
           select += next_step.index.hash_fields \
             unless next_step.nil? ||
               !next_step.is_a?(Plans::IndexLookupPlanStep)
@@ -224,7 +223,7 @@ module NoSE
             "#{field.id} = ?"
           end.join ' AND '
           unless @range_field.nil?
-            condition = query.conditions.values.find(&:range?)
+            condition = conditions.values.find(&:range?)
             cql += " AND #{condition.field.id} #{condition.operator} ?"
           end
 
