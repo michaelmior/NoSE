@@ -4,7 +4,7 @@ module NoSE
     attr_reader :workload, :indexes
 
     def initialize(&block)
-      @indexes = []
+      @indexes = {}
       instance_eval(&block) if block_given?
     end
 
@@ -50,7 +50,7 @@ module NoSE
       dsl.instance_eval(&block) if block_given?
       index = Index.new dsl.hash_fields, dsl.order_fields, dsl.extra,
                         dsl.path_keys, key
-      @indexes << index
+      @indexes[index.key] = index
     end
 
     # rubocop:enable MethodName

@@ -16,7 +16,7 @@ module NoSE
       model = schema.workload.model
       users = model.entities['users']
 
-      expect(schema.indexes).to match_array [
+      expect(schema.indexes.values).to match_array [
         Index.new([users['id']], [], users.fields.values, [users['id']])
       ]
     end
@@ -39,7 +39,7 @@ module NoSE
       users = model.entities['users']
       regions = model.entities['regions']
 
-      expect(schema.indexes).to match_array [
+      expect(schema.indexes.values).to match_array [
         Index.new([users['id']], [regions['id']], [regions['name']],
                   [users['id'], users['region']])
       ]
