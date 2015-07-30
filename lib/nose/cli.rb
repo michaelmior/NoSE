@@ -194,6 +194,7 @@ end
 # Require the various subcommands
 require_relative 'cli/benchmark'
 require_relative 'cli/create'
+require_relative 'cli/dump'
 require_relative 'cli/execute'
 require_relative 'cli/load'
 require_relative 'cli/genworkload'
