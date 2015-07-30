@@ -5,6 +5,7 @@ module NoSE
       desc 'load PLAN_FILE_OR_SCHEMA', 'create indexes from the given PLAN_FILE_OR_SCHEMA'
       option :progress, type: :boolean, default: true, aliases: '-p'
       option :limit, type: :numeric, default: nil, aliases: '-l'
+      option :skip_existing, type: :boolean, default: true, aliases: '-s'
       def load(plan_file)
         if File.exist? plan_file
           result = load_results(plan_file)
@@ -21,8 +22,8 @@ module NoSE
         loader = loader_class.new result.workload, backend
 
         # Remove the name from the options and execute the loader
-        loader.load result.indexes,
-                    options[:loader], options[:progress], options[:limit]
+        loader.load result.indexes, options[:loader], options[:progress],
+                    options[:limit], options[:skip_existing]
       end
     end
   end
