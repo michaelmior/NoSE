@@ -11,8 +11,9 @@ NoSE::Model.new do
   end) * 50
 
   (Entity 'regions' do
-    ID     'id'
-    String 'name', 25
+    ID      'id'
+    String  'name', 25
+    Integer 'dummy', count: 1
   end) * 5
 
   (Entity 'users' do
