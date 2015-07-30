@@ -15,7 +15,7 @@ NoSE::Schema.new do
   Index 'user_data' do
     Hash    users.id
     Ordered regions.id
-    Extra   users['*']
+    Extra   users['*'], regions.name
     Path    users.id, users.region
   end
 
@@ -42,8 +42,8 @@ NoSE::Schema.new do
 
   Index 'user_items_sold' do
     Hash    users.id
-    Ordered bids.date, bids.id, items.id
-    Path    users.id, users.items_sold, items.bids
+    Ordered items.end_date, items.id
+    Path    users.id, users.items_sold
   end
 
   Index 'user_comments_received' do
