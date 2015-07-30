@@ -18,34 +18,38 @@ module NoSE
         index_values = index_values plans.schema.indexes.values, backend,
                                     options[:num_iterations]
 
-        plans.plans.each do |plan|
-          prepared = backend.prepare_query nil, plan.select, plan.params,
-                                           [plan.steps]
+        plans.groups.each do |group, group_plans|
+          puts "Group #{group}"
 
-          # Construct a list of values to be substituted in the plan
-          condition_list = 1.upto(options[:num_iterations]).map do |i|
-            Hash[plan.params.map do |field_id, condition|
-              value = plans.schema.indexes.values.each do |index|
-                values = index_values[index]
-                value = values[i % values.length][condition.field.id]
-                break value unless value.nil?
-              end
+          group_plans.each do |plan|
+            prepared = backend.prepare_query nil, plan.select, plan.params,
+                                             [plan.steps]
 
-              [
-                field_id,
-                Condition.new(condition.field, condition.operator, value)
-              ]
-            end]
+            # Construct a list of values to be substituted in the plan
+            condition_list = 1.upto(options[:num_iterations]).map do |i|
+              Hash[plan.params.map do |field_id, condition|
+                value = plans.schema.indexes.values.each do |index|
+                  values = index_values[index]
+                  value = values[i % values.length][condition.field.id]
+                  break value unless value.nil?
+                end
+
+                [
+                  field_id,
+                  Condition.new(condition.field, condition.operator, value)
+                ]
+              end]
+            end
+
+            # Execute each plan and measure the time
+            start_time = Time.now
+            condition_list.each { |conditions| prepared.execute conditions }
+            elapsed = Time.now - start_time
+
+            # Report the time taken
+            puts "  #{plan.name} executed in " \
+              "#{elapsed / options[:num_iterations]} average"
           end
-
-          # Execute each plan and measure the time
-          start_time = Time.now
-          condition_list.each { |conditions| prepared.execute conditions }
-          elapsed = Time.now - start_time
-
-          # Report the time taken
-          puts "#{plan} executed in " \
-            "#{elapsed / options[:num_iterations]} average"
         end
       end
     end
