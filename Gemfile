@@ -34,6 +34,7 @@ platform :ruby do
     gem 'guard-rspec'
     gem 'ruby-prof'
     gem 'pry'
+    gem 'pry-doc'
     gem 'pry-byebug'
     gem 'pry-rescue'
     gem 'pry-stack_explorer'
