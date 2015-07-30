@@ -190,6 +190,9 @@ module NoSE
     # Represent the index for index lookup plan steps
     class IndexLookupStepRepresenter < PlanStepRepresenter
       property :index, decorator: IndexRepresenter
+      collection :eq_filter, decorator: FieldRepresenter
+      property :range_filter, decorator: FieldRepresenter
+      collection :order_by, decorator: FieldRepresenter
       property :limit
     end
 
@@ -391,6 +394,16 @@ module NoSE
             index_key = step_hash['index']['key']
             step_index = object.indexes.find { |index| index.key == index_key }
             step = step_class.new step_index, state, parent
+
+            eq_filter = (step_hash['eq_filter'] || []).map(&f)
+            step.instance_variable_set(:@eq_filter, eq_filter)
+
+            range_filter = step_hash['range_filter']
+            range_filter = f.call(range_filter) unless range_filter.nil?
+            step.instance_variable_set(:@range_filter, range_filter)
+
+            order_by = (step_hash['order_by'] || []).map(&f)
+            step.instance_variable_set(:@order_by, order_by)
 
             limit = step_hash['limit']
             step.instance_variable_set(:@limit, limit.to_i) unless limit.nil?
