@@ -27,8 +27,14 @@ module NoSE
           group_plans.each do |plan|
             next if options[:plan] && plan.name != options[:plan]
 
-            prepared = backend.prepare_query nil, plan.select, plan.params,
-                                             [plan.steps]
+            update = !plan.steps.last.is_a?(Plans::IndexLookupPlanStep)
+            if update
+              # XXX Skip updates for now
+              next
+            else
+              prepared = backend.prepare_query nil, plan.select, plan.params,
+                                               [plan.steps]
+            end
 
             # Construct a list of values to be substituted in the plan
             condition_list = 1.upto(options[:num_iterations]).map do |i|

@@ -71,9 +71,67 @@ NoSE::ExecutionPlans.new do
   end
 
   Group 'RegisterItem', bidding: 0.53 do
+    Plan 'InsertItem' do
+      Param  items.id, :==
+      Param  items.name, :==
+      Param  items.description, :==
+      Param  items.initial_price, :==
+      Param  items.quantity, :==
+      Param  items.reserve_price, :==
+      Param  items.buy_now, :==
+      Param  items.nb_of_bids, :==
+      Param  items.max_bid, :==
+      Param  items.start_date, :==
+      Param  items.end_date, :==
+      Insert 'items_data'
+    end
+
+    Plan 'AddToSold' do
+      Param  items.id, :==
+      Param  items.end_date, :==
+      Param  users.id, :==
+      Insert 'user_items_sold'
+    end
+
+    Plan 'AddToCategory' do
+      Param  items.id, :==
+      Param  items.end_date, :==
+      Param  categories.id, :==
+      Insert 'items_by_category'
+    end
   end
 
   Group 'RegisterUser', bidding: 1.07 do
+    Plan 'AddUser' do
+      Support do
+        Plan 'GetRegionName' do
+          Select regions.name
+          Param  regions.dummy, :==, 1
+          Param  regions.id, :==
+          Lookup 'regions'
+        end
+      end
+
+      Param  users.id, :==
+      Param  users.firstname, :==
+      Param  users.lastname, :==
+      Param  users.nickname, :==
+      Param  users.password, :==
+      Param  users.email, :==
+      Param  users.rating, :==, 0
+      Param  users.balance, :==, 0
+      Param  users.creation_date, :==
+      Param  regions.id, :==
+      Param  regions.name, :==
+      Insert 'user_data'
+    end
+
+    Plan 'AddToRegion' do
+      Param  users.id, :==
+      Param  users.nickname, :==
+      Param  regions.id, :==
+      Insert 'users_by_region'
+    end
   end
 
   Group 'BuyNow', bidding: 1.16 do
@@ -85,6 +143,11 @@ NoSE::ExecutionPlans.new do
   end
 
   Group 'StoreBuyNow', bidding: 1.10 do
+    Plan 'ReduceQuantity' do
+    end
+
+    Plan 'AddToBought' do
+    end
   end
 
   Group 'PutBid', bidding: 5.40 do
@@ -102,6 +165,32 @@ NoSE::ExecutionPlans.new do
   end
 
   Group 'StoreBid', bidding: 3.74 do
+    Plan 'AddBid' do
+      Support do
+        Plan 'GetMaxBid' do
+          Select items.max_bid
+          Param  items.id, :==
+          Lookup 'item_bids', limit: 1
+        end
+      end
+
+      Param  items.id, :==
+      Param  users.id, :==
+      Param  bids.id, :==
+      Param  bids.qty, :==
+      Param  bids.bid, :==
+      Param  bids.date, :==
+      Insert 'item_bids'
+    end
+
+    Plan 'AddToUserBids' do
+      Param users.id, :==
+      Param items.id, :==
+      Param bids.id, :==
+      Param bids.qty, :==
+      Param bids.date, :==
+      Insert 'user_items_bid_on'
+    end
   end
 
   Group 'PutComment', bidding: 0.46 do
@@ -125,6 +214,27 @@ NoSE::ExecutionPlans.new do
   end
 
   Group 'StoreComment', bidding: 0.45 do
+    Plan 'UpdateRating' do
+      Support do
+        Plan 'GetRating' do
+          Select users.rating
+          Param  users.id, :==
+          Lookup 'user_data', [users.id, :==]
+        end
+      end
+
+      Insert 'user_data', users.rating
+    end
+
+    Plan 'InsertComment' do
+      Param  comments.id, :==
+      Param  comments.rating, :==
+      Param  comments.date, :==
+      Param  comments.comment, :==
+      Param  items.id, :==
+      Param  users.id, :==
+      Insert 'user_comments_received'
+    end
   end
 
   Group 'AboutMe', bidding: 1.71 do
