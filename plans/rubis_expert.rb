@@ -108,7 +108,7 @@ NoSE::ExecutionPlans.new do
           Select regions.name
           Param  regions.dummy, :==, 1
           Param  regions.id, :==
-          Lookup 'regions'
+          Lookup 'regions', [regions.dummy, :==]
         end
       end
 
@@ -170,7 +170,7 @@ NoSE::ExecutionPlans.new do
         Plan 'GetMaxBid' do
           Select items.max_bid
           Param  items.id, :==
-          Lookup 'item_bids', limit: 1
+          Lookup 'item_bids', [items.id, :==], limit: 1
         end
       end
 

@@ -4,6 +4,7 @@ module NoSE
     class NoSECLI < Thor
       desc 'execute PLANS', 'test performance of the named PLANS'
       option :num_iterations, type: :numeric, default: 100
+      option :mix, type: :string, default: 'default'
       option :group, type: :string, default: nil, aliases: '-g'
       option :plan, type: :string, default: nil, aliases: '-p'
       def execute(plans_name)
@@ -13,6 +14,8 @@ module NoSE
         # Construct an instance of the backend
         result = OpenStruct.new
         result.workload = plans.schema.workload
+        result.workload.mix = options[:mix].to_sym \
+          unless options[:mix] == 'default' && result.workload.mix != :default
         result.indexes = plans.schema.indexes.values
         backend = get_backend(options, result)
 
