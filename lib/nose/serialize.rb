@@ -174,7 +174,8 @@ module NoSE
 
       # The estimated cardinality at this step in the plan
       def cardinality
-        represented.instance_variable_get(:@state).cardinality
+        state = represented.instance_variable_get(:@state)
+        state.cardinality unless state.nil?
       end
       property :cardinality, exec_context: :decorator
 
@@ -241,9 +242,10 @@ module NoSE
 
       property :type, exec_context: :decorator
 
-      # The estimated cardinality of entities being update
+      # The estimated cardinality of entities being updated
       def cardinality
-        represented.instance_variable_get(:@state).cardinality
+        state = represented.instance_variable_get(:@state)
+        state.cardinality unless state.nil?
       end
 
       property :cardinality, exec_context: :decorator

@@ -85,6 +85,11 @@ module NoSE
     attr_reader :name, :params, :select, :steps
     attr_accessor :support
 
+    # Most of the work is delegated to the array
+    extend Forwardable
+    def_delegators :@steps, :each, :<<, :[], :==, :===, :eql?,
+                   :inspect, :to_s, :to_a, :to_ary, :last, :length, :count
+
     def initialize(name, schema, plans)
       @name = name
       @schema = schema
@@ -92,6 +97,17 @@ module NoSE
       @select = []
       @params = {}
       @steps = []
+    end
+
+    # These plans have no associated query
+    def query
+      nil
+    end
+
+    # The estimated cost of executing this plan
+    def cost
+      # TODO: Calculate cost for these plans
+      nil
     end
 
     # rubocop:disable MethodName
