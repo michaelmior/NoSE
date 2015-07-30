@@ -5,18 +5,21 @@ module NoSE
     # Load data from a MySQL database into a backend
     class MysqlLoader < LoaderBase
       def initialize(workload = nil, backend = nil)
+        @logger = Logging.logger['nose::loader::mysqlloader']
+
         @workload = workload
         @backend = backend
       end
 
       # Load a generated set of indexes with data from MySQL
-      def load(indexes, config, show_progress = false, limit = nil)
+      def load(indexes, config, show_progress = false, limit = nil,
+                                skip_existing = true)
         # XXX Assuming backend is thread-safe
         Parallel.each(indexes, in_threads: 2) do |index|
           client = new_client config
 
           # Skip this index if it's not empty
-          unless @backend.index_empty? index
+          if skip_existing && @backend.index_empty?(index)
             puts "Skipping index #{index.inspect}"
             next
           end
@@ -128,6 +131,7 @@ module NoSE
         query = "SELECT #{fields.join ', '} FROM #{tables}"
         query += " LIMIT #{limit}" unless limit.nil?
 
+        @logger.debug query
         query
       end
     end

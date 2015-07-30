@@ -7,14 +7,19 @@ module NoSE
     # Load data into an index from a set of CSV files
     class CsvLoader < LoaderBase
       # Load data for all the indexes
-      def load(indexes, config, show_progress = false)
-        simple_indexes = indexes.select { |index| index.path.length == 1 }
+      def load(indexes, config, show_progress = false, limit = nil,
+                                skip_existing = true)
+        simple_indexes = indexes.select do |index|
+          index.path.length == 1 &&
+          !(skip_existing && !@backend.index_empty?(index))
+        end
+
         simple_indexes = simple_indexes.group_by do |index|
           index.path.first.parent
         end
         simple_indexes.each do |entity, simple_index_list|
           filename = File.join config[:directory], "#{entity.name}.csv"
-          total_rows = (config[:limit] || 0) - 1  # account for header row
+          total_rows = (limit || 0) - 1  # account for header row
           File.open(filename) { |file| file.each_line { total_rows += 1 } }
 
           if show_progress
@@ -47,7 +52,6 @@ module NoSE
 
       # Load a chunk of data from a simple entity index
       def load_simple_chunk(chunk, entity, indexes)
-
         # Prefix all hash keys with the entity name and convert values
         chunk.map! do |row|
           index_row = {}

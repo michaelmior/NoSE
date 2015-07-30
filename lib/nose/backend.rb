@@ -10,6 +10,11 @@ module NoSE
         @update_plans = update_plans
       end
 
+      # The base shows all indexes as empty for testing purposes
+      def index_empty?(_index)
+        true
+      end
+
       # @abstract Subclasses implement to allow inserting
       #           data into the backend database
       # :nocov:
