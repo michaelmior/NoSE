@@ -1,10 +1,11 @@
 module NoSE
   # Simple DSL for constructing execution plans
   class ExecutionPlans
-    attr_reader :groups, :schema
+    attr_reader :groups, :weights, :schema
 
     def initialize(&block)
       @groups = Hash.new { |h, k| h[k] = [] }
+      @weights = Hash.new { |h, k| h[k] = {} }
       instance_eval(&block) if block_given?
     end
 
@@ -26,9 +27,16 @@ module NoSE
     end
 
     # Define a group of query execution plans
-    def Group(name, _weight = 1.0, **_mixes, &block)
-      # XXX Weights are basically ignored for now
+    def Group(name, weight = 1.0, **mixes, &block)
       @group = name
+
+      # Save the weights
+      if mixes.empty?
+        @weights[name][:default] = weight
+      else
+        @weights[name] = mixes
+      end
+
       instance_eval(&block) if block_given?
     end
 
