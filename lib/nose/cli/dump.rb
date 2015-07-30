@@ -2,17 +2,17 @@ module NoSE
     module CLI
     # Add a command to dump a workload and its corresponding schema
     class NoSECLI < Thor
-      desc 'dump SCHEMA', 'output the schema in  SCHEMA'
+      desc 'dump PLANS', 'output the plans in PLANS'
       option :format, type: :string, default: 'txt',
                       enum: %w(txt json yml), aliases: '-f'
-      def dump(schema_name)
-        schema = Schema.load schema_name
+      def dump(plan_name)
+        plans = ExecutionPlans.load plan_name
 
         results = OpenStruct.new
-        results.workload = schema.workload
-        results.indexes = schema.indexes.values
+        results.workload = plans.schema.workload
+        results.indexes = plans.schema.indexes.values
         results.enumerated_indexes = []
-        results.plans = []
+        results.plans = plans.groups.values.flatten(1)
         results.update_plans = []
 
         cost_model = get_class('cost', options[:cost_model][:name])

@@ -159,7 +159,7 @@ module NoSE
       # Most of the work is delegated to the array
       extend Forwardable
       def_delegators :@steps, :each, :<<, :[], :==, :===, :eql?,
-        :inspect, :to_s, :to_a, :to_ary, :last, :length, :count
+                     :inspect, :to_s, :to_a, :to_ary, :last, :length, :count
 
       def initialize(query, cost_model)
         @steps = []
