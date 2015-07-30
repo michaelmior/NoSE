@@ -20,9 +20,14 @@ module NoSE
         index_values = index_values plans.schema.indexes.values, backend,
                                     options[:num_iterations]
 
+        total = 0
         plans.groups.each do |group, group_plans|
           next if options[:group] && group != options[:group]
-          puts "Group #{group}"
+
+          group_total = 0
+          group_weight = plans.weights[group][plans.schema.workload.mix]
+          next unless group_weight
+          puts "Group #{group} * #{group_weight}"
 
           group_plans.each do |plan|
             next if options[:plan] && plan.name != options[:plan]
@@ -58,10 +63,17 @@ module NoSE
             elapsed = Time.now - start_time
 
             # Report the time taken
-            puts "  #{plan.name} executed in " \
-              "#{elapsed / options[:num_iterations]} average"
+            avg = elapsed / options[:num_iterations]
+            group_total += avg
+            puts "  #{plan.name} executed in #{avg} average"
           end
+
+          group_total *= group_weight / group_plans.length
+          total += group_total
+          puts "  TOTAL #{group_total}\n"
         end
+
+        puts "\nTOTAL #{total}"
       end
     end
   end
