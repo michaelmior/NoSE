@@ -95,6 +95,9 @@ GEM
     pry-byebug (2.0.0)
       byebug (~> 3.4)
       pry (~> 0.10)
+    pry-doc (0.8.0)
+      pry (~> 0.9)
+      yard (~> 0.8)
     pry-rescue (1.4.1)
       interception (>= 0.5)
       pry
@@ -160,6 +163,7 @@ DEPENDENCIES
   parslet
   pry
   pry-byebug
+  pry-doc
   pry-rescue
   pry-stack_explorer
   rake
