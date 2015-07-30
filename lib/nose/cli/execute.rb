@@ -4,6 +4,8 @@ module NoSE
     class NoSECLI < Thor
       desc 'execute PLANS', 'test performance of the named PLANS'
       option :num_iterations, type: :numeric, default: 100
+      option :group, type: :string, default: nil, aliases: '-g'
+      option :plan, type: :string, default: nil, aliases: '-p'
       def execute(plans_name)
         # Load the execution plans
         plans = ExecutionPlans.load plans_name
@@ -19,9 +21,12 @@ module NoSE
                                     options[:num_iterations]
 
         plans.groups.each do |group, group_plans|
+          next if options[:group] && group != options[:group]
           puts "Group #{group}"
 
           group_plans.each do |plan|
+            next if options[:plan] && plan.name != options[:plan]
+
             prepared = backend.prepare_query nil, plan.select, plan.params,
                                              [plan.steps]
 
