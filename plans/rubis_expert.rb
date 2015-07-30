@@ -4,13 +4,13 @@ NoSE::ExecutionPlans.new do
   Schema 'rubis_expert'
 
   Group 'BrowseCategories', browsing: 4.44 + 3.21, bidding: 7.65 + 5.39 do
-    Plan do
+    Plan 'Authentication' do
       Select users.password
       Param  users.id, :==
       Lookup 'user_data', [users.id, :==]
     end
 
-    Plan do
+    Plan 'Categories' do
       Select categories['*']
       Param  categories.dummy, :==, 1
       Lookup 'categories', [categories.dummy, :==]
@@ -18,13 +18,13 @@ NoSE::ExecutionPlans.new do
   end
 
   Group 'ViewBidHistory', browsing: 2.38, bidding: 1.54 do
-    Plan do
+    Plan 'ItemName' do
       Select items.name
       Param  items.id, :==
       Lookup 'items_data', [items.id, :==]
     end
 
-    Plan do
+    Plan 'Bids' do
       Select bids['*']
       Param  items.id, :==
       Lookup 'item_bids', [items.id, :==]
@@ -32,7 +32,7 @@ NoSE::ExecutionPlans.new do
   end
 
   Group 'ViewItem', browsing: 22.95, bidding: 14.17 do
-    Plan do
+    Plan 'ItemData' do
       Select items['*']
       Param  items.id, :==
       Lookup 'items_data', [items.id, :==]
@@ -40,7 +40,7 @@ NoSE::ExecutionPlans.new do
   end
 
   Group 'SearchItemsByCategory', browsing: 27.77 + 8.26, bidding: 15.94 + 6.34 do
-    Plan do
+    Plan 'ItemList' do
       Select items['*']
       Param  categories.id, :==
       Param  items.end_date, :>=
@@ -56,13 +56,13 @@ NoSE::ExecutionPlans.new do
   # # BrowseRegions
 
   Group 'ViewUserInfo', browsing: 4.41, bidding: 2.48 do
-    Plan do
+    Plan 'UserData' do
       Select users['*'], regions.name
       Param  users.id, :==
       Lookup 'user_data', [users.id, :==]
     end
 
-    Plan do
+    Plan 'CommentsReceived' do
       Select comments['*']
       Param  users.id, :==
       Lookup 'user_comments_received', [users.id, :==]
@@ -77,7 +77,7 @@ NoSE::ExecutionPlans.new do
   end
 
   Group 'BuyNow', bidding: 1.16 do
-    Plan do
+    Plan 'Authentication' do
       Select users.password
       Param  users.id, :==
       Lookup 'user_data', [users.id, :==]
@@ -88,13 +88,13 @@ NoSE::ExecutionPlans.new do
   end
 
   Group 'PutBid', bidding: 5.40 do
-    Plan do
+    Plan 'Authentication' do
       Select users.password
       Param  users.id, :==
       Lookup 'user_data', [users.id, :==]
     end
 
-    Plan do
+    Plan 'ItemData' do
       Select items['*']
       Param  items.id, :==
       Lookup 'items_data', [items.id, :==]
@@ -105,19 +105,19 @@ NoSE::ExecutionPlans.new do
   end
 
   Group 'PutComment', bidding: 0.46 do
-    Plan do
+    Plan 'Authentication' do
       Select users.password
       Param  users.id, :==
       Lookup 'user_data', [users.id, :==]
     end
 
-    Plan do
+    Plan 'ItemData' do
       Select items['*']
       Param  items.id, :==
       Lookup 'items_data', [items.id, :==]
     end
 
-    Plan do
+    Plan 'UserData' do
       Select users['*']
       Param  users.id, :==
       Lookup 'user_data', [users.id, :==]
@@ -128,20 +128,20 @@ NoSE::ExecutionPlans.new do
   end
 
   Group 'AboutMe', bidding: 1.71 do
-    Plan do
+    Plan 'UserData' do
       Select users['*']
       Param  users.id, :==
       Lookup 'user_data', [users.id, :==]
     end
 
-    Plan do
+    Plan 'CommentsReceived' do
       Select comments['*']
       Param  users.id, :==
       Lookup 'user_comments_received', [users.id, :==]
       Lookup 'commenter', [comments.id, :==]
     end
 
-    Plan do
+    Plan 'BuyNow' do
       Select  items['*']
       Param   users.id, :==
       Param   buynow.date, :>=
@@ -149,7 +149,7 @@ NoSE::ExecutionPlans.new do
       Lookup 'items_data', [items.id, :==]
     end
 
-    Plan do
+    Plan 'ItemsSold' do
       Select  items['*']
       Param   users.id, :==
       Param   items.end_date, :>=
@@ -157,7 +157,7 @@ NoSE::ExecutionPlans.new do
       Lookup 'items_data', [items.id, :==]
     end
 
-    Plan do
+    Plan 'ItemsBid' do
       Select items['*']
       Param  users.id, :==
       Param  bids.date, :>=

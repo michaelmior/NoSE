@@ -1,10 +1,10 @@
 module NoSE
   # Simple DSL for constructing execution plans
   class ExecutionPlans
-    attr_reader :plans, :schema
+    attr_reader :groups, :schema
 
     def initialize(&block)
-      @plans = []
+      @groups = Hash.new { |h, k| h[k] = [] }
       instance_eval(&block) if block_given?
     end
 
@@ -25,18 +25,19 @@ module NoSE
     end
 
     # Define a group of query execution plans
-    def Group(_name, _weight = 1.0, **_mixes, &block)
-      # XXX Groups are basically ignored for now
+    def Group(name, _weight = 1.0, **_mixes, &block)
+      # XXX Weights are basically ignored for now
+      @group = name
       instance_eval(&block) if block_given?
     end
 
     # Define a single plan within a group
-    def Plan(&block)
+    def Plan(name, &block)
       return unless block_given?
 
-      plan = QueryExecutionPlan.new(@schema)
+      plan = QueryExecutionPlan.new(name, @schema)
       plan.instance_eval(&block)
-      @plans << plan
+      @groups[@group] << plan
     end
 
     # rubocop:enable MethodName
@@ -44,9 +45,10 @@ module NoSE
 
   # DSL to construct query execution plans
   class QueryExecutionPlan
-    attr_reader :params, :select, :steps
+    attr_reader :name, :params, :select, :steps
 
-    def initialize(schema)
+    def initialize(name, schema)
+      @name = name
       @schema = schema
       @select = []
       @params = {}
