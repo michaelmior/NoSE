@@ -119,7 +119,7 @@ module NoSE
 
     it 'can produce random dates' do
       field = Fields::DateField.new 'Foo'
-      expect(field.random_value).to be_a DateTime
+      expect(field.random_value).to be_a Time
     end
   end
 end

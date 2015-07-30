@@ -157,7 +157,7 @@ module NoSE
 
     # Field holding a date
     class DateField < Field
-      TYPE = DateTime
+      TYPE = Time
 
       def initialize(name, **options)
         super(name, 8, **options)
@@ -174,9 +174,8 @@ module NoSE
 
       # A random date within 2 years surrounding today
       def random_value
-        time = Faker::Time.between DateTime.now.prev_year,
-                                   DateTime.now.next_year
-        time.to_datetime
+        Faker::Time.between DateTime.now.prev_year,
+                            DateTime.now.next_year
       end
     end
 
