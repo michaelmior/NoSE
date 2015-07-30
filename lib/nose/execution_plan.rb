@@ -22,6 +22,7 @@ module NoSE
       @schema = Schema.load name
       NoSE::DSL.mixin_fields @schema.workload.model.entities,
                              QueryExecutionPlan
+      NoSE::DSL.mixin_fields @schema.workload.model.entities, ExecutionPlans
     end
 
     # Define a group of query execution plans
@@ -35,9 +36,37 @@ module NoSE
     def Plan(name, &block)
       return unless block_given?
 
-      plan = QueryExecutionPlan.new(name, @schema)
+      plan = QueryExecutionPlan.new(name, @schema, self)
+
+      # Capture one level of nesting in plans
+      if @parent_plan.nil?
+        @parent_plan = plan if @parent_plan.nil?
+        set_parent = true
+      else
+        set_parent = false
+      end
+
       plan.instance_eval(&block)
+
+      # Reset the parent plan if it was set
+      if set_parent
+        @parent_plan = nil
+        set_parent = false
+      end
+
       @groups[@group] << plan
+    end
+
+    def Support(&block)
+      # XXX Hack to swap the group name and capture support plans
+      old_group = @group
+      @group = '__SUPPORT__'
+      instance_eval(&block) if block_given?
+
+      @parent_plan.support = @groups[@group]
+      @groups[@group] = []
+
+      @group = old_group
     end
 
     # rubocop:enable MethodName
@@ -46,10 +75,12 @@ module NoSE
   # DSL to construct query execution plans
   class QueryExecutionPlan
     attr_reader :name, :params, :select, :steps
+    attr_accessor :support
 
-    def initialize(name, schema)
+    def initialize(name, schema, plans)
       @name = name
       @schema = schema
+      @plans = plans
       @select = []
       @params = {}
       @steps = []
@@ -66,6 +97,11 @@ module NoSE
     def Param(field, operator, value = nil)
       operator = :'=' if operator == :==
       @params[field.id] = Condition.new(field, operator, value)
+    end
+
+    # Pass the support query up to the parent
+    def Support(&block)
+      @plans.instance_eval(&block)
     end
 
     # Create a new index lookup step with a particular set of conditions
@@ -91,6 +127,12 @@ module NoSE
 
       step.instance_variable_set :@limit, limit unless limit.nil?
 
+      @steps << step
+    end
+
+    def Insert(index_key, *_fields)
+      index = @schema.indexes[index_key]
+      step = Plans::InsertPlanStep.new index
       @steps << step
     end
 
