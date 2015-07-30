@@ -67,7 +67,7 @@ module NoSE
     end
 
     # Create a new index lookup step with a particular set of conditions
-    def Lookup(index_key, *conditions)
+    def Lookup(index_key, *conditions, limit: nil)
       index = @schema.indexes[index_key]
 
       step = Plans::IndexLookupPlanStep.new index
@@ -86,6 +86,8 @@ module NoSE
 
       # XXX No ordering supported for now
       step.instance_variable_set :@order_by, []
+
+      step.instance_variable_set :@limit, limit unless limit.nil?
 
       @steps << step
     end
