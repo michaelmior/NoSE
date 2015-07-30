@@ -79,11 +79,23 @@ module NoSE
     it 'can convert string literals' do
       expect(Fields::IntegerField.value_from_string '42').to eq 42
     end
+
+    it 'can produce random integers' do
+      field = Fields::IntegerField.new 'Foo', count: 10
+      expect(field.random_value).to be_a Integer
+      expect(field.random_value).to be_between(0, field.cardinality)
+    end
   end
 
   describe Fields::FloatField do
     it 'can convert string literals' do
       expect(Fields::FloatField.value_from_string '3.14159').to eq 3.14159
+    end
+
+    it 'can produce random floats' do
+      field = Fields::FloatField.new 'Foo', count: 10
+      expect(field.random_value).to be_a Float
+      expect(field.random_value).to be_between(0, field.cardinality)
     end
   end
 
@@ -91,12 +103,23 @@ module NoSE
     it 'can convert string literals' do
       expect(Fields::StringField.value_from_string 'pudding').to eq 'pudding'
     end
+
+    it 'can produce random strings' do
+      field = Fields::StringField.new 'Foo', 10
+      expect(field.random_value).to be_a String
+      expect(field.random_value).to have(10).characters
+    end
   end
 
   describe Fields::DateField do
     it 'can convert string literals' do
       date = Fields::DateField.value_from_string '2001-02-03T04:05:06+07:00'
       expect(date).to eq DateTime.new(2001, 2, 3, 4, 5, 6, '+7').to_time
+    end
+
+    it 'can produce random dates' do
+      field = Fields::DateField.new 'Foo'
+      expect(field.random_value).to be_a DateTime
     end
   end
 end

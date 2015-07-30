@@ -1,4 +1,5 @@
 require 'date'
+require 'faker'
 require 'forwardable'
 require 'zlib'
 
@@ -66,6 +67,13 @@ module NoSE
       end
       # :nocov:
 
+      # @abstract Subclasses should produce a random value of the correct type
+      # :nocov:
+      def random_value
+        fail NotImplementedError
+      end
+      # :nocov:
+
       # Populate a helper DSL object with all subclasses of Field
       def self.inherited(child_class)
         # We use separate methods for foreign keys
@@ -102,6 +110,11 @@ module NoSE
       def self.value_from_string(string)
         string.to_i
       end
+
+      # Random numbers up to the given size
+      def random_value
+        rand(@cardinality)
+      end
     end
 
     # Field holding a float
@@ -116,6 +129,11 @@ module NoSE
       def self.value_from_string(string)
         string.to_f
       end
+
+      # Random numbers up to the given size
+      def random_value
+        rand(@cardinality).to_f
+      end
     end
 
     # Field holding a string of some average length
@@ -129,6 +147,11 @@ module NoSE
       # Return the String parameter as-is
       def self.value_from_string(string)
         string
+      end
+
+      # A random string of the correct length
+      def random_value
+        Faker::Lorem.characters(@size)
       end
     end
 
@@ -147,6 +170,13 @@ module NoSE
         rescue ArgumentError
           fail TypeError
         end
+      end
+
+      # A random date within 2 years surrounding today
+      def random_value
+        time = Faker::Time.between DateTime.now.prev_year,
+                                   DateTime.now.next_year
+        time.to_datetime
       end
     end
 
@@ -169,6 +199,11 @@ module NoSE
       # Return the String parameter as-is
       def self.value_from_string(string)
         string
+      end
+
+      # nil value which is interpreted by the backend as requesting a new ID
+      def random_value
+        nil
       end
     end
 

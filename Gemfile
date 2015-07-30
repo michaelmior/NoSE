@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'faker'
 gem 'formatador'
 gem 'logging'
 gem 'parallel'

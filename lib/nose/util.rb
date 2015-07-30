@@ -1,5 +1,6 @@
 # rubocop:disable Documentation
 
+require 'date'
 require 'formatador'
 require 'parallel'
 require 'pp'
@@ -222,6 +223,20 @@ module NoSE
     end
 
     module_function :mixin_fields
+  end
+end
+
+class Time
+  # Convert to a DateTime instance
+  # http://stackoverflow.com/a/279785/123695
+  def to_datetime
+    # Convert seconds + microseconds into a fractional number of seconds
+    seconds = sec + Rational(usec, 10**6)
+
+    # Convert a UTC offset measured in minutes to one measured in a
+    # fraction of a day.
+    offset = Rational(utc_offset, 60 * 60 * 24)
+    DateTime.new(year, month, day, hour, min, seconds, offset)
   end
 end
 
