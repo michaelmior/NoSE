@@ -19,13 +19,6 @@ NoSE::Schema.new do
     Path    users.id, users.region
   end
 
-  Index 'user_region' do
-    Hash    users.id
-    Ordered regions.id
-    Extra   regions.name
-    Path    users.id, users.region
-  end
-
   Index 'user_buynow' do
     Hash    users.id
     Ordered buynow.date, buynow.id, items.id
@@ -84,6 +77,13 @@ NoSE::Schema.new do
     Ordered categories.id
     Extra   categories.name
     Path    categories.id
+  end
+
+  Index 'regions' do
+    Hash    regions.dummy
+    Ordered regions.id
+    Extra   regions.name
+    Path    regions.id
   end
 end
 
