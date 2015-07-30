@@ -37,33 +37,12 @@ module NoSE
               # XXX Skip updates for now
               next
             else
-              prepared = backend.prepare_query nil, plan.select, plan.params,
-                                               [plan.steps]
+              # Run the query and get the total time
+              avg = bench_query backend, plans.schema.indexes, plan,
+                                index_values, options[:num_iterations]
             end
 
-            # Construct a list of values to be substituted in the plan
-            condition_list = 1.upto(options[:num_iterations]).map do |i|
-              Hash[plan.params.map do |field_id, condition|
-                value = plans.schema.indexes.values.each do |index|
-                  values = index_values[index]
-                  value = values[i % values.length][condition.field.id]
-                  break value unless value.nil?
-                end
-
-                [
-                  field_id,
-                  Condition.new(condition.field, condition.operator, value)
-                ]
-              end]
-            end
-
-            # Execute each plan and measure the time
-            start_time = Time.now
-            condition_list.each { |conditions| prepared.execute conditions }
-            elapsed = Time.now - start_time
-
-            # Report the time taken
-            avg = elapsed / options[:num_iterations]
+            # Run the query and get the total time
             group_total += avg
             puts "  #{plan.name} executed in #{avg} average"
           end
@@ -74,6 +53,37 @@ module NoSE
         end
 
         puts "\nTOTAL #{total}"
+      end
+
+      private
+
+      def bench_query(backend, indexes, plan, index_values, iterations)
+        prepared = backend.prepare_query nil, plan.select, plan.params,
+                                         [plan.steps]
+
+        # Construct a list of values to be substituted in the plan
+        condition_list = 1.upto(iterations).map do |i|
+          Hash[plan.params.map do |field_id, condition|
+            value = indexes.values.each do |index|
+              values = index_values[index]
+              value = values[i % values.length][condition.field.id]
+              break value unless value.nil?
+            end
+
+            [
+              field_id,
+              Condition.new(condition.field, condition.operator, value)
+            ]
+          end]
+        end
+
+        # Execute each plan and measure the time
+        start_time = Time.now
+        condition_list.each { |conditions| prepared.execute conditions }
+        elapsed = Time.now - start_time
+        avg = elapsed / iterations
+
+        avg
       end
     end
   end
