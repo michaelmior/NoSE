@@ -11,6 +11,12 @@ module NoSE
         @hosts = config[:hosts]
         @port = config[:port]
         @keyspace = config[:keyspace]
+        @generator = Cassandra::Uuid::Generator.new
+      end
+
+      # Generate a random UUID
+      def generate_id
+        @generator.uuid
       end
 
       # Produce the DDL necessary for column families for the given indexes
@@ -270,24 +276,27 @@ module NoSE
           # Lookup values from an index selecting the given
           # fields and filtering on the given conditions
           # TODO: Chain enumerables of results instead
-          result = []
+          new_result = []
           @logger.debug { "  #{@prepared.cql} * #{condition_list.size}" }
 
           # Limit the total number of queries as well as the query limit
-          condition_list.each do |conditions|
-            values = conditions.map do |condition| value = condition.value ||
+          condition_list.zip(results).each do |condition_set, result|
+            values = condition_set.map do |condition|
+              value = condition.value ||
                       conditions[condition.field.id].value
               fail if value.nil?
               condition.field.is_a?(Fields::IDField) ? \
-                Cassandra::Uuid.new(value.to_i): value
+                Cassandra::Uuid.new(value.to_i) : value
             end
 
             # Loop over all pages to fetch results
             new_results = @client.execute(@prepared, *values)
             loop do
-              rows = new_results.to_a
+              # Add the previous results to each row
+              rows = new_results.map { |row| result.merge row }
+
               fail if rows.any? { |row| row.values.any?(&:nil?) }
-              result += rows
+              new_result += rows
               break if new_results.last_page? ||
                        (!@step.limit.nil? && result.length >= @step.limit)
               new_results = new_results.next_page
@@ -295,12 +304,12 @@ module NoSE
             end
 
             # Don't continue with further queries
-            break if (!@step.limit.nil? && result.length >= @step.limit)
+            break if (!@step.limit.nil? && new_result.length >= @step.limit)
           end
-          @logger.debug "Total result size = #{result.size}"
+          @logger.debug "Total result size = #{new_result.size}"
 
           # Limit the size of the results in case we fetched multiple keys
-          result[0..(@step.limit.nil? ? -1 : @step.limit)]
+          new_result[0..(@step.limit.nil? ? -1 : @step.limit)]
         end
 
         private

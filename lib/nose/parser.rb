@@ -858,10 +858,12 @@ module NoSE
       @eq_fields = [@target.parent.id_fields.first,
                     @target.entity.id_fields.first]
 
-      # Populate the field settings
+      # Populate the conditions
+      source_id = @from.id_fields.first
+      target_id = @target.entity.id_fields.first
       @conditions = {
-        @from.id_fields.first.id => @source_pk,
-        @target.entity.id_fields.first.id => @target_pk
+        source_id.id => Condition.new(source_id, :'=', @source_pk),
+        target_id.id => Condition.new(target_id, :'=', @target_pk)
       }
     end
 

@@ -18,8 +18,7 @@ module NoSE
 
     # A plan for executing an update
     class UpdatePlan
-      attr_accessor :statement, :index, :query_plans, :update_steps,
-                    :cost_model
+      attr_reader :statement, :index, :query_plans, :update_steps, :cost_model
 
       include Comparable
 
@@ -31,6 +30,11 @@ module NoSE
         update_steps.each { |step| step.calculate_cost cost_model }
         @update_steps = update_steps
         @cost_model = cost_model
+      end
+
+      # Parameters to this update plan
+      def params
+        @statement.respond_to?(:conditions) ? @statement.conditions : []
       end
 
       # Select query plans to actually use here

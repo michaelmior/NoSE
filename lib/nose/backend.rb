@@ -23,6 +23,13 @@ module NoSE
       end
       # :nocov:
 
+      # @abstract Subclasses implement to generate a new random ID
+      # :nocov:
+      def generate_id
+        fail NotImplementedError
+      end
+      # :nocov:
+
       # Prepare a query to be executed with the given plans
       def prepare_query(query, fields, conditions, plans = [])
         if plans.empty?
@@ -126,6 +133,7 @@ module NoSE
       # Superclass for all statement execution steps
       class StatementStep
         include Supertype
+        attr_reader :index
       end
 
       # Look up data on an index in the backend
@@ -191,7 +199,7 @@ module NoSE
 
     # A prepared query which can be executed against the backend
     class PreparedQuery
-      attr_reader :query
+      attr_reader :query, :steps
 
       def initialize(query, steps)
         @query = query
@@ -215,7 +223,7 @@ module NoSE
 
     # An update prepared with a backend which is ready to execute
     class PreparedUpdate
-      attr_reader :statement
+      attr_reader :statement, :steps
 
       def initialize(statement, support_plans, steps)
         @statement = statement
@@ -240,7 +248,7 @@ module NoSE
           end]]
         else
           # Execute the support queries for this update
-          support = support_results settings
+          support = support_results update_conditions
         end
 
         # Perform the deletion
@@ -280,7 +288,7 @@ module NoSE
       # Execute all the support queries
       def support_results(settings)
         support = @support_plans.map do |query_plan|
-          execute_support_query query_plan, settings
+          query_plan.execute settings
         end
 
         # Combine the results from multiple support queries
@@ -290,18 +298,6 @@ module NoSE
         end
 
         support
-      end
-
-      # Execute a support query for an update
-      def execute_support_query(query_plan, settings)
-        # Substitute values into the support query
-        support_query = query_plan.query.dup
-        support_query.conditions.each do |field_id, condition|
-          condition.instance_variable_set :@value, settings[field_id]
-        end
-
-        # Execute the support query and return the results
-        query(support_query, query_plan)
       end
     end
 
