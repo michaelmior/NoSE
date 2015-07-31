@@ -91,6 +91,25 @@ module NoSE
         @cost = 0
       end
     end
+
+    # This superclass defines what is necessary for manually defined
+    # and automatically generated plans to provide for execution
+    class AbstractQueryPlan
+      # Subclasses should produce the steps for executing this query
+      def steps
+        fail NotImplementedError
+      end
+
+      # Subclasses should produce the fields selected by this plan
+      def select_fields
+        fail NotImplementedError
+      end
+
+      # Subclasses should produce the parameters necessary for this plan
+      def params
+        fail NotImplementedError
+      end
+    end
   end
 end
 
@@ -102,3 +121,4 @@ require_relative 'plans/update'
 
 require_relative 'plans/query_planner'
 require_relative 'plans/update_planner'
+require_relative 'plans/execution_plan'

@@ -109,9 +109,8 @@ module NoSE
 
           # Prepare plans for each support query
           support_plans = plan.query_plans.map do |query_plan|
-            backend.prepare_query nil, query_plan.select_fields,
-                                  query_plan.params,
-                                  [query_plan.steps]
+            prepare_query nil, query_plan.select_fields, query_plan.params,
+                          [query_plan.steps]
           end
 
           PreparedUpdate.new update, support_plans, steps
