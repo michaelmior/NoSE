@@ -32,6 +32,16 @@ module NoSE
         @cost_model = cost_model
       end
 
+      # The group of the associated statement
+      def group
+        @statement.group
+      end
+
+      # Name the plan by the statement
+      def name
+        @statement.text
+      end
+
       # Parameters to this update plan
       def params
         @statement.respond_to?(:conditions) ? @statement.conditions : []

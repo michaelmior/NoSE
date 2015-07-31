@@ -217,6 +217,8 @@ module NoSE
       include Representable::JSON
       include Representable::YAML
 
+      property :group
+      property :name
       property :query, decorator: StatementRepresenter
       property :cost
       collection :each, as: :steps, decorator: (lambda do |step, *|
@@ -259,6 +261,8 @@ module NoSE
       include Representable::JSON
       include Representable::YAML
 
+      property :group
+      property :name
       property :cost
       property :update_cost
       property :statement, decorator: StatementRepresenter
@@ -381,7 +385,13 @@ module NoSE
         workload = object.workload
         query = Query.new instance['query'], workload.model
 
+        # Create a new query plan
         plan = Plans::QueryPlan.new query, object.cost_model
+        plan.instance_variable_set(:@group, instance['group']) \
+          unless instance['group'].nil?
+        plan.instance_variable_set(:@name, instance['name']) \
+          unless instance['name'].nil?
+
         state = Plans::QueryState.new query, workload
         parent = Plans::RootPlanStep.new state
 

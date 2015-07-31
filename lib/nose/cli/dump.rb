@@ -6,7 +6,7 @@ module NoSE
       option :format, type: :string, default: 'txt',
                       enum: %w(txt json yml), aliases: '-f'
       def dump(plan_name)
-        plans = ExecutionPlans.load plan_name
+        plans = Plans::ExecutionPlans.load plan_name
 
         results = OpenStruct.new
         results.workload = plans.schema.workload

@@ -362,10 +362,10 @@ module NoSE
   # A CQL statement and its associated data
   class Statement
     attr_reader :from, :longest_entity_path, :key_path,
-                :text, :eq_fields, :range_field
+                :group, :text, :eq_fields, :range_field
 
     # Parse either a query or an update
-    def self.parse(text, model)
+    def self.parse(text, model, group: nil)
       case text.split.first
       when 'INSERT'
         klass = Insert
@@ -381,10 +381,11 @@ module NoSE
         klass = Query
       end
 
-      klass.new text, model
+      klass.new text, model, group: group
     end
 
-    def initialize(type, text, model)
+    def initialize(type, text, model, group: group)
+      @group = group
       @text = text
 
       # If parsing fails, re-raise as our custom exception
@@ -475,8 +476,8 @@ module NoSE
 
     attr_reader :select, :order, :limit
 
-    def initialize(statement, model)
-      super :query, statement, model
+    def initialize(statement, model, group: nil)
+      super :query, statement, model, group: group
 
       populate_conditions
       populate_fields
@@ -693,8 +694,8 @@ module NoSE
     include StatementSettings
     include StatementSupportQuery
 
-    def initialize(statement, model)
-      super :update, statement, model
+    def initialize(statement, model, group: group)
+      super :update, statement, model, group: group
 
       populate_conditions
       populate_settings
@@ -734,8 +735,8 @@ module NoSE
 
     alias_method :entity, :from
 
-    def initialize(statement, model)
-      super :insert, statement, model
+    def initialize(statement, model, group: group)
+      super :insert, statement, model, group: group
 
       populate_settings
 
@@ -768,8 +769,8 @@ module NoSE
     include StatementConditions
     include StatementSupportQuery
 
-    def initialize(statement, model)
-      super :delete, statement, model
+    def initialize(statement, model, group: group)
+      super :delete, statement, model, group: group
 
       populate_conditions
 
@@ -892,8 +893,8 @@ module NoSE
 
   # A representation of a connect in the workload
   class Connect < Connection
-    def initialize(statement, model)
-      super :connect, statement, model
+    def initialize(statement, model, group: group)
+      super :connect, statement, model, group: group
       fail InvalidStatementException, 'DISCONNECT parsed as CONNECT' \
         unless @text.split.first == 'CONNECT'
       populate_keys
@@ -908,8 +909,8 @@ module NoSE
 
   # A representation of a disconnect in the workload
   class Disconnect < Connection
-    def initialize(statement, model)
-      super :connect, statement, model
+    def initialize(statement, model, group: group)
+      super :connect, statement, model, group: group
       fail InvalidStatementException, 'CONNECT parsed as DISCONNECT' \
         unless @text.split.first == 'DISCONNECT'
       populate_keys
