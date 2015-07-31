@@ -4,12 +4,14 @@ module NoSE
     class NoSECLI < Thor
       desc 'benchmark PLAN_FILE', 'test performance of plans in PLAN_FILE'
       option :num_iterations, type: :numeric, default: 100
+      option :fail_on_empty, type: :boolean, default: true
       def benchmark(plan_file)
         result = load_results plan_file
         backend = get_backend(options, result)
 
         index_values = index_values result.indexes, backend,
-                                    options[:num_iterations]
+                                    options[:num_iterations],
+                                    options[:fail_on_empty]
 
         result.workload.queries.each do |query|
           # Get the plan and indexes used for this query
@@ -20,33 +22,11 @@ module NoSE
             step.is_a? Plans::IndexLookupPlanStep
           end.map(&:index)
 
-          # Construct a prepared statement for the query
-          prepared = backend.prepare(query, [plan])
-
-          # Construct a list of values to be substituted in the query
-          condition_list = 1.upto(options[:num_iterations]).map do |i|
-            Hash[query.conditions.map do |field_id, condition|
-              value = indexes.each do |index|
-                values = index_values[index]
-                value = values[i % values.length][condition.field.id]
-                break value unless value.nil?
-              end
-
-              [
-                field_id,
-                Condition.new(condition.field, condition.operator, value)
-              ]
-            end]
-          end
-
-          # Execute each query and measure the time
-          start_time = Time.now
-          condition_list.each { |conditions| prepared.execute conditions }
-          elapsed = Time.now - start_time
+          avg = bench_query backend, indexes, plan, index_values,
+                            options[:num_iterations]
 
           # Report the time taken
-          puts "#{query.text} executed in " \
-               "#{elapsed / options[:num_iterations]} average"
+          puts "#{query.text} executed in #{avg} average"
         end
       end
 

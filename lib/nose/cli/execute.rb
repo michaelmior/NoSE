@@ -42,7 +42,7 @@ module NoSE
               avg = bench_update backend, plan, options[:num_iterations]
             else
               # Run the query and get the total time
-              avg = bench_query backend, plans.schema.indexes, plan,
+              avg = bench_query backend, plans.schema.indexes.values, plan,
                                 index_values, options[:num_iterations]
             end
 
@@ -66,7 +66,7 @@ module NoSE
         # Construct a list of values to be substituted in the plan
         condition_list = 1.upto(iterations).map do |i|
           Hash[plan.params.map do |field_id, condition|
-            value = indexes.values.each do |index|
+            value = indexes.each do |index|
               values = index_values[index]
               value = values[i % values.length][condition.field.id]
               break value unless value.nil?
@@ -79,7 +79,7 @@ module NoSE
           end]
         end
 
-        prepared = backend.prepare_query nil, plan.select, plan.params,
+        prepared = backend.prepare_query nil, plan.select_fields, plan.params,
                                          [plan.steps]
 
         # Execute each plan and measure the time

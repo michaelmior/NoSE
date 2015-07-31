@@ -150,8 +150,8 @@ module NoSE
 
     # A single plan for a query
     class QueryPlan
-      attr_accessor :query
-      attr_accessor :cost_model
+      attr_reader :steps
+      attr_accessor :query, :cost_model
 
       include Comparable
       include Enumerable
@@ -165,6 +165,16 @@ module NoSE
         @steps = []
         @query = query
         @cost_model = cost_model
+      end
+
+      # Fields selected by this plan
+      def select_fields
+        @query.select
+      end
+
+      # Parameters to this execution plan
+      def params
+        @query.conditions
       end
 
       # Two plans are compared by their execution cost

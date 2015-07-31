@@ -82,7 +82,7 @@ module NoSE
 
   # DSL to construct query execution plans
   class QueryExecutionPlan
-    attr_reader :name, :params, :select, :steps, :update_steps, :index
+    attr_reader :name, :params, :select_fields, :steps, :update_steps, :index
     attr_accessor :query_plans
 
     # Most of the work is delegated to the array
@@ -94,7 +94,7 @@ module NoSE
       @name = name
       @schema = schema
       @plans = plans
-      @select = []
+      @select_fields = []
       @params = {}
       @steps = []
       @update_steps = []
@@ -116,7 +116,7 @@ module NoSE
 
     # Identify fields to be selected
     def Select(*fields)
-      @select = fields.flatten.to_set
+      @select_fields = fields.flatten.to_set
     end
 
     # Add parameters which are used as input to the plan
