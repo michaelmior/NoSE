@@ -800,7 +800,7 @@ module NoSE
   class Connection < Statement
     include StatementSupportQuery
 
-    attr_reader :source_pk, :target, :target_pk
+    attr_reader :source_pk, :target, :target_pk, :conditions
     alias_method :source, :from
 
     # A connection modifies an index if the relationship is in the path
@@ -859,7 +859,7 @@ module NoSE
                     @target.entity.id_fields.first]
 
       # Populate the field settings
-      @settings = {
+      @conditions = {
         @from.id_fields.first.id => @source_pk,
         @target.entity.id_fields.first.id => @target_pk
       }
