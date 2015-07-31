@@ -857,6 +857,12 @@ module NoSE
       # This is needed later when planning updates
       @eq_fields = [@target.parent.id_fields.first,
                     @target.entity.id_fields.first]
+
+      # Populate the field settings
+      @settings = {
+        @from.id_fields.first.id => @source_pk,
+        @target.entity.id_fields.first.id => @target_pk
+      }
     end
 
     private

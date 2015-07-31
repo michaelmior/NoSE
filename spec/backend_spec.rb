@@ -70,7 +70,7 @@ module NoSE::Backend
         .with(backend_insert, kind_of(Cassandra::Uuid), 'http://www.example.com/')
 
       step_class = CassandraBackend::InsertStatementStep
-      prepared = step_class.new client, index, values.first.keys
+      prepared = step_class.new client, index, [link['LinkId'], link['URL']]
       prepared.process values
     end
   end

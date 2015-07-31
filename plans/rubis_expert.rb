@@ -144,9 +144,25 @@ NoSE::ExecutionPlans.new do
 
   Group 'StoreBuyNow', bidding: 1.10 do
     Plan 'ReduceQuantity' do
+      Support do
+        Plan 'OldQuantity' do
+          Select items.quantity
+          Param items.id, :==
+          Lookup 'items_data', [items.id, :==]
+        end
+      end
+
+      Param  items.id, :==
+      Insert 'items_data', items.id, items.quantity
     end
 
     Plan 'AddToBought' do
+      Param users.id, :==
+      Param items.id, :==
+      Param buynow.id, :==
+      Param buynow.qty, :==
+      Param buynow.date, :==
+      Insert 'user_buynow'
     end
   end
 
@@ -217,13 +233,14 @@ NoSE::ExecutionPlans.new do
     Plan 'UpdateRating' do
       Support do
         Plan 'GetRating' do
-          Select users.rating
+          Select users.rating, regions.id
           Param  users.id, :==
           Lookup 'user_data', [users.id, :==]
         end
       end
 
-      Insert 'user_data', users.rating
+      Param  users.id, :==
+      Insert 'user_data', users.id, users.rating, regions.id
     end
 
     Plan 'InsertComment' do

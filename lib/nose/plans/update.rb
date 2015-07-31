@@ -34,8 +34,11 @@ module NoSE
 
     # A step which inserts data into a given index
     class InsertPlanStep < UpdatePlanStep
+      attr_reader :fields
+
       def initialize(index, state = nil)
         super index, :insert, state
+        @fields = index.all_fields
       end
     end
 

@@ -130,14 +130,14 @@ module NoSE
       end
 
       # Insert data into an index on the backend
-      class InsertStatementStep < StatementStep
+      class InsertStatementStep < BackendBase::InsertStatementStep
         def initialize(client, index, fields)
           @client = client
           @index = index
-          @fields = fields
+          @fields = fields.map(&:id)
 
           # Prepare the statement required to perform the insertion
-          insert_keys = fields & index.all_fields.map(&:id)
+          insert_keys = @fields & index.all_fields.map(&:id)
           insert = "INSERT INTO #{index.key} ("
           insert += insert_keys.join(', ') + ') VALUES ('
           insert += (['?'] * insert_keys.length).join(', ') + ')'
@@ -166,7 +166,7 @@ module NoSE
       end
 
       # Delete data from an index on the backend
-      class DeleteStatementStep < StatementStep
+      class DeleteStatementStep < BackendBase::DeleteStatementStep
         def initialize(client, index)
           @client = client
           @index = index
@@ -193,7 +193,7 @@ module NoSE
       end
 
       # A query step to look up data from a particular column family
-      class IndexLookupStatementStep < StatementStep
+      class IndexLookupStatementStep < BackendBase::IndexLookupStatementStep
         def initialize(client, select, conditions, step, next_step, prev_step)
           @logger = Logging.logger['nose::backend::cassandra::indexlookupstep']
           @client = client

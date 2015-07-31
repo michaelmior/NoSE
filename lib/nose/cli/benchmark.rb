@@ -53,11 +53,11 @@ module NoSE
       private
 
       # Get a sample of values from each index used by the queries
-      def index_values(indexes, backend, iterations)
+      def index_values(indexes, backend, iterations, fail_on_empty = true)
         Hash[indexes.map do |index|
           values = backend.index_sample(index, iterations).to_a
           fail "Index #{index.key} is empty and will produce no results" \
-            if values.empty?
+            if values.empty? && fail_on_empty
 
           [index, values]
         end]
