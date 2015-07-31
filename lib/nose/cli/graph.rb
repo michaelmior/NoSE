@@ -1,5 +1,5 @@
 module NoSE
-    module CLI
+  module CLI
     # Add a command to generate a graphic of the schema from a workload
     class NoSECLI < Thor
       desc 'graph WORKLOAD FILE', 'output a FILE of the given WORKLOAD'
