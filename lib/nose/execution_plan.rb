@@ -71,7 +71,7 @@ module NoSE
       @group = '__SUPPORT__'
       instance_eval(&block) if block_given?
 
-      @parent_plan.support = @groups[@group]
+      @parent_plan.query_plans = @groups[@group]
       @groups[@group] = []
 
       @group = old_group
@@ -82,8 +82,8 @@ module NoSE
 
   # DSL to construct query execution plans
   class QueryExecutionPlan
-    attr_reader :name, :params, :select, :steps
-    attr_accessor :support
+    attr_reader :name, :params, :select, :steps, :update_steps, :index
+    attr_accessor :query_plans
 
     # Most of the work is delegated to the array
     extend Forwardable
@@ -97,6 +97,8 @@ module NoSE
       @select = []
       @params = {}
       @steps = []
+      @update_steps = []
+      @query_plans = []
     end
 
     # These plans have no associated query
@@ -154,10 +156,15 @@ module NoSE
       @steps << step
     end
 
-    def Insert(index_key, *_fields)
-      index = @schema.indexes[index_key]
-      step = Plans::InsertPlanStep.new index
-      @steps << step
+    # Add a new insertion step into an index
+    def Insert(index_key, *fields)
+      @index = @schema.indexes[index_key]
+
+      step = Plans::InsertPlanStep.new @index
+      fields = @index.all_fields if fields.empty?
+      step.instance_variable_set(:@fields, fields)
+
+      @update_steps << step
     end
 
     # rubocop:enable MethodName

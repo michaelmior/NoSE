@@ -7,6 +7,7 @@ module NoSE
       option :mix, type: :string, default: 'default'
       option :group, type: :string, default: nil, aliases: '-g'
       option :plan, type: :string, default: nil, aliases: '-p'
+      option :fail_on_empty, type: :boolean, default: true
       def execute(plans_name)
         # Load the execution plans
         plans = ExecutionPlans.load plans_name
@@ -21,7 +22,8 @@ module NoSE
 
         # Get sample index values to use in queries
         index_values = index_values plans.schema.indexes.values, backend,
-                                    options[:num_iterations]
+                                    options[:num_iterations],
+                                    options[:fail_on_empty]
 
         total = 0
         plans.groups.each do |group, group_plans|
@@ -37,8 +39,7 @@ module NoSE
 
             update = !plan.steps.last.is_a?(Plans::IndexLookupPlanStep)
             if update
-              # XXX Skip updates for now
-              next
+              avg = bench_update backend, plan, options[:num_iterations]
             else
               # Run the query and get the total time
               avg = bench_query backend, plans.schema.indexes, plan,
@@ -60,10 +61,8 @@ module NoSE
 
       private
 
+      # Get the average execution time for a single query plan
       def bench_query(backend, indexes, plan, index_values, iterations)
-        prepared = backend.prepare_query nil, plan.select, plan.params,
-                                         [plan.steps]
-
         # Construct a list of values to be substituted in the plan
         condition_list = 1.upto(iterations).map do |i|
           Hash[plan.params.map do |field_id, condition|
@@ -80,9 +79,31 @@ module NoSE
           end]
         end
 
+        prepared = backend.prepare_query nil, plan.select, plan.params,
+                                         [plan.steps]
+
         # Execute each plan and measure the time
         start_time = Time.now
         condition_list.each { |conditions| prepared.execute conditions }
+        elapsed = Time.now - start_time
+        avg = elapsed / iterations
+
+        avg
+      end
+
+      # Get the average execution time for a single update plan
+      def bench_update(backend, plan, iterations)
+        setting_list = 1.upto(iterations).map do
+          plan.update_steps.last.fields.map do |field|
+            FieldSetting.new(field, field.random_value)
+          end
+        end
+
+        prepared = backend.prepare_update nil, setting_list.first, [plan]
+
+        # Execute each plan and measure the time
+        start_time = Time.now
+        setting_list.each { |setting| prepared.first.execute setting, [] }
         elapsed = Time.now - start_time
         avg = elapsed / iterations
 

@@ -57,7 +57,7 @@ module NoSE
           prepared = prepare_query statement, statement.all_fields,
                                    statement.conditions, plans
         else
-          fail NotImplementedError
+          prepared = prepare_update statement, update.settings, plans
         end
 
         prepared
@@ -69,8 +69,8 @@ module NoSE
         prepared.execute query.conditions
       end
 
-      # Execute an update with the stored plans
-      def update(update, plans = [])
+      # Prepare an update for execution
+      def prepare_update(update, update_settings, plans)
         # Search for plans if they were not given
         if plans.empty?
           plans = @update_plans.select do |possible_plan|
@@ -79,7 +79,48 @@ module NoSE
         end
         fail PlanNotFound if plans.empty?
 
-        plans.each { |plan| execute_update_plan update, plan }
+        # Prepare each plan
+        plans.map do |plan|
+          delete = false
+          insert = false
+          plan.update_steps.each do |step|
+            delete = true if step.is_a?(Plans::DeletePlanStep)
+            insert = true if step.is_a?(Plans::InsertPlanStep)
+          end
+
+          steps = []
+          if delete
+            step_class = DeleteStatementStep
+            subclass_step_name = step_class.name.sub \
+              'NoSE::Backend::BackendBase', self.class.name
+            step_class = Object.const_get subclass_step_name
+            steps << step_class.new(client, plan.index)
+          end
+          return PreparedUpdate.new update, [], steps if delete && !insert
+
+          if insert
+            step_class = InsertStatementStep
+            subclass_step_name = step_class.name.sub \
+              'NoSE::Backend::BackendBase', self.class.name
+            step_class = Object.const_get subclass_step_name
+            steps << step_class.new(client, plan.index,
+                                    update_settings.map(&:field))
+          end
+
+          # Prepare plans for each support query
+          support_plans = plan.query_plans.map do |query_plan|
+            backend.prepare_query nil, query_plan.select, query_plan.params,
+                                  [query_plan.steps]
+          end
+
+          PreparedUpdate.new update, support_plans, steps
+        end
+      end
+
+      # Execute an update with the stored plans
+      def update(update, plans = [])
+        prepared = prepare_update update, update.settings, plans
+        prepared.each { |p| p.execute update.settings, update.conditions }
       end
 
       # Superclass for all statement execution steps
@@ -188,56 +229,6 @@ module NoSE
         prepared = step_class.new client, index, results.first.keys.sort
         prepared.process support
       end
-
-      # Get the initial values which will be used in the first plan step
-      def initial_update_settings(update)
-        if update.is_a? Insert
-          # Populate the data to insert for Insert statements
-          settings = Hash[update.settings.map do |setting|
-            [setting.field.id, setting.value]
-          end]
-        elsif update.is_a? Connection
-          # Populate the data to insert for Connection statements
-          settings = {
-            update.source.id_fields.first.id => update.source_pk,
-            update.target.entity.id_fields.first.id => update.target_pk
-          }
-        else
-          # Get values for updates and deletes
-          settings = Hash[update.conditions.map do |field_id, condition|
-            [field_id, condition.value]
-          end]
-        end
-
-        settings
-      end
-
-      # Execute all the support queries
-      def support_results(query_plans, settings)
-        support = query_plans.map do |query_plan|
-          execute_support_query query_plan, settings
-        end
-
-        # Combine the results from multiple support queries
-        if support.length > 0
-          support = support.first.product(*support[1..-1])
-          support.map! { |results| results.reduce(&:merge) }
-        end
-
-        support
-      end
-
-      # Execute a support query for an update
-      def execute_support_query(query_plan, settings)
-        # Substitute values into the support query
-        support_query = query_plan.query.dup
-        support_query.conditions.each do |field_id, condition|
-          condition.instance_variable_set :@value, settings[field_id]
-        end
-
-        # Execute the support query and return the results
-        query(support_query, query_plan)
-      end
     end
 
     # A prepared query which can be executed against the backend
@@ -261,6 +252,98 @@ module NoSE
         end
 
         results
+      end
+    end
+
+    # An update prepared with a backend which is ready to execute
+    class PreparedUpdate
+      attr_reader :statement
+
+      def initialize(statement, support_plans, steps)
+        @statement = statement
+        @support_plans = support_plans
+        @delete_step = steps.find do |step|
+          step.is_a? BackendBase::DeleteStatementStep
+        end
+        @insert_step = steps.find do |step|
+          step.is_a? BackendBase::InsertStatementStep
+        end
+      end
+
+      # Execute the statement for the given set of conditions
+      def execute(update_settings, update_conditions)
+        # Execute all the support queries
+        settings = initial_update_settings update_settings, update_conditions
+
+        if !@delete_step.nil? && @insert_step.nil?
+          # Populate the data to remove for deletions
+          support = [Hash[update_conditions.map do |field_id, condition|
+            [field_id, condition.value]
+          end]]
+        else
+          # Execute the support queries for this update
+          support = support_results settings
+        end
+
+        # Perform the deletion
+        @delete_step.process support unless support.empty? || @delete_step.nil?
+        return if @insert_step.nil?
+
+        if @delete_step.nil?
+          support = [settings]
+        else
+          support.each { |row| row.merge! settings }
+        end
+
+        # Stop if we have nothing to insert, otherwise insert
+        return if support.empty?
+        @insert_step.process support
+      end
+
+      private
+
+      # Get the initial values which will be used in the first plan step
+      def initial_update_settings(update_settings, update_conditions)
+        if !@insert_step.nil? && @delete_step.nil?
+          # Populate the data to insert for Insert statements
+          settings = Hash[update_settings.map do |setting|
+            [setting.field.id, setting.value]
+          end]
+        else
+          # Get values for updates and deletes
+          settings = Hash[update_conditions.map do |field_id, condition|
+            [field_id, condition.value]
+          end]
+        end
+
+        settings
+      end
+
+      # Execute all the support queries
+      def support_results(settings)
+        support = @support_plans.map do |query_plan|
+          execute_support_query query_plan, settings
+        end
+
+        # Combine the results from multiple support queries
+        if support.length > 0
+          support = support.first.product(*support[1..-1])
+          support.map! { |results| results.reduce(&:merge) }
+        end
+
+        support
+      end
+
+      # Execute a support query for an update
+      def execute_support_query(query_plan, settings)
+        # Substitute values into the support query
+        support_query = query_plan.query.dup
+        support_query.conditions.each do |field_id, condition|
+          condition.instance_variable_set :@value, settings[field_id]
+        end
+
+        # Execute the support query and return the results
+        query(support_query, query_plan)
       end
     end
 
