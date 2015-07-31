@@ -10,7 +10,7 @@ module NoSE
       option :fail_on_empty, type: :boolean, default: true
       def execute(plans_name)
         # Load the execution plans
-        plans = ExecutionPlans.load plans_name
+        plans = Plans::ExecutionPlans.load plans_name
 
         # Construct an instance of the backend
         result = OpenStruct.new

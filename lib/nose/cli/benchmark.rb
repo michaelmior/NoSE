@@ -28,6 +28,19 @@ module NoSE
           # Report the time taken
           puts "#{query.text} executed in #{avg} average"
         end
+
+        result.workload.updates.each do |update|
+          plans = result.update_plans.select do |possible_plan|
+            possible_plan.statement = update
+          end
+
+          plans.each do |plan|
+            avg = bench_update backend, plan, options[:num_iterations]
+
+            # Report the time taken
+            puts "#{update.text} executed in #{avg} average"
+          end
+        end
       end
 
       private

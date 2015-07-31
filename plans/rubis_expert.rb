@@ -1,6 +1,6 @@
 # rubocop:disable SingleSpaceBeforeFirstArg
 
-NoSE::ExecutionPlans.new do
+NoSE::Plans::ExecutionPlans.new do
   Schema 'rubis_expert'
 
   Group 'BrowseCategories', browsing: 4.44 + 3.21, bidding: 7.65 + 5.39 do
