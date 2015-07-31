@@ -95,6 +95,8 @@ module NoSE
     # This superclass defines what is necessary for manually defined
     # and automatically generated plans to provide for execution
     class AbstractQueryPlan
+      attr_reader :group, :name
+
       # Subclasses should produce the steps for executing this query
       def steps
         fail NotImplementedError

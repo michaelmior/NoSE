@@ -57,8 +57,9 @@ module NoSE
     end
 
     # Add a new {Statement} to the workload or parse a string
-    def add_statement(statement, mixes = {})
-      statement = Statement.parse(statement, @model) if statement.is_a? String
+    def add_statement(statement, mixes = {}, group: group)
+      statement = Statement.parse(statement, @model, group: group) \
+        if statement.is_a? String
       statement.freeze
 
       mixes = { default: mixes } if mixes.is_a? Numeric
@@ -186,12 +187,12 @@ module NoSE
     end
 
     # Shortcut to add a new {Statement} to the workload
-    def Q(statement, weight = 1.0, **mixes)
+    def Q(statement, weight = 1.0, group: nil, **mixes)
       fail 'Statements require a workload' if @workload.nil?
 
       return if weight == 0 && mixes.empty?
       mixes = { default: weight } if mixes.empty?
-      @workload.add_statement statement, mixes
+      @workload.add_statement statement, mixes, group: group
     end
 
     # Allow setting the default workload mix
@@ -199,7 +200,7 @@ module NoSE
       @workload.mix = mix
     end
 
-    def Group(_name, weight = 1.0, **mixes, &block)
+    def Group(name, weight = 1.0, **mixes, &block)
       fail 'Groups require a workload' if @workload.nil?
 
       # Apply the DSL
@@ -207,7 +208,7 @@ module NoSE
       dsl.instance_eval(&block) if block_given?
       mixes.keys.each { |mix| mixes[mix] /= dsl.statements.length }
       dsl.statements.each do |statement|
-        Q(statement, weight, **mixes)
+        Q(statement, weight, **mixes, group: name)
       end
     end
 

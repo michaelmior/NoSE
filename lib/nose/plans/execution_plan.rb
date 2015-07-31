@@ -45,7 +45,7 @@ module NoSE
       def Plan(name, &block)
         return unless block_given?
 
-        plan = QueryExecutionPlan.new(name, @schema, self)
+        plan = QueryExecutionPlan.new(@group, name, @schema, self)
 
         # Capture one level of nesting in plans
         if @parent_plan.nil?
@@ -73,6 +73,10 @@ module NoSE
         instance_eval(&block) if block_given?
 
         @parent_plan.query_plans = @groups[@group]
+        @parent_plan.query_plans.each do |plan|
+          plan.instance_variable_set(:@group, old_group)
+        end
+
         @groups[@group] = []
 
         @group = old_group
@@ -83,7 +87,8 @@ module NoSE
 
     # DSL to construct query execution plans
     class QueryExecutionPlan < AbstractQueryPlan
-      attr_reader :name, :params, :select_fields, :steps, :update_steps, :index
+      attr_reader :group, :name, :params, :select_fields,
+                  :steps, :update_steps, :index
       attr_accessor :query_plans
 
       # Most of the work is delegated to the array
@@ -91,7 +96,8 @@ module NoSE
       def_delegators :@steps, :each, :<<, :[], :==, :===, :eql?,
                      :inspect, :to_s, :to_a, :to_ary, :last, :length, :count
 
-      def initialize(name, schema, plans)
+      def initialize(group, name, schema, plans)
+        @group = group
         @name = name
         @schema = schema
         @plans = plans
