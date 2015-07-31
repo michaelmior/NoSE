@@ -39,7 +39,8 @@ module NoSE
 
             update = !plan.steps.last.is_a?(Plans::IndexLookupPlanStep)
             if update
-              avg = bench_update backend, plan, options[:num_iterations]
+              avg = bench_update backend, plans.schema.indexes.values, plan,
+                                 index_values, options[:num_iterations]
             else
               # Run the query and get the total time
               avg = bench_query backend, plans.schema.indexes.values, plan,
@@ -92,18 +93,42 @@ module NoSE
       end
 
       # Get the average execution time for a single update plan
-      def bench_update(backend, plan, iterations)
+      def bench_update(backend, indexes, plan, index_values, iterations)
         setting_list = 1.upto(iterations).map do
           plan.update_steps.last.fields.map do |field|
-            FieldSetting.new(field, field.random_value)
+            # Get the backend to generate a random ID or take a random value
+            if field.is_a?(Fields::IDField)
+              value = backend.generate_id
+            else
+              value = field.random_value
+            end
+
+            FieldSetting.new(field, value)
           end
+        end
+
+        condition_list = 1.upto(iterations).map do |i|
+          Hash[plan.params.map do |field_id, condition|
+            value = indexes.each do |index|
+              values = index_values[index]
+              value = values[i % values.length][condition.field.id]
+              break value unless value.nil?
+            end
+
+            [
+              field_id,
+              Condition.new(condition.field, condition.operator, value)
+            ]
+          end]
         end
 
         prepared = backend.prepare_update nil, setting_list.first, [plan]
 
         # Execute each plan and measure the time
         start_time = Time.now
-        setting_list.each { |setting| prepared.first.execute setting, [] }
+        setting_list.zip(condition_list).each do |settings, conditions|
+          prepared.first.execute settings, conditions
+        end
         elapsed = Time.now - start_time
         avg = elapsed / iterations
 

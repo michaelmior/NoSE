@@ -14,6 +14,8 @@ module NoSE
                                     options[:fail_on_empty]
 
         result.workload.queries.each do |query|
+          @logger.debug { "Executing #{query.text}" }
+
           # Get the plan and indexes used for this query
           plan = result.plans.find do |possible_plan|
             possible_plan.query == query
@@ -30,12 +32,22 @@ module NoSE
         end
 
         result.workload.updates.each do |update|
+          @logger.debug { "Executing #{update.text}" }
+
           plans = result.update_plans.select do |possible_plan|
-            possible_plan.statement = update
+            possible_plan.statement == update
           end
 
           plans.each do |plan|
-            avg = bench_update backend, plan, options[:num_iterations]
+            # Get all indexes used by support queries
+            indexes = plan.query_plans.map do |query_plan|
+              query_plan.select do |step|
+                step.is_a? Plans::IndexLookupPlanStep
+              end.map(&:index)
+            end.flatten(1)
+
+            avg = bench_update backend, indexes, plan, index_values,
+                               options[:num_iterations]
 
             # Report the time taken
             puts "#{update.text} executed in #{avg} average"
