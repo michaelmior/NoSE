@@ -187,48 +187,6 @@ module NoSE
           end
         end
       end
-
-      private
-
-      # Execute a single update plan as part of an update
-      def execute_update_plan(update, plan)
-        # Execute all the support queries
-        settings = initial_update_settings update
-        support = support_results plan.query_plans, settings
-
-        # Populate the data to remove for Delete statements
-        if update.is_a? Delete
-          support = [Hash[update.conditions.map do |field_id, condition|
-            [field_id, condition.value]
-          end]]
-        end
-
-        if update.requires_delete?
-          step_class = DeleteStatementStep
-          subclass_step_name = step_class.name.sub \
-            'NoSE::Backend::BackendBase', self.class.name
-          step_class = Object.const_get subclass_step_name
-          prepared = step_class.new client, plan.index
-          prepared.process support unless support.empty?
-        end
-        return if update.is_a? Delete
-
-        if update.is_a? Insert
-          support = [settings]
-        else
-          support.each { |row| row.merge! settings }
-        end
-
-        # Stop if we have nothing to insert
-        return if support.empty?
-
-        step_class = InsertStatementStep
-        subclass_step_name = step_class.name.sub \
-          'NoSE::Backend::BackendBase', self.class.name
-        step_class = Object.const_get subclass_step_name
-        prepared = step_class.new client, index, results.first.keys.sort
-        prepared.process support
-      end
     end
 
     # A prepared query which can be executed against the backend
