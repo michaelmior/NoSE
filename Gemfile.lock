@@ -40,6 +40,7 @@ GEM
       multi_test (>= 0.1.1)
     debug_inspector (0.0.2)
     debugger-linecache (1.2.0)
+    descriptive_statistics (2.5.1)
     diff-lcs (1.2.5)
     docile (1.1.5)
     fakefs (0.6.4)
@@ -156,6 +157,7 @@ DEPENDENCIES
   aruba
   cassandra-driver
   codeclimate-test-reporter
+  descriptive_statistics
   fakefs
   faker
   formatador
