@@ -4,9 +4,11 @@ module NoSE
     class Results
       attr_accessor :enumerated_indexes, :indexes, :total_size, :total_cost,
                     :workload, :update_plans, :plans, :cost_model
+      attr_accessor :revision, :time, :command
 
-      def initialize(problem)
+      def initialize(problem = nil)
         @problem = problem
+        return if problem.nil?
 
         # Find the indexes the ILP says the query should use
         @query_indexes = Hash.new { |h, k| h[k] = Set.new }
