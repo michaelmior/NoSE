@@ -1,6 +1,7 @@
 require 'descriptive_statistics/safe'
 
 module NoSE
+  # Storage and presentation of value from performance measusrements
   module Measurements
     # A measurement of a single statement execution time
     class Measurement

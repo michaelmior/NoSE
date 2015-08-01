@@ -723,6 +723,9 @@ module NoSE
 
     private
 
+    # The condition fields are provided with the update
+    # Note that we don't include the settings here because we
+    # care about the previously existing values in the database
     def given_fields
       @conditions.values.map(&:field)
     end
@@ -759,6 +762,7 @@ module NoSE
       []
     end
 
+    # The settings fields are provided with the insertion
     def given_fields
       @settings.map(&:field)
     end
@@ -792,6 +796,7 @@ module NoSE
       [support_query_for_fields(index, @from.fields)].compact
     end
 
+    # The condition fields are provided with the deletion
     def given_fields
       @conditions.values.map(&:field)
     end
@@ -870,6 +875,7 @@ module NoSE
 
     private
 
+    # The two key fields are provided with the connection
     def given_fields
       [@target.parent.id_fields.first, @target.entity.id_fields.first]
     end

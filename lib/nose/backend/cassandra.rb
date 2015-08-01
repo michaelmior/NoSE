@@ -151,8 +151,8 @@ module NoSE
           @generator = Cassandra::Uuid::Generator.new
         end
 
+        # Insert each row into the index
         def process(results)
-          # Insert each row into the index
           results.each do |result|
             values = @fields.map do |key|
               cur_field = @index.all_fields.find { |field| field.id == key }

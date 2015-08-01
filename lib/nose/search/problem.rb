@@ -11,7 +11,10 @@ module NoSE
   module Search
     # Simple enum for possible objective functions
     module Objective
+      # Minimize the cost of statements in the workload
       COST  = 1
+
+      # Minimize the space usage of generated indexes
       SPACE = 2
     end
 
