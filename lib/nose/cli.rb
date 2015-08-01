@@ -80,7 +80,7 @@ module NoSE
       # Load results of a previous search operation
       def load_results(plan_file)
         representer = Serialize::SearchResultRepresenter.represent \
-          OpenStruct.new
+          Search::Results.new
         json = File.read(plan_file)
         representer.from_json(json)
       end
