@@ -167,16 +167,6 @@ module NoSE
         @cost_model = cost_model
       end
 
-      # The group of the query
-      def group
-        @query.nil? ? nil : @query.group
-      end
-
-      # Name the plan by the query
-      def name
-        @query.nil? ? nil : @query.text
-      end
-
       # Fields selected by this plan
       def select_fields
         @query.select
