@@ -4,6 +4,7 @@ module NoSE
     class NoSECLI < Thor
       desc 'execute PLANS', 'test performance of the named PLANS'
       option :num_iterations, type: :numeric, default: 100
+      option :repeat, type: :numeric, default: 1
       option :mix, type: :string, default: 'default'
       option :group, type: :string, default: nil, aliases: '-g'
       option :plan, type: :string, default: nil, aliases: '-p'
@@ -39,17 +40,21 @@ module NoSE
 
             update = !plan.steps.last.is_a?(Plans::IndexLookupPlanStep)
             if update
-              avg = bench_update backend, plans.schema.indexes.values, plan,
-                                 index_values, options[:num_iterations]
+              measurement = bench_update backend, plans.schema.indexes.values,
+                                         plan, index_values,
+                                         options[:num_iterations],
+                                         options[:repeat]
             else
               # Run the query and get the total time
-              avg = bench_query backend, plans.schema.indexes.values, plan,
-                                index_values, options[:num_iterations]
+              measurement = bench_query backend, plans.schema.indexes.values,
+                                        plan, index_values,
+                                        options[:num_iterations],
+                                        options[:repeat]
             end
 
             # Run the query and get the total time
-            group_total += avg
-            puts "  #{plan.name} executed in #{avg} average"
+            group_total += measurement.mean
+            puts "  #{plan.name} executed in #{measurement.mean} average"
           end
 
           group_total *= group_weight
@@ -63,7 +68,7 @@ module NoSE
       private
 
       # Get the average execution time for a single query plan
-      def bench_query(backend, indexes, plan, index_values, iterations)
+      def bench_query(backend, indexes, plan, index_values, iterations, repeat)
         # Construct a list of values to be substituted in the plan
         condition_list = 1.upto(iterations).map do |i|
           Hash[plan.params.map do |field_id, condition|
@@ -83,17 +88,23 @@ module NoSE
         prepared = backend.prepare_query nil, plan.select_fields, plan.params,
                                          [plan.steps]
 
-        # Execute each plan and measure the time
-        start_time = Time.now
-        condition_list.each { |conditions| prepared.execute conditions }
-        elapsed = Time.now - start_time
-        avg = elapsed / iterations
+        measurement = Measurements::Measurement.new plan
 
-        avg
+        1.upto(repeat) do
+          # Execute each plan and measure the time
+          start_time = Time.now
+          condition_list.each { |conditions| prepared.execute conditions }
+          elapsed = Time.now - start_time
+
+          measurement << (elapsed / iterations)
+        end
+
+        measurement
       end
 
       # Get the average execution time for a single update plan
-      def bench_update(backend, indexes, plan, index_values, iterations)
+      def bench_update(backend, indexes, plan, index_values,
+                       iterations, repeat)
         setting_list = 1.upto(iterations).map do
           plan.update_steps.last.fields.map do |field|
             # Get the backend to generate a random ID or take a random value
@@ -124,15 +135,20 @@ module NoSE
 
         prepared = backend.prepare_update nil, setting_list.first, [plan]
 
-        # Execute each plan and measure the time
-        start_time = Time.now
-        setting_list.zip(condition_list).each do |settings, conditions|
-          prepared.first.execute settings, conditions
-        end
-        elapsed = Time.now - start_time
-        avg = elapsed / iterations
+        measurement = Measurements::Measurement.new plan
 
-        avg
+        1.upto(repeat) do
+          # Execute each plan and measure the time
+          start_time = Time.now
+          setting_list.zip(condition_list).each do |settings, conditions|
+            prepared.first.execute settings, conditions
+          end
+          elapsed = Time.now - start_time
+
+          measurement << (elapsed / iterations)
+        end
+
+        measurement
       end
     end
   end

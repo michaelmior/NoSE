@@ -4,6 +4,7 @@ module NoSE
     class NoSECLI < Thor
       desc 'benchmark PLAN_FILE', 'test performance of plans in PLAN_FILE'
       option :num_iterations, type: :numeric, default: 100
+      option :repeat, type: :numeric, default: 1
       option :fail_on_empty, type: :boolean, default: true
       def benchmark(plan_file)
         result = load_results plan_file
@@ -24,11 +25,11 @@ module NoSE
             step.is_a? Plans::IndexLookupPlanStep
           end.map(&:index)
 
-          avg = bench_query backend, indexes, plan, index_values,
-                            options[:num_iterations]
+          measurement = bench_query backend, indexes, plan, index_values,
+                                    options[:num_iterations], options[:repeat]
 
           # Report the time taken
-          puts "#{query.text} executed in #{avg} average"
+          puts "#{query.text} executed in #{measurement.mean} average"
         end
 
         result.workload.updates.each do |update|
@@ -46,11 +47,12 @@ module NoSE
               end.map(&:index)
             end.flatten(1)
 
-            avg = bench_update backend, indexes, plan, index_values,
-                               options[:num_iterations]
+            measurement = bench_update backend, indexes, plan, index_values,
+                                       options[:num_iterations],
+                                       options[:repeat]
 
             # Report the time taken
-            puts "#{update.text} executed in #{avg} average"
+            puts "#{update.text} executed in #{measurement.mean} average"
           end
         end
       end
