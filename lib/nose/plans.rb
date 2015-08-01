@@ -94,7 +94,7 @@ module NoSE
 
     # This superclass defines what is necessary for manually defined
     # and automatically generated plans to provide for execution
-    class AbstractQueryPlan
+    class AbstractPlan
       attr_reader :group, :name, :weight
 
       # Subclasses should produce the steps for executing this query
@@ -104,7 +104,7 @@ module NoSE
 
       # Subclasses should produce the fields selected by this plan
       def select_fields
-        fail NotImplementedError
+        []
       end
 
       # Subclasses should produce the parameters necessary for this plan
