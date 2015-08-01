@@ -52,7 +52,7 @@ module NoSE
             puts "  #{plan.name} executed in #{avg} average"
           end
 
-          group_total *= group_weight / group_plans.length
+          group_total *= group_weight
           total += group_total
           puts "  TOTAL #{group_total}\n"
         end
