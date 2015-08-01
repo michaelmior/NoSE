@@ -221,6 +221,7 @@ module NoSE
       property :name
       property :query, decorator: StatementRepresenter
       property :cost
+      property :weight
       collection :each, as: :steps, decorator: (lambda do |step, *|
         {
           index_lookup: IndexLookupStepRepresenter,
@@ -265,6 +266,7 @@ module NoSE
       property :name
       property :cost
       property :update_cost
+      property :weight
       property :statement, decorator: StatementRepresenter
       property :index, decorator: IndexRepresenter
       collection :query_plans, decorator: QueryPlanRepresenter, class: Object
