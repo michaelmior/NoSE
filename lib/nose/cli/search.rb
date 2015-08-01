@@ -13,7 +13,8 @@ module NoSE
       option :read_only, type: :boolean, default: false
       option :mix, type: :string, default: 'default'
       option :scale_writes, type: :numeric, default: nil
-      option :objective, type: :string, default: 'cost', enum: %w(cost space)
+      option :objective, type: :string, default: 'cost',
+                         enum: %w(cost space indexes)
       option :format, type: :string, default: 'txt',
                       enum: %w(txt json yml), aliases: '-f'
       option :output, type: :string, default: nil, aliases: '-o'
@@ -27,8 +28,15 @@ module NoSE
         cost_model = get_class('cost', options[:cost_model][:name]).new(**options[:cost_model])
 
         # Execute the advisor
-        objective = options[:objective] == 'cost' ? Search::Objective::COST :
-                                                    Search::Objective::SPACE
+        objective = case options[:objective]
+                    when 'cost'
+                      Search::Objective::COST
+                    when 'space'
+                      Search::Objective::SPACE
+                    when 'indexes'
+                      Search::Objective::INDEXES
+                    end
+
         result = search_result workload, cost_model, options[:max_space],
                                objective
         return if result.nil?
