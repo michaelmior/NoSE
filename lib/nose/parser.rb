@@ -417,12 +417,12 @@ module NoSE
     end
 
     # Specifies if the statement will require data to be inserted
-    def requires_insert?
+    def requires_insert?(_index)
       false
     end
 
     # Specifies if the statement will require data to be deleted
-    def requires_delete?
+    def requires_delete?(_index)
       false
     end
 
@@ -704,21 +704,27 @@ module NoSE
     end
 
     # Specifies that updates require insertion
-    def requires_insert?
+    def requires_insert?(_index)
       true
     end
 
     # Specifies that updates require deletion
-    def requires_delete?
-      true
+    def requires_delete?(index)
+      !(settings.map(&:field).to_set &
+        (index.hash_fields + index.order_fields.to_set)).empty?
     end
 
     # Get the support queries for updating an index
     def support_queries(index)
       # Get the updated fields and check if an update is necessary
-      # XXX: We really only need all fields if we are updating a key
-      updated_fields = settings.map(&:field).to_set & index.all_fields
-      [support_query_for_fields(index, updated_fields, true)].compact
+      set_fields = settings.map(&:field).to_set
+
+      # We only need to fetch all the fields if we're updating a key
+      updated_key = !(set_fields &
+                      (index.hash_fields + index.order_fields)).empty?
+
+      updated_fields = set_fields & index.all_fields
+      [support_query_for_fields(index, updated_fields, updated_key)].compact
     end
 
     private
@@ -753,7 +759,7 @@ module NoSE
     end
 
     # Specifies that inserts require insertion
-    def requires_insert?
+    def requires_insert?(_index)
       true
     end
 
@@ -787,7 +793,7 @@ module NoSE
     end
 
     # Specifies that deletes require deletion
-    def requires_delete?
+    def requires_delete?(_index)
       true
     end
 
@@ -834,8 +840,8 @@ module NoSE
 
       # Get the actual support queries
       [
-        support_query_for_path(index, path1, where1, requires_insert?),
-        support_query_for_path(index, path2, where2, requires_insert?)
+        support_query_for_path(index, path1, where1, requires_insert?(index)),
+        support_query_for_path(index, path2, where2, requires_insert?(index))
       ].compact
     end
 
@@ -908,7 +914,7 @@ module NoSE
     end
 
     # Specifies that connections require insertion
-    def requires_insert?
+    def requires_insert?(_index)
       true
     end
   end
@@ -924,7 +930,7 @@ module NoSE
     end
 
     # Specifies that disconnections require deletion
-    def requires_delete?
+    def requires_delete?(_index)
       true
     end
   end

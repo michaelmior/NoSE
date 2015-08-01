@@ -157,9 +157,9 @@ module NoSE
           # Find the required update steps
           update_steps = []
           update_steps << DeletePlanStep.new(index, state) \
-            if statement.requires_delete?
+            if statement.requires_delete?(index)
           update_steps << InsertPlanStep.new(index, state) \
-            if statement.requires_insert?
+            if statement.requires_insert?(index)
 
           UpdatePlan.new statement, index, trees, update_steps, @cost_model
         end.compact
