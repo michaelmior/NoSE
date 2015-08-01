@@ -295,13 +295,23 @@ module NoSE
 
       def call(object, _fragment, instance, **_options)
         workload = object.workload
-        statement = Statement.parse instance['statement'], workload.model
+
+        if statement.nil?
+          statement = nil
+        else
+          statement = Statement.parse instance['statement'], workload.model
+        end
+
         update_steps = instance['update_steps'].map do |step_hash|
           step_class = Plans::PlanStep.subtype_class step_hash['type']
           index_key = step_hash['index']['key']
           step_index = object.indexes.find { |index| index.key == index_key }
 
-          state = Plans::UpdateState.new statement, step_hash['cardinality']
+          if statement.nil?
+            state = nil
+          else
+            state = Plans::UpdateState.new statement, step_hash['cardinality']
+          end
           step_class.new step_index, state
         end
 
@@ -309,6 +319,12 @@ module NoSE
         index = object.indexes.find { |index| index.key == index_key }
         update_plan = Plans::UpdatePlan.new statement, index, [], update_steps,
                                             object.cost_model
+
+        update_plan.instance_variable_set(:@group, instance['group']) \
+          unless instance['group'].nil?
+        update_plan.instance_variable_set(:@name, instance['name']) \
+          unless instance['name'].nil?
+        update_plan.instance_variable_set(:@weight, instance['weight'])
 
         # Reconstruct and assign the query plans
         builder = QueryPlanBuilder.new
@@ -385,7 +401,14 @@ module NoSE
 
       def call(object, _fragment, instance, **_options)
         workload = object.workload
-        query = Query.new instance['query'], workload.model
+
+        if instance['query'].nil?
+          query = nil
+          state = nil
+        else
+          query = Query.new instance['query'], workload.model
+          state = Plans::QueryState.new query, workload
+        end
 
         # Create a new query plan
         plan = Plans::QueryPlan.new query, object.cost_model
@@ -393,8 +416,8 @@ module NoSE
           unless instance['group'].nil?
         plan.instance_variable_set(:@name, instance['name']) \
           unless instance['name'].nil?
+        plan.instance_variable_set(:@weight, instance['weight'])
 
-        state = Plans::QueryState.new query, workload
         parent = Plans::RootPlanStep.new state
 
         f = ->(field) { workload.model[field['parent']][field['name']] }
@@ -431,12 +454,14 @@ module NoSE
             step = step_class.new limit, parent
           end
 
-          # Copy the correct cardinality
-          # XXX This may not preserve all the necessary state
-          state = step.state.dup
-          state.instance_variable_set :@cardinality, step_hash['cardinality']
-          step.instance_variable_set :@cost, step_hash['cost']
-          step.state = state.freeze
+          unless step.state.nil?
+            # Copy the correct cardinality
+            # XXX This may not preserve all the necessary state
+            state = step.state.dup
+            state.instance_variable_set :@cardinality, step_hash['cardinality']
+            step.instance_variable_set :@cost, step_hash['cost']
+            step.state = state.freeze
+          end
 
           plan << step
           parent = step
