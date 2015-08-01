@@ -16,6 +16,9 @@ module NoSE
 
       # Minimize the space usage of generated indexes
       SPACE = 2
+
+      # Minimize the total number of indexes
+      INDEXES = 3
     end
 
     # A representation of a search problem as an ILP
@@ -105,6 +108,14 @@ module NoSE
         cost
       end
 
+      # The total number of indexes
+      def total_indexes
+        total = Gurobi::LinExpr.new
+        @index_vars.values.each { |var| total += var * 1.0 }
+
+        total
+      end
+
       private
 
       # Write a model to a temporary file and log the file name
@@ -145,7 +156,15 @@ module NoSE
 
       # Set the value of the objective function (workload cost)
       def define_objective
-        obj = @objective_type == Objective::COST ? total_cost : total_size
+        obj = case @objective_type
+              when Objective::COST
+                total_cost
+              when Objective::SPACE
+                total_size
+              when Objective::INDEXES
+                total_indexes
+              end
+
         @logger.debug { "Objective function is #{obj.inspect}" }
         @objective = obj
         @model.setObjective obj, Gurobi::MINIMIZE
