@@ -65,9 +65,9 @@ module NoSE
     # @return [String]
     def hash_str
       @hash_str ||= [
-        @hash_fields.map(&:id),
+        @hash_fields.map(&:id).sort,
         @order_fields.map(&:id),
-        @extra.to_set.map(&:id),
+        @extra.to_set.map(&:id).sort,
         @path.map(&:id)
       ].to_s
     end
