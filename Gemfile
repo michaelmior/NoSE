@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'descriptive_statistics', require: false
 gem 'faker'
 gem 'formatador'
 gem 'logging'
