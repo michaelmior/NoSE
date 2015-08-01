@@ -14,6 +14,7 @@ module NoSE
       attr_accessor :primary_key
       alias_method :primary_key?, :primary_key
 
+      # The Ruby type of values stored in this field
       TYPE = nil
 
       def initialize(name, size, count: nil)
@@ -100,6 +101,7 @@ module NoSE
 
     # Field holding an integer
     class IntegerField < Field
+      # Integers are stored as integers
       TYPE = Integer
 
       def initialize(name, **options)
@@ -119,6 +121,7 @@ module NoSE
 
     # Field holding a float
     class FloatField < Field
+      # Any Fixnum is a valid float
       TYPE = Fixnum
 
       def initialize(name, **options)
@@ -138,6 +141,7 @@ module NoSE
 
     # Field holding a string of some average length
     class StringField < Field
+      # Strings are stored as strings
       TYPE = String
 
       def initialize(name, length = 10, **options)
@@ -157,6 +161,7 @@ module NoSE
 
     # Field holding a date
     class DateField < Field
+      # Time is used to store timestamps
       TYPE = Time
 
       def initialize(name, **options)

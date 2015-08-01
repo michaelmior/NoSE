@@ -1,5 +1,5 @@
-# Loaders which insert data into indexes from external sources
 module NoSE
+  # Loaders which insert data into indexes from external sources
   module Loader
     # Superclass for all data loaders
     class LoaderBase

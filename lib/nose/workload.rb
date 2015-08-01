@@ -202,6 +202,7 @@ module NoSE
       @workload.mix = mix
     end
 
+    # Allow grouping statements with an associated weight
     def Group(name, weight = 1.0, **mixes, &block)
       fail 'Groups require a workload' if @workload.nil?
 

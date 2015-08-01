@@ -19,6 +19,7 @@ module NoSE
         binding.eval contents, filename
       end
 
+      # Set the weights on plans when the mix is changed
       def mix=(mix)
         @mix = mix
 
@@ -78,6 +79,7 @@ module NoSE
         @groups[@group] << plan
       end
 
+      # Add support queries for updates in a plan
       def Support(&block)
         # XXX Hack to swap the group name and capture support plans
         old_group = @group

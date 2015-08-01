@@ -193,6 +193,7 @@ module Kernel
 end
 
 module NoSE
+  # Helper functions for building DSLs
   module DSL
     # Add methods to the class which can be used to access entities and fields
     def mixin_fields(entities, cls)
@@ -227,6 +228,7 @@ module NoSE
   end
 end
 
+# Extend Time to allow conversion to DateTime instances
 class Time
   # Convert to a DateTime instance
   # http://stackoverflow.com/a/279785/123695

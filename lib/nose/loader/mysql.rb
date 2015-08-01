@@ -137,13 +137,3 @@ module NoSE
     end
   end
 end
-
-class Mysql
-  # Simple addition of to_f for value serialization
-  class Time
-    # Return the time as milliseconds since the epoch
-    def to_f
-      ::Time.new(@year, @month, @day, @hour, @minute, @second).to_f
-    end
-  end
-end
