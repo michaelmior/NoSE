@@ -51,6 +51,16 @@ module NoSE
         if @status == Gurobi::INFEASIBLE
           @model.computeIIS
           log_model 'IIS', '.ilp'
+        elsif @objective_type != Objective::INDEXES
+          # Pin the objective value and optimize again to minimize index usage
+          @obj_var.set_double Gurobi::DoubleAttr::UB, objective_value
+          @obj_var.set_double Gurobi::DoubleAttr::LB, objective_value
+          @objective_type = Objective::INDEXES
+          define_objective 'objective_indexes'
+
+          @status = nil
+          solve
+          return
         end
 
         @logger.debug do
@@ -147,7 +157,6 @@ module NoSE
         @model.update
         add_constraints
         define_objective
-        @model.update
 
         log_model 'Model', '.lp'
       end
@@ -155,7 +164,7 @@ module NoSE
       private
 
       # Set the value of the objective function (workload cost)
-      def define_objective
+      def define_objective(var_name = 'objective')
         obj = case @objective_type
               when Objective::COST
                 total_cost
@@ -165,9 +174,16 @@ module NoSE
                 total_indexes
               end
 
+        # Add the objective function as a variable
+        @obj_var = @model.addVar 0, Gurobi::INFINITY,
+                                 1.0, Gurobi::CONTINUOUS, var_name
+        @model.update
+        @model.addConstr(@obj_var * 1.0 == obj)
+
         @logger.debug { "Objective function is #{obj.inspect}" }
         @objective = obj
-        @model.setObjective obj, Gurobi::MINIMIZE
+        @model.setObjective @obj_var * 1.0, Gurobi::MINIMIZE
+        @model.update
       end
 
       # Initialize query and index variables
