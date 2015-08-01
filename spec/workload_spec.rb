@@ -93,5 +93,28 @@ module NoSE
         Statement.parse(query2, workload.model) => 0.5
       )
     end
+
+    context 'when scaling writes' do
+      let(:workload) do
+        Workload.new do
+          Entity 'Foo' do
+            ID 'Id'
+            String 'Bar'
+          end
+
+          Q 'INSERT INTO Foo SET Id=?, Bar=?', test_mix: 0.5
+          Q 'SELECT Foo.Bar FROM Foo WHERE Foo.Id=?', test_mix: 0.5
+        end
+      end
+
+      it 'increases the weight of inserts' do
+        workload.scale_writes(0.99)
+        workload.mix = :test_mix
+
+        weights = workload.statement_weights.values
+        expect(weights[0]).to be_within(0.01).of(0.99)
+        expect(weights[1]).to be_within(0.01).of(0.01)
+      end
+    end
   end
 end

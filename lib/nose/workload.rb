@@ -30,6 +30,8 @@ module NoSE
     # Adjust the percentage of writes in the workload
     def scale_writes(scale)
       @statement_weights.values.each do |weights|
+        next if weights.empty?
+
         # Calculate the divisors for reads and writes
         read_total = weights.to_a.reduce 0 do |sum, (stmt, weight)|
           sum + (stmt.is_a?(Query) ? weight : 0)
