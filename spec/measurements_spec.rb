@@ -1,7 +1,7 @@
 module NoSE::Measurements
-  describe StatementMeasurement do
+  describe Measurement do
     let(:measurement) do
-      m = StatementMeasurement.new 'GROUP', 'NAME', 1.0
+      m = Measurement.new nil
       [2, 6, 9, 3, 5, 1, 8, 3, 6, 9, 2].each { |v| m << v }
 
       m
