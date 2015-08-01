@@ -288,15 +288,12 @@ module NoSE::Plans
       plans = planner.find_plans_for_update update, indexes
       plans.each { |plan| plan.select_query_plans indexes }
 
-      # We have three plans because of the permutations of attributes
-      expect(plans).to have(3).items
       update_steps = [
-        DeletePlanStep.new(index),
         InsertPlanStep.new(index)
       ]
       plan =  UpdatePlan.new update, index, trees, update_steps, cost_model
       plan.select_query_plans indexes
-      expect(plans.first).to eql plan
+      expect(plans).to match_array [plan]
     end
 
     it 'can produce a plan with no support queries' do
