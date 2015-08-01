@@ -17,7 +17,7 @@ module NoSE
     end
 
     # A plan for executing an update
-    class UpdatePlan
+    class UpdatePlan < AbstractPlan
       attr_reader :statement, :index, :query_plans, :update_steps,
                   :weight, :cost_model
 
@@ -41,6 +41,11 @@ module NoSE
       # Name the plan by the statement
       def name
         @statement.text
+      end
+
+      # The steps for this plan are the update steps
+      def steps
+        @update_steps
       end
 
       # Parameters to this update plan

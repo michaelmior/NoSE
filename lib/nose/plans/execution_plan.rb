@@ -100,7 +100,7 @@ module NoSE
     end
 
     # DSL to construct query execution plans
-    class QueryExecutionPlan < AbstractQueryPlan
+    class QueryExecutionPlan < AbstractPlan
       attr_reader :group, :name, :params, :select_fields,
                   :steps, :update_steps, :index
       attr_accessor :query_plans

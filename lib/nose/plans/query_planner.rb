@@ -149,7 +149,7 @@ module NoSE
     end
 
     # A single plan for a query
-    class QueryPlan < AbstractQueryPlan
+    class QueryPlan < AbstractPlan
       attr_reader :steps
       attr_accessor :query, :cost_model
 
