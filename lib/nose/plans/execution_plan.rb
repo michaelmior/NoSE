@@ -2,11 +2,13 @@ module NoSE
   module Plans
     # Simple DSL for constructing execution plans
     class ExecutionPlans
-      attr_reader :groups, :weights, :schema
+      attr_reader :groups, :weights, :schema, :mix
 
       def initialize(&block)
         @groups = Hash.new { |h, k| h[k] = [] }
         @weights = Hash.new { |h, k| h[k] = {} }
+        @mix = :default
+
         instance_eval(&block) if block_given?
       end
 
@@ -15,6 +17,16 @@ module NoSE
         filename = File.expand_path "../../../../plans/#{name}.rb", __FILE__
         contents = File.read(filename)
         binding.eval contents, filename
+      end
+
+      def mix=(mix)
+        @mix = mix
+
+        @groups.each do |group, plans|
+          plans.each do |plan|
+            plans.instance_variable_set :@weight, @weights[group]
+          end
+        end
       end
 
       # rubocop:disable MethodName

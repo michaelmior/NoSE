@@ -18,7 +18,8 @@ module NoSE
 
     # A plan for executing an update
     class UpdatePlan
-      attr_reader :statement, :index, :query_plans, :update_steps, :cost_model
+      attr_reader :statement, :index, :query_plans, :update_steps,
+                  :weight, :cost_model
 
       include Comparable
 
@@ -60,7 +61,6 @@ module NoSE
         end
 
         @trees = nil
-        freeze
       end
 
       # Compare all the fields for the plan for equality
