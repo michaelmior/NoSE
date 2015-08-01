@@ -296,7 +296,7 @@ module NoSE
       def call(object, _fragment, instance, **_options)
         workload = object.workload
 
-        if statement.nil?
+        if instance['statement'].nil?
           statement = nil
         else
           statement = Statement.parse instance['statement'], workload.model
