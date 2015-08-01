@@ -169,12 +169,12 @@ module NoSE
 
       # The group of the query
       def group
-        @query.group
+        @query.nil? ? nil : @query.group
       end
 
       # Name the plan by the query
       def name
-        @query.text
+        @query.nil? ? nil : @query.text
       end
 
       # Fields selected by this plan
@@ -195,7 +195,8 @@ module NoSE
       # The estimated cost of executing the query using this plan
       # @return [Numeric]
       def cost
-        @steps.map(&:cost).inject(0, &:+)
+        costs = @steps.map(&:cost)
+        costs.inject(0, &:+) unless costs.any?(&:nil?)
       end
 
       # Get the indexes used by this query plan
