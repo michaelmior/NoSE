@@ -7,19 +7,18 @@ NoSE::Workload.new do
   DefaultMix :browsing
 
   Group 'BrowseCategories', browsing: 4.44 + 3.21, bidding: 7.65 + 5.39 do
+    Q 'SELECT users.nickname, users.password FROM users WHERE users.id = ?'
     # XXX Must have at least one equality predicate
     Q 'SELECT categories.id, categories.name FROM categories WHERE categories.dummy = 1'
   end
 
   Group 'ViewBidHistory', browsing: 2.38, bidding: 1.54 do
     Q 'SELECT items.name FROM items WHERE items.id = ?'
-    Q 'SELECT bids.id, item.id, bids.qty, bids.bid, bids.date FROM bids.item WHERE item.id = ? ORDER BY bids.date'
-    Q 'SELECT users.id, users.nickname, bids.id FROM users.bids.item WHERE item.id = ?'
+    Q 'SELECT users.id, users.nickname, bids.id, item.id, bids.qty, bids.bid, bids.date FROM users.bids.item WHERE item.id = ? ORDER BY bids.date'
   end
 
   Group 'ViewItem', browsing: 22.95, bidding: 14.17 do
     Q 'SELECT items.* FROM items WHERE items.id = ?'
-    Q 'SELECT bids.bid, bids.qty FROM bids.item WHERE item.id = ? ORDER BY bids.bid LIMIT 5'
   end
 
   Group 'SearchItemsByCategory', browsing: 27.77 + 8.26, bidding: 15.94 + 6.34 do
@@ -33,9 +32,9 @@ NoSE::Workload.new do
   # Q 'SELECT id, name FROM regions', (0.03 + 0.02)
 
   Group 'ViewUserInfo', browsing: 4.41, bidding: 2.48 do
+    Q 'SELECT users.* FROM users WHERE users.id = ?'
     Q 'SELECT comments.id, comments.rating, comments.date, comments.comment FROM comments.to_user WHERE to_user.id = ?'
-    Q 'SELECT comments.id, item.id FROM comments.item WHERE comments.id = ?'
-    Q 'SELECT to_user.id, to_user.nickname, comments.id FROM comments.to_user WHERE to_user.id = ?'
+    # Q 'SELECT to_user.id, to_user.nickname, comments.id FROM comments.to_user WHERE to_user.id = ?'
   end
 
   Group 'RegisterItem', bidding: 0.53 do
@@ -55,17 +54,17 @@ NoSE::Workload.new do
   end
 
   Group 'StoreBuyNow', bidding: 1.10 do
-    Q 'SELECT users.nickname FROM users WHERE users.id=?'
-    Q 'UPDATE items SET quantity=?, end_date=? WHERE items.id=?'
+    Q 'SELECT items.quantity, items.nb_of_bids, items.end_date FROM items WHERE items.id=?'
+    Q 'UPDATE items SET quantity=?, nb_of_bids=?, end_date=? WHERE items.id=?'
     Q 'INSERT INTO buynow SET id=?, qty=?, date=?'
     Q 'CONNECT buynow(?) TO item(?)'
     Q 'CONNECT buynow(?) TO buyer(?)'
   end
 
   Group 'PutBid', bidding: 5.40 do
+    Q 'SELECT users.nickname, users.password FROM users WHERE users.id=?'
     Q 'SELECT items.* FROM items WHERE items.id=?'
     Q 'SELECT bids.qty, bids.date FROM bids.item WHERE item.id=? ORDER BY bids.bid LIMIT 2'
-    Q 'SELECT users.nickname FROM users WHERE users.id=?'
   end
 
   Group 'StoreBid', bidding: 3.74 do
@@ -77,6 +76,7 @@ NoSE::Workload.new do
   end
 
   Group 'PutComment', bidding: 0.46 do
+    Q 'SELECT users.nickname, users.password FROM users WHERE users.id=?'
     Q 'SELECT items.* FROM items WHERE items.id=?'
     Q 'SELECT users.* FROM users WHERE users.id=?'
   end
@@ -92,18 +92,11 @@ NoSE::Workload.new do
 
   Group 'AboutMe', bidding: 1.71 do
     Q 'SELECT users.* FROM users WHERE users.id=?'
-    Q 'SELECT items.id, items.max_bid FROM items.bids.user WHERE user.id=? AND items.end_date>=?'
-    Q 'SELECT items_sold.*, users.nickname FROM users.items_sold WHERE items_sold.id=?'
-
-
-    Q 'SELECT buynow.* FROM buynow.buyer WHERE buyer.id=? AND buynow.date>=?'
-    Q 'SELECT seller.nickname FROM buynow.item.seller WHERE buynow.id=?'
-    Q 'SELECT item.* FROM buynow.item WHERE buynow.id=?'
-
-    Q 'SELECT items.* FROM items.seller WHERE seller.id=? AND items.end_date >=?'
-
     Q 'SELECT comments_received.* FROM users.comments_received WHERE users.id = ?'
-    Q 'SELECT users.nickname FROM users.comments_sent WHERE comments_sent.id=?'
+    Q 'SELECT bought_now.*, items.* FROM items.bought_now.buyer WHERE buyer.id = ? AND bought_now.date>=?'
+    Q 'SELECT items.* FROM items.seller WHERE seller.id=? AND items.end_date >=?'
+    Q 'SELECT items.* FROM items.bids.user WHERE user.id=? AND items.end_date>=?'
+
   end
 end
 

@@ -37,6 +37,12 @@ NoSE::Plans::ExecutionPlans.new do
       Param  items.id, :==
       Lookup 'items_data', [items.id, :==]
     end
+
+    Plan 'Bids' do
+      Select bids['*']
+      Param  items.id, :==
+      Lookup 'item_bids', [items.id, :==]
+    end
   end
 
   Group 'SearchItemsByCategory', browsing: 27.77 + 8.26, bidding: 15.94 + 6.34 do
@@ -140,6 +146,12 @@ NoSE::Plans::ExecutionPlans.new do
       Param  users.id, :==
       Lookup 'user_data', [users.id, :==]
     end
+
+    Plan 'ItemData' do
+      Select items['*']
+      Param  items.id, :==
+      Lookup 'items_data', [items.id, :==]
+    end
   end
 
   Group 'StoreBuyNow', bidding: 1.10 do
@@ -177,6 +189,12 @@ NoSE::Plans::ExecutionPlans.new do
       Select items['*']
       Param  items.id, :==
       Lookup 'items_data', [items.id, :==]
+    end
+
+    Plan 'Bids' do
+      Select bids['*']
+      Param  items.id, :==
+      Lookup 'item_bids', [items.id, :==]
     end
   end
 
