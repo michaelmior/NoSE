@@ -133,6 +133,11 @@ module NoSE
       where.maybe.as(:where).capture_source(:where)
     }
 
+    rule(:connect_item) {
+      identifier.as(:target) >> space? >> str('(') >> space? >>
+      literal.as(:target_pk) >> space? >> str(')')
+    }
+
     rule(:insert) {
       str('INSERT INTO') >> space >> identifier.as(:entity) >> space >>
       str('SET') >> space >> settings.as_array(:settings)
@@ -150,9 +155,7 @@ module NoSE
       literal.as(:source_pk) >> space? >> str(')') >> space >>
       dynamic do |_, context|
         context.captures[:type] == 'CONNECT' ? str('TO') : str('FROM')
-      end >>
-      space >> identifier.as(:target) >> space? >> str('(') >> space? >>
-      literal.as(:target_pk) >> space? >> str(')')
+      end >> space >> connect_item
     }
 
     rule(:statement) {
