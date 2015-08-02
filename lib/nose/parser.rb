@@ -47,9 +47,10 @@ module Parslet::Atoms::DSL
   end
 end
 
-# rubocop:disable Style/Blocks, Style/BlockEndNewline
-
 module NoSE
+  # rubocop:disable Style/BlockEndNewline, Style/BlockDelimiters
+  # rubocop:disable Style/MultilineOperationIndentation
+
   # Literals used in queries and updates
   module Literals
     include Parslet
@@ -83,10 +84,10 @@ module NoSE
     rule(:identifier)    { match('[A-z]').repeat(1).as(:identifier) }
     rule(:field)         { identifier >> (str('.') >> identifier).repeat(1, 1) }
     rule(:fields)        { field >> (comma >> field).repeat }
-    rule(:select_field)  { field | (identifier >> str('.') >>
-                                    str('**').as(:identifier2)) |
-                           (identifier >> str('.') >>
-                            str('*').as(:identifier2)) }
+    rule(:select_field)  {
+      field | (identifier >> str('.') >>
+      str('**').as(:identifier2)) | (identifier >> str('.') >>
+      str('*').as(:identifier2)) }
     rule(:select_fields) { select_field >> (comma >> select_field).repeat }
     rule(:path)          { identifier >> (str('.') >> identifier).repeat }
   end
@@ -172,6 +173,8 @@ module NoSE
     rule(int: simple(:integer)) { integer }
     rule(unknown: simple(:val)) { nil }
   end
+
+  # rubocop:enable all
 
   # A single condition in a where clause
   class Condition
@@ -943,5 +946,3 @@ module NoSE
   class ParseFailed < StandardError
   end
 end
-
-# rubocop:enable all
