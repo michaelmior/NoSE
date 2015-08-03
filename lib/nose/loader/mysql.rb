@@ -19,7 +19,7 @@ module NoSE
           client = new_client config
 
           # Skip this index if it's not empty
-          if skip_existing && @backend.index_empty?(index)
+          if skip_existing && !@backend.index_empty?(index)
             puts "Skipping index #{index.inspect}"
             next
           end
