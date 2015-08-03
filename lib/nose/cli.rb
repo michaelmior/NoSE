@@ -96,7 +96,10 @@ module NoSE
       def output_plans_txt(plans, file, indent, weights)
         plans.each do |plan|
           cost = plan.cost * weights[plan.query]
-          weight = "* #{weights[plan.query]} = #{cost}"
+
+          file.puts "GROUP #{plan.query.group}" unless plan.query.group.nil?
+
+          weight = " * #{weights[plan.query]} = #{cost}"
           file.puts '  ' * (indent - 1) + plan.query.inspect + weight
           plan.each { |step| file.puts '  ' * indent + step.inspect }
           file.puts
@@ -131,6 +134,9 @@ module NoSE
         result.update_plans.group_by(&:statement).each do |statement, plans|
           weight = result.workload.statement_weights[statement]
           total_cost = plans.map(&:cost).inject(0, &:+)
+
+          file.puts "GROUP #{statement.group}" unless statement.group.nil?
+
           file.puts "#{statement.inspect} * #{weight} = #{total_cost * weight}"
           plans.each do |plan|
             file.puts Formatador.parse(" for [magenta]#{plan.index.key}[/] " \
