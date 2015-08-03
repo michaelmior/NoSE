@@ -33,7 +33,6 @@ end
 
 platform :ruby do
   group :development do
-    gem 'guard-rspec'
     gem 'ruby-prof'
     gem 'pry'
     gem 'pry-doc'
