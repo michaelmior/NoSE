@@ -7,8 +7,13 @@ module NoSE
       def console(plan_file)
         # Load the results from the plan file and define each as a variable
         result = load_results plan_file
-        result.each_pair do |name, value|
-          TOPLEVEL_BINDING.local_variable_set name, value
+
+        exposed = result.instance_variables.map do |var|
+          var[1..-1].to_sym
+        end & result.methods
+
+        exposed.each do |name|
+          TOPLEVEL_BINDING.local_variable_set name, result.method(name).call
         end
 
         # Also extract the model as a variable
