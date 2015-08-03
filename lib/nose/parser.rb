@@ -761,6 +761,9 @@ module NoSE
       super :insert, statement, model, group: group
 
       populate_settings
+      fail InvalidStatementException, 'Must insert primary key' \
+        unless @settings.map(&:field).include?(@from.id_fields.first)
+
       populate_conditions
 
       freeze
