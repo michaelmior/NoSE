@@ -257,7 +257,8 @@ module NoSE
     include Enumerable
 
     extend Forwardable
-    def_delegators :@keys, :each,  :inspect, :to_s, :length, :count, :last
+    def_delegators :@keys, :each, :inspect, :to_s, :length, :count, :last,
+                   :empty?
 
     def initialize(keys = [])
       fail InvalidKeyPathException, 'first key must be an ID' \
@@ -363,6 +364,7 @@ module NoSE
 
     # Get the reverse path
     def reverse_path
+      return [] if @keys.empty?
       [@keys.last.entity.id_fields.first] + @keys[1..-1].reverse.map(&:reverse)
     end
   end
@@ -631,6 +633,9 @@ module NoSE
     protected
 
     def support_query_for_path(index, query_keys, where = nil, all = false)
+      # If this portion of the path is empty, then we have no support query
+      return nil if query_keys.empty?
+
       query_from = query_keys.map(&:name)
       query_from[0] = query_keys.first.parent.name
 
@@ -786,18 +791,18 @@ module NoSE
     end
 
     # Get the where clause for a support query over the given path
-    def support_query_condition_for_path(target, path, reversed)
-      key = (reversed ? target.entity : target.parent).id_fields.first
-      path = path.reverse if path.entities.last != key.entity
-      eq_key = path.entries[-1]
-      if eq_key.is_a? Fields::ForeignKeyField
-        where = "WHERE #{eq_key.name}.#{eq_key.entity.id_fields.first.name} = ?"
-      else
-        where = "WHERE #{eq_key.parent.name}." \
-          "#{eq_key.parent.id_fields.first.name} = ?"
-      end
-
-      where
+    def support_query_condition_for_path(keys, path)
+      'WHERE ' + path.entries.map do |key|
+        if keys.include?(key) ||
+           (key.is_a?(Fields::ForeignKeyField) && key.entity == @from)
+          # Find the ID for this entity in the path and include a predicate
+          id = key.entity.id_fields.first
+          "#{path.find_field_parent(id).name}.#{id.name} = ?"
+        elsif key == @from.id_fields.first
+          # Include the key for the entity being inserted
+          "#{path.find_field_parent(key).name}.#{key.name} = ?"
+        end
+      end.compact.join(' AND ')
     end
 
     # No support queries are required for index insertion
@@ -805,20 +810,27 @@ module NoSE
       return [] unless modifies_index?(index) &&
                        !modifies_single_entity_index?(index)
 
-      # Get the key in the correct order
-      target = @conditions.values.first.field
-      reversed = !index.path.include?(target)
-      foreign_key = target
-      foreign_key = target.reverse if reversed
-
       # Get the two path components
-      entity_index = index.path.entities.index foreign_key.parent
+      entity_index = index.path.entities.index @from
       path1 = index.path[0..entity_index]
-      path2 = index.path[entity_index + 1..-1].reverse
+      path2 = index.path[entity_index..-1]
+
+      # Group the connection keys into one of the two paths
+      keys1 = []
+      keys2 = []
+      @conditions.values.map(&:field).each do |key|
+        reverse = key.reverse
+
+        keys1 << key if path1.include?(key)
+        keys1 << reverse if path1.include?(reverse)
+
+        keys2 << key if path2.include?(key)
+        keys2 << reverse if path2.include?(reverse)
+      end
 
       # Construct the two where clauses
-      where1 = support_query_condition_for_path target, path1, reversed
-      where2 = support_query_condition_for_path target, path2, !reversed
+      where1 = support_query_condition_for_path keys1, path1
+      where2 = support_query_condition_for_path keys2, path2
 
       # Get the actual support queries
       [
