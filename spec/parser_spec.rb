@@ -159,19 +159,19 @@ module NoSE
     include_context 'entities'
 
     let(:insert) do
-      Insert.new 'INSERT INTO User SET Username = "Bob", City = "NY"',
+      Insert.new 'INSERT INTO Tweet SET Body = "Test", Retweets = 0',
                  workload.model
     end
 
     it 'can parse field settings' do
       expect(insert.settings).to match_array [
-        FieldSetting.new(user['Username'], 'Bob'),
-        FieldSetting.new(user['City'], 'NY')
+        FieldSetting.new(tweet['Body'], 'Test'),
+        FieldSetting.new(tweet['Retweets'], 0)
       ]
     end
 
     it 'knows which entity is being inserted' do
-      expect(insert.entity).to eq(user)
+      expect(insert.entity).to eq(tweet)
     end
   end
 
