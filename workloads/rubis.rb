@@ -41,6 +41,7 @@ NoSE::Workload.new do
   # Q 'SELECT id, name FROM regions', (0.03 + 0.02)
 
   Group 'ViewUserInfo', browsing: 4.41, bidding: 2.48 do
+    # XXX Not including region name below
     Q 'SELECT users.* FROM users WHERE users.id = ?'
     Q 'SELECT comments.id, comments.rating, comments.date, comments.comment ' \
       'FROM comments.to_user WHERE to_user.id = ?'
