@@ -5,12 +5,13 @@ require_relative '../lib/nose.rb'
 NoSE::Schema.new do
   Workload 'rubis'
 
-  Index 'users_by_region' do
-    Hash    regions.id
-    Ordered users.id
-    Extra   users.nickname
-    Path    regions.id, regions.users
-  end
+  # XXX Not used since we don't implement browse regions
+  # Index 'users_by_region' do
+  #   Hash    regions.id
+  #   Ordered users.id
+  #   Extra   users.nickname
+  #   Path    regions.id, regions.users
+  # end
 
   Index 'user_data' do
     Hash    users.id

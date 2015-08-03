@@ -132,12 +132,13 @@ NoSE::Plans::ExecutionPlans.new do
       Insert 'user_data'
     end
 
-    Plan 'AddToRegion' do
-      Param  users.id, :==
-      Param  users.nickname, :==
-      Param  regions.id, :==
-      Insert 'users_by_region'
-    end
+    # XXX Not used since we don't implement browse regions
+    # Plan 'AddToRegion' do
+    #   Param  users.id, :==
+    #   Param  users.nickname, :==
+    #   Param  regions.id, :==
+    #   Insert 'users_by_region'
+    # end
   end
 
   Group 'BuyNow', bidding: 1.16 do
