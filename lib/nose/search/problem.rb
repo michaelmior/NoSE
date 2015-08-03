@@ -24,7 +24,8 @@ module NoSE
     # A representation of a search problem as an ILP
     class Problem
       attr_reader :model, :status, :queries, :updates,
-                  :index_vars, :query_vars, :indexes, :data, :objective_type
+                  :index_vars, :query_vars, :indexes, :data,
+                  :objective_type, :objective_value
 
       def initialize(queries, updates, indexes, data,
                      objective = Objective::COST)
@@ -52,29 +53,27 @@ module NoSE
           @model.computeIIS
           log_model 'IIS', '.ilp'
         elsif @objective_type != Objective::INDEXES
+          @objective_value = @model.get_double Gurobi::DoubleAttr::OBJ_VAL
+
           # Pin the objective value and optimize again to minimize index usage
-          @obj_var.set_double Gurobi::DoubleAttr::UB, objective_value
-          @obj_var.set_double Gurobi::DoubleAttr::LB, objective_value
+          @obj_var.set_double Gurobi::DoubleAttr::UB, @objective_value
+          @obj_var.set_double Gurobi::DoubleAttr::LB, @objective_value
           @objective_type = Objective::INDEXES
           define_objective 'objective_indexes'
 
           @status = nil
           solve
           return
+        elsif @objective_value.nil?
+          @objective_value = @model.get_double Gurobi::DoubleAttr::OBJ_VAL
         end
 
         @logger.debug do
           "Final objective value is #{@objective.active.inspect}" \
-            " = #{objective_value}"
+            " = #{@objective_value}"
         end
 
         fail NoSolutionException if @status != Gurobi::OPTIMAL
-      end
-
-      # Return the value of the objective function if the problem is solved
-      def objective_value
-        return unless @status == Gurobi::OPTIMAL
-        @model.get_double Gurobi::DoubleAttr::OBJ_VAL
       end
 
       # Return the selected indices
@@ -93,7 +92,7 @@ module NoSE
         result.enumerated_indexes = indexes
         result.indexes = selected_indexes
         result.total_size = selected_indexes.map(&:size).inject(0, &:+)
-        result.total_cost = objective_value
+        result.total_cost = @objective_value
 
         result
       end
