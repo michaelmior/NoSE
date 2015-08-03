@@ -159,7 +159,7 @@ module NoSE
     include_context 'entities'
 
     let(:insert) do
-      Insert.new 'INSERT INTO Tweet SET Body = "Test", Retweets = 0 ' \
+      Insert.new 'INSERT INTO Tweet SET Body = "Test", TweetId = 1 ' \
                  'AND CONNECT TO User("1"), Link("1")',
                  workload.model
     end
@@ -167,7 +167,7 @@ module NoSE
     it 'can parse field settings' do
       expect(insert.settings).to match_array [
         FieldSetting.new(tweet['Body'], 'Test'),
-        FieldSetting.new(tweet['Retweets'], 0)
+        FieldSetting.new(tweet['TweetId'], '1')
       ]
     end
 
