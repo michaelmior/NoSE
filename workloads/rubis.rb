@@ -44,8 +44,6 @@ NoSE::Workload.new do
     Q 'SELECT users.* FROM users WHERE users.id = ?'
     Q 'SELECT comments.id, comments.rating, comments.date, comments.comment ' \
       'FROM comments.to_user WHERE to_user.id = ?'
-    # Q 'SELECT to_user.id, to_user.nickname, comments.id FROM ' \
-    #   'comments.to_user WHERE to_user.id = ?'
   end
 
   Group 'RegisterItem', bidding: 0.53 do

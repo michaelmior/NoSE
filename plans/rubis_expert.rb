@@ -25,7 +25,7 @@ NoSE::Plans::ExecutionPlans.new do
     end
 
     Plan 'Bids' do
-      Select bids['*']
+      Select bids['*'], users.id, users.nickname
       Param  items.id, :==
       Lookup 'item_bids', [items.id, :==]
     end
