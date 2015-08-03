@@ -138,9 +138,15 @@ module NoSE
       literal.as(:target_pk) >> space? >> str(')')
     }
 
+    rule(:connect_list) {
+      connect_item >> (space? >> str(',') >> space? >> connect_item).repeat
+    }
+
     rule(:insert) {
       str('INSERT INTO') >> space >> identifier.as(:entity) >> space >>
-      str('SET') >> space >> settings.as_array(:settings)
+      str('SET') >> space >> settings.as_array(:settings) >>
+      (space >> str('AND') >> space >> str('CONNECT') >> space >>
+       str('TO') >> space >> connect_list.as_array(:connections)).maybe
     }
 
     rule(:delete) {
@@ -745,6 +751,7 @@ module NoSE
 
   # A representation of an insert in the workload
   class Insert < Statement
+    include StatementConditions
     include StatementSettings
     include StatementSupportQuery
 
@@ -754,6 +761,7 @@ module NoSE
       super :insert, statement, model, group: group
 
       populate_settings
+      populate_conditions
 
       freeze
     end
@@ -777,6 +785,28 @@ module NoSE
     # The settings fields are provided with the insertion
     def given_fields
       @settings.map(&:field)
+    end
+
+    private
+
+    # Populate conditions with the foreign key settings
+    def populate_conditions
+      connections = @tree[:connections] || []
+      connections = connections.map do |connection|
+        field = @from[connection[:target].to_s]
+        value = connection[:target_pk]
+
+        type = field.class.const_get 'TYPE'
+        value = field.class.value_from_string(value.to_s) \
+          unless type.nil? || value.nil?
+
+        connection.delete :value
+        Condition.new field, :'=', value
+      end
+
+      @conditions = Hash[connections.map do |connection|
+        [connection.field.id, connection]
+      end]
     end
   end
 
