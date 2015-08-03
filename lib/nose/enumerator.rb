@@ -26,8 +26,8 @@ module NoSE
       range = range.group_by(&:parent)
       range.default_proc = ->(*) { [] }
 
-      indexes_for_path query.key_path.reverse, query.select,
-                       eq, range
+      indexes_for_path(query.key_path.reverse, query.select,
+                       eq, range) << query.materialize_view
     end
 
     # Produce all possible indices for a given workload
@@ -35,19 +35,13 @@ module NoSE
     def indexes_for_workload(additional_indexes = [])
       queries = @workload.queries
       indexes = Parallel.map(queries) do |query|
-        indexes_for_query(query).to_a << query.materialize_view
+        indexes_for_query(query).to_a
       end.inject(additional_indexes, &:+)
 
       # Add indexes generated for support queries
-      indexes += indexes.dup.map do |index|
-        @workload.updates.map do |update|
-          queries = update.support_queries(index)
-          queries.map do |query|
-            next [] if query.nil?
-            indexes_for_query(query).to_a << query.materialize_view
-          end
-        end.flatten(1)
-      end.flatten
+      supporting = support_indexes indexes
+      supporting += support_indexes supporting
+      indexes += supporting
 
       combine_indexes indexes
       indexes.uniq!
@@ -62,6 +56,19 @@ module NoSE
     end
 
     private
+
+    # Produce the indexes necessary for support queries for these indexes
+    def support_indexes(indexes)
+      indexes.map do |index|
+        @workload.updates.map do |update|
+          queries = update.support_queries(index)
+          queries.map do |query|
+            next [] if query.nil?
+            indexes_for_query(query).to_a
+          end
+        end.flatten(1)
+      end.flatten
+    end
 
     # Combine the data of indices based on matching hash fields
     def combine_indexes(indexes)
