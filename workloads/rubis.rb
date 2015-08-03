@@ -51,15 +51,14 @@ NoSE::Workload.new do
   Group 'RegisterItem', bidding: 0.53 do
     Q 'INSERT INTO items SET id=?, name=?, description=?, initial_price=?, ' \
       'quantity=?, reserve_price=?, buy_now=?, nb_of_bids=0, max_bid=0, ' \
-      'start_date=?, end_date=?'
-    Q 'CONNECT items(?) TO category(?)'
+      'start_date=?, end_date=? AND CONNECT TO category(?)'
     Q 'CONNECT items(?) TO seller(?)'
   end
 
   Group 'RegisterUser', bidding: 1.07 do
     Q 'INSERT INTO users SET id=?, firstname=?, lastname=?, nickname=?, ' \
-      'password=?, email=?, rating=0, balance=0, creation_date=?'
-    Q 'CONNECT users(?) TO region(?)'
+      'password=?, email=?, rating=0, balance=0, creation_date=? ' \
+      'AND CONNECT TO region(?)'
   end
 
   Group 'BuyNow', bidding: 1.16 do
@@ -71,8 +70,7 @@ NoSE::Workload.new do
     Q 'SELECT items.quantity, items.nb_of_bids, items.end_date FROM items ' \
       'WHERE items.id=?'
     Q 'UPDATE items SET quantity=?, nb_of_bids=?, end_date=? WHERE items.id=?'
-    Q 'INSERT INTO buynow SET id=?, qty=?, date=?'
-    Q 'CONNECT buynow(?) TO item(?)'
+    Q 'INSERT INTO buynow SET id=?, qty=?, date=? AND CONNECT TO item(?)'
     Q 'CONNECT buynow(?) TO buyer(?)'
   end
 
@@ -84,8 +82,7 @@ NoSE::Workload.new do
   end
 
   Group 'StoreBid', bidding: 3.74 do
-    Q 'INSERT INTO bids SET id=?, qty=?, bid=?, date=?'
-    Q 'CONNECT bids(?) TO item(?)'
+    Q 'INSERT INTO bids SET id=?, qty=?, bid=?, date=? AND CONNECT TO item(?)'
     Q 'CONNECT bids(?) TO user(?)'
     Q 'SELECT items.nb_of_bids, items.max_bid FROM items WHERE items.id=?'
     Q 'UPDATE items SET nb_of_bids=?, max_bid=? WHERE items.id=?'
@@ -100,8 +97,8 @@ NoSE::Workload.new do
   Group 'StoreComment', bidding: 0.45 do
     Q 'SELECT users.rating FROM users WHERE users.id=?'
     Q 'UPDATE users SET rating=? WHERE users.id=?'
-    Q 'INSERT INTO comments SET id=?, rating=?, date=?, comment=?'
-    Q 'CONNECT comments(?) TO to_user(?)'
+    Q 'INSERT INTO comments SET id=?, rating=?, date=?, comment=? ' \
+      'AND CONNECT TO to_user(?)'
     Q 'CONNECT comments(?) TO from_user(?)'
     Q 'CONNECT comments(?) TO item(?)'
   end

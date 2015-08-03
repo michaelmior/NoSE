@@ -768,8 +768,13 @@ module NoSE
 
     # Determine if this insert modifies an index
     def modifies_index?(index)
-      !(@settings.map(&:field).to_set & index.all_fields).empty? &&
-      index.path.length == 1 && index.path.first.parent == @from
+      return true if modifies_single_entity_index?(index)
+
+      # Check if the index crosses any of the connection keys
+      keys = @conditions.values.map(&:field)
+      keys += keys.map(&:reverse)
+
+      keys.any? { |key| index.path.include?(key) }
     end
 
     # Specifies that inserts require insertion
@@ -777,17 +782,62 @@ module NoSE
       true
     end
 
+    # Get the where clause for a support query over the given path
+    def support_query_condition_for_path(target, path, reversed)
+      key = (reversed ? target.entity : target.parent).id_fields.first
+      path = path.reverse if path.entities.last != key.entity
+      eq_key = path.entries[-1]
+      if eq_key.is_a? Fields::ForeignKeyField
+        where = "WHERE #{eq_key.name}.#{eq_key.entity.id_fields.first.name} = ?"
+      else
+        where = "WHERE #{eq_key.parent.name}." \
+          "#{eq_key.parent.id_fields.first.name} = ?"
+      end
+
+      where
+    end
+
     # No support queries are required for index insertion
     def support_queries(index)
-      []
+      return [] unless modifies_index?(index) &&
+                       !modifies_single_entity_index?(index)
+
+      # Get the key in the correct order
+      target = @conditions.values.first.field
+      reversed = !index.path.include?(target)
+      foreign_key = target
+      foreign_key = target.reverse if reversed
+
+      # Get the two path components
+      entity_index = index.path.entities.index foreign_key.parent
+      path1 = index.path[0..entity_index]
+      path2 = index.path[entity_index + 1..-1].reverse
+
+      # Construct the two where clauses
+      where1 = support_query_condition_for_path target, path1, reversed
+      where2 = support_query_condition_for_path target, path2, !reversed
+
+      # Get the actual support queries
+      [
+        support_query_for_path(index, path1, where1, requires_insert?(index)),
+        support_query_for_path(index, path2, where2, requires_insert?(index))
+      ].compact
     end
 
     # The settings fields are provided with the insertion
     def given_fields
-      @settings.map(&:field)
+      @settings.map(&:field) + @conditions.values.map do |condition|
+        condition.field.entity.id_fields.first
+      end
     end
 
     private
+
+    # Check if the insert modifies a single entity index
+    def modifies_single_entity_index?(index)
+      !(@settings.map(&:field).to_set & index.all_fields).empty? &&
+        index.path.length == 1 && index.path.first.parent == @from
+    end
 
     # Populate conditions with the foreign key settings
     def populate_conditions
