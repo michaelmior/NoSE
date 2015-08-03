@@ -159,7 +159,8 @@ module NoSE
     include_context 'entities'
 
     let(:insert) do
-      Insert.new 'INSERT INTO Tweet SET Body = "Test", Retweets = 0',
+      Insert.new 'INSERT INTO Tweet SET Body = "Test", Retweets = 0 ' \
+                 'AND CONNECT TO User("1"), Link("1")',
                  workload.model
     end
 
@@ -167,6 +168,13 @@ module NoSE
       expect(insert.settings).to match_array [
         FieldSetting.new(tweet['Body'], 'Test'),
         FieldSetting.new(tweet['Retweets'], 0)
+      ]
+    end
+
+    it 'can parse connections' do
+      expect(insert.conditions.values).to match_array [
+        Condition.new(tweet['User'], :'=', '1'),
+        Condition.new(tweet['Link'], :'=', '1')
       ]
     end
 
