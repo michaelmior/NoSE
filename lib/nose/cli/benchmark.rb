@@ -15,6 +15,7 @@ module NoSE
                                     options[:fail_on_empty]
 
         result.workload.queries.each do |query|
+          next if query.is_a?(SupportQuery)
           @logger.debug { "Executing #{query.text}" }
 
           # Get the plan and indexes used for this query
