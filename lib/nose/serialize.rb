@@ -445,13 +445,13 @@ module NoSE
           elsif step_class == Plans::FilterPlanStep
             eq = step_hash['eq'].map(&f)
             range = f.call(step_hash['range']) if step_hash['range']
-            step = step_class.new eq, range, parent
+            step = step_class.new eq, range, parent.state
           elsif step_class == Plans::SortPlanStep
             sort_fields = step_hash['sort_fields'].map(&f)
-            step = step_class.new sort_fields, parent
+            step = step_class.new sort_fields, parent.state
           elsif step_class == Plans::LimitPlanStep
             limit = step_hash['limit'].to_i
-            step = step_class.new limit, parent
+            step = step_class.new limit, parent.state
           end
 
           unless step.state.nil?
