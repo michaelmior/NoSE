@@ -46,15 +46,26 @@ module NoSE
       # Check if this step can be applied for the given index,
       # returning a possible application of the step
       def self.apply(parent, index, state)
+        # Try reversing the path for this query
+        state_path = state.path
+        reversed = state_path.reverse
+        if index.path.length > 1 &&
+           reversed[0..index.path.length - 1] == index.path
+          state_path = reversed
+          reversed = true
+        else
+          reversed = false
+        end
+
         # Check that this index is a valid jump in the path
-        return nil unless state.path[0..index.path.length - 1] == index.path
+        return nil unless state_path[0..index.path.length - 1] == index.path
 
         # We must move forward on paths at each lookup
         # XXX This disallows plans which look up additional attributes
         #     for entities other than the final one in the query path
-        return nil if index.path.length == 1 && state.path.length > 1 &&
+        return nil if index.path.length == 1 && state_path.length > 1 &&
                       !parent.is_a?(RootPlanStep)
-        return nil if index.identity? && state.path.length > 1
+        return nil if index.identity? && state_path.length > 1
 
         return nil if invalid_parent_index? index, parent.parent_index
 
@@ -69,8 +80,15 @@ module NoSE
         path_fields -= parent.fields  # exclude fields already fetched
         return nil unless path_fields.all?(&index.all_fields.method(:include?))
 
+        # Use the reversed path for the remainder of the plan
+        if reversed
+          state = state.dup
+          state.path = state_path
+          state.freeze
+        end
+
         return IndexLookupPlanStep.new(index, state, parent) \
-          if has_last_fields?(index, state)
+          if has_last_fields?(index, state, state_path)
 
         nil
       end
@@ -94,14 +112,14 @@ module NoSE
       end
 
       # Check that we have the required fields to move on with the next lookup
-      def self.has_last_fields?(index, state)
+      def self.has_last_fields?(index, state, path)
         # Get the possible fields we need to select
         # This always includes the ID of the last and next entities
         # as well as the selected fields if we're at the end of the path
         last_choices = [index.path.entities.last.id_fields]
-        next_key = state.path[index.path.length]
+        next_key = path[index.path.length]
         last_choices << next_key.parent.id_fields unless next_key.nil?
-        last_choices << state.fields if state.path == index.path
+        last_choices << state.fields if path == index.path
 
         last_choices.any? do |fields|
           fields.all?(&index.all_fields.method(:include?))

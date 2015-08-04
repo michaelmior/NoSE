@@ -85,15 +85,20 @@ module NoSE
           # Join each step along the entity path
           index_var = problem.query_vars[index][query]
           index.path.entities.each_cons(2) do |entity, next_entity|
-            query_constraints[[entity, next_entity]] += index_var
+            # Make sure the constraints go in the correct direction
+            if query_constraints.key?([entity, next_entity])
+              query_constraints[[entity, next_entity]] += index_var
+            else
+              query_constraints[[next_entity, entity]] += index_var
+            end
           end
 
           # If this query has been answered, add the jump to the last step
-          query_constraints[[index.path.entities.last, last]] += index_var \
+          query_constraints[[entities.last, last]] += index_var \
             if steps.last.state.answered?
 
           # If this index is the first step, add this index to the beginning
-          query_constraints[[index.path.entities.first, first]] += index_var \
+          query_constraints[[entities.first, first]] += index_var \
             if index_step.parent.is_a?(Plans::RootPlanStep)
 
           # Ensure the previous index is available

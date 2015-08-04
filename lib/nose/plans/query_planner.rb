@@ -219,8 +219,10 @@ module NoSE
           index.entity_range(entities) != (nil..nil)
         end
 
-        indexes_by_path = indexes.to_set.group_by do |index|
-          index.path.first.parent
+        indexes_by_path = Hash.new { |h, k| h[k] = Set.new }
+        indexes.each do |index|
+          indexes_by_path[index.path.entities.first].add index
+          indexes_by_path[index.path.entities.last].add index
         end
         find_plans_for_step tree.root, indexes_by_path
 
