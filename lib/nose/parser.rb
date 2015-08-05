@@ -610,7 +610,7 @@ module NoSE
     # Populate all the variable settings
     def populate_settings
       @settings = @tree[:settings].map do |setting|
-        field = @from[setting[:field].to_s]
+        field = @from[setting[:field].to_s].with_identity_key
         value = setting[:value]
 
         type = field.class.const_get 'TYPE'
@@ -858,6 +858,7 @@ module NoSE
     def populate_conditions
       connections = @tree[:connections] || []
       connections = connections.map do |connection|
+        # This is the only time we use foreign key equality
         field = @from[connection[:target].to_s]
         value = connection[:target_pk]
 

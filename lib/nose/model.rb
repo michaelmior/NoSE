@@ -35,16 +35,16 @@ module NoSE
 
     # Find a field given an +Enumerable+ of identifiers
     # @return [Field]
-    def find_field(field)
+    def find_field(field, key = nil)
       if field.count > 2
         # Do a foreign key lookup
         field = field.dup
         key_field = @entities[field[0]][field[1]]
         field[0..1] = key_field ? key_field.entity.name : field[1]
-        find_field field
+        find_field field, key_field
       else
         entity = field[0].is_a?(String) ? entities[field[0]] : field[0]
-        entity[field[1]]
+        entity[field[1]].with_key(key || entity.id_fields.first)
       end
     end
 

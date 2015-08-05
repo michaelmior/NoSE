@@ -26,8 +26,10 @@ module NoSE
 
       # Compare by parent entity and name
       def ==(other)
-        other.is_a?(Field) && @parent == other.parent &&
-          @name == other.name
+        match = other.is_a?(Field) && @parent == other.parent &&
+                @name == other.name
+        other_key = other.instance_variable_get(:@key)
+        match && (@key.nil? || @other_key.nil? || @key == other_key)
       end
       alias_method :eql?, :==
 
@@ -74,6 +76,18 @@ module NoSE
         fail NotImplementedError
       end
       # :nocov:
+
+      # Create a copy of this field, but attached to a particular key
+      def with_key(key)
+        keyed_field = dup
+        keyed_field.instance_variable_set(:@key, key)
+        keyed_field.freeze
+      end
+
+      # Attach the key to the identity of the parent
+      def with_identity_key
+        with_key @parent.id_fields.first
+      end
 
       # Populate a helper DSL object with all subclasses of Field
       def self.inherited(child_class)

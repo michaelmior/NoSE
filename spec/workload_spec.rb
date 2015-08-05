@@ -29,7 +29,8 @@ module NoSE
     end
 
     it 'can find fields on entities from queries' do
-      expect(workload.model.find_field %w(Foo Id)).to be field
+      expect(workload.model.find_field %w(Foo Id)).to \
+        eq field.with_identity_key
     end
 
     it 'can find fields which traverse foreign keys' do
@@ -38,9 +39,11 @@ module NoSE
       other_entity << other_field
       workload.model.add_entity other_entity
 
-      entity << Fields::ForeignKeyField.new('Baz', other_entity)
+      foreign_key = Fields::ForeignKeyField.new('Baz', other_entity)
+      entity << foreign_key
 
-      expect(workload.model.find_field %w(Foo Baz Quux)).to be other_field
+      expect(workload.model.find_field %w(Foo Baz Quux)).to \
+        eq other_field.with_key(foreign_key)
     end
 
     it 'raises an exception for nonexistent entities' do
