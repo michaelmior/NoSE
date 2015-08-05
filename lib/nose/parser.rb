@@ -347,7 +347,7 @@ module NoSE
     end
 
     # Find the parent of a given field
-    def find_field_parent(field)
+    def find_field_parent(field, key: false)
       # We can't find the parent if there are multiple choices
       fail if entities.count(field.parent) > 1
 
@@ -362,6 +362,7 @@ module NoSE
 
       # This field is not on this portion of the path, so skip
       return nil if parent.nil?
+      return parent if key
 
       parent = parent.parent unless parent.is_a?(Fields::ForeignKeyField)
       parent
@@ -867,6 +868,7 @@ module NoSE
       connections = connections.map do |connection|
         # This is the only time we use foreign key equality
         field = @from[connection[:target].to_s]
+        field = field.with_key field
         value = connection[:target_pk]
 
         type = field.class.const_get 'TYPE'

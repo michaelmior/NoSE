@@ -70,7 +70,8 @@ module NoSE::Backend
         .with(backend_insert, kind_of(Cassandra::Uuid), 'http://www.example.com/')
 
       step_class = CassandraBackend::InsertStatementStep
-      prepared = step_class.new client, index, [link['LinkId'], link['URL']]
+      fields = [link['LinkId'], link['URL']].map(&:with_identity_key)
+      prepared = step_class.new client, index, fields
       prepared.process values
     end
   end
@@ -83,7 +84,7 @@ module NoSE::Backend
         { 'User_Username' => 'Bob' },
         { 'User_Username' => 'Alice' }
       ]
-      step = NoSE::Plans::SortPlanStep.new [user['Username']]
+      step = NoSE::Plans::SortPlanStep.new [user['Username'].with_identity_key]
 
       step_class = BackendBase::SortStatementStep
       prepared = step_class.new nil, nil, step, nil, nil

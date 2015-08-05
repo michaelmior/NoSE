@@ -69,7 +69,7 @@ module NoSE
         @hash_fields.map(&:id).sort,
         @order_fields.map(&:id),
         @extra.to_set.map(&:id).sort,
-        @path.map(&:id)
+        @path.map { |key| "#{key.parent.name}_#{key.name}" }
       ].to_s
     end
 
@@ -111,7 +111,7 @@ module NoSE
     def add_keys(fields)
       fields.map do |field|
         next field unless field.key.nil?
-        field.with_key @path.find_field_parent(field)
+        field.with_key @path.find_field_parent(field, key: true)
       end
     end
 

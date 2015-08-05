@@ -36,7 +36,7 @@ module NoSE
       # Hash by entity and name
       # @return [Fixnum]
       def hash
-        @hash ||= Zlib.crc32 [@parent.name, @name].to_s
+        @hash ||= Zlib.crc32 [@parent.name, @name, @key && @key.name].to_s
       end
 
       # :nocov:
@@ -47,7 +47,12 @@ module NoSE
 
       # A simple string representing the field
       def id
-        "#{@parent.name}_#{@name}"
+        # If the key is not set, we can't get an ID
+        fail if @key.nil?
+
+        id = @parent.name
+        id += "_#{@key.name}" unless @key.is_a?(Fields::IDField)
+        id + "_#{@name}"
       end
 
       # Set the estimated cardinality of the field

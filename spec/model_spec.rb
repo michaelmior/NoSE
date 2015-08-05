@@ -67,7 +67,7 @@ module NoSE
 
     it 'has an ID based on the entity and name' do
       Entity.new('Foo') << field
-      expect(field.id).to eq 'Foo_Bar'
+      expect(field.with_identity_key.id).to eq 'Foo_Bar'
     end
 
     it 'can have its cardinality updated by multiplication' do
