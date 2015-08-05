@@ -527,7 +527,7 @@ module NoSE
         entity = longest_entity_path[@tree[:path].index(field.first)]
 
         if field.last == '*'
-          entity.fields.values
+          entity.fields.values.map(&:with_identity_key)
         else
           field = @model.find_field [entity, field.last.to_s]
 

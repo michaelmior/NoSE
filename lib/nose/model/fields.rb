@@ -10,7 +10,7 @@ module NoSE
     class Field
       include Supertype
 
-      attr_reader :name, :size, :parent
+      attr_reader :name, :size, :parent, :key
       attr_accessor :primary_key
       alias_method :primary_key?, :primary_key
 

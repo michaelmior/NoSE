@@ -126,6 +126,9 @@ module NoSE
       fail InvalidIndexException, 'missing path entity keys' \
         unless @path.entities.map(&:id_fields).flatten.all? \
           &(@hash_fields + @order_fields).method(:include?)
+
+      fail InvalidIndexException, 'missing field keys' \
+        unless @all_fields.none? { |field| field.key.nil? }
     end
 
     # Precalculate the size of the index
