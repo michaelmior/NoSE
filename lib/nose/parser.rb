@@ -348,9 +348,16 @@ module NoSE
 
     # Find the parent of a given field
     def find_field_parent(field)
+      # We can't find the parent if there are multiple choices
+      fail if entities.count(field.parent) > 1
+
       parent = find do |key|
-        field.parent == key.parent ||
-        (key.is_a?(Fields::ForeignKeyField) && field.parent == key.entity)
+        if key.is_a?(Fields::ForeignKeyField)
+          next true if field.parent == key.entity
+          next true if field.parent == key.reverse.entity
+        else
+          next true if field.parent == key.parent
+        end
       end
 
       # This field is not on this portion of the path, so skip

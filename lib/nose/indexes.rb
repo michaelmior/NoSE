@@ -5,11 +5,12 @@ module NoSE
                 :entries, :entry_size, :size, :hash_count, :per_hash_count
 
     def initialize(hash_fields, order_fields, extra, path, saved_key = nil)
-      @hash_fields = hash_fields.to_set
-      @order_fields = order_fields - hash_fields.to_a
-      @extra = extra.to_set - @hash_fields - @order_fields.to_set
-      @all_fields = @hash_fields + order_fields.to_set + @extra
       @path = path.is_a?(KeyPath) ? path : KeyPath.new(path)
+
+      @hash_fields = add_keys(hash_fields).to_set
+      @order_fields = add_keys(order_fields) - hash_fields.to_a
+      @extra = add_keys(extra).to_set - @hash_fields - @order_fields.to_set
+      @all_fields = @hash_fields + @order_fields.to_set + @extra
       @key = saved_key
 
       validate_index
@@ -106,6 +107,14 @@ module NoSE
 
     private
 
+    # Add the key this field is associated with
+    def add_keys(fields)
+      fields.map do |field|
+        next field unless field.key.nil?
+        field.with_key @path.find_field_parent(field)
+      end
+    end
+
     # Ensure this index is valid
     def validate_index
       fail InvalidIndexException, 'hash fields cannot be empty' \
@@ -154,7 +163,8 @@ module NoSE
     # Create a simple index which maps entity keys to other fields
     # @return [Index]
     def simple_index
-      Index.new id_fields, [], fields.values - id_fields,
+      Index.new id_fields, [],
+                fields.values.map(&:with_identity_key) - id_fields,
                 [self.id_fields.first], name
     end
   end
