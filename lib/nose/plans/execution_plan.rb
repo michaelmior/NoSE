@@ -148,7 +148,7 @@ module NoSE
 
       # Pass the support query up to the parent
       def Support(&block)
-        @plans.instance_eval(&block)
+        @plans.Support(&block)
       end
 
       # Create a new index lookup step with a particular set of conditions
