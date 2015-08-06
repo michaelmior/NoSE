@@ -19,9 +19,9 @@ NoSE::Schema.new do
 
   Index 'bids' do
     Hash    bids.id
-    Ordered users.id
+    Ordered users.id, items.id
     Extra   bids['*']
-    Path    bids.id, bids.user
+    Path    users.id, users.bids, bids.item
   end
 
   Index 'buynow' do
@@ -59,12 +59,6 @@ NoSE::Schema.new do
     Hash    users.id
     Ordered items.end_date, items.id
     Path    users.id, users.items_sold
-  end
-
-  Index 'user_items_bid_on' do
-    Hash    users.id
-    Ordered bids.date, bids.id, items.id
-    Path    users.id, users.bids, bids.item
   end
 
   Index 'buynow_by_user' do
