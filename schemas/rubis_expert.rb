@@ -81,8 +81,7 @@ NoSE::Schema.new do
   end
 
   Index 'regions' do
-    Hash    regions.dummy
-    Ordered regions.id
+    Hash    regions.id
     Extra   regions.name
     Path    regions.id
   end

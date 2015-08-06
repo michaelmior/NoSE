@@ -112,9 +112,8 @@ NoSE::Plans::ExecutionPlans.new do
       Support do
         Plan 'GetRegionName' do
           Select regions.name
-          Param  regions.dummy, :==, 1
           Param  regions.id, :==
-          Lookup 'regions', [regions.dummy, :==]
+          Lookup 'regions', [regions.id, :==]
         end
       end
 
