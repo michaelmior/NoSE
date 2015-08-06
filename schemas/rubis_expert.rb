@@ -73,7 +73,7 @@ NoSE::Schema.new do
     Path    categories.id, categories.items
   end
 
-  Index 'categories' do
+  Index 'category_list' do
     Hash    categories.dummy
     Ordered categories.id
     Extra   categories.name
