@@ -255,7 +255,7 @@ module NoSE
         @delete_step.process support unless support.empty? || @delete_step.nil?
         return if @insert_step.nil?
 
-        if @delete_step.nil?
+        if support.empty?
           support = [settings]
         else
           support.each { |row| row.merge! settings }
