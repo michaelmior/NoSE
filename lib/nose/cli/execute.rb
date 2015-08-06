@@ -118,19 +118,6 @@ module NoSE
       # Get the average execution time for a single update plan
       def bench_update(backend, indexes, plan, index_values,
                        iterations, repeat, weight: weight)
-        setting_list = 1.upto(iterations).map do
-          plan.update_steps.last.fields.map do |field|
-            # Get the backend to generate a random ID or take a random value
-            if field.is_a?(Fields::IDField)
-              value = backend.generate_id
-            else
-              value = field.random_value
-            end
-
-            FieldSetting.new(field, value)
-          end
-        end
-
         condition_list = 1.upto(iterations).map do |i|
           Hash[plan.params.map do |field_id, condition|
             value = indexes.each do |index|
@@ -147,7 +134,31 @@ module NoSE
           end]
         end
 
-        prepared = backend.prepare_update nil, setting_list.first, [plan]
+        # Get values for the fields which were provided as parameters
+        fields = plan.update_steps.last.fields.select do |field|
+          plan.params.key? field.id
+        end
+        setting_list = 1.upto(iterations).map do |i|
+          fields.map do |field|
+            # First check for IDs given as part of the query otherwise
+            # get the backend to generate a random ID or take a random value
+            condition = condition_list[i - 1][field.id]
+            if !condition.nil? && field.is_a?(Fields::IDField)
+              value = condition.value
+            elsif field.is_a?(Fields::IDField)
+              value = backend.generate_id
+            else
+              value = field.random_value
+            end
+
+            FieldSetting.new(field, value)
+          end
+        end
+
+        update_settings = plan.update_steps.last.fields.map do |field|
+          FieldSetting.new field, nil
+        end
+        prepared = backend.prepare_update nil, update_settings, [plan]
 
         measurement = Measurements::Measurement.new plan, weight: weight
 

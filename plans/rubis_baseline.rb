@@ -176,6 +176,7 @@ NoSE::Plans::ExecutionPlans.new do
     Plan 'AddBuyNow' do
       Param  buynow.id, :==
       Param  buynow.qty, :==
+      Param  buynow.date, :==
       Param  items.id, :==
       Insert 'buynow'
     end
@@ -220,8 +221,8 @@ NoSE::Plans::ExecutionPlans.new do
       end
 
       Param  items.id, :==
-      Param  users.id, :==
-      Insert 'items'
+      Param  items.max_bid, :==
+      Insert 'items', items.id, items.max_bid
     end
 
     Plan 'AddToBids' do
@@ -278,6 +279,7 @@ NoSE::Plans::ExecutionPlans.new do
       end
 
       Param  users.id, :==
+      Param  users.rating, :==
       Insert 'users', users.id, regions.id, users.rating
     end
 
