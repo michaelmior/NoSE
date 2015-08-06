@@ -330,10 +330,11 @@ NoSE::Plans::ExecutionPlans.new do
     end
 
     Plan 'ItemsBid' do
-      Select items['*']
+      Select items['*'], bids.id
       Param  users.id, :==
       Param  bids.date, :>=
-      Lookup 'user_items_bid_on', [users.id, :==], [bids.date, :>=]
+      Lookup 'bids_by_user', [users.id, :==], [bids.date, :>=]
+      Lookup 'bids', [bids.id, :==]
       Lookup 'items', [items.id, :==]
     end
   end
