@@ -23,6 +23,11 @@ module NoSE
       NoSE::DSL.mixin_fields @workload.model.entities, IndexDSL
     end
 
+    # Add a simple index for an entity
+    def SimpleIndex(entity)
+      @indexes[entity] = @workload.model[entity].simple_index
+    end
+
     # Wrap commands for defining index attributes
     def Index(key, &block)
       # Apply the DSL
