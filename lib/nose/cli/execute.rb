@@ -135,6 +135,7 @@ module NoSE
           Hash[plan.params.map do |field_id, condition|
             value = indexes.each do |index|
               values = index_values[index]
+              next if values.empty?
               value = values[i % values.length][condition.field.id]
               break value unless value.nil?
             end
