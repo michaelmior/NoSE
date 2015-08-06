@@ -1,3 +1,5 @@
+require 'table_print'
+
 module NoSE
   module CLI
     # Run performance tests on plans for a particular schema
@@ -26,14 +28,15 @@ module NoSE
                                     options[:num_iterations],
                                     options[:fail_on_empty]
 
+        table = []
         total = 0
         plans.groups.each do |group, group_plans|
           next if options[:group] && group != options[:group]
 
+          group_table = []
           group_total = 0
           group_weight = plans.weights[group][plans.schema.workload.mix]
           next unless group_weight
-          puts "Group #{group} * #{group_weight}"
 
           group_plans.each do |plan|
             next if options[:plan] && plan.name != options[:plan]
@@ -43,32 +46,42 @@ module NoSE
               measurement = bench_update backend, plans.schema.indexes.values,
                                          plan, index_values,
                                          options[:num_iterations],
-                                         options[:repeat]
+                                         options[:repeat], weight: group_weight
             else
               # Run the query and get the total time
               measurement = bench_query backend, plans.schema.indexes.values,
                                         plan, index_values,
                                         options[:num_iterations],
-                                        options[:repeat]
+                                        options[:repeat], weight: group_weight
             end
 
             # Run the query and get the total time
             group_total += measurement.mean
-            puts "  #{plan.name} executed in #{measurement.mean} average"
+            group_table << measurement
           end
 
+          total_measurement = Measurements::Measurement.new nil, 'TOTAL'
+          total_measurement << group_table.map(&:weighted_mean).inject(0, &:+)
+          group_table << total_measurement
+          table << OpenStruct.new(group: group, measurements: group_table)
           group_total *= group_weight
           total += group_total
-          puts "  TOTAL #{group_total}\n"
         end
 
-        puts "\nTOTAL #{total}"
+        total_measurement = Measurements::Measurement.new nil, 'TOTAL'
+        total_measurement << table.map do |group|
+          group.measurements.find { |m| m.name == 'TOTAL' }.mean
+        end.inject(0, &:+)
+        table << OpenStruct.new(group: 'TOTAL',
+                                measurements: [total_measurement])
+        tp table, 'group', 'measurements.name', 'measurements.mean'
       end
 
       private
 
       # Get the average execution time for a single query plan
-      def bench_query(backend, indexes, plan, index_values, iterations, repeat)
+      def bench_query(backend, indexes, plan, index_values, iterations, repeat,
+                      weight: weight)
         # Construct a list of values to be substituted in the plan
         condition_list = 1.upto(iterations).map do |i|
           Hash[plan.params.map do |field_id, condition|
@@ -88,7 +101,7 @@ module NoSE
         prepared = backend.prepare_query nil, plan.select_fields, plan.params,
                                          [plan.steps]
 
-        measurement = Measurements::Measurement.new plan
+        measurement = Measurements::Measurement.new plan, weight: weight
 
         1.upto(repeat) do
           # Execute each plan and measure the time
@@ -104,7 +117,7 @@ module NoSE
 
       # Get the average execution time for a single update plan
       def bench_update(backend, indexes, plan, index_values,
-                       iterations, repeat)
+                       iterations, repeat, weight: weight)
         setting_list = 1.upto(iterations).map do
           plan.update_steps.last.fields.map do |field|
             # Get the backend to generate a random ID or take a random value
@@ -135,7 +148,7 @@ module NoSE
 
         prepared = backend.prepare_update nil, setting_list.first, [plan]
 
-        measurement = Measurements::Measurement.new plan
+        measurement = Measurements::Measurement.new plan, weight: weight
 
         1.upto(repeat) do
           # Execute each plan and measure the time
