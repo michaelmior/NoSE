@@ -16,7 +16,7 @@ module NoSE
 
       def initialize(plan, name = nil, weight: 1.0)
         @plan = plan
-        @name = name || plan.name
+        @name = name || (plan && plan.name)
         @weight = weight
         @values = []
       end
