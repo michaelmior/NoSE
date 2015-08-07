@@ -140,13 +140,12 @@ module NoSE
         def initialize(client, index, fields)
           @client = client
           @index = index
-          @fields = fields.map(&:id)
+          @fields = fields.map(&:id) & index.all_fields.map(&:id)
 
           # Prepare the statement required to perform the insertion
-          insert_keys = @fields & index.all_fields.map(&:id)
           insert = "INSERT INTO #{index.key} ("
-          insert += insert_keys.join(', ') + ') VALUES ('
-          insert += (['?'] * insert_keys.length).join(', ') + ')'
+          insert += @fields.join(', ') + ') VALUES ('
+          insert += (['?'] * @fields.length).join(', ') + ')'
           @prepared = client.prepare insert
           @generator = Cassandra::Uuid::Generator.new
         end
