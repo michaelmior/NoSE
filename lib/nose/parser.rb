@@ -812,20 +812,17 @@ module NoSE
 
       # Get the two path components
       entity_index = index.path.entities.index @from
-      path1 = index.path[0..entity_index]
-      path2 = index.path[entity_index..-1]
+      path1 = index.path[0..entity_index - 1]
+      path2 = index.path[entity_index + 1..-1]
 
       # Group the connection keys into one of the two paths
       keys1 = []
       keys2 = []
       @conditions.values.map(&:field).each do |key|
-        reverse = key.reverse
+        key = key.entity.id_fields.first
 
         keys1 << key if path1.include?(key)
-        keys1 << reverse if path1.include?(reverse)
-
         keys2 << key if path2.include?(key)
-        keys2 << reverse if path2.include?(reverse)
       end
 
       # Construct the two where clauses
