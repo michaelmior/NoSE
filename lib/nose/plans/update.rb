@@ -36,9 +36,11 @@ module NoSE
     class InsertPlanStep < UpdatePlanStep
       attr_reader :fields
 
-      def initialize(index, state = nil)
+      def initialize(index, state = nil, fields = Set.new)
         super index, :insert, state
-        @fields = index.all_fields
+        @fields = fields.empty? ? index.all_fields : fields.to_set
+        @fields += index.hash_fields + index.order_fields.to_set
+        @fields
       end
     end
 

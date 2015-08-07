@@ -235,6 +235,7 @@ module NoSE
     # Represent update plan steps
     class UpdatePlanStepRepresenter < PlanStepRepresenter
       property :index, decorator: IndexRepresenter
+      collection :fields, decorator: FieldRepresenter
 
       # Set the hidden type variable
       def type
@@ -312,7 +313,16 @@ module NoSE
           else
             state = Plans::UpdateState.new statement, step_hash['cardinality']
           end
-          step_class.new step_index, state
+          step = step_class.new step_index, state
+
+          # Set the fields to be inserted
+          fields = (step_hash['fields'] || []).map do |dict|
+            workload.model[dict['parent']][dict['name']]
+          end
+          step.instance_variable_set(:@fields, fields) \
+            if step.is_a?(Plans::InsertPlanStep)
+
+          step
         end
 
         index_key = instance['index']['key']
