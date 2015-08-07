@@ -86,7 +86,7 @@ module NoSE::Backend
       step = NoSE::Plans::SortPlanStep.new [user['Username']]
 
       step_class = BackendBase::SortStatementStep
-      prepared = step_class.new nil, nil, step, nil, nil
+      prepared = step_class.new nil, [], {}, step, nil, nil
       results = prepared.process nil, results
 
       expect(results).to eq [
@@ -109,7 +109,7 @@ module NoSE::Backend
                               'WHERE User.Username = "Bob"', workload.model
 
       step_class = BackendBase::FilterStatementStep
-      prepared = step_class.new nil, query, step, nil, nil
+      prepared = step_class.new nil, [], {}, step, nil, nil
       results = prepared.process query.conditions, results
 
       expect(results).to eq [
@@ -128,11 +128,30 @@ module NoSE::Backend
                               workload.model
 
       step_class = BackendBase::FilterStatementStep
-      prepared = step_class.new nil, query, step, nil, nil
+      prepared = step_class.new nil, [], {}, step, nil, nil
       results = prepared.process query.conditions, results
 
       expect(results).to eq [
-        {'User_Username' => 'Alice'}
+        { 'User_Username' => 'Alice' }
+      ]
+    end
+  end
+
+  describe BackendBase::FilterStatementStep do
+    include_context 'entities'
+
+    it 'can limit results' do
+      results = [
+        { 'User_Username' => 'Alice' },
+        { 'User_Username' => 'Bob' }
+      ]
+      step = NoSE::Plans::LimitPlanStep.new 1
+      step_class = BackendBase::LimitStatementStep
+      prepared = step_class.new nil, [], {}, step, nil, nil
+      results = prepared.process({}, results)
+
+      expect(results).to eq [
+        { 'User_Username' => 'Alice' }
       ]
     end
   end

@@ -151,7 +151,8 @@ module NoSE
 
       # Perform filtering external to the backend
       class FilterStatementStep < StatementStep
-        def initialize(_client, _query, step, _next_step, _prev_step)
+        def initialize(_client, _fields, _conditions,
+                       step, _next_step, _prev_step)
           @step = step
         end
 
@@ -183,7 +184,8 @@ module NoSE
 
       # Perform sorting external to the backend
       class SortStatementStep < StatementStep
-        def initialize(_client, _query, step, _next_step, _prev_step)
+        def initialize(_client, _fields, _conditions,
+                       step, _next_step, _prev_step)
           @step = step
         end
 
@@ -194,6 +196,19 @@ module NoSE
               row[field.id]
             end
           end
+        end
+      end
+
+      # Perform a client-side limit of the result set size
+      class LimitStatementStep < StatementStep
+        def initialize(_client, _fields, _conditions,
+                       step, _next_step, _prev_step)
+          @limit = step.limit
+        end
+
+        # Remove results past the limit
+        def process(_conditions, results)
+          results[0..@limit - 1]
         end
       end
     end
@@ -212,8 +227,10 @@ module NoSE
         results = nil
 
         @steps.each do |step|
-          field_ids = step.index.all_fields.map(&:id)
-          conditions = conditions.select { |key| field_ids.include? key }
+          if step.is_a?(BackendBase::IndexLookupStatementStep)
+            field_ids = step.index.all_fields.map(&:id)
+            conditions = conditions.select { |key| field_ids.include? key }
+          end
           results = step.process conditions, results
 
           # The query can't return any results at this point, so we're done
