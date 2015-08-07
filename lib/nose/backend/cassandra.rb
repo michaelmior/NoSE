@@ -203,6 +203,7 @@ module NoSE
           @logger = Logging.logger['nose::backend::cassandra::indexlookupstep']
           @client = client
           @step = step
+          @index = step.index
           @prev_step = prev_step
           @next_step = next_step
 
