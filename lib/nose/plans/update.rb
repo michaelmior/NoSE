@@ -40,7 +40,6 @@ module NoSE
         super index, :insert, state
         @fields = fields.empty? ? index.all_fields : fields.to_set
         @fields += index.hash_fields + index.order_fields.to_set
-        @fields
       end
     end
 
