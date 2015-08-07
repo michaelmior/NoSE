@@ -42,11 +42,7 @@ module NoSE
 
           plans.each do |plan|
             # Get all indexes used by support queries
-            indexes = plan.query_plans.map do |query_plan|
-              query_plan.select do |step|
-                step.is_a? Plans::IndexLookupPlanStep
-              end.map(&:index)
-            end.flatten(1) << plan.index
+            indexes = plan.query_plans.map(&:indexes).flatten(1) << plan.index
 
             measurement = bench_update backend, indexes, plan, index_values,
                                        options[:num_iterations],
