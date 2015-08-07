@@ -212,6 +212,8 @@ module NoSE
         results = nil
 
         @steps.each do |step|
+          field_ids = step.index.all_fields.map(&:id)
+          conditions = conditions.select { |key| field_ids.include? key }
           results = step.process conditions, results
 
           # The query can't return any results at this point, so we're done
