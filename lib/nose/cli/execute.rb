@@ -118,13 +118,15 @@ module NoSE
       # Get the average execution time for a single update plan
       def bench_update(backend, indexes, plan, index_values,
                        iterations, repeat, weight: weight)
+        params = plan.params
         condition_list = 1.upto(iterations).map do |i|
-          Hash[plan.params.map do |field_id, condition|
-            value = indexes.each do |index|
+          Hash[params.map do |field_id, condition|
+            value = nil
+            indexes.each do |index|
               values = index_values[index]
               next if values.empty?
               value = values[i % values.length][condition.field.id]
-              break value unless value.nil?
+              break unless value.nil?
             end
 
             [
