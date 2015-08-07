@@ -46,7 +46,7 @@ module NoSE
               query_plan.select do |step|
                 step.is_a? Plans::IndexLookupPlanStep
               end.map(&:index)
-            end.flatten(1)
+            end.flatten(1) << plan.index
 
             measurement = bench_update backend, indexes, plan, index_values,
                                        options[:num_iterations],
