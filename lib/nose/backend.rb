@@ -116,7 +116,8 @@ module NoSE
 
           # Prepare plans for each support query
           support_plans = plan.query_plans.map do |query_plan|
-            prepare_query nil, query_plan.select_fields, query_plan.params,
+            query = query_plan.instance_variable_get(:@query)
+            prepare_query query, query_plan.select_fields, query_plan.params,
                           [query_plan.steps]
           end
 
