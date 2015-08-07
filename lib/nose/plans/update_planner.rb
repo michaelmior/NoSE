@@ -50,7 +50,14 @@ module NoSE
 
       # Parameters to this update plan
       def params
-        @statement.respond_to?(:conditions) ? @statement.conditions : []
+        conditions = @statement.respond_to?(:conditions) ? \
+          @statement.conditions : {}
+        settings = @statement.respond_to?(:settings) ? \
+          @statement.settings : []
+
+        conditions.merge Hash[settings.map do |setting|
+          [setting.field.id, Condition.new(setting.field, :'=', setting.value)]
+        end]
       end
 
       # Select query plans to actually use here
@@ -146,7 +153,6 @@ module NoSE
             state = UpdateState.new statement, cardinalities.inject(1, &:*)
           else
             trees = []
-            path = statement.longest_entity_path
 
             if statement.is_a? Insert
               cardinality = 1
@@ -163,7 +169,9 @@ module NoSE
           update_steps = []
           update_steps << DeletePlanStep.new(index, state) \
             if statement.requires_delete?(index)
-          update_steps << InsertPlanStep.new(index, state) \
+
+          fields = statement.settings.map(&:field)
+          update_steps << InsertPlanStep.new(index, state, fields) \
             if statement.requires_insert?(index)
 
           UpdatePlan.new statement, index, trees, update_steps, @cost_model
