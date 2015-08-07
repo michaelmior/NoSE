@@ -55,9 +55,23 @@ module NoSE
         settings = @statement.respond_to?(:settings) ? \
           @statement.settings : []
 
-        conditions.merge Hash[settings.map do |setting|
+        params = conditions.merge Hash[settings.map do |setting|
           [setting.field.id, Condition.new(setting.field, :'=', setting.value)]
         end]
+
+        # Ensure we only use primary keys for conditions
+        params = Hash[params.map do |field_id, condition|
+          field = condition.field
+          if field.is_a?(Fields::ForeignKeyField)
+            field = field.entity.id_fields.first
+            condition = Condition.new field, condition.operator,
+                                      condition.value
+          end
+
+          [field.id, condition]
+        end]
+
+        params
       end
 
       # Select query plans to actually use here
