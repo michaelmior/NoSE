@@ -172,6 +172,11 @@ module NoSE
         @query.group
       end
 
+      # Name plans after the associated query
+      def name
+        @query.text
+      end
+
       # Fields selected by this plan
       def select_fields
         @query.select
