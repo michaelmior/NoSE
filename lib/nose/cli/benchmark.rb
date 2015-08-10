@@ -14,8 +14,11 @@ module NoSE
                                     options[:num_iterations],
                                     options[:fail_on_empty]
 
+        group_tables = Hash.new { |h, k| h[k] = [] }
+        group_totals = Hash.new { |h, k| h[k] = 0 }
         result.workload.queries.each do |query|
-          next if query.is_a?(SupportQuery)
+          weight = result.workload.statement_weights[query]
+          next if query.is_a?(SupportQuery) || !weight
           @logger.debug { "Executing #{query.text}" }
 
           # Get the plan and indexes used for this query
@@ -27,13 +30,16 @@ module NoSE
           end.map(&:index)
 
           measurement = bench_query backend, indexes, plan, index_values,
-                                    options[:num_iterations], options[:repeat]
+                                    options[:num_iterations], options[:repeat],
+                                    weight: weight
 
-          # Report the time taken
-          puts "#{query.text} executed in #{measurement.mean} average"
+          group_totals[plan.group] += measurement.mean
+          group_tables[plan.group] << measurement
         end
 
         result.workload.updates.each do |update|
+          weight = result.workload.statement_weights[update]
+          next unless weight
           @logger.debug { "Executing #{update.text}" }
 
           plans = result.update_plans.select do |possible_plan|
@@ -46,12 +52,31 @@ module NoSE
 
             measurement = bench_update backend, indexes, plan, index_values,
                                        options[:num_iterations],
-                                       options[:repeat]
+                                       options[:repeat], weight: weight
 
-            # Report the time taken
-            puts "#{update.text} executed in #{measurement.mean} average"
+            group_totals[plan.group] += measurement.mean
+            group_tables[plan.group] << measurement
           end
         end
+
+        total = 0
+        table = []
+        group_totals.each do |group, group_total|
+          total += group_total
+          total_measurement = Measurements::Measurement.new nil, 'TOTAL'
+          group_table = group_tables[group]
+          total_measurement << group_table.map(&:weighted_mean).inject(0, &:+)
+          group_table << total_measurement
+          table << OpenStruct.new(group: group, measurements: group_table)
+        end
+
+        total_measurement = Measurements::Measurement.new nil, 'TOTAL'
+        total_measurement << table.map do |group|
+          group.measurements.find { |m| m.name == 'TOTAL' }.mean
+        end.inject(0, &:+)
+        table << OpenStruct.new(group: 'TOTAL',
+                                measurements: [total_measurement])
+        tp table, 'group', 'measurements.name', 'measurements.mean'
       end
 
       private
