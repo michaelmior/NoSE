@@ -163,6 +163,8 @@ module NoSE
                                      Cassandra::Uuid.new(value.to_i)
               end
 
+              # We should never insert null values
+              fail if value.nil?
               value
             end
             @client.execute(@prepared, *values)
