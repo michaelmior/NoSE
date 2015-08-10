@@ -278,7 +278,9 @@ module NoSE
         if support.empty?
           support = [settings]
         else
-          support.each { |row| row.merge! settings }
+          support.each do |row|
+            row.merge!(settings) { |_, value, _| value }
+          end
         end
 
         # Stop if we have nothing to insert, otherwise insert
