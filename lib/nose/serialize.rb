@@ -356,6 +356,21 @@ module NoSE
       collection :statements, decorator: StatementRepresenter
       property :mix
 
+      def weights
+        weights = {}
+        workload_weights = represented.instance_variable_get(:@statement_weights)
+        workload_weights.each do |mix, mix_weights|
+          weights[mix] = {}
+          mix_weights.each do |statement, weight|
+            statement = StatementRepresenter.represent(statement).to_hash
+            weights[mix][statement] = weight
+          end
+        end
+
+        weights
+      end
+      property :weights, exec_context: :decorator
+
       # A simple array of the entities in the workload
       def entities
         represented.model.entities.values
@@ -398,10 +413,19 @@ module NoSE
         end
 
         # Add all statements to the workload
+        statement_weights = Hash.new { |h, k| h[k] = {} }
+        instance['weights'].each do |mix, weights|
+          mix = mix.to_sym
+          weights.each do |statement, weight|
+            statement_weights[statement][mix] = weight
+          end
+        end
         instance['statements'].each do |statement|
-          workload.add_statement statement
+          workload.add_statement statement, statement_weights[statement],
+                                 group: instance['group']
         end
 
+        workload.mix = instance['mix'].to_sym unless instance['mix'].nil?
         workload
       end
     end
