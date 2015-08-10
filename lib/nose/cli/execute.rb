@@ -74,7 +74,12 @@ module NoSE
         end.inject(0, &:+)
         table << OpenStruct.new(group: 'TOTAL',
                                 measurements: [total_measurement])
-        tp table, 'group', 'measurements.name', 'measurements.mean'
+
+        tp table, *[
+          'group',
+          { 'measurements.name' => { display_name: 'name' } },
+          { 'measurements.mean' => { display_name: 'mean' } }
+        ]
       end
 
       private
