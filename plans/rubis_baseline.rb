@@ -13,7 +13,7 @@ NoSE::Plans::ExecutionPlans.new do
     Plan 'Categories' do
       Select categories['*']
       Param  categories.dummy, :==, 1
-      Lookup 'category_list', [categories.dummy, :==]
+      Lookup 'all_categories', [categories.dummy, :==]
       Lookup 'categories', [categories.id, :==]
     end
   end
