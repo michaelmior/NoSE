@@ -300,7 +300,8 @@ module NoSE
         if instance['statement'].nil?
           statement = nil
         else
-          statement = Statement.parse instance['statement'], workload.model
+          statement = Statement.parse instance['statement'], workload.model,
+                                      group: instance['group']
         end
 
         update_steps = instance['update_steps'].map do |step_hash|
@@ -416,14 +417,14 @@ module NoSE
           query = nil
           state = nil
         else
-          query = Query.new instance['query'], workload.model
+          query = Query.new instance['query'], workload.model,
+                            group: instance['group']
           state = Plans::QueryState.new query, workload
         end
 
         # Create a new query plan
         plan = Plans::QueryPlan.new query, object.cost_model
-        plan.instance_variable_set(:@group, instance['group']) \
-          unless instance['group'].nil?
+
         plan.instance_variable_set(:@name, instance['name']) \
           unless instance['name'].nil?
         plan.instance_variable_set(:@weight, instance['weight'])

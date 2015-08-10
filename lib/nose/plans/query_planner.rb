@@ -167,6 +167,11 @@ module NoSE
         @cost_model = cost_model
       end
 
+      # Groups for plans are stored in the query
+      def group
+        @query.group
+      end
+
       # Fields selected by this plan
       def select_fields
         @query.select
