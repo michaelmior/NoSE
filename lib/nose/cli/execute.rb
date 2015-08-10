@@ -85,10 +85,12 @@ module NoSE
         # Construct a list of values to be substituted in the plan
         condition_list = 1.upto(iterations).map do |i|
           Hash[plan.params.map do |field_id, condition|
-            value = indexes.each do |index|
+            value = nil
+            indexes.each do |index|
               values = index_values[index]
+              next if values.empty?
               value = values[i % values.length][condition.field.id]
-              break value unless value.nil?
+              break unless value.nil?
             end
 
             [
