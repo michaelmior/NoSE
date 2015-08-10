@@ -31,7 +31,7 @@ NoSE::Schema.new do
     Path    buynow.id, buynow.item
   end
 
-  Index 'category_list' do
+  Index 'all_categories' do
     Hash    categories.dummy
     Ordered categories.id
     Path    categories.id
