@@ -26,7 +26,7 @@ NoSE::Model.new do
     Integer    'rating', count: 50
     Float      'balance', count: 10_000
     Date       'creation_date'
-  end) * 200_000
+  end) * 2_000
 
   (Entity 'items' do
     ID         'id'
@@ -40,27 +40,27 @@ NoSE::Model.new do
     Float      'max_bid'
     Date       'start_date'
     Date       'end_date'
-  end) * 2_000_000
+  end) * 20_000
 
   (Entity 'bids' do
     ID         'id'
     Integer    'qty', count: 5
     Float      'bid'
     Date       'date'
-  end) * 20_000_000
+  end) * 200_000
 
   (Entity 'comments' do
     ID         'id'
     Integer    'rating', count: 10
     Date       'date'
     String     'comment', 130
-  end) * 10_000_000
+  end) * 100_000
 
   (Entity 'buynow' do
     ID         'id'
     Integer    'qty', count: 4
     Date       'date'
-  end) * 4_000_000
+  end) * 40_000
 
   HasOne 'region',       'users',
          'users'      => 'regions'
