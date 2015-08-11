@@ -9,12 +9,14 @@ module NoSE
         IndexEnumerator => [
           :indexes_for_workload
         ],
-        Search => [
+        Search::Search => [
           :costs,
           :search_overlap,
-          :gurobi_add_constraints,
-          :gurobi_set_objective,
           :solve_gurobi
+        ],
+        Search::Problem => [
+          :add_constraints,
+          :define_objective
         ]
       }
       traced.default = []
