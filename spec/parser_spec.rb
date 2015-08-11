@@ -130,7 +130,7 @@ module NoSE
                               [tweet.id_fields.first, tweet['User']],
                               workload.model
       query = update.support_queries(index).first
-      expect(query.text).to eq \
+      expect(query.text).to start_with \
         'SELECT Tweet.Timestamp, Tweet.TweetId ' \
         'FROM Tweet.User WHERE User.UserId = ?'
       expect(query.statement).to eq(update)
@@ -143,7 +143,7 @@ module NoSE
       index = NoSE::Index.new [user['Username'], user['UserId']], [],
                               [user['City']], [user.id_fields.first],
                               workload.model
-      expect(update.support_queries(index).first.text).to eq \
+      expect(update.support_queries(index).first.text).to start_with \
         'SELECT User.Username FROM User WHERE User.UserId = ?'
     end
 
@@ -230,7 +230,7 @@ module NoSE
 
       queries = connect.support_queries index
       expect(queries).to have(1).item
-      expect(queries.first.text).to eq \
+      expect(queries.first.text).to start_with \
         'SELECT User.City FROM User WHERE User.UserId = ?'
     end
 
