@@ -1,4 +1,5 @@
 require 'descriptive_statistics/safe'
+require 'forwardable'
 
 module NoSE
   # Storage and presentation of value from performance measusrements
