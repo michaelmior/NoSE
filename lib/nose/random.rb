@@ -68,9 +68,18 @@ module NoSE
             to_node = node
           end
 
-          @entities[from_node] << Fields::ForeignKeyField.new(
+          from_field = Fields::ForeignKeyField.new(
             'FK' + @entities[to_node].name + 'ID',
             @entities[to_node])
+          to_field = Fields::ForeignKeyField.new(
+            'FK' + @entities[from_node].name + 'ID',
+            @entities[from_node])
+
+          from_field.reverse = to_field
+          to_field.reverse = from_field
+
+          @entities[from_node] << from_field
+          @entities[to_node] << to_field
         end
       end
     end
@@ -131,14 +140,18 @@ module NoSE
     # @return Query
     def random_query
       path = random_path(4)
-      select = path.first.fields.values.sample 2
+      select = path.entities.first.fields.values.sample 2
       conditions = 1.upto(3).map do
-        path.sample.fields.values.sample
+        path.entities.sample.fields.values.sample
       end
 
-      query = "SELECT #{path.first.name}.#{select.map(&:name).join ', '} " \
-              "FROM #{path.first.name} WHERE #{conditions.map do |field|
-                "#{condition_field_name field, path}.#{field.name} = ?"
+      select_fields = select.map do |field|
+        path.entities.first.name + '.' + field.name
+      end.join ', '
+      from = [path.first.parent.name] + path.entries[1..-1].map(&:name)
+      query = "SELECT #{select_fields} FROM #{from.join '.'} " \
+              "WHERE #{conditions.map do |field|
+              "#{path.find_field_parent(field).name}.#{field.name} = ?"
               end.join ' AND '}"
 
       Query.new query, @model
@@ -153,7 +166,9 @@ module NoSE
       path_end = path.index(field.parent)
       last_entity = path.first
       path[1..path_end].each do |entity|
-        fk = last_entity.foreign_keys.find { |key| key.entity == entity }
+        fk = last_entity.foreign_keys.values.find do |key|
+          key.entity == entity
+        end
         field_path += '.' + fk.name
         last_entity = entity
       end
@@ -164,18 +179,19 @@ module NoSE
     # Return a random path through the entity graph
     # @return [Array<Entity>]
     def random_path(max_length)
-      path = [@model.entities.values.sample]
+      path = [@model.entities.values.sample.id_fields.first]
       while path.length < max_length
-        keys = path.last.foreign_keys.values - path
+        # Find a list of keys to entities we have not seen before
+        last_entity = path.map(&:entity).last
+        keys = last_entity.foreign_keys.values
+        keys.reject! { |key| path.map(&:entity).include? key.entity }
         break if keys.empty?
 
-        # Ensure we don't have cycles on the path
-        next_entity = keys.sample.entity
-        break if path.include? next_entity
-        path << next_entity
+        # Add a random new key to the path
+        path << keys.sample
       end
 
-      path
+      KeyPath.new path
     end
   end
 end
