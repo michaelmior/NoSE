@@ -96,7 +96,10 @@ module NoSE
         query = "SELECT #{index.all_fields.map(&:id).join ', '} " \
                 "FROM \"#{index.key}\" LIMIT #{count}"
         rows = client.execute(query).rows
-        fail if rows.any? { |row| row.values.any?(&:nil?) }
+
+        # XXX Ignore null values for now
+        # fail if rows.any? { |row| row.values.any?(&:nil?) }
+
         rows
       end
 
