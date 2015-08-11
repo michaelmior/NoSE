@@ -120,17 +120,20 @@ module NoSE
     rule(:order)       {
       space >> str('ORDER BY') >> space >> fields.as_array(:fields) }
 
+    rule(:comment)     { str(' -- ') >> match('.').repeat }
+
     rule(:query)   {
       str('SELECT') >> space >> select_fields.as_array(:select) >>
       space >> str('FROM') >> space >> path.as_array(:path) >>
       where.maybe.as(:where) >> order.maybe.as(:order) >>
-      limit.maybe.capture(:limit) }
+      limit.maybe.capture(:limit) >> comment.maybe.as(:comment) }
 
     rule(:update) {
       str('UPDATE') >> space >> identifier.as(:entity) >> space >>
       (str('FROM') >> space >> path.as_array(:path) >> space).maybe >>
       str('SET') >> space >> settings.as_array(:settings) >>
-      where.maybe.as(:where).capture_source(:where)
+      where.maybe.as(:where).capture_source(:where) >>
+      comment.maybe.as(:comment)
     }
 
     rule(:connect_item) {
@@ -146,13 +149,15 @@ module NoSE
       str('INSERT INTO') >> space >> identifier.as(:entity) >> space >>
       str('SET') >> space >> settings.as_array(:settings) >>
       (space >> str('AND') >> space >> str('CONNECT') >> space >>
-       str('TO') >> space >> connect_list.as_array(:connections)).maybe
+       str('TO') >> space >> connect_list.as_array(:connections)).maybe >>
+      comment.maybe.as(:comment)
     }
 
     rule(:delete) {
       str('DELETE') >> space >> identifier.as(:entity) >>
       (space >> str('FROM') >> space >> path.as_array(:path)).maybe >>
-      where.maybe.as(:where).capture_source(:where)
+      where.maybe.as(:where).capture_source(:where) >>
+      comment.maybe.as(:comment)
     }
 
     rule(:connect) {
@@ -411,6 +416,10 @@ module NoSE
         raise new_exc
       end
 
+      # TODO Ignore comments, this is needed as a hack so otherwise identical
+      #      queries can be treated differently everywhere
+      # @tree.delete(:comment)
+
       # XXX Save the where clause so we can convert to a query later
       #     Ideally this would be in {StatementSupportQuery}
       @where_source = (@tree.delete(:where_source) || '').strip
@@ -667,6 +676,11 @@ module NoSE
 
       query = "SELECT #{required_fields.to_a.join ', ' } " \
               "FROM #{query_from.join '.'} #{where}"
+
+      # XXX This should not be necessary, but we need it
+      #     for now to keep each individual query unique
+      query += " -- #{query.hash}"  # XXX this should not be necess
+
       SupportQuery.new query, @model, self, index
     end
 
