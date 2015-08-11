@@ -24,6 +24,7 @@ NoSE::Workload.new do
 
   Group 'ViewItem', browsing: 22.95, bidding: 14.17 do
     Q 'SELECT items.* FROM items WHERE items.id = ?'
+    Q 'SELECT bids.* FROM items.bids WHERE items.id = ?'
   end
 
   Group 'SearchItemsByCategory', browsing: 27.77 + 8.26, bidding: 15.94 + 6.34 do
@@ -103,6 +104,7 @@ NoSE::Workload.new do
     Q 'SELECT users.* FROM users WHERE users.id=?'
     Q 'SELECT comments_received.* FROM users.comments_received ' \
       'WHERE users.id = ?'
+    Q 'SELECT from_user.nickname FROM comments.from_user WHERE comments.id = ?'
     Q 'SELECT bought_now.*, items.* FROM items.bought_now.buyer ' \
       'WHERE buyer.id = ? AND bought_now.date>=?'
     Q 'SELECT items.* FROM items.seller WHERE seller.id=? AND ' \
