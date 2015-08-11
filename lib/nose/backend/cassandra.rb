@@ -301,7 +301,9 @@ module NoSE
               # Add the previous results to each row
               rows = new_results.map { |row| result.merge row }
 
-              fail if rows.any? { |row| row.values.any?(&:nil?) }
+              # XXX Ignore null values in results for now
+              # fail if rows.any? { |row| row.values.any?(&:nil?) }
+
               new_result += rows
               break if new_results.last_page? ||
                        (!@step.limit.nil? && result.length >= @step.limit)
