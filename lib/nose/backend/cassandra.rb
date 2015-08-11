@@ -114,7 +114,7 @@ module NoSE
       # Get a Cassandra client, connecting if not done already
       def client
         return @client unless @client.nil?
-        cluster = Cassandra.cluster hosts: @hosts, port: @port.to_s
+        cluster = Cassandra.cluster hosts: @hosts, port: @port.to_s, timeout: nil
         @client = cluster.connect @keyspace
       end
 
@@ -163,8 +163,9 @@ module NoSE
                                      Cassandra::Uuid.new(value.to_i)
               end
 
-              # We should never insert null values
-              fail if value.nil?
+              # XXX Useful to test that we never insert null values
+              # fail if value.nil?
+
               value
             end
             @client.execute(@prepared, *values)
