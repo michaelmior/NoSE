@@ -77,10 +77,13 @@ module NoSE
         query_constraints[[entities.first, first]] = Gurobi::LinExpr.new
 
         problem.data[:costs][query].each do |index, (steps, _)|
-          # All indexes should advance a step if possible
+          # All indexes should advance a step if possible unless
+          # this is either the last step from IDs to entity
+          # data or the first step going from data to IDs
           index_step = steps.first
           fail if entities.length > 1 && index.path.length == 1 && \
-                  !steps.last.state.answered?
+                  !(steps.last.state.answered? ||
+                    index_step.parent.is_a?(Plans::RootPlanStep))
 
           # Join each step along the entity path
           index_var = problem.query_vars[index][query]
