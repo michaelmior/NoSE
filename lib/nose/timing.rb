@@ -3,14 +3,12 @@ module NoSE
   class Timer
     # Start tracking function runtime
     def self.enable
-      @@timers = {}
-
       traced = {
         IndexEnumerator => [
           :indexes_for_workload
         ],
         Search::Search => [
-          :costs,
+          :query_costs,
           :search_overlap,
           :solve_gurobi
         ],
@@ -19,26 +17,40 @@ module NoSE
           :define_objective
         ]
       }
-      traced.default = []
+      @@old_methods = Hash.new { |h, k| h[k] = {} }
 
-      Kernel.set_trace_func proc { |event, _file, _line, \
-                                    id, _binding, classname|
-        next unless classname.respond_to? :hash
-        if traced[classname].member?(id)
-          if event == 'call'
-            $stderr.puts "#{classname}.#{id}\tSTART"
-            @@timers[[classname, id]] = Time.now
-          elsif event == 'return'
-            elapsed = Time.now - @@timers[[classname, id]]
-            $stderr.puts "#{classname}.#{id}\tEND\t#{elapsed}"
+      # Redefine each method to capture timing information on each call
+      traced.each do |cls, methods|
+        methods.each do |method|
+          old_method = cls.instance_method(method)
+          cls.send(:define_method, method) do |*args|
+            $stderr.puts "#{cls}##{method}\tSTART"
+
+            start = Time.now
+            result = old_method.bind(self).(*args)
+            elapsed = Time.now - start
+
+            $stderr.puts "#{cls}##{method}\tEND\t#{elapsed}"
+
+            result
           end
+
+          # Save a copy of the old method for later
+          @@old_methods[cls][method] = old_method
         end
-      }
+      end
     end
 
     # Stop tracking function runtime
     def self.disable
-      Kernel.set_trace_func nil
+      @@old_methods.each do |cls, methods|
+        methods.each do |method, old_method|
+          cls.send(:define_method, method, old_method)
+        end
+      end
+
+      # Remove the saved method definitions
+      @@old_methods.clear
     end
   end
 end
