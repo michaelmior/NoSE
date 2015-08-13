@@ -63,8 +63,8 @@ module NoSE
         [entity.name, graph.add_nodes(label)]
       end]
 
-      entities.values.each do |entity|
-        entity.foreign_keys.values.each do |key|
+      entities.each_value do |entity|
+        entity.foreign_keys.each_value do |key|
           graph.add_edges nodes[entity.name], nodes[key.entity.name]
         end
       end
