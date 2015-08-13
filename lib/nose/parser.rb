@@ -284,6 +284,12 @@ module NoSE
     end
     alias_method :eql?, :==
 
+    # Check if this path starts with another path
+    def start_with?(other)
+      other_keys = other.instance_variable_get(:@keys)
+      @keys[0..other_keys.length-1] == other_keys
+    end
+
     # Combine two key paths by gluing together the keys
     def +(other)
       fail TypeError unless other.is_a? KeyPath
