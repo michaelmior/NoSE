@@ -6,6 +6,7 @@ gem 'formatador'
 gem 'logging'
 gem 'parallel'
 gem 'parslet'
+gem 'pickup'
 gem 'rake', require: false
 gem 'representable'
 gem 'ruby-graphviz'

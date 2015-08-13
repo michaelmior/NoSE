@@ -1,3 +1,5 @@
+require 'pickup'
+
 module NoSE
   # A simple representation of a random ER diagram
   class Network
@@ -190,6 +192,14 @@ module NoSE
               random_where_clause(path)
 
       Query.new query, @model
+    end
+
+    # Produce a random statement according to a given set of weights
+    def random_statement(weights= { query: 80, insert: 10, update: 5,
+                                    delete: 5 })
+      pick = Pickup.new(weights)
+      type = pick.pick(1)
+      send ('random_' + type.to_s).to_sym
     end
 
     private
