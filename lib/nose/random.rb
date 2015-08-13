@@ -131,9 +131,49 @@ module NoSE
   end
 
   # Generates random queries over entities in a given model
-  class QueryGenerator
+  class StatementGenerator
     def initialize(model)
       @model = model
+    end
+
+    # Generate a new random insertion to entities in the model
+    # @return Insert
+    def random_insert
+      entity = @model.entities.values.sample
+      settings = entity.fields.each_value.map do |field|
+        "#{field.name}=?"
+      end.join ', '
+      connection = entity.foreign_keys.values.sample
+      insert = "INSERT INTO #{entity.name} SET #{settings} " \
+               "AND CONNECT TO #{connection.name}(?)"
+
+      Insert.new insert, @model
+    end
+
+    # Generate a new random update of entities in the model
+    # @return Update
+    def random_update
+      path = random_path(2)
+      settings = path.entities.first.fields.values.sample(2).map do |field|
+        "#{field.name}=?"
+      end.join ', '
+      from = [path.first.parent.name] + path.entries[1..-1].map(&:name)
+      update = "UPDATE #{from.first} FROM #{from.join '.'} SET #{settings} " +
+               random_where_clause(path)
+
+      Update.new update, @model
+    end
+
+    # Generate a new random deletion of entities in the model
+    # @return Delete
+    def random_delete
+      path = random_path(2)
+
+      from = [path.first.parent.name] + path.entries[1..-1].map(&:name)
+      delete = "DELETE #{from.first} FROM #{from.join '.'} " +
+               random_where_clause(path)
+
+      Delete.new delete, @model
     end
 
     # Generate a new random query from entities in the model
@@ -141,23 +181,32 @@ module NoSE
     def random_query
       path = random_path(4)
       select = path.entities.first.fields.values.sample 2
-      conditions = 1.upto(3).map do
-        path.entities.sample.fields.values.sample
-      end
 
       select_fields = select.map do |field|
         path.entities.first.name + '.' + field.name
       end.join ', '
       from = [path.first.parent.name] + path.entries[1..-1].map(&:name)
-      query = "SELECT #{select_fields} FROM #{from.join '.'} " \
-              "WHERE #{conditions.map do |field|
-              "#{path.find_field_parent(field).name}.#{field.name} = ?"
-              end.join ' AND '}"
+      query = "SELECT #{select_fields} FROM #{from.join '.'} " +
+              random_where_clause(path)
 
       Query.new query, @model
     end
 
     private
+
+    # Produce a random where clause using fields along a given path
+    def random_where_clause(path, count = 3)
+      conditions = 1.upto(count).map do
+        field = path.entities.sample.fields.values.sample
+        next nil if field.name == '**'
+
+        field
+      end.compact
+
+      "WHERE #{conditions.map do |field|
+        "#{path.find_field_parent(field).name}.#{field.name} = ?"
+      end.join ' AND '}"
+    end
 
     # Get the name to be used in the query for a condition field
     # @return String

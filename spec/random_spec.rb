@@ -24,18 +24,25 @@ module NoSE
     end
   end
 
-  describe QueryGenerator do
-    let(:workload) do
-      Workload.new do
-        Entity 'foo' do
-          ID 'ID'
-        end
-      end
+  describe StatementGenerator do
+    include_context 'entities'
+
+    subject(:sgen) { StatementGenerator.new(workload.model) }
+
+    it 'generates valid insertions' do
+      expect(sgen.random_insert).to be_a Insert
     end
-    subject(:qgen) { QueryGenerator.new(workload.model) }
+
+    it 'generates valid updates' do
+      expect(sgen.random_update).to be_a Update
+    end
+
+    it 'generates valid deletions' do
+      expect(sgen.random_delete).to be_a Delete
+    end
 
     it 'generates valid queries' do
-      expect(qgen.random_query).to be_a Query
+      expect(sgen.random_query).to be_a Query
     end
   end
 end
