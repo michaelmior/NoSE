@@ -58,7 +58,7 @@ module NoSE
         end
 
         # Check that this index is a valid jump in the path
-        return nil unless state_path[0..index.path.length - 1] == index.path
+        return nil unless state_path.start_with? index.path
 
         # We must move forward on paths at each lookup
         # XXX This disallows plans which look up additional attributes
