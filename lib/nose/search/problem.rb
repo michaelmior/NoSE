@@ -120,7 +120,7 @@ module NoSE
       # The total number of indexes
       def total_indexes
         total = Gurobi::LinExpr.new
-        @index_vars.values.each { |var| total += var * 1.0 }
+        @index_vars.each_value { |var| total += var * 1.0 }
 
         total
       end

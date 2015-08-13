@@ -29,7 +29,7 @@ module NoSE
 
     # Adjust the percentage of writes in the workload
     def scale_writes(scale)
-      @statement_weights.values.each do |weights|
+      @statement_weights.each_value do |weights|
         next if weights.empty?
 
         # Calculate the divisors for reads and writes
@@ -41,7 +41,7 @@ module NoSE
         write_scale = (write_total / (read_total + write_total)) / scale
 
         # Scale each of the weights by the calculated factor
-        weights.keys.each do |stmt|
+        weights.each_key do |stmt|
           weights[stmt] /= stmt.is_a?(Query) ? read_scale : write_scale
         end
       end
@@ -117,7 +117,7 @@ module NoSE
     # Check if all the fields used by queries in the workload exist
     # @return [Boolean]
     def fields_exist?
-      @statement_weights[@mix].keys.each do |query|
+      @statement_weights[@mix].each_key do |query|
         # Projected fields and fields in the where clause exist
         fields = query.where.map { |condition| condition.field } + query.fields
         fields.each do |field|
@@ -209,7 +209,7 @@ module NoSE
       # Apply the DSL
       dsl = GroupDSL.new
       dsl.instance_eval(&block) if block_given?
-      mixes.keys.each { |mix| mixes[mix] /= dsl.statements.length }
+      mixes.each_key { |mix| mixes[mix] /= dsl.statements.length }
       dsl.statements.each do |statement|
         Q(statement, weight, **mixes, group: name)
       end

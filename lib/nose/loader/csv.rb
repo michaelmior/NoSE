@@ -55,7 +55,7 @@ module NoSE
         # Prefix all hash keys with the entity name and convert values
         chunk.map! do |row|
           index_row = {}
-          row.keys.each do |key|
+          row.each_key do |key|
             field_class = entity[key.to_s].class
             value = field_class.value_from_string row[key]
             index_row["#{entity.name}_#{key}"] = value

@@ -95,7 +95,7 @@ module NoSE
     def PrimaryKey(*names)
       # Unset the old keys and set new ones,
       # we dup because the fields are frozen
-      @entity.fields.values.each do |field|
+      @entity.fields.each_value do |field|
         if field.primary_key?
           field = field.dup
           field.primary_key = false

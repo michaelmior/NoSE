@@ -51,7 +51,7 @@ module NoSE
         @logger.debug do
           "Costs: \n" + pp_s(costs) + "\n" \
           "Search with queries:\n" + \
-            query_weights.keys.each_with_index.map do |query, i|
+            query_weights.each_key.each_with_index.map do |query, i|
               "#{i} #{query.inspect}"
             end.join("\n")
         end
@@ -125,7 +125,7 @@ module NoSE
         results = Parallel.map(query_weights) do |query, weight|
           query_cost planner, query, weight
         end
-        costs = Hash[query_weights.keys.each_with_index.map do |query, q|
+        costs = Hash[query_weights.each_key.each_with_index.map do |query, q|
           [query, results[q].first]
         end]
 
