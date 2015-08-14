@@ -5,9 +5,15 @@ module NoSE
       desc 'benchmark PLAN_FILE', 'test performance of plans in PLAN_FILE'
       option :num_iterations, type: :numeric, default: 100
       option :repeat, type: :numeric, default: 1
+      option :scale_writes, type: :numeric, default: nil
       option :fail_on_empty, type: :boolean, default: true
       def benchmark(plan_file)
         result = load_results plan_file
+
+        # Scale the weights of writes before benchmarking
+        result.workload.scale_writes(options[:scale_writes]) \
+          if options[:scale_writes]
+
         backend = get_backend(options, result)
 
         index_values = index_values result.indexes, backend,
