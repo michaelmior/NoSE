@@ -2,7 +2,7 @@ module NoSE
   describe Schema do
     it 'can model a simple index' do
       schema = NoSE::Schema.new do
-        Workload 'rubis'
+        Model 'rubis'
 
         # rubocop:disable SingleSpaceBeforeFirstArg
         Index 'users_by_id' do
@@ -13,7 +13,7 @@ module NoSE
         # rubocop:enable SingleSpaceBeforeFirstArg
       end
 
-      model = schema.workload.model
+      model = schema.model
       users = model.entities['users']
 
       expect(schema.indexes.values).to match_array [
@@ -23,7 +23,7 @@ module NoSE
 
     it 'can model an index over multiple entities' do
       schema = NoSE::Schema.new do
-        Workload 'rubis'
+        Model 'rubis'
 
         # rubocop:disable SingleSpaceBeforeFirstArg
         Index 'user_region' do
@@ -35,7 +35,7 @@ module NoSE
         # rubocop:enable SingleSpaceBeforeFirstArg
       end
 
-      model = schema.workload.model
+      model = schema.model
       users = model.entities['users']
       regions = model.entities['regions']
 

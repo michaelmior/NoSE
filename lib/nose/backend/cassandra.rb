@@ -5,7 +5,7 @@ module NoSE
   module Backend
     # A backend which communicates with Cassandra via CQL
     class CassandraBackend < BackendBase
-      def initialize(workload, indexes, plans, update_plans, config)
+      def initialize(model, indexes, plans, update_plans, config)
         super
 
         @hosts = config[:hosts]

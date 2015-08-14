@@ -3,7 +3,7 @@ require_relative '../lib/nose.rb'
 # rubocop:disable SingleSpaceBeforeFirstArg
 
 NoSE::Schema.new do
-  Workload 'rubis'
+  Model 'rubis'
 
   SimpleIndex 'categories'
   SimpleIndex 'regions'

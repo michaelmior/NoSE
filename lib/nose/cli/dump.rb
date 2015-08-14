@@ -9,7 +9,7 @@ module NoSE
         plans = Plans::ExecutionPlans.load plan_name
 
         results = OpenStruct.new
-        results.workload = plans.schema.workload
+        results.workload = Workload.new plans.schema.model
         results.indexes = plans.schema.indexes.values
         results.enumerated_indexes = []
         results.plans = plans.groups.values.flatten(1)

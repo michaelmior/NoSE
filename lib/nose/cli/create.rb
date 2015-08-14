@@ -13,7 +13,7 @@ module NoSE
           else
             schema = Schema.load plan_file
             result = OpenStruct.new
-            result.workload = schema.workload
+            result.workload = Workload.new schema.model
             result.indexes = schema.indexes.values
           end
           backend = get_backend(options, result)

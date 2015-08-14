@@ -3,8 +3,8 @@ module NoSE
   module Backend
     # Superclass of all database backends
     class BackendBase
-      def initialize(workload, indexes, plans, update_plans, _config)
-        @workload = workload
+      def initialize(model, indexes, plans, update_plans, _config)
+        @model = model
         @indexes = indexes
         @plans = plans
         @update_plans = update_plans
@@ -41,7 +41,7 @@ module NoSE
           plan = plans.first
         end
 
-        state = Plans::QueryState.new(query, @workload) unless query.nil?
+        state = Plans::QueryState.new(query, @model) unless query.nil?
         first_step = Plans::RootPlanStep.new state
         steps = [first_step] + plan.to_a + [nil]
         exec_steps = steps.each_cons(3).map do |prev_step, step, next_step|
