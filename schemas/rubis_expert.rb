@@ -3,7 +3,7 @@ require_relative '../lib/nose.rb'
 # rubocop:disable SingleSpaceBeforeFirstArg
 
 NoSE::Schema.new do
-  Workload 'rubis'
+  Model 'rubis'
 
   # XXX Not used since we don't implement browse regions
   # Index 'users_by_region' do

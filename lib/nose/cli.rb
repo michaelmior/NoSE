@@ -51,7 +51,7 @@ module NoSE
       # Get a backend instance for a given configuration and dataset
       def get_backend(config, result)
         be_class = get_class 'backend', config
-        be_class.new result.workload, result.indexes,
+        be_class.new result.workload.model, result.indexes,
                      result.plans, result.update_plans, config[:backend]
       end
 

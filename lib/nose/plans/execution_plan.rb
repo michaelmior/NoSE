@@ -35,9 +35,8 @@ module NoSE
       # Set the schema to be used by the execution plans
       def Schema(name)
         @schema = Schema.load name
-        NoSE::DSL.mixin_fields @schema.workload.model.entities,
-                               QueryExecutionPlan
-        NoSE::DSL.mixin_fields @schema.workload.model.entities, ExecutionPlans
+        NoSE::DSL.mixin_fields @schema.model.entities, QueryExecutionPlan
+        NoSE::DSL.mixin_fields @schema.model.entities, ExecutionPlans
       end
 
       # Define a group of query execution plans

@@ -1,7 +1,7 @@
 module NoSE
   # Simple DSL for constructing indexes
   class Schema
-    attr_reader :workload, :indexes
+    attr_reader :model, :indexes
 
     def initialize(&block)
       @indexes = {}
@@ -17,15 +17,15 @@ module NoSE
 
     # rubocop:disable MethodName
 
-    # Set the workload to be used by the schema
-    def Workload(name)
-      @workload = Workload.load name
-      NoSE::DSL.mixin_fields @workload.model.entities, IndexDSL
+    # Set the model to be used by the schema
+    def Model(name)
+      @model = Model.load name
+      NoSE::DSL.mixin_fields @model.entities, IndexDSL
     end
 
     # Add a simple index for an entity
     def SimpleIndex(entity)
-      @indexes[entity] = @workload.model[entity].simple_index
+      @indexes[entity] = @model[entity].simple_index
     end
 
     # Wrap commands for defining index attributes

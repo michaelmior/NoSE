@@ -17,7 +17,7 @@ module NoSE
 
         # Construct an instance of the backend
         result = OpenStruct.new
-        result.workload = plans.schema.workload
+        result.workload = Workload.new schema.model
         result.workload.mix = options[:mix].to_sym \
           unless options[:mix] == 'default' && result.workload.mix != :default
         result.indexes = plans.schema.indexes.values
@@ -35,7 +35,7 @@ module NoSE
 
           group_table = []
           group_total = 0
-          group_weight = plans.weights[group][plans.schema.workload.mix]
+          group_weight = plans.weights[group][result.workload.mix]
           next unless group_weight
 
           group_plans.each do |plan|
