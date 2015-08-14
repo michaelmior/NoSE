@@ -10,6 +10,9 @@ module NoSE
         @mix = :default
 
         instance_eval(&block) if block_given?
+
+        # Reset the mix to force weight assignment
+        self.mix = @mix
       end
 
       # Find the plans with the given name
@@ -19,13 +22,41 @@ module NoSE
         binding.eval contents, filename
       end
 
+      # Populate the cost of each plan
+      def calculate_cost(cost_model)
+        @groups.each_value do |plans|
+          plans.each do |plan|
+            plan.steps.each do |step|
+              cost = cost_model.index_lookup_cost step
+              step.instance_variable_set(:@cost, cost)
+            end
+
+            plan.query_plans.each do |query_plan|
+              query_plan.steps.each do |step|
+                cost = cost_model.index_lookup_cost step
+                step.instance_variable_set(:@cost, cost)
+              end
+            end
+
+            # XXX Only bother with insert statements for now
+            plan.update_steps.each do |step|
+              cost = cost_model.insert_cost step
+              step.instance_variable_set(:@cost, cost)
+            end
+          end
+        end
+      end
+
       # Set the weights on plans when the mix is changed
       def mix=(mix)
         @mix = mix
 
         @groups.each do |group, plans|
           plans.each do |plan|
-            plans.instance_variable_set :@weight, @weights[group]
+            plan.instance_variable_set :@weight, @weights[group][@mix]
+            plan.query_plans.each do |query_plan|
+              query_plan.instance_variable_set :@weight, @weights[group][@mix]
+            end
           end
         end
       end
@@ -128,8 +159,10 @@ module NoSE
 
       # The estimated cost of executing this plan
       def cost
-        # TODO: Calculate cost for these plans
-        nil
+        costs = @steps.map(&:cost) + @update_steps.map(&:cost)
+        costs += @query_plans.map(&:steps).flatten.map(&:cost)
+
+        costs.inject(0, &:+)
       end
 
       # rubocop:disable MethodName
@@ -155,11 +188,11 @@ module NoSE
         index = @schema.indexes[index_key]
 
         step = Plans::IndexLookupPlanStep.new index
-        eq_fields = []
+        eq_fields = Set.new
         range_field = nil
         conditions.each do |field, operator|
           if operator == :==
-            eq_fields.push field
+            eq_fields.add field
           else
             range_field = field
           end
@@ -173,6 +206,21 @@ module NoSE
 
         step.instance_variable_set :@limit, limit unless limit.nil?
 
+        # Cardinality calculations adapted from
+        # IndexLookupPlanStep#update_state
+        state = OpenStruct.new
+        if @steps.empty?
+          state.hash_cardinality = 1
+        else
+          state.hash_cardinality = @steps.last.state.cardinality
+        end
+        cardinality = index.per_hash_count * state.hash_cardinality
+        state.cardinality = Cardinality.filter cardinality,
+                                               eq_fields - index.hash_fields,
+                                               range_field
+
+        step.state = state
+
         @steps << step
       end
 
@@ -183,6 +231,12 @@ module NoSE
         step = Plans::InsertPlanStep.new @index
         fields = @index.all_fields if fields.empty?
         step.instance_variable_set(:@fields, fields)
+
+        # Get cardinality from last step of each support query plan
+        # as in UpdatePlanner#find_plans_for_update
+        cardinalities = @query_plans.map { |p| p.steps.last.state.cardinality }
+        cardinality = cardinalities.inject(1, &:*)
+        step.state = OpenStruct.new cardinality: cardinality
 
         @update_steps << step
       end

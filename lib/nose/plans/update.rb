@@ -2,7 +2,8 @@ module NoSE
   module Plans
     # A superclass for steps which modify indexes
     class UpdatePlanStep < PlanStep
-      attr_reader :index, :state
+      attr_reader :index
+      attr_accessor :state
 
       def initialize(index, type, state = nil)
         super()
