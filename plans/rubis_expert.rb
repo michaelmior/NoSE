@@ -76,7 +76,7 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'RegisterItem', bidding: 0.53 do
+  Group 'RegisterItem', bidding: 0.53, write_heavy: 0.53 * 10 do
     Plan 'InsertItem' do
       Param  items.id, :==
       Param  items.name, :==
@@ -107,7 +107,7 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'RegisterUser', bidding: 1.07 do
+  Group 'RegisterUser', bidding: 1.07, write_heavy: 1.07 * 10 do
     Plan 'AddUser' do
       Support do
         Plan 'GetRegionName' do
@@ -154,7 +154,7 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'StoreBuyNow', bidding: 1.10 do
+  Group 'StoreBuyNow', bidding: 1.10, write_heavy: 1.10 * 10 do
     Plan 'ReduceQuantity' do
       Support do
         Plan 'OldQuantity' do
@@ -198,7 +198,7 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'StoreBid', bidding: 3.74 do
+  Group 'StoreBid', bidding: 3.74, write_heavy: 3.74 * 10 do
     Plan 'AddBid' do
       Support do
         Plan 'GetMaxBid' do
@@ -247,7 +247,7 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'StoreComment', bidding: 0.45 do
+  Group 'StoreComment', bidding: 0.45, write_heavy: 0.45 * 10 do
     Plan 'UpdateRating' do
       Support do
         Plan 'GetRating' do

@@ -48,13 +48,13 @@ NoSE::Workload.new do
       'FROM comments.to_user WHERE to_user.id = ? -- 9'
   end
 
-  Group 'RegisterItem', bidding: 0.53 do
+  Group 'RegisterItem', bidding: 0.53, write_heavy: 0.53 * 10 do
     Q 'INSERT INTO items SET id=?, name=?, description=?, initial_price=?, ' \
       'quantity=?, reserve_price=?, buy_now=?, nb_of_bids=0, max_bid=0, ' \
       'start_date=?, end_date=? AND CONNECT TO category(?), seller(?) -- 10'
   end
 
-  Group 'RegisterUser', bidding: 1.07 do
+  Group 'RegisterUser', bidding: 1.07, write_heavy: 1.07 * 10 do
     Q 'INSERT INTO users SET id=?, firstname=?, lastname=?, nickname=?, ' \
       'password=?, email=?, rating=0, balance=0, creation_date=? ' \
       'AND CONNECT TO region(?) -- 11'
@@ -65,7 +65,7 @@ NoSE::Workload.new do
     Q 'SELECT items.* FROM items WHERE items.id=? -- 13'
   end
 
-  Group 'StoreBuyNow', bidding: 1.10 do
+  Group 'StoreBuyNow', bidding: 1.10, write_heavy: 1.10 * 10 do
     Q 'SELECT items.quantity, items.nb_of_bids, items.end_date FROM items ' \
       'WHERE items.id=? -- 14'
     Q 'UPDATE items SET quantity=?, nb_of_bids=?, end_date=? WHERE items.id=? -- 15'
@@ -80,7 +80,7 @@ NoSE::Workload.new do
       'ORDER BY bids.bid LIMIT 2 -- 19'
   end
 
-  Group 'StoreBid', bidding: 3.74 do
+  Group 'StoreBid', bidding: 3.74, write_heavy: 1.10 * 10 do
     Q 'INSERT INTO bids SET id=?, qty=?, bid=?, date=? ' \
       'AND CONNECT TO item(?), user(?) -- 20'
     Q 'SELECT items.nb_of_bids, items.max_bid FROM items WHERE items.id=? -- 21'
@@ -93,7 +93,7 @@ NoSE::Workload.new do
     Q 'SELECT users.* FROM users WHERE users.id=? -- 25'
   end
 
-  Group 'StoreComment', bidding: 0.45 do
+  Group 'StoreComment', bidding: 0.45, write_heavy: 0.45 * 10 do
     Q 'SELECT users.rating FROM users WHERE users.id=? -- 26'
     Q 'UPDATE users SET rating=? WHERE users.id=? -- 27'
     Q 'INSERT INTO comments SET id=?, rating=?, date=?, comment=? ' \
