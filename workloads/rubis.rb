@@ -27,7 +27,9 @@ NoSE::Workload.new do
     Q 'SELECT bids.* FROM items.bids WHERE items.id = ? -- 6'
   end
 
-  Group 'SearchItemsByCategory', browsing: 27.77 + 8.26, bidding: 15.94 + 6.34, write_heavy: 15.94 + 6.34 do
+  Group 'SearchItemsByCategory', browsing: 27.77 + 8.26,
+                                 bidding: 15.94 + 6.34,
+                                 write_heavy: 15.94 + 6.34 do
     Q 'SELECT items.id, items.name, items.initial_price, items.max_bid, ' \
       'items.nb_of_bids, items.end_date FROM items.category WHERE ' \
       'category.id = ? AND items.end_date >= ? LIMIT 25 -- 7'
@@ -80,7 +82,7 @@ NoSE::Workload.new do
       'ORDER BY bids.bid LIMIT 2 -- 19'
   end
 
-  Group 'StoreBid', bidding: 3.74, write_heavy: 1.10 * 100 do
+  Group 'StoreBid', bidding: 3.74, write_heavy: 3.74 * 100 do
     Q 'INSERT INTO bids SET id=?, qty=?, bid=?, date=? ' \
       'AND CONNECT TO item(?), user(?) -- 20'
     Q 'SELECT items.nb_of_bids, items.max_bid FROM items WHERE items.id=? -- 21'
