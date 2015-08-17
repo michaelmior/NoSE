@@ -797,12 +797,16 @@ module NoSE
     # Determine if this insert modifies an index
     def modifies_index?(index)
       return true if modifies_single_entity_index?(index)
+      return false if index.path.length == 1
 
       # Check if the index crosses any of the connection keys
       keys = @conditions.values.map(&:field)
       keys += keys.map(&:reverse)
 
-      keys.any? { |key| index.path.include?(key) }
+      # We must be connecting on all components of the path
+      # if the index is going to be modified by this insertion
+      key_count = keys.select { |key| index.path.include?(key) }.count
+      key_count == index.path.length - 1
     end
 
     # Specifies that inserts require insertion
