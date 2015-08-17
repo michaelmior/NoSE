@@ -34,19 +34,7 @@ module NoSE
         end.to_h)
 
         costs, trees = query_costs query_weights, indexes
-
-        planner = Plans::UpdatePlanner.new @workload.model, trees, @cost_model
-        update_costs = Hash.new { |h, k| h[k] = Hash.new }
-        update_plans = Hash.new { |h, k| h[k] = [] }
-        @workload.statements.each do |statement|
-          next if statement.is_a? Query
-
-          planner.find_plans_for_update(statement, indexes).each do |plan|
-            weight = @workload.statement_weights[statement]
-            update_costs[statement][plan.index] = plan.update_cost * weight
-            update_plans[statement] << plan
-          end
-        end
+        update_costs, update_plans = update_costs trees, indexes
 
         @logger.debug do
           "Costs: \n" + pp_s(costs) + "\n" \
@@ -116,6 +104,24 @@ module NoSE
         end
 
         problem.result
+      end
+
+      # Produce the cost of updates in the workload
+      def update_costs(trees, indexes)
+        planner = Plans::UpdatePlanner.new @workload.model, trees, @cost_model
+        update_costs = Hash.new { |h, k| h[k] = Hash.new }
+        update_plans = Hash.new { |h, k| h[k] = [] }
+        @workload.statements.each do |statement|
+          next if statement.is_a? Query
+
+          planner.find_plans_for_update(statement, indexes).each do |plan|
+            weight = @workload.statement_weights[statement]
+            update_costs[statement][plan.index] = plan.update_cost * weight
+            update_plans[statement] << plan
+          end
+        end
+
+        [update_costs, update_plans]
       end
 
       # Get the cost of using each index for each query in a workload
