@@ -27,26 +27,6 @@ module NoSE
       binding.eval contents, filename
     end
 
-    # Adjust the percentage of writes in the workload
-    def scale_writes(scale)
-      @statement_weights.each_value do |weights|
-        next if weights.empty?
-
-        # Calculate the divisors for reads and writes
-        read_total = weights.to_a.reduce 0 do |sum, (stmt, weight)|
-          sum + (stmt.is_a?(Query) ? weight : 0)
-        end
-        write_total = weights.values.inject(0, &:+) - read_total
-        read_scale = (read_total / (read_total + write_total)) / (1.0 - scale)
-        write_scale = (write_total / (read_total + write_total)) / scale
-
-        # Scale each of the weights by the calculated factor
-        weights.each_key do |stmt|
-          weights[stmt] /= stmt.is_a?(Query) ? read_scale : write_scale
-        end
-      end
-    end
-
     # Add a new {Entity} or {Statement} to the workload
     def <<(other)
       if other.is_a? Entity

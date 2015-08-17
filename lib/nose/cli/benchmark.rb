@@ -6,14 +6,9 @@ module NoSE
       option :num_iterations, type: :numeric, default: 100
       option :repeat, type: :numeric, default: 1
       option :mix, type: :string, default: nil
-      option :scale_writes, type: :numeric, default: nil
       option :fail_on_empty, type: :boolean, default: true
       def benchmark(plan_file)
         result = load_results plan_file
-
-        # Scale the weights of writes before benchmarking
-        result.workload.scale_writes(options[:scale_writes]) \
-          if options[:scale_writes]
 
         # Set the mix if specified, otherwise use the mix from PLAN_FILE
         result.workload.mix = options[:mix].to_sym unless options[:mix].nil?
