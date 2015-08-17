@@ -12,7 +12,6 @@ module NoSE
       option :enumerated, type: :boolean, default: false, aliases: '-e'
       option :read_only, type: :boolean, default: false
       option :mix, type: :string, default: 'default'
-      option :scale_writes, type: :numeric, default: nil
       option :objective, type: :string, default: 'cost',
                          enum: %w(cost space indexes)
       option :format, type: :string, default: 'txt',
@@ -24,7 +23,6 @@ module NoSE
         workload.mix = options[:mix].to_sym \
           unless options[:mix] == 'default' && workload.mix != :default
         workload.remove_updates if options[:read_only]
-        workload.scale_writes(options[:scale_writes]) if options[:scale_writes]
         cost_model = get_class('cost', options[:cost_model][:name]).new(**options[:cost_model])
 
         # Execute the advisor
