@@ -179,6 +179,8 @@ module NoSE
 
             select
           end
+
+          results
         end
       end
 
