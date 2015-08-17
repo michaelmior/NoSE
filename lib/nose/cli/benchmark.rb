@@ -115,21 +115,7 @@ module NoSE
         table << OpenStruct.new(group: 'TOTAL',
                                 measurements: [total_measurement])
 
-        columns = [
-          'group',
-          { 'measurements.name' => { display_name: 'name' } },
-          { 'measurements.weight' => { display_name: 'weight' } },
-          { 'measurements.mean' => { display_name: 'mean' } }
-        ]
-
-        case options[:format]
-        when 'txt'
-          tp table, *columns
-        when 'csv'
-          printer = CSVPrint.new(table, columns)
-          TablePrint::Config.io.puts printer.csv_print
-          TablePrint::Returnable.new(printer.message)
-        end
+        output_table table, options[:format]
       end
 
       private
