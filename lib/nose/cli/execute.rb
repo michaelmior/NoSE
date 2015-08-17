@@ -17,7 +17,7 @@ module NoSE
 
         # Construct an instance of the backend
         result = OpenStruct.new
-        result.workload = Workload.new schema.model
+        result.workload = Workload.new plans.schema.model
         result.workload.mix = options[:mix].to_sym \
           unless options[:mix] == 'default' && result.workload.mix != :default
         result.indexes = plans.schema.indexes.values
