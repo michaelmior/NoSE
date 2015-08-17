@@ -186,7 +186,7 @@ module NoSE
 
           if statement.is_a?(Connect)
             fields = statement.conditions.each_value.map(&:field)
-          else
+          elsif statement.requires_insert?(index)
             fields = statement.settings.map(&:field)
           end
 
