@@ -11,6 +11,8 @@ module NoSE
       option :group, type: :string, default: nil, aliases: '-g'
       option :plan, type: :string, default: nil, aliases: '-p'
       option :fail_on_empty, type: :boolean, default: true
+      option :format, type: :string, default: 'txt',
+                      enum: %w(txt csv), aliases: '-f'
       def execute(plans_name)
         # Load the execution plans
         plans = Plans::ExecutionPlans.load plans_name
@@ -75,14 +77,29 @@ module NoSE
         table << OpenStruct.new(group: 'TOTAL',
                                 measurements: [total_measurement])
 
-        tp table, *[
-          'group',
-          { 'measurements.name' => { display_name: 'name' } },
-          { 'measurements.mean' => { display_name: 'mean' } }
-        ]
+        output_table table, options[:format]
       end
 
       private
+
+      # Output the table of results in the specified format
+      def output_table(table, format)
+        columns = [
+          'group',
+          { 'measurements.name' => { display_name: 'name' } },
+          { 'measurements.weight' => { display_name: 'weight' } },
+          { 'measurements.mean' => { display_name: 'mean' } }
+        ]
+
+        case format
+        when 'txt'
+          tp table, *columns
+        when 'csv'
+          printer = CSVPrint.new(table, columns)
+          TablePrint::Config.io.puts printer.csv_print
+          TablePrint::Returnable.new(printer.message)
+        end
+      end
 
       # Get the average execution time for a single query plan
       def bench_query(backend, indexes, plan, index_values, iterations, repeat,
