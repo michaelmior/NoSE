@@ -9,12 +9,16 @@ module NoSE
         ],
         Search::Search => [
           :query_costs,
+          :update_costs,
           :search_overlap,
           :solve_gurobi
         ],
         Search::Problem => [
+          :setup_model,
+          :add_variables,
           :add_constraints,
-          :define_objective
+          :define_objective,
+          :solve
         ]
       }
       @@old_methods = Hash.new { |h, k| h[k] = {} }
