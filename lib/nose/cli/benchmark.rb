@@ -37,6 +37,7 @@ module NoSE
       option :num_iterations, type: :numeric, default: 100
       option :repeat, type: :numeric, default: 1
       option :mix, type: :string, default: nil
+      option :group, type: :string, default: nil, aliases: '-g'
       option :fail_on_empty, type: :boolean, default: true
       option :format, type: :string, default: 'txt',
                       enum: %w(txt csv), aliases: '-f'
@@ -63,6 +64,9 @@ module NoSE
           plan = result.plans.find do |possible_plan|
             possible_plan.query == query
           end
+
+          next unless options[:group].nil? || plan.group == options[:group]
+
           indexes = plan.select do |step|
             step.is_a? Plans::IndexLookupPlanStep
           end.map(&:index)
@@ -85,6 +89,8 @@ module NoSE
           end
 
           plans.each do |plan|
+            next unless options[:group].nil? || plan.group == options[:group]
+
             # Get all indexes used by support queries
             indexes = plan.query_plans.map(&:indexes).flatten(1) << plan.index
 
