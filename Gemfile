@@ -7,6 +7,7 @@ gem 'logging'
 gem 'parallel'
 gem 'parslet'
 gem 'pickup'
+gem 'rbtree'  # for more efficient SortedSet implementation
 gem 'rake', require: false
 gem 'representable'
 gem 'ruby-graphviz'
