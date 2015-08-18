@@ -20,7 +20,6 @@ module NoSE
         results.indexes = plans.schema.indexes.values
         results.enumerated_indexes = []
         results.plans = plans.groups.values.flatten(1)
-        results.update_plans = []
         results.cost_model = cost_model
         results.weights = plans.weights
         results.total_size = results.indexes.map(&:size).inject(0, &:+)

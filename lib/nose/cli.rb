@@ -128,6 +128,7 @@ module NoSE
         weights = result.weights if weights.empty?
         output_plans_txt result.plans, file, 1, weights
 
+        result.update_plans = [] if result.update_plans.nil?
         unless result.update_plans.empty?
           header = "Update plans\n" + '━' * 50
           file.puts Formatador.parse("[blue]#{header}[/]")
