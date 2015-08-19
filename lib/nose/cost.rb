@@ -13,7 +13,7 @@ module NoSE
       def filter_cost(_step)
         # Assume this has no cost and the cost is captured in the fact that we
         # have to retrieve more data earlier. All this does is skip records.
-        1
+        0
       end
 
       # The cost of limiting a result set
