@@ -17,7 +17,7 @@ class CSVPrint < TablePrint::Printer
     # turn everything into a string for output
     CSV.generate do |csv|
       csv << group.columns.map(&:name)
-      group.children.map(&:children).flatten(1).each do |subgroup|
+      group.children.flat_map(&:children).each do |subgroup|
         top_row = subgroup.children.first.parent.parent.cells
         csv << group.columns.map { |c| top_row[c.name] }
         subgroup.children.each do |row|
@@ -92,7 +92,7 @@ module NoSE
             next unless options[:group].nil? || plan.group == options[:group]
 
             # Get all indexes used by support queries
-            indexes = plan.query_plans.map(&:indexes).flatten(1) << plan.index
+            indexes = plan.query_plans.flat_map(&:indexes) << plan.index
 
             measurement = bench_update backend, indexes, plan, index_values,
                                        options[:num_iterations],
