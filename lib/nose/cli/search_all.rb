@@ -55,10 +55,10 @@ module NoSE
           size = size_queue.pop
 
           # Continue dividing the range of examined sizes
-          next_size = sizes.sort.select { |n| n > size }.first
+          next_size = sizes.sort.detect { |n| n > size }
           next_size = (next_size - size) / 2.0 + size
 
-          prev_size = sizes.sort.reverse_each.select { |n| n < size }.first
+          prev_size = sizes.sort.reverse_each.detect { |n| n < size }
           prev_size = (size - prev_size) / 2.0 + prev_size
 
           begin
