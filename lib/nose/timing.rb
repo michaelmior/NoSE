@@ -5,7 +5,8 @@ module NoSE
     def self.enable
       traced = {
         IndexEnumerator => [
-          :indexes_for_workload
+          :indexes_for_workload,
+          :support_indexes
         ],
         Search::Search => [
           :query_costs,
