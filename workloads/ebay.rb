@@ -4,30 +4,7 @@
 # rubocop:disable all
 
 NoSE::Workload.new do
-  # Define entities along with the size and cardinality of their fields
-  # as well as an estimated number of each entity
-
-  Entity 'Users' do
-    ID     'UserID'
-    String 'Name', 50
-    String 'Email', 50
-  end
-
-  Entity 'Items' do
-    ID     'ItemID'
-    String 'Title', 50
-    String 'Desc', 200
-  end
-
-  Entity 'Likes' do
-    ID         'LikeID'
-    Date       'LikedAt'
-  end
-
-  ManyToOne 'User',    'Likes',
-            'Likes' => 'Users'
-  ManyToOne 'Item',    'Likes',
-            'Likes' => 'Items'
+  Model 'ebay'
 
   # Define queries and their relative weights
   Q 'SELECT Users.* FROM Users WHERE Users.UserID = ?'
