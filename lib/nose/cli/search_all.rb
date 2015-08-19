@@ -58,7 +58,7 @@ module NoSE
           next_size = sizes.sort.select { |n| n > size }.first
           next_size = (next_size - size) / 2.0 + size
 
-          prev_size = sizes.sort.reverse.select { |n| n < size }.first
+          prev_size = sizes.sort.reverse_each.select { |n| n < size }.first
           prev_size = (size - prev_size) / 2.0 + prev_size
 
           begin

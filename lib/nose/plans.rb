@@ -59,7 +59,7 @@ module NoSE
 
       # Find the closest index to this step
       def parent_index
-        step = parent_steps.to_a.reverse.find do |parent_step|
+        step = parent_steps.to_a.reverse_each.find do |parent_step|
           parent_step.is_a? IndexLookupPlanStep
         end
         step.index unless step.nil?

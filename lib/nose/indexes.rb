@@ -188,7 +188,7 @@ module NoSE
       end
 
       # Ensure we include IDs of the final entity
-      order_fields += @longest_entity_path.reverse.flat_map(&:id_fields)
+      order_fields += @longest_entity_path.reverse_each.flat_map(&:id_fields)
 
       order_fields.uniq
     end
