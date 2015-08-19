@@ -192,8 +192,8 @@ module NoSE
       # Filter an options hash for those only relevant to a given command
       def filter_command_options(opts, command)
         Thor::CoreExt::HashWithIndifferentAccess.new(opts.select do |key|
-          self.class.commands[command].options.keys.map(&:to_sym).include? \
-            key.to_sym
+          self.class.commands[command].options \
+            .each_key.map(&:to_sym).include? key.to_sym
         end)
       end
     end

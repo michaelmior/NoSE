@@ -530,7 +530,7 @@ module NoSE
 
     # All fields referenced anywhere in the query
     def all_fields
-      (@select + @conditions.values.map(&:field) + @order).to_set
+      (@select + @conditions.each_value.map(&:field) + @order).to_set
     end
 
     private
@@ -673,7 +673,7 @@ module NoSE
       return nil if required_fields.empty?
 
       # Reconstruct a valid where clause with the new path
-      where = 'WHERE ' + @conditions.values.map do |condition|
+      where = 'WHERE ' + @conditions.each_value.map do |condition|
         parent = query_keys.find_field_parent condition.field
         value = condition.value.nil? ? '?' : condition.value
 
@@ -770,7 +770,7 @@ module NoSE
     # Note that we don't include the settings here because we
     # care about the previously existing values in the database
     def given_fields
-      @conditions.values.map(&:field)
+      @conditions.each_value.map(&:field)
     end
   end
 
@@ -800,7 +800,7 @@ module NoSE
       return false if index.path.length == 1
 
       # Check if the index crosses any of the connection keys
-      keys = @conditions.values.map(&:field)
+      keys = @conditions.each_value.map(&:field)
       keys += keys.map(&:reverse)
 
       # We must be connecting on all components of the path
@@ -842,7 +842,7 @@ module NoSE
       # Group the connection keys into one of the two paths
       keys1 = []
       keys2 = []
-      @conditions.values.map(&:field).each do |key|
+      @conditions.each_value.map(&:field).each do |key|
         key = key.entity.id_fields.first
 
         keys1 << key if path1.include?(key)
@@ -862,7 +862,7 @@ module NoSE
 
     # The settings fields are provided with the insertion
     def given_fields
-      @settings.map(&:field) + @conditions.values.map do |condition|
+      @settings.map(&:field) + @conditions.each_value.map do |condition|
         condition.field.entity.id_fields.first
       end
     end
@@ -926,7 +926,7 @@ module NoSE
 
     # The condition fields are provided with the deletion
     def given_fields
-      @conditions.values.map(&:field)
+      @conditions.each_value.map(&:field)
     end
   end
 

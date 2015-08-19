@@ -16,7 +16,7 @@ module NoSE
       expect(network.entities).to all(satisfy do |entity|
         connected = !entity.foreign_keys.empty?
         connected ||= network.entities.any? do |other|
-          other.foreign_keys.values.map(&:entity).include? entity
+          other.foreign_keys.each_value.map(&:entity).include? entity
         end
 
         connected

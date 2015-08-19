@@ -51,10 +51,10 @@ module NoSE
     # Output a PNG representation of entities in the model
     def output(format, filename, include_fields = false)
       graph = GraphViz.new :G, type: :digraph
-      nodes = Hash[@entities.values.map do |entity|
+      nodes = Hash[@entities.each_value.map do |entity|
         label = "#{entity.name}\n"
         if include_fields
-          label += entity.fields.values.map do |field|
+          label += entity.fields.each_value.map do |field|
             type = field.class.name.sub(/^NoSE::(.*?)(Field)?$/, '\1')
             "#{field.name}: #{type}"
           end.join("\n")
