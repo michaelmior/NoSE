@@ -71,6 +71,7 @@ module NoSE
                                     options[:num_iterations], options[:repeat],
                                     weight: weight
 
+          measurement.estimate = plan.cost
           group_totals[plan.group] += measurement.mean
           group_tables[plan.group] << measurement
         end
@@ -96,6 +97,7 @@ module NoSE
                                        options[:num_iterations],
                                        options[:repeat], weight: weight
 
+            measurement.estimate = plan.cost
             group_totals[plan.group] += measurement.mean
             group_tables[plan.group] << measurement
           end

@@ -88,7 +88,8 @@ module NoSE
           'group',
           { 'measurements.name' => { display_name: 'name' } },
           { 'measurements.weight' => { display_name: 'weight' } },
-          { 'measurements.mean' => { display_name: 'mean' } }
+          { 'measurements.mean' => { display_name: 'mean' } },
+          { 'measurements.estimate' => { display_name: 'cost' } }
         ]
 
         case format

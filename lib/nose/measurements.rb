@@ -6,6 +6,7 @@ module NoSE
   module Measurements
     # A measurement of a single statement execution time
     class Measurement
+      attr_accessor :estimate
       attr_reader :plan, :name, :weight
 
       # Allow the values array to store numbers and compute stats
@@ -15,9 +16,10 @@ module NoSE
       include Enumerable
       include DescriptiveStatistics
 
-      def initialize(plan, name = nil, weight: 1.0)
+      def initialize(plan, name = nil, estimate = nil, weight: 1.0)
         @plan = plan
         @name = name || (plan && plan.name)
+        @estimate = estimate
         @weight = weight
         @values = []
       end
