@@ -110,13 +110,13 @@ module NoSE
 
     # Get all possible index fields for entities on a path
     def index_choices(path, eq)
-      path.entities.map do |entity|
+      path.entities.flat_map do |entity|
         # Get the fields for the entity and add in the IDs
         entity_fields = eq[entity] + [path.first]
-        1.upto(entity_fields.count).map do |n|
+        1.upto(entity_fields.count).flat_map do |n|
           entity_fields.permutation(n).to_a
         end
-      end.flatten(2)
+      end
     end
 
     # Get fields which should be included in an index for the given path
@@ -152,7 +152,7 @@ module NoSE
 
         order_choices.each do |order|
           # Append the primary key of the last entity in the path if needed
-          order += path.entities.map(&:id_fields).flatten(1) - (index + order)
+          order += path.entities.flat_map(&:id_fields) - (index + order)
 
           # Skip indices with only a hash component
           index_extra = extra - (index + order)

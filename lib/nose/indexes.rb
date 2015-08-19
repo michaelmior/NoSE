@@ -124,7 +124,7 @@ module NoSE
 
       # We must have the primary keys of the all entities on the path
       fail InvalidIndexException, 'missing path entity keys' \
-        unless @path.entities.map(&:id_fields).flatten.all? \
+        unless @path.entities.flat_map(&:id_fields).all? \
           &(@hash_fields + @order_fields).method(:include?)
     end
 
@@ -188,7 +188,7 @@ module NoSE
       end
 
       # Ensure we include IDs of the final entity
-      order_fields += @longest_entity_path.reverse.map(&:id_fields).flatten
+      order_fields += @longest_entity_path.reverse.flat_map(&:id_fields)
 
       order_fields.uniq
     end
