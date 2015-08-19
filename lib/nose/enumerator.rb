@@ -59,15 +59,18 @@ module NoSE
 
     # Produce the indexes necessary for support queries for these indexes
     def support_indexes(indexes)
-      indexes.map do |index|
-        @workload.updates.map do |update|
-          queries = update.support_queries(index)
-          queries.map do |query|
-            next [] if query.nil?
-            indexes_for_query(query).to_a
-          end
-        end.flatten(1)
-      end.flatten
+      # Collect all possible support queries
+      queries = indexes.flat_map do |index|
+        @workload.updates.flat_map do |update|
+          update.support_queries(index)
+        end
+      end
+
+      # Enumerate indexes for each support query
+      queries.uniq!(&:text)
+      queries.flat_map do |query|
+        indexes_for_query(query).to_a
+      end
     end
 
     # Combine the data of indices based on matching hash fields
