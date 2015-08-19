@@ -82,11 +82,13 @@ module NoSE
         result.workload.updates.each do |update|
           weight = result.workload.statement_weights[update]
           next unless weight
-          @logger.debug { "Executing #{update.text}" }
 
-          plans = result.update_plans.select do |possible_plan|
+          plans = (result.update_plans || []).select do |possible_plan|
             possible_plan.statement == update
           end
+          next if plans.empty?
+
+          @logger.debug { "Executing #{update.text}" }
 
           plans.each do |plan|
             next unless options[:group].nil? || plan.group == options[:group]
