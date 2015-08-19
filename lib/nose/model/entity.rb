@@ -19,7 +19,7 @@ module NoSE
 
     # :nocov:
     def to_color
-      "[light_blue]#{@name}[/] [#{fields.keys.map(&:to_color).join ', '}]"
+      "[light_blue]#{@name}[/] [#{fields.each_key.map(&:to_color).join ', '}]"
     end
     # :nocov:
 
