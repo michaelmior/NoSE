@@ -55,15 +55,11 @@ module NoSE
 
         group_tables = Hash.new { |h, k| h[k] = [] }
         group_totals = Hash.new { |h, k| h[k] = 0 }
-        result.workload.queries.each do |query|
+        result.plans.each do |plan|
+          query = plan.query
           weight = result.workload.statement_weights[query]
           next if query.is_a?(SupportQuery) || !weight
           @logger.debug { "Executing #{query.text}" }
-
-          # Get the plan and indexes used for this query
-          plan = result.plans.find do |possible_plan|
-            possible_plan.query == query
-          end
 
           next unless options[:group].nil? || plan.group == options[:group]
 
