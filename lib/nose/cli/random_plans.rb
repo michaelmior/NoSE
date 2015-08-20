@@ -5,6 +5,7 @@ module NoSE
       desc 'random_plans WORKLOAD TAG',
            'output random plans for the statement with TAG in WORKLOAD'
       option :count, type: :numeric, default: 5, aliases: '-n'
+      option :all, type: :boolean, default: false, aliases: '-a'
       option :mix, type: :string, default: 'default'
       option :format, type: :string, default: 'txt',
                       enum: %w(txt json yml), aliases: '-f'
@@ -24,7 +25,7 @@ module NoSE
         cost_model = get_class('cost', options[:cost_model][:name]).new(**options[:cost_model])
         planner = Plans::QueryPlanner.new workload, indexes, cost_model
         plans = planner.find_plans_for_query(statement).to_a
-        plans = plans.sample options[:count]
+        plans = plans.sample options[:count] unless options[:all]
 
         results = OpenStruct.new
         results.workload = workload
