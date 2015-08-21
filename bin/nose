@@ -8,4 +8,18 @@ $LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
 require 'nose'
 require 'nose/cli'
 
+# Start profiling if asked
+unless ENV['NOSE_PROFILE'].nil?
+  require 'ruby-prof'
+  Parallel.instance_variable_set(:@processor_count, 0)
+  RubyProf.start
+end
+
 NoSE::CLI::NoSECLI.start ARGV
+
+# Stop profiling and output results
+unless ENV['NOSE_PROFILE'].nil?
+  result = RubyProf.stop
+  printer = RubyProf::CallTreePrinter.new(result)
+  printer.print(File.open(ENV['NOSE_PROFILE'], 'w'))
+end
