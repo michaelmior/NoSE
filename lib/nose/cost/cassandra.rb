@@ -10,7 +10,7 @@ module NoSE
         rows = step.state.cardinality
         parts = step.state.hash_cardinality
 
-        parts * @options[:partition_cost] +rows * @options[:row_cost]
+        @options[:index_cost] + parts * @options[:partition_cost] +rows * @options[:row_cost]
       end
 
       # Cost estimate as number of entities deleted
