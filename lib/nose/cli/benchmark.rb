@@ -43,6 +43,7 @@ module NoSE
       option :format, type: :string, default: 'txt',
                       enum: %w(txt csv), aliases: '-f'
       def benchmark(plan_file)
+        label = File.basename plan_file, '.*'
         result = load_results plan_file
 
         # Set the mix if specified, otherwise use the mix from PLAN_FILE
@@ -113,7 +114,8 @@ module NoSE
           total_measurement << group_table.map(&:weighted_mean) \
                                           .inject(0, &:+)
           group_table << total_measurement if options[:totals]
-          table << OpenStruct.new(group: group, measurements: group_table)
+          table << OpenStruct.new(label: label, group: group,
+                                  measurements: group_table)
         end
 
         if options[:totals]
@@ -121,7 +123,7 @@ module NoSE
           total_measurement << table.map do |group|
             group.measurements.find { |m| m.name == 'TOTAL' }.mean
           end.inject(0, &:+)
-          table << OpenStruct.new(group: 'TOTAL',
+          table << OpenStruct.new(label: label, group: 'TOTAL',
                                   measurements: [total_measurement])
         end
 

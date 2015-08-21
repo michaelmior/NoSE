@@ -70,7 +70,8 @@ module NoSE
             group_table << total_measurement
           end
 
-          table << OpenStruct.new(group: group, measurements: group_table)
+          table << OpenStruct.new(label: plans_name, group: group,
+                                  measurements: group_table)
           group_total *= group_weight
           total += group_total
         end
@@ -80,7 +81,7 @@ module NoSE
           total_measurement << table.map do |group|
             group.measurements.find { |m| m.name == 'TOTAL' }.mean
           end.inject(0, &:+)
-          table << OpenStruct.new(group: 'TOTAL',
+          table << OpenStruct.new(label: plans_name, group: 'TOTAL',
                                   measurements: [total_measurement])
         end
 
@@ -92,7 +93,7 @@ module NoSE
       # Output the table of results in the specified format
       def output_table(table, format)
         columns = [
-          'group',
+          'label', 'group',
           { 'measurements.name' => { display_name: 'name' } },
           { 'measurements.weight' => { display_name: 'weight' } },
           { 'measurements.mean' => { display_name: 'mean' } },
