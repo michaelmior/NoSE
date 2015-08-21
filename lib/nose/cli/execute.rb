@@ -11,6 +11,7 @@ module NoSE
       option :group, type: :string, default: nil, aliases: '-g'
       option :plan, type: :string, default: nil, aliases: '-p'
       option :fail_on_empty, type: :boolean, default: true
+      option :totals, type: :boolean, default: false, aliases: '-t'
       option :format, type: :string, default: 'txt',
                       enum: %w(txt csv), aliases: '-f'
       def execute(plans_name)
@@ -62,20 +63,26 @@ module NoSE
             group_table << measurement
           end
 
-          total_measurement = Measurements::Measurement.new nil, 'TOTAL'
-          total_measurement << group_table.map(&:weighted_mean).inject(0, &:+)
-          group_table << total_measurement
+          if options[:totals]
+            total_measurement = Measurements::Measurement.new nil, 'TOTAL'
+            total_measurement << group_table.map(&:weighted_mean) \
+                                            .inject(0, &:+)
+            group_table << total_measurement
+          end
+
           table << OpenStruct.new(group: group, measurements: group_table)
           group_total *= group_weight
           total += group_total
         end
 
-        total_measurement = Measurements::Measurement.new nil, 'TOTAL'
-        total_measurement << table.map do |group|
-          group.measurements.find { |m| m.name == 'TOTAL' }.mean
-        end.inject(0, &:+)
-        table << OpenStruct.new(group: 'TOTAL',
-                                measurements: [total_measurement])
+        if options[:totals]
+          total_measurement = Measurements::Measurement.new nil, 'TOTAL'
+          total_measurement << table.map do |group|
+            group.measurements.find { |m| m.name == 'TOTAL' }.mean
+          end.inject(0, &:+)
+          table << OpenStruct.new(group: 'TOTAL',
+                                  measurements: [total_measurement])
+        end
 
         output_table table, options[:format]
       end
