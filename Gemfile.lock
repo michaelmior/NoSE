@@ -41,6 +41,10 @@ GEM
     ffi (1.9.10)
     ffi (1.9.10-java)
     formatador (0.2.5)
+    gruff (0.6.0)
+      rmagick (>= 2.13.4)
+    gruff (0.6.0-java)
+      rmagick4j (>= 0.3.9)
     i18n (0.7.0)
     interception (0.5)
     ione (1.2.0)
@@ -83,6 +87,8 @@ GEM
       multi_json
       nokogiri
       uber (~> 0.0.7)
+    rmagick (2.15.4)
+    rmagick4j (0.3.9-java)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
       rspec-expectations (~> 3.1.0)
@@ -127,6 +133,7 @@ DEPENDENCIES
   fakefs
   faker
   formatador
+  gruff
   gurobi!
   logging
   mysql2
