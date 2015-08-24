@@ -202,6 +202,7 @@ module NoSE
 end
 
 # Require the various subcommands
+require_relative 'cli/analyze'
 require_relative 'cli/benchmark'
 require_relative 'cli/create'
 require_relative 'cli/dump'
