@@ -4,6 +4,12 @@ module NoSE
     class NoSECLI < Thor
       desc 'recost PLAN_FILE COST_MODEL',
            'recost the workload in PLAN_FILE with COST_MODEL'
+      long_desc <<-LONGDESC
+        `nose recost` takes a given plan file as input and then produces a new
+        JSON file with new values for the expected query cost from the named
+        cost model. This only works for cost models which don't require any
+        parameters such as `Cost::RequestCountCost`.
+      LONGDESC
       def recost(plan_file, cost_model)
         result = load_results plan_file
 

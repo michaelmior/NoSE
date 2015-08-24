@@ -2,10 +2,22 @@ module NoSE
   module CLI
     # Add a command to load index data into a backend from a configured loader
     class NoSECLI < Thor
-      desc 'load PLAN_FILE_OR_SCHEMA', 'create indexes from the given PLAN_FILE_OR_SCHEMA'
-      option :progress, type: :boolean, default: true, aliases: '-p'
-      option :limit, type: :numeric, default: nil, aliases: '-l'
-      option :skip_existing, type: :boolean, default: true, aliases: '-s'
+      desc 'load PLAN_FILE_OR_SCHEMA',
+           'create indexes from the given PLAN_FILE_OR_SCHEMA'
+      long_desc <<-LONGDESC
+        `nose load` will load a schema either from generated plan file from
+        `nose search` or a named schema in the `schemas` directory. It will
+        then populate the backend indexes as defined by the schema using data
+        from the configured loader. It assumes that the indexes have already
+        been created by `nose create`.
+      LONGDESC
+      option :progress, type: :boolean, default: true, aliases: '-p',
+                        banner: 'whether to display an indication of progress'
+      option :limit, type: :numeric, default: nil, aliases: '-l',
+                     banner: 'limit the number of entries loaded ' \
+                             '(useful for testing)'
+      option :skip_nonempty, type: :boolean, default: true, aliases: '-s',
+                             banner: 'ignore indexes which are not empty'
       def load(*plan_files)
         plan_files.each do |plan_file|
           if File.exist? plan_file

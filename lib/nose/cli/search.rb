@@ -7,16 +7,27 @@ module NoSE
     # Add a command to run the advisor for a given workload
     class NoSECLI < Thor
       desc 'search NAME', 'run the workload NAME'
+      long_desc <<-LONGDESC
+        `nose search` is the primary command to run the NoSE advisor. It will
+        load the given workload, enumerate indexes for each statement, and
+        construct and solve an ILP to produce statement execution plans.
+      LONGDESC
       option :max_space, type: :numeric, default: Float::INFINITY,
                          aliases: '-s'
-      option :enumerated, type: :boolean, default: false, aliases: '-e'
-      option :read_only, type: :boolean, default: false
-      option :mix, type: :string, default: 'default'
+      option :enumerated, type: :boolean, default: false, aliases: '-e',
+                          banner: 'whether enumerated indexes should be output'
+      option :read_only, type: :boolean, default: false,
+                         banner: 'whether to ignore update statements'
+      option :mix, type: :string, default: 'default',
+                   banner: 'the name of the workload mix for weighting queries'
       option :objective, type: :string, default: 'cost',
-                         enum: %w(cost space indexes)
+                         enum: %w(cost space indexes),
+                         banner: 'the objective function to use in the ILP'
       option :format, type: :string, default: 'txt',
-                      enum: %w(txt json yml), aliases: '-f'
-      option :output, type: :string, default: nil, aliases: '-o'
+                      enum: %w(txt json yml), aliases: '-f',
+                      banner: 'the format of the produced plans'
+      option :output, type: :string, default: nil, aliases: '-o',
+                      banner: 'a file where produced plans should be stored'
       def search(name)
         # Get the workload and cost model
         workload = Workload.load name
