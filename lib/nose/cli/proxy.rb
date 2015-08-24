@@ -3,6 +3,12 @@ module NoSE
     # Add a command to run a proxy server capable of executing queries
     class NoSECLI < Thor
       desc 'proxy PLAN_FILE', 'start a proxy with the given PLAN_FILE'
+      long_desc <<-LONGDESC
+        `nose proxy` loads the schema and execution plans from the given file.
+        It then starts the configured proxy server which is able to execute
+        the given set of plans. Available proxy servers can be seen in the
+        `lib/nose/proxy` subdirectory.
+      LONGDESC
       def proxy(plan_file)
         result = load_results plan_file
         backend = get_backend(options, result)

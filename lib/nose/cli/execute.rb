@@ -5,15 +5,31 @@ module NoSE
     # Run performance tests on plans for a particular schema
     class NoSECLI < Thor
       desc 'execute PLANS', 'test performance of the named PLANS'
-      option :num_iterations, type: :numeric, default: 100
-      option :repeat, type: :numeric, default: 1
-      option :mix, type: :string, default: 'default'
-      option :group, type: :string, default: nil, aliases: '-g'
-      option :plan, type: :string, default: nil, aliases: '-p'
-      option :fail_on_empty, type: :boolean, default: true
-      option :totals, type: :boolean, default: false, aliases: '-t'
+      long_desc <<-LONGDESC
+        `nose execute` is similar to `nose benchmark`. It will take manually
+        defined plans with the given name stored in the `plans` subdirectory,
+        execute each statement, and output a summary of the execution times.
+        Before runnng execute, `nose create` and `nose load` must be used to
+        prepare the target database.
+      LONGDESC
+      option :num_iterations, type: :numeric, default: 100,
+                              banner: 'the number of times to execute each ' \
+                                      'statement'
+      option :repeat, type: :numeric, default: 1,
+                      banner: 'how many times to repeat the benchmark'
+      option :mix, type: :string, default: nil,
+                   banner: 'the workload mix to use for weighting execution ' \
+                           'time'
+      option :group, type: :string, default: nil, aliases: '-g',
+                     banner: 'restrict the benchmark to statements in the ' \
+                             'given group'
+      option :fail_on_empty, type: :boolean, default: true,
+                             banner: 'abort if a column family is empty'
+      option :totals, type: :boolean, default: false, aliases: '-t',
+                      banner: 'whether to include group totals in the output'
       option :format, type: :string, default: 'txt',
-                      enum: %w(txt csv), aliases: '-f'
+                      enum: %w(txt csv), aliases: '-f',
+                      banner: 'the format of the output data'
       def execute(plans_name)
         # Load the execution plans
         plans = Plans::ExecutionPlans.load plans_name

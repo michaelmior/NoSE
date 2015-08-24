@@ -3,9 +3,15 @@ module NoSE
     # Add a command to dump a workload and its corresponding schema
     class NoSECLI < Thor
       desc 'dump PLANS', 'output the plans in PLANS'
-      option :mix, type: :string, default: 'default'
+      long_desc <<-LONGDESC
+        `nose dump` will output results in the same format as `nose search`,
+        but for manually defined execution plans in the `plans` subdirectory.
+      LONGDESC
+      option :mix, type: :string, default: 'default',
+                   banner: 'the name of the workload mix for weighting queries'
       option :format, type: :string, default: 'txt',
-                      enum: %w(txt json yml), aliases: '-f'
+                      enum: %w(txt json yml), aliases: '-f',
+                      banner: 'the format of the produced plans'
       def dump(plan_name)
         plans = Plans::ExecutionPlans.load plan_name
         plans.mix = options[:mix].to_sym \
