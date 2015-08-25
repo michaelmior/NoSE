@@ -6,7 +6,8 @@ module NoSE
       traced = {
         IndexEnumerator => [
           :indexes_for_workload,
-          :support_indexes
+          :support_indexes,
+          :combine_indexes
         ],
         Search::Search => [
           :query_costs,
