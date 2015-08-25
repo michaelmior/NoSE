@@ -155,7 +155,7 @@ module NoSE
     # Generate a new random update of entities in the model
     # @return Update
     def random_update
-      path = random_path(2)
+      path = random_path(1)
 
       # Don't update key fields
       update_fields = path.entities.first.fields.values
@@ -166,7 +166,7 @@ module NoSE
       end.join ', '
       from = [path.first.parent.name] + path.entries[1..-1].map(&:name)
       update = "UPDATE #{from.first} FROM #{from.join '.'} SET #{settings} " +
-               random_where_clause(path)
+               random_where_clause(path, 1)
 
       Update.new update, @model
     end
@@ -174,11 +174,11 @@ module NoSE
     # Generate a new random deletion of entities in the model
     # @return Delete
     def random_delete
-      path = random_path(2)
+      path = random_path(1)
 
       from = [path.first.parent.name] + path.entries[1..-1].map(&:name)
       delete = "DELETE #{from.first} FROM #{from.join '.'} " +
-               random_where_clause(path)
+               random_where_clause(path, 1)
 
       Delete.new delete, @model
     end
