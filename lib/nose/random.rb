@@ -181,7 +181,7 @@ module NoSE
     # Generate a new random query from entities in the model
     # @return Query
     def random_query
-      path = random_path(4)
+      path = random_path(3)
       select = path.entities.first.fields.values.sample 2
 
       select_fields = select.map do |field|
@@ -205,7 +205,7 @@ module NoSE
     private
 
     # Produce a random where clause using fields along a given path
-    def random_where_clause(path, count = 3)
+    def random_where_clause(path, count = 2)
       conditions = 1.upto(count).map do
         field = path.entities.sample.fields.values.sample
         next nil if field.name == '**'
