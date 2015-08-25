@@ -156,7 +156,12 @@ module NoSE
     # @return Update
     def random_update
       path = random_path(2)
-      settings = path.entities.first.fields.values.sample(2).map do |field|
+
+      # Don't update key fields
+      update_fields = path.entities.first.fields.values
+      update_fields.reject! { |field| field.is_a? Fields::IDField }
+
+      settings = update_fields.sample(2).map do |field|
         "#{field.name}=?"
       end.join ', '
       from = [path.first.parent.name] + path.entries[1..-1].map(&:name)
