@@ -17,35 +17,8 @@ module NoSE
                      banner: 'whether to include a line for totals in the '\
                              'graph'
       def analyze(output_file, *csv_files)
-        headers = nil
-        data = csv_files.map do |file|
-          lines = CSV.read(file)
-          headers = lines.first if headers.nil?
-
-          grouped_lines = lines[1..-1].map do |row|
-            Hash[headers.zip row]
-          end.group_by { |row| row['group'] }
-
-          rows = grouped_lines.map do |group, rows|
-            mean = rows.inject(0) { |sum, row| sum + row['mean'].to_f }
-            {
-              'label' => rows.first['label'],
-              'group' => group,
-              'mean' => mean * rows.first['weight'].to_f
-            }
-          end
-
-          # Add an additional row for the total
-          if options[:total]
-            rows << {
-              'label' => rows.first['label'],
-              'group' => 'TOTAL',
-              'mean' => rows.inject(0) { |sum, row| sum + row['mean'].to_f }
-            }
-          end
-
-          rows
-        end
+        # Load data from the files
+        data = load_data csv_files, options[:total]
 
         # Set graph properties
         g = Gruff::Bar.new '2000x800'
@@ -68,6 +41,41 @@ module NoSE
         end]
 
         g.write output_file
+      end
+
+      private
+
+      # Load the data from the given list of CSV files
+      def load_data(csv_files, total = false)
+        headers = nil
+        csv_files.map do |file|
+          lines = CSV.read(file)
+          headers = lines.first if headers.nil?
+
+          grouped_lines = lines[1..-1].map do |row|
+            Hash[headers.zip row]
+          end.group_by { |row| row['group'] }
+
+          rows = grouped_lines.map do |group, rows|
+            mean = rows.inject(0) { |sum, row| sum + row['mean'].to_f }
+            {
+              'label' => rows.first['label'],
+              'group' => group,
+              'mean' => mean * rows.first['weight'].to_f
+            }
+          end
+
+          # Add an additional row for the total
+          if total
+            rows << {
+              'label' => rows.first['label'],
+              'group' => 'TOTAL',
+              'mean' => rows.inject(0) { |sum, row| sum + row['mean'].to_f }
+            }
+          end
+
+          rows
+        end
       end
     end
   end
