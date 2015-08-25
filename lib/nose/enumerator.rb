@@ -43,6 +43,8 @@ module NoSE
       supporting += support_indexes supporting
       indexes += supporting
 
+      # Deduplicate indexes, combine them and deduplicate again
+      indexes.uniq!
       combine_indexes indexes
       indexes.uniq!
 
