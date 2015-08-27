@@ -1,4 +1,9 @@
-require 'mysql2'
+# This is optional so other things can run under JRuby,
+# however this loader won't work so we need to use MRI
+begin
+  require 'mysql2'
+rescue LoadError
+end
 
 module NoSE
   module Loader
