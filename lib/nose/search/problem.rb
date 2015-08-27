@@ -51,10 +51,8 @@ module NoSE
         # Ensure we found a valid solution
         @status = model.status
         if @status == Guruby::GRB_INFEASIBLE
-          fail
-          # TODO Add IIS support to Guruby
-          # @model.computeIIS
-          # log_model 'IIS', '.ilp'
+          @model.compute_IIS
+          log_model 'IIS', '.ilp'
 
         # TODO Add dual objective support
         # elsif @objective_type != Objective::INDEXES
@@ -74,11 +72,10 @@ module NoSE
           @objective_value = @model.objective_value
         end
 
-        # TODO Add expression inspection to Guruby
-        # @logger.debug do
-        #   "Final objective value is #{@objective.active.inspect}" \
-        #     " = #{@objective_value}"
-        # end
+        @logger.debug do
+          "Final objective value is #{@objective.inspect}" \
+            " = #{@objective_value}"
+        end
 
         fail NoSolutionException if @status != Guruby::GRB_OPTIMAL
       end
@@ -148,18 +145,6 @@ module NoSE
       def setup_model
         # Set up solver environment
         env = Guruby::Environment.new
-
-        # TODO Set environment parameters
-        # env.set_int Gurobi::IntParam::METHOD,
-        #             Gurobi::METHOD_DETERMINISTIC_CONCURRENT
-
-        # # This copies the number of parallel processes used by the parallel gem
-        # # so it implicitly respects the --no-parallel CLI flag
-        # env.set_int Gurobi::IntParam::THREADS, Parallel.processor_count
-
-        # # Disable console output since it's quite messy
-        # env.set_int Gurobi::IntParam::OUTPUT_FLAG, 0
-
         @model = Guruby::Model.new env
         add_variables
         @model.update
@@ -192,8 +177,7 @@ module NoSE
         @model << Guruby::Constraint.new(obj + @obj_var * -1.0,
                                          Guruby::GRB_EQUAL, 0.0)
 
-        # TODO Inspect objective function
-        # @logger.debug { "Objective function is #{obj.inspect}" }
+        @logger.debug { "Objective function is #{obj.inspect}" }
 
         @objective = obj
         @model.set_sense Guruby::GRB_MINIMIZE
@@ -227,10 +211,9 @@ module NoSE
           CompletePlanConstraints
         ].each { |constraint| constraint.apply self }
 
-        # TODO Log constraints
-        # @logger.debug do
-        #   "Added #{@model.getConstrs.count} constraints to model"
-        # end
+        @logger.debug do
+          "Added #{@model.constraints.count} constraints to model"
+        end
       end
 
       # Deal with updates which do not require support queries
