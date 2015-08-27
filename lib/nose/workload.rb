@@ -11,7 +11,7 @@ module NoSE
     attr_accessor :mix
 
     def initialize(model = nil, &block)
-      @statement_weights = { default: Hash.new { |*| 1 } }
+      @statement_weights = {}
       @model = model || Model.new
       @entities = {}
       @mix = :default
@@ -50,9 +50,6 @@ module NoSE
         @statement_weights[mix] = {} unless @statement_weights.key? mix
         @statement_weights[mix][statement] = weight
       end
-
-      # This was only assigned so things don't break if we have no queries
-      @statement_weights[:default].default_proc = nil
     end
 
     # Strip the weights from the query dictionary and return a list of queries
