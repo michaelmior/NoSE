@@ -22,9 +22,11 @@ module NoSE
       def self.apply(problem)
         problem.indexes.each do |index|
           problem.queries.each_with_index do |query, q|
-            problem.model.addConstr problem.query_vars[index][query] +
-                                    problem.index_vars[index] * -1 <= 0,
-                                    "q#{q}_#{index.key}_avail"
+            constr = Guruby::Constraint.new problem.query_vars[index][query] +
+                                            problem.index_vars[index] * -1,
+                                            Guruby::GRB_LESS_EQUAL, 0,
+                                            "q#{q}_#{index.key}_avail"
+            problem.model << constr
           end
         end
       end
@@ -37,8 +39,10 @@ module NoSE
         return unless problem.data[:max_space].finite?
 
         space = problem.total_size
-        problem.model.addConstr space <= problem.data[:max_space] * 1.0,
-                                'max_space'
+        constr = Guruby::Constraint.new space, Guruby::GRB_LESS_EQUAL,
+                                        problem.data[:max_space] * 1.0,
+                                        'max_space'
+        problem.model << constr
       end
     end
 
@@ -56,10 +60,14 @@ module NoSE
             # Find the index associated with the support query and make
             # the requirement of a plan conditional on this index
             index_var = problem.index_vars[query.index]
-            problem.model.addConstr constraint == index_var * 1.0, name
+            constr = Guruby::Constraint.new constraint + index_var * -1.0,
+                                            Guruby::GRB_EQUAL, 0, name
           else
-            problem.model.addConstr constraint == 1, name
+            constr = Guruby::Constraint.new constraint,
+                                            Guruby::GRB_EQUAL, 1, name
           end
+
+          problem.model << constr
         end
       end
 
@@ -67,14 +75,14 @@ module NoSE
       def self.apply_query(query, q, problem)
         entities = query.longest_entity_path.reverse
         query_constraints = Hash[entities.each_cons(2).map do |e, next_e|
-          [[e, next_e], Gurobi::LinExpr.new]
+          [[e, next_e], Guruby::LinExpr.new]
         end]
 
         # Add the sentinel entities at the end and beginning
         last = Entity.new '__LAST__'
-        query_constraints[[entities.last, last]] = Gurobi::LinExpr.new
+        query_constraints[[entities.last, last]] = Guruby::LinExpr.new
         first = Entity.new '__FIRST__'
-        query_constraints[[entities.first, first]] = Gurobi::LinExpr.new
+        query_constraints[[entities.first, first]] = Guruby::LinExpr.new
 
         problem.data[:costs][query].each do |index, (steps, _)|
           # All indexes should advance a step if possible unless
@@ -109,8 +117,10 @@ module NoSE
           next if parent_index.nil?
 
           parent_var = problem.query_vars[parent_index][query]
-          problem.model.addConstr (index_var * 1.0) <= (parent_var * 1.0),
-                                  "q#{q}_#{index.key}_parent"
+          constr = Guruby::Constraint.new index_var * 1.0 + parent_var * -1.0,
+                                          Guruby::GRB_LESS_EQUAL, 0,
+                                          "q#{q}_#{index.key}_parent"
+          problem.model << constr
         end
 
         # Ensure we have exactly one index on each component of the query path

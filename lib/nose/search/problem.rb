@@ -1,7 +1,7 @@
 require 'logging'
 
 begin
-  require 'gurobi'
+  require 'guruby'
 rescue LoadError
   # We can't use most search functionality, but it won't explode
   nil
@@ -45,35 +45,42 @@ module NoSE
         return unless @status.nil?
 
         # Run the optimization
+        @model.write '/tmp/search.lp'
         @model.optimize
 
         # Ensure we found a valid solution
-        @status = model.get_int(Gurobi::IntAttr::STATUS)
-        if @status == Gurobi::INFEASIBLE
-          @model.computeIIS
-          log_model 'IIS', '.ilp'
-        elsif @objective_type != Objective::INDEXES
-          @objective_value = @model.get_double Gurobi::DoubleAttr::OBJ_VAL
+        @status = model.status
+        if @status == Guruby::GRB_INFEASIBLE
+          fail
+          # TODO Add IIS support to Guruby
+          # @model.computeIIS
+          # log_model 'IIS', '.ilp'
 
-          # Pin the objective value and optimize again to minimize index usage
-          @obj_var.set_double Gurobi::DoubleAttr::UB, @objective_value
-          @obj_var.set_double Gurobi::DoubleAttr::LB, @objective_value
-          @objective_type = Objective::INDEXES
-          define_objective 'objective_indexes'
+        # TODO Add dual objective support
+        # elsif @objective_type != Objective::INDEXES
+        #   @objective_value = @model.objective_value
 
-          @status = nil
-          solve
-          return
+        #   # Pin the objective value and optimize again to minimize index usage
+        #   @obj_var.set_double Gurobi::DoubleAttr::UB, @objective_value
+        #   @obj_var.set_double Gurobi::DoubleAttr::LB, @objective_value
+        #   @objective_type = Objective::INDEXES
+        #   define_objective 'objective_indexes'
+
+        #   @status = nil
+        #   solve
+        #   return
+
         elsif @objective_value.nil?
-          @objective_value = @model.get_double Gurobi::DoubleAttr::OBJ_VAL
+          @objective_value = @model.objective_value
         end
 
-        @logger.debug do
-          "Final objective value is #{@objective.active.inspect}" \
-            " = #{@objective_value}"
-        end
+        # TODO Add expression inspection to Guruby
+        # @logger.debug do
+        #   "Final objective value is #{@objective.active.inspect}" \
+        #     " = #{@objective_value}"
+        # end
 
-        fail NoSolutionException if @status != Gurobi::OPTIMAL
+        fail NoSolutionException if @status != Guruby::GRB_OPTIMAL
       end
 
       # Return the selected indices
@@ -82,7 +89,7 @@ module NoSE
         return @selected_indexes if @selected_indexes
 
         @selected_indexes = @indexes.select do |index|
-          @index_vars[index].active?
+          @index_vars[index].value
         end.to_set
       end
 
@@ -119,7 +126,7 @@ module NoSE
 
       # The total number of indexes
       def total_indexes
-        total = Gurobi::LinExpr.new
+        total = Guruby::LinExpr.new
         @index_vars.each_value { |var| total += var * 1.0 }
 
         total
@@ -140,22 +147,25 @@ module NoSE
       # Build the ILP by creating all the variables and constraints
       def setup_model
         # Set up solver environment
-        env = Gurobi::Env.new
-        env.set_int Gurobi::IntParam::METHOD,
-                    Gurobi::METHOD_DETERMINISTIC_CONCURRENT
+        env = Guruby::Environment.new
 
-        # This copies the number of parallel processes used by the parallel gem
-        # so it implicitly respects the --no-parallel CLI flag
-        env.set_int Gurobi::IntParam::THREADS, Parallel.processor_count
+        # TODO Set environment parameters
+        # env.set_int Gurobi::IntParam::METHOD,
+        #             Gurobi::METHOD_DETERMINISTIC_CONCURRENT
 
-        # Disable console output since it's quite messy
-        env.set_int Gurobi::IntParam::OUTPUT_FLAG, 0
+        # # This copies the number of parallel processes used by the parallel gem
+        # # so it implicitly respects the --no-parallel CLI flag
+        # env.set_int Gurobi::IntParam::THREADS, Parallel.processor_count
 
-        @model = Gurobi::Model.new env
+        # # Disable console output since it's quite messy
+        # env.set_int Gurobi::IntParam::OUTPUT_FLAG, 0
+
+        @model = Guruby::Model.new env
         add_variables
         @model.update
         add_constraints
         define_objective
+        @model.update
 
         log_model 'Model', '.lp'
       end
@@ -174,15 +184,19 @@ module NoSE
               end
 
         # Add the objective function as a variable
-        @obj_var = @model.addVar 0, Gurobi::INFINITY,
-                                 1.0, Gurobi::CONTINUOUS, var_name
+        @obj_var = Guruby::Variable.new 0, Guruby::GRB_INFINITY, 1.0,
+                                        Guruby::GRB_CONTINUOUS, var_name
+        @model << @obj_var
         @model.update
-        @model.addConstr(@obj_var * 1.0 == obj)
 
-        @logger.debug { "Objective function is #{obj.inspect}" }
+        @model << Guruby::Constraint.new(obj + @obj_var * -1.0,
+                                         Guruby::GRB_EQUAL, 0.0)
+
+        # TODO Inspect objective function
+        # @logger.debug { "Objective function is #{obj.inspect}" }
+
         @objective = obj
-        @model.setObjective @obj_var * 1.0, Gurobi::MINIMIZE
-        @model.update
+        @model.set_sense Guruby::GRB_MINIMIZE
       end
 
       # Initialize query and index variables
@@ -190,12 +204,17 @@ module NoSE
         @index_vars = {}
         @query_vars = {}
         @indexes.each do |index|
-          @index_vars[index] = @model.addVar 0, 1, 0, Gurobi::BINARY, index.key
+          @index_vars[index] = Guruby::Variable.new 0, 1, 0,
+                                                    Guruby::GRB_BINARY,
+                                                    index.key
+          @model << @index_vars[index]
+
           @query_vars[index] = {}
           @queries.each_with_index do |query, q|
             query_var = "q#{q}_#{index.key}"
-            @query_vars[index][query] = @model.addVar 0, 1, 0, Gurobi::BINARY,
-                                                      query_var
+            var = Guruby::Variable.new 0, 1, 0, Guruby::GRB_BINARY, query_var
+            @model << var
+            @query_vars[index][query] = var
           end
         end
       end
@@ -208,9 +227,10 @@ module NoSE
           CompletePlanConstraints
         ].each { |constraint| constraint.apply self }
 
-        @logger.debug do
-          "Added #{@model.getConstrs.count} constraints to model"
-        end
+        # TODO Log constraints
+        # @logger.debug do
+        #   "Added #{@model.getConstrs.count} constraints to model"
+        # end
       end
 
       # Deal with updates which do not require support queries
@@ -237,50 +257,6 @@ module NoSE
 
     # Thrown when no solution can be found to the ILP
     class NoSolutionException < StandardError
-    end
-  end
-end
-
-# Only do this if Gurobi is available
-if Object.const_defined? 'Gurobi'
-  Gurobi::LinExpr.class_eval do
-    def inspect
-      # Get all the coefficients of variable terms
-      expr = 0.upto(size - 1).map do |i|
-        coeff = getCoeff i
-        var = getVar(i).get_string Gurobi::StringAttr::VAR_NAME
-        "#{coeff} * #{var}"
-      end.join(' + ')
-
-      # Possibly add a constant
-      const = getConstant
-      expr += " + #{const}" if const != 0
-
-      expr
-    end
-
-    # Reduce this expression to one only involving active variables
-    def active
-      active_expr = Gurobi::LinExpr.new
-      0.upto(size - 1).each do |i|
-        coeff = getCoeff i
-        var = getVar i
-        active_expr += var * coeff if var.active?
-      end
-
-      active_expr
-    end
-  end
-
-  Gurobi::Var.class_eval do
-    # Check if this variable is active
-    def active?
-      # Even though we specifed the variables as binary, rounding
-      # error means the value won't be exactly one
-      # (the check exists to catch weird values if they arise)
-      val = get_double Gurobi::DoubleAttr::X
-      fail if val > 0.01 && val < 0.99
-      val > 0.99
     end
   end
 end
