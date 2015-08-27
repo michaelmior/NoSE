@@ -154,6 +154,3 @@ DEPENDENCIES
   thor
   yard
   yard-thor
-
-BUNDLED WITH
-   1.10.6

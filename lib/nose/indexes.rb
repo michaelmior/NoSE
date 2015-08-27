@@ -99,9 +99,11 @@ module NoSE
     # Create a new range over the entities traversed by an index using
     # the numerical indices into a list of entities
     def entity_range(entities)
-      Range.new(*(@path.entities.map do |entity|
+      indexes = @path.entities.map do |entity|
         entities.index entity
-      end).minmax) rescue (nil..nil)
+      end.compact
+
+      indexes.empty? ? (nil..nil) : Range.new(*indexes.minmax)
     end
 
     private

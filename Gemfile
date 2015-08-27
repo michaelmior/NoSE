@@ -3,12 +3,12 @@ source 'https://rubygems.org'
 gem 'descriptive_statistics', require: false
 gem 'faker'
 gem 'formatador'
+gem 'guruby'
 gem 'gruff'
 gem 'logging'
 gem 'parallel'
 gem 'parslet'
 gem 'pickup'
-gem 'rbtree'  # for more efficient SortedSet implementation
 gem 'rake', require: false
 gem 'representable'
 gem 'ruby-graphviz'
@@ -18,10 +18,6 @@ gem 'table_print'
 gem 'thor', require: false
 
 platform :ruby do
-  group :gurobi do
-    gem 'guruby'
-  end
-
   gem 'mysql2'  # this is used for the loader for performance
 end
 
@@ -35,6 +31,8 @@ group :test do
 end
 
 platform :ruby do
+  gem 'rbtree'  # for more efficient SortedSet implementation
+
   group :development do
     gem 'ruby-prof'
     gem 'pry'
