@@ -20,8 +20,8 @@ module NoSE::Plans
                               ' WHERE Tweet.TweetId = ?', workload.model
       good_index = query.materialize_view
       bad_index = good_index.dup
-      bad_index.instance_variable_set :@path,
-                                      [user.id_fields.first, user['Favourite']]
+      path = NoSE::KeyPath.new [user.id_fields.first, user['Favourite']]
+      bad_index.instance_variable_set :@path, path
 
       # With the correct path, this should work
       planner = QueryPlanner.new workload.model, [good_index], cost_model
