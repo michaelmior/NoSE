@@ -218,6 +218,7 @@ module NoSE
         field
       end.compact
 
+      return '' if conditions.empty?
       "WHERE #{conditions.map do |field|
         "#{path.find_field_parent(field).name}.#{field.name} = ?"
       end.join ' AND '}"
