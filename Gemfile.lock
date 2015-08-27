@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/michaelmior/guruby.git
-  revision: 9c5deb7c1cb088f924ea6e0d9e7409c289335008
-  ref: 9c5deb7
+  revision: b6e89ed18ecaa2c0cd050db3148808e621c6e80c
+  ref: b6e89ed
   specs:
     guruby (0.0.0)
       ffi (~> 1.9)
