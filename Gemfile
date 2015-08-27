@@ -3,7 +3,6 @@ source 'https://rubygems.org'
 gem 'descriptive_statistics', require: false
 gem 'faker'
 gem 'formatador'
-gem 'guruby'
 gem 'gruff'
 gem 'logging'
 gem 'parallel'
@@ -16,6 +15,10 @@ gem 'ruby-mysql'  # this is used for the proxy because it's pure Ruby
 gem 'smarter_csv'
 gem 'table_print'
 gem 'thor', require: false
+
+group :gurobi do
+  gem 'guruby'
+end
 
 platform :ruby do
   gem 'mysql2'  # this is used for the loader for performance
