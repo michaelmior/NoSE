@@ -33,15 +33,18 @@ group :test do
   gem 'simplecov', require: false
 end
 
+group :development do
+  gem 'pry'
+  gem 'pry-rescue'
+end
+
 platform :ruby do
   gem 'rbtree'  # for more efficient SortedSet implementation
 
   group :development do
     gem 'ruby-prof'
-    gem 'pry'
     gem 'pry-doc'
     gem 'pry-byebug'
-    gem 'pry-rescue'
     gem 'pry-stack_explorer'
     gem 'yard'
     gem 'yard-thor'
