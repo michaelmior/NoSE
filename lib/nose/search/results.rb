@@ -14,7 +14,7 @@ module NoSE
         @query_indexes = Hash.new { |h, k| h[k] = Set.new }
         @problem.query_vars.each do |index, query_vars|
           query_vars.each do |query, var|
-            next unless var.active?
+            next unless var.value
             @query_indexes[query].add index
           end
         end

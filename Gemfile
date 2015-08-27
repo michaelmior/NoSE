@@ -19,8 +19,8 @@ gem 'thor', require: false
 
 platform :ruby do
   group :gurobi do
-    gem 'gurobi', git: 'https://github.com/michaelmior/gurobi.git',
-                  ref: '57e0e58'
+    gem 'guruby', git: 'https://github.com/michaelmior/guruby.git',
+                  ref: '8d57122'
   end
 
   gem 'mysql2'  # this is used for the loader for performance

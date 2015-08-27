@@ -1,9 +1,10 @@
 GIT
-  remote: https://github.com/michaelmior/gurobi.git
-  revision: 57e0e588345b9f5856a87484960e125cf95463d8
-  ref: 57e0e58
+  remote: https://github.com/michaelmior/guruby.git
+  revision: 8d571225aaa9bb9f7d20c1a1a09c821728e4db56
+  ref: 8d57122
   specs:
-    gurobi (0.0.2.mmior.1)
+    guruby (0.0.0)
+      ffi (~> 1.9)
 
 GEM
   remote: https://rubygems.org/
@@ -134,7 +135,7 @@ DEPENDENCIES
   faker
   formatador
   gruff
-  gurobi!
+  guruby!
   logging
   mysql2
   parallel
@@ -159,3 +160,6 @@ DEPENDENCIES
   thor
   yard
   yard-thor
+
+BUNDLED WITH
+   1.10.6
