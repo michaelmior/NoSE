@@ -29,6 +29,8 @@ module NoSE
 
     subject(:sgen) { StatementGenerator.new(workload.model) }
 
+    before(:each) { Random.srand 0 }
+
     it 'generates valid insertions' do
       expect(sgen.random_insert).to be_a Insert
     end
