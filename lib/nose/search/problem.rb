@@ -53,21 +53,18 @@ module NoSE
         if @status == Guruby::GRB_INFEASIBLE
           @model.compute_IIS
           log_model 'IIS', '.ilp'
+        elsif @objective_type != Objective::INDEXES
+          @objective_value = @model.objective_value
 
-        # TODO Add dual objective support
-        # elsif @objective_type != Objective::INDEXES
-        #   @objective_value = @model.objective_value
+          # Pin the objective value and optimize again to minimize index usage
+          @obj_var.lower_bound = @objective_value
+          @obj_var.upper_bound = @objective_value
+          @objective_type = Objective::INDEXES
+          define_objective 'objective_indexes'
 
-        #   # Pin the objective value and optimize again to minimize index usage
-        #   @obj_var.set_double Gurobi::DoubleAttr::UB, @objective_value
-        #   @obj_var.set_double Gurobi::DoubleAttr::LB, @objective_value
-        #   @objective_type = Objective::INDEXES
-        #   define_objective 'objective_indexes'
-
-        #   @status = nil
-        #   solve
-        #   return
-
+          @status = nil
+          solve
+          return
         elsif @objective_value.nil?
           @objective_value = @model.objective_value
         end
