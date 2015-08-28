@@ -27,6 +27,16 @@ module Enumerable
       end
     end
   end
+
+  # Take the sum of the result of calling the block on each item
+  def sum_by(&method)
+    reduce(0) { |sum, item| sum + method.call(item) }
+  end
+
+  # Take the product of the result of calling the block on each item
+  def product_by(&method)
+    reduce(1) { |product, item| product * method.call(item) }
+  end
 end
 
 # Extend with some convenience methods

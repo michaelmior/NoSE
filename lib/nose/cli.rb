@@ -136,7 +136,7 @@ module NoSE
 
         result.update_plans.group_by(&:statement).each do |statement, plans|
           weight = result.workload.statement_weights[statement]
-          total_cost = plans.map(&:cost).inject(0, &:+)
+          total_cost = plans.sum_by(&:cost)
 
           file.puts "GROUP #{statement.group}" unless statement.group.nil?
 

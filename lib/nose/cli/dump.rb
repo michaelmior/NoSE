@@ -28,10 +28,10 @@ module NoSE
         results.plans = plans.groups.values.flatten(1)
         results.cost_model = cost_model
         results.weights = plans.weights
-        results.total_size = results.indexes.map(&:size).inject(0, &:+)
-        results.total_cost = plans.groups.values.flatten(1).map do |plan|
+        results.total_size = results.indexes.sum_by(&:size)
+        results.total_cost = plans.groups.values.flatten(1).sum_by do |plan|
           plan.cost * plan.weight
-        end.inject(0, &:+)
+        end
 
         cost_model = get_class('cost', options[:cost_model][:name])
         results.cost_model = cost_model.new(**options[:cost_model])

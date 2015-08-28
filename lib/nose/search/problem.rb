@@ -92,7 +92,7 @@ module NoSE
         result = Results.new self
         result.enumerated_indexes = indexes
         result.indexes = selected_indexes
-        result.total_size = selected_indexes.map(&:size).inject(0, &:+)
+        result.total_size = selected_indexes.sum_by(&:size)
         result.total_cost = @objective_value
 
         result

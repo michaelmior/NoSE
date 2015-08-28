@@ -91,7 +91,7 @@ module NoSE
 
           fail InvalidResultsException unless (cost - @total_cost).abs < 0.001
         elsif @problem.objective_type == Objective::SPACE
-          size = @indexes.map(&:size).inject(0, &:+)
+          size = @indexes.sum_by(&:size)
           fail InvalidResultsException unless (size - @total_size).abs < 0.001
         end
       end

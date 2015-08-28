@@ -16,7 +16,7 @@ module NoSE
           fields = step.index.all_fields
         end
 
-        step.state.cardinality * fields.map(&:size).inject(0, :+)
+        step.state.cardinality * fields.sum_by(&:size)
       end
 
       # Cost estimate as the size of an index entry
