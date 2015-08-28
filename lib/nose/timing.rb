@@ -20,7 +20,17 @@ module NoSE
           :add_variables,
           :add_constraints,
           :define_objective,
+          :total_cost,
+          :add_update_costs,
+          :total_size,
+          :total_indexes,
           :solve
+        ],
+        Guruby::Model => [
+          :add_constraints,
+          :add_variables,
+          :update,
+          :optimize
         ]
       }
       @@old_methods = Hash.new { |h, k| h[k] = {} }
