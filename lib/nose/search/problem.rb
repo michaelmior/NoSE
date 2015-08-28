@@ -107,11 +107,11 @@ module NoSE
 
       # Get the cost of all queries in the workload
       def total_cost
-        cost = @queries.sum_by(Guruby::LinExpr.new) do |query|
-          @indexes.sum_by(Guruby::LinExpr.new) do |index|
-            total_query_cost @data[:costs][query][index],
-              @query_vars[index][query]
-          end
+        cost = @queries.reduce(Guruby::LinExpr.new) do |expr, query|
+          expr.add(@indexes.reduce(Guruby::LinExpr.new) do |subexpr, index|
+            subexpr.add total_query_cost(@data[:costs][query][index],
+                                         @query_vars[index][query])
+          end)
         end
 
         cost = add_update_costs cost, data
@@ -219,7 +219,8 @@ module NoSE
           @indexes.each do |index|
             next unless update.modifies_index?(index)
 
-            min_cost += @index_vars[index] * data[:update_costs][update][index]
+            min_cost.add @index_vars[index] *
+                         data[:update_costs][update][index]
           end
         end
 
