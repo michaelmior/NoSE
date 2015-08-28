@@ -217,7 +217,7 @@ module NoSE
       def add_update_costs(min_cost, data)
         @updates.each do |update|
           @indexes.each do |index|
-            next if !update.modifies_index?(index)
+            next unless update.modifies_index?(index)
 
             min_cost += @index_vars[index] * data[:update_costs][update][index]
           end
