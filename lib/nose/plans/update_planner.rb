@@ -119,12 +119,12 @@ module NoSE
 
       # The cost of performing the update on this index
       def update_cost
-        @update_steps.map(&:cost).inject(0, &:+)
+        @update_steps.sum_by(&:cost)
       end
 
       # The cost is the sum of all the query costs plus the update costs
       def cost
-        @query_plans.map(&:cost).inject(update_cost, &:+)
+        @query_plans.sum_by(&:cost) + update_cost
       end
     end
 
@@ -163,8 +163,8 @@ module NoSE
 
             # Multiply the cardinalities because we are crossing multiple
             # relationships and need the cross-product
-            cardinalities = plans.map { |plan| plan.last.state.cardinality }
-            state = UpdateState.new statement, cardinalities.inject(1, &:*)
+            cardinality = plans.product_by { |p| p.last.state.cardinality }
+            state = UpdateState.new statement, cardinality
           else
             trees = []
 

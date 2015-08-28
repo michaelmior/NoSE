@@ -34,7 +34,7 @@ module NoSE::Cost
       plan = planner.min_plan \
         NoSE::Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.TweetId = ?',
                         workload.model
-      expect(plan.cost).to eq index.all_fields.map(&:size).inject(&:+)
+      expect(plan.cost).to eq index.all_fields.sum_by(&:size)
     end
   end
 end
