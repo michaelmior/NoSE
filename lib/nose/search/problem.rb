@@ -107,12 +107,12 @@ module NoSE
 
       # Get the cost of all queries in the workload
       def total_cost
-        cost = @queries.map do |query|
-          @indexes.map do |index|
+        cost = @queries.sum_by(Guruby::LinExpr.new) do |query|
+          @indexes.sum_by(Guruby::LinExpr.new) do |index|
             total_query_cost @data[:costs][query][index],
               @query_vars[index][query]
-          end.compact
-        end.flatten.inject(&:+)
+          end
+        end
 
         cost = add_update_costs cost, data
         cost
@@ -228,7 +228,7 @@ module NoSE
 
       # Get the total cost of the query for the objective function
       def total_query_cost(cost, query_var)
-        return if cost.nil?
+        return Guruby::LinExpr.new if cost.nil?
         query_cost = cost.last * 1.0
 
         query_var * query_cost

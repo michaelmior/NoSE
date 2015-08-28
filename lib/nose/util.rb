@@ -29,13 +29,13 @@ module Enumerable
   end
 
   # Take the sum of the result of calling the block on each item
-  def sum_by(&method)
-    reduce(0) { |sum, item| sum + method.call(item) }
+  def sum_by(initial = 0, &method)
+    reduce(initial) { |sum, item| sum + method.call(item) }
   end
 
   # Take the product of the result of calling the block on each item
-  def product_by(&method)
-    reduce(1) { |product, item| product * method.call(item) }
+  def product_by(initial = 1, &method)
+    reduce(initial) { |product, item| product * method.call(item) }
   end
 end
 
