@@ -36,7 +36,7 @@ module NoSE
 
           # Remove the name from the options and execute the loader
           loader.load result.indexes, options[:loader], options[:progress],
-                      options[:limit], options[:skip_existing]
+                      options[:limit], options[:skip_nonempty]
         end
       end
     end
