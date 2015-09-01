@@ -125,7 +125,7 @@ module NoSE
         header = "Query plans\n" + '━' * 50
         file.puts Formatador.parse("[blue]#{header}[/]")
         weights = result.workload.statement_weights
-        weights = result.weights if weights.empty?
+        weights = result.weights if weights.nil? || weights.empty?
         output_plans_txt result.plans, file, 1, weights
 
         result.update_plans = [] if result.update_plans.nil?
