@@ -36,7 +36,7 @@ module NoSE
       def weight
         return 1 if @workload.nil?
 
-        @owrkload.statement_weights[@statement]
+        @workload.statement_weights[@statement]
       end
 
       # The group of the associated statement
