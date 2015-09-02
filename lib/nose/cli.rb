@@ -107,35 +107,15 @@ module NoSE
         end
       end
 
-      # Output the results of advising as text
-      def output_txt(result, file = $stdout, enumerated = false)
-        if enumerated
-          header = "Enumerated indexes\n" + '━' * 50
-          output_indexes_txt header, result.enumerated_indexes, file
-        end
-
-        # Output selected indexes
-        header = "Indexes\n" + '━' * 50
-        output_indexes_txt header, result.indexes, file
-
-        file.puts Formatador.parse("  Total size: " \
-                                   "[blue]#{result.total_size}[/]\n\n")
-
-        # Output query plans for the discovered indices
-        header = "Query plans\n" + '━' * 50
-        file.puts Formatador.parse("[blue]#{header}[/]")
-        weights = result.workload.statement_weights
-        weights = result.weights if weights.nil? || weights.empty?
-        output_plans_txt result.plans, file, 1, weights
-
-        result.update_plans = [] if result.update_plans.nil?
-        unless result.update_plans.empty?
+      # Output update plans as text
+      def output_update_plans_txt(update_plans, file, weights)
+        unless update_plans.empty?
           header = "Update plans\n" + '━' * 50
           file.puts Formatador.parse("[blue]#{header}[/]")
         end
 
-        result.update_plans.group_by(&:statement).each do |statement, plans|
-          weight = result.workload.statement_weights[statement]
+        update_plans.group_by(&:statement).each do |statement, plans|
+          weight = weights[statement]
           total_cost = plans.sum_by(&:cost)
 
           file.puts "GROUP #{statement.group}" unless statement.group.nil?
@@ -158,6 +138,31 @@ module NoSE
 
           file.puts "\n"
         end
+      end
+
+      # Output the results of advising as text
+      def output_txt(result, file = $stdout, enumerated = false)
+        if enumerated
+          header = "Enumerated indexes\n" + '━' * 50
+          output_indexes_txt header, result.enumerated_indexes, file
+        end
+
+        # Output selected indexes
+        header = "Indexes\n" + '━' * 50
+        output_indexes_txt header, result.indexes, file
+
+        file.puts Formatador.parse("  Total size: " \
+                                   "[blue]#{result.total_size}[/]\n\n")
+
+        # Output query plans for the discovered indices
+        header = "Query plans\n" + '━' * 50
+        file.puts Formatador.parse("[blue]#{header}[/]")
+        weights = result.workload.statement_weights
+        weights = result.weights if weights.nil? || weights.empty?
+        output_plans_txt result.plans, file, 1, weights
+
+        result.update_plans = [] if result.update_plans.nil?
+        output_update_plans_txt result.update_plans, file, weights
 
         file.puts Formatador.parse('  Total cost: ' \
                                    "[blue]#{result.total_cost}[/]\n")
