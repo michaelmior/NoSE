@@ -19,16 +19,6 @@ module NoSE
 
         # Update the cost values
         result.cost_model = new_cost_model
-        result.plans.each do |plan|
-          plan.each { |s| s.calculate_cost new_cost_model }
-        end
-        result.update_plans.each do |plan|
-          plan.update_steps.each { |s| s.calculate_cost new_cost_model }
-          plan.query_plans.each do |query_plan|
-            query_plan.each { |s| s.calculate_cost new_cost_model }
-          end
-        end
-
         result.total_cost = total_cost result.workload, result.plans
 
         output_json result
