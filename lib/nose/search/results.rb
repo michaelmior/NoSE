@@ -2,8 +2,9 @@ module NoSE
   module Search
     # A container for results from a schema search
     class Results
+      attr_reader :cost_model
       attr_accessor :enumerated_indexes, :indexes, :total_size, :total_cost,
-                    :workload, :update_plans, :plans, :cost_model,
+                    :workload, :update_plans, :plans,
                     :revision, :time, :command
 
       def initialize(problem = nil)
@@ -18,6 +19,37 @@ module NoSE
             @query_indexes[query].add index
           end
         end
+      end
+
+
+      # After setting the cost model, recalculate the cost
+      def cost_model=(new_cost_model)
+        recalculate_cost new_cost_model
+        @cost_model = new_cost_model
+      end
+
+      # After setting the cost model, recalculate the cost
+      def recalculate_cost(new_cost_model = nil)
+        new_cost_model = @cost_model if new_cost_model.nil?
+
+        (@plans || []).each do |plan|
+          plan.each { |s| s.calculate_cost new_cost_model }
+        end
+        (@update_plans || []).each do |plan|
+          plan.update_steps.each { |s| s.calculate_cost new_cost_model }
+          plan.query_plans.each do |query_plan|
+            query_plan.each { |s| s.calculate_cost new_cost_model }
+          end
+        end
+
+        # Recalculate the total
+        query_cost = (@plans || []).sum_by do |plan|
+          plan.cost * @workload.statement_weights[plan.query]
+        end
+        update_cost = (@update_plans || []).sum_by do |plan|
+          plan.cost * @workload.statement_weights[plan.statement]
+        end
+        @total_cost = query_cost + update_cost
       end
 
       # Validate that the results of the search are consistent
