@@ -1,0 +1,26 @@
+module NoSE
+  module CLI
+    # Add a command to generate a graphic of the schema from a workload
+    class NoSECLI < Thor
+      desc 'diff-plans PLAN1 PLAN2',
+           'output the differing plans between PLAN1 and PLAN2'
+      long_desc <<-LONGDESC
+        `nose diff-plans` loads two sets of statement plans generated
+        separately by `nose search` and outputs the plans which are different.
+      LONGDESC
+      def diff_plans(plan1, plan2)
+        result1 = load_results plan1
+        result2 = load_results plan2
+
+
+        puts Formatador.parse("[blue]#{plan1}\n" + '━' * 50 + '[/]')
+        plans1 = result1.plans.reject { |p| result2.plans.include?(p) }
+        output_plans_txt plans1, $stdout, 1, result1.workload.statement_weights
+
+        puts Formatador.parse("[blue]#{plan2}\n" + '━' * 50 + '[/]')
+        plans2 = result2.plans.reject { |p| result1.plans.include?(p) }
+        output_plans_txt plans2, $stdout, 1, result2.workload.statement_weights
+      end
+    end
+  end
+end
