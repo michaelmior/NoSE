@@ -18,8 +18,7 @@ module NoSE
 
     # A plan for executing an update
     class UpdatePlan < AbstractPlan
-      attr_reader :statement, :index, :query_plans, :update_steps,
-                  :weight, :cost_model
+      attr_reader :statement, :index, :query_plans, :update_steps, :cost_model
 
       include Comparable
 
@@ -31,6 +30,13 @@ module NoSE
         update_steps.each { |step| step.calculate_cost cost_model }
         @update_steps = update_steps
         @cost_model = cost_model
+      end
+
+      # The weight of this query for a given workload
+      def weight
+        return 1 if @workload.nil?
+
+        @owrkload.statement_weights[@statement]
       end
 
       # The group of the associated statement
