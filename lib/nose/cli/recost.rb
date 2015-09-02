@@ -19,6 +19,16 @@ module NoSE
 
         # Update the cost values
         result.cost_model = new_cost_model
+        result.plans.each do |plan|
+          plan.each { |s| s.calculate_cost new_cost_model }
+        end
+        result.update_plans.each do |plan|
+          plan.update_steps.each { |s| s.calculate_cost new_cost_model }
+          plan.query_plans.each do |query_plan|
+            query_plan.each { |s| s.calculate_cost new_cost_model }
+          end
+        end
+
         result.total_cost = total_cost result.workload, result.plans
 
         output_json result
@@ -30,9 +40,9 @@ module NoSE
       def total_cost(workload, plans)
         plan_hash = Hash[plans.map { |plan| [plan.query, plan] }]
 
-        workload.statement_weights.map do |query, weight|
+        workload.statement_weights.map do |statement, weight|
           next 0 unless statement.is_a? Query
-          weight * plan_hash[query].cost
+          weight * plan_hash[statement].cost
         end.inject(0, &:+)
       end
     end
