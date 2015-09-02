@@ -86,8 +86,7 @@ module NoSE
         plan = tree.find do |plan|
           plan.indexes.to_set ==  @query_indexes[query]
         end
-        plan.instance_variable_set :@weight,
-                                   @workload.statement_weights[plan.query]
+        plan.instance_variable_set :@workload, @workload
 
         fail InvalidResultsException if plan.nil?
         plan
@@ -151,8 +150,7 @@ module NoSE
       # Validate the support query plans for each update
       def validate_update_plans
         @update_plans.each do |plan|
-          plan.instance_variable_set :@weight,
-                                     workload.statement_weights[plan.statement]
+          plan.instance_variable_set :@workload, @workload
 
           validate_query_plans plan.query_plans
         end

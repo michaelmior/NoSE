@@ -167,6 +167,13 @@ module NoSE
         @cost_model = cost_model
       end
 
+      # The weight of this query for a given workload
+      def weight
+        return 1 if @workload.nil?
+
+        @workload.statement_weights[@query]
+      end
+
       # Groups for plans are stored in the query
       def group
         @query.group
