@@ -54,6 +54,13 @@ NoSE::Schema.new do
     Path    comments.id, comments.from_user
   end
 
+  Index 'items_with_category' do
+    Hash  items.id
+    Ordered categories.id
+    Extra items['*']
+    Path  items.id, items.category
+  end
+
   Index 'items_data' do
     Hash  items.id
     Extra items['*']
