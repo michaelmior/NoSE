@@ -21,7 +21,7 @@ NoSE::Plans::ExecutionPlans.new do
     Plan 'ItemName' do
       Select items.name
       Param  items.id, :==
-      Lookup 'items_data', [items.id, :==]
+      Lookup 'items_with_category', [items.id, :==]
     end
 
     Plan 'Bids' do
@@ -35,7 +35,7 @@ NoSE::Plans::ExecutionPlans.new do
     Plan 'ItemData' do
       Select items['*']
       Param  items.id, :==
-      Lookup 'items_data', [items.id, :==]
+      Lookup 'items_with_category', [items.id, :==]
     end
 
     Plan 'Bids' do
@@ -53,7 +53,7 @@ NoSE::Plans::ExecutionPlans.new do
       Lookup 'items_by_category',
              [categories.id, :==],
              [items.end_date, :>=], limit: 25
-      Lookup 'items_data', [items.id, :==]
+      Lookup 'items_with_category', [items.id, :==]
     end
   end
 
@@ -79,6 +79,7 @@ NoSE::Plans::ExecutionPlans.new do
   Group 'RegisterItem', bidding: 0.53, write_heavy: 0.53 * 100 do
     Plan 'InsertItem' do
       Param  items.id, :==
+      Param  categories.id, :==
       Param  items.name, :==
       Param  items.description, :==
       Param  items.initial_price, :==
@@ -89,7 +90,7 @@ NoSE::Plans::ExecutionPlans.new do
       Param  items.max_bid, :==
       Param  items.start_date, :==
       Param  items.end_date, :==
-      Insert 'items_data'
+      Insert 'items_with_category'
     end
 
     Plan 'AddToSold' do
@@ -150,7 +151,7 @@ NoSE::Plans::ExecutionPlans.new do
     Plan 'ItemData' do
       Select items['*']
       Param  items.id, :==
-      Lookup 'items_data', [items.id, :==]
+      Lookup 'items_with_category', [items.id, :==]
     end
   end
 
@@ -158,14 +159,14 @@ NoSE::Plans::ExecutionPlans.new do
     Plan 'ReduceQuantity' do
       Support do
         Plan 'OldQuantity' do
-          Select items.quantity
+          Select items.quantity, categories.id
           Param items.id, :==
-          Lookup 'items_data', [items.id, :==]
+          Lookup 'items_with_category', [items.id, :==]
         end
       end
 
       Param  items.id, :==
-      Insert 'items_data', items.id, items.quantity
+      Insert 'items_with_category', items.id, categories.id, items.quantity
     end
 
     Plan 'AddToBought' do
@@ -188,7 +189,7 @@ NoSE::Plans::ExecutionPlans.new do
     Plan 'ItemData' do
       Select items['*']
       Param  items.id, :==
-      Lookup 'items_data', [items.id, :==]
+      Lookup 'items_with_category', [items.id, :==]
     end
 
     Plan 'Bids' do
@@ -237,7 +238,7 @@ NoSE::Plans::ExecutionPlans.new do
     Plan 'ItemData' do
       Select items['*']
       Param  items.id, :==
-      Lookup 'items_data', [items.id, :==]
+      Lookup 'items_with_category', [items.id, :==]
     end
 
     Plan 'UserData' do
@@ -291,7 +292,7 @@ NoSE::Plans::ExecutionPlans.new do
       Param   users.id, :==
       Param   buynow.date, :>=
       Lookup 'user_buynow', [users.id, :==], [buynow.date, :>=]
-      Lookup 'items_data', [items.id, :==]
+      Lookup 'items_with_category', [items.id, :==]
     end
 
     Plan 'ItemsSold' do
@@ -299,7 +300,7 @@ NoSE::Plans::ExecutionPlans.new do
       Param   users.id, :==
       Param   items.end_date, :>=
       Lookup 'user_items_sold', [users.id, :==], [items.end_date, :>=]
-      Lookup 'items_data', [items.id, :==]
+      Lookup 'items_with_category', [items.id, :==]
     end
 
     Plan 'ItemsBid' do
@@ -307,7 +308,7 @@ NoSE::Plans::ExecutionPlans.new do
       Param  users.id, :==
       Param  bids.date, :>=
       Lookup 'user_items_bid_on', [users.id, :==], [bids.date, :>=]
-      Lookup 'items_data', [items.id, :==]
+      Lookup 'items_with_category', [items.id, :==]
     end
   end
 end
