@@ -13,6 +13,9 @@ module NoSE
       LONGDESC
       option :mix, type: :string, default: 'default',
                    banner: 'the name of the workload mix for weighting queries'
+      option :format, type: :string, default: 'txt',
+                      enum: %w(txt json yml), aliases: '-f',
+                      banner: 'the format of the produced plans'
       def plan_schema(workload_name, schema_name)
         workload = Workload.load workload_name
         workload.mix = options[:mix].to_sym \
@@ -29,7 +32,6 @@ module NoSE
         planner = Plans::QueryPlanner.new workload, indexes, cost_model
         trees = workload.queries.map { |q| planner.find_plans_for_query q }
         plans = trees.map(&:min)
-        output_plans_txt plans, $stdout, 1
 
         # Output the update plans
         planner = Plans::UpdatePlanner.new workload.model, trees, cost_model
@@ -42,8 +44,21 @@ module NoSE
             update_plans << plan
           end
         end
-        output_update_plans_txt update_plans, $stdout,
-                                workload.statement_weights
+
+        # Construct a result set
+        results = OpenStruct.new
+        results.workload = workload
+        results.indexes = indexes
+        results.enumerated_indexes = []
+        results.plans = plans
+        results.update_plans = update_plans
+        results.cost_model = cost_model
+        results.weights = workload.statement_weights
+        results.total_size = results.indexes.sum_by(&:size)
+        results.total_cost = plans.sum_by { |plan| plan.cost * plan.weight }
+
+        # Output the results in the specified format
+        send(('output_' + options[:format]).to_sym, results)
       end
     end
   end
