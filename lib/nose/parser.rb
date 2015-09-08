@@ -829,7 +829,8 @@ module NoSE
       end.compact.join(' AND ')
     end
 
-    # No support queries are required for index insertion
+    # Support queries are required for index insertion with connection
+    # to select attributes of the other related entities
     def support_queries(index)
       return [] unless modifies_index?(index) &&
                        !modifies_single_entity_index?(index)

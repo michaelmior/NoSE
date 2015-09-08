@@ -181,6 +181,21 @@ module NoSE
     it 'knows which entity is being inserted' do
       expect(insert.entity).to eq(tweet)
     end
+
+    it 'does not require a support query if only related IDs are used' do
+      index = Index.new [user['UserId']], [tweet['TweetId']], [tweet['Body']],
+                        [user['UserId'], user['Tweets']]
+      expect(insert.support_queries index).to be_empty
+    end
+
+    it 'uses a support query for connected entities' do
+      index = Index.new [user['Username']], [user['UserId'], tweet['TweetId']],
+                        [tweet['Body']], [user['UserId'], user['Tweets']]
+      queries = insert.support_queries index
+      expect(queries).to have(1).item
+      expect(queries.first.text).to start_with \
+        'SELECT User.Username FROM User WHERE User.UserId = ?'
+    end
   end
 
   describe Delete do
