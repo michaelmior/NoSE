@@ -89,13 +89,14 @@ module NoSE
           # this is either the last step from IDs to entity
           # data or the first step going from data to IDs
           index_step = steps.first
-          fail if entities.length > 1 && index.path.length == 1 && \
+          index_path = index.path.for_entities query.key_path.entities
+          fail if entities.length > 1 && index_path.length == 1 && \
                   !(steps.last.state.answered? ||
                     index_step.parent.is_a?(Plans::RootPlanStep))
 
           # Join each step along the entity path
           index_var = problem.query_vars[index][query]
-          index.path.entities.each_cons(2) do |entity, next_entity|
+          index_path.entities.each_cons(2) do |entity, next_entity|
             # Make sure the constraints go in the correct direction
             if query_constraints.key?([entity, next_entity])
               query_constraints[[entity, next_entity]] += index_var
