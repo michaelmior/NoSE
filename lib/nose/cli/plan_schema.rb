@@ -30,6 +30,20 @@ module NoSE
         trees = workload.queries.map { |q| planner.find_plans_for_query q }
         plans = trees.map(&:min)
         output_plans_txt plans, $stdout, 1
+
+        # Output the update plans
+        planner = Plans::UpdatePlanner.new workload.model, trees, cost_model
+        update_plans = []
+        workload.statements.each do |statement|
+          next if statement.is_a? Query
+
+          planner.find_plans_for_update(statement, indexes).each do |plan|
+            plan.select_query_plans(indexes)
+            update_plans << plan
+          end
+        end
+        output_update_plans_txt update_plans, $stdout,
+                                workload.statement_weights
       end
     end
   end
