@@ -99,7 +99,7 @@ module NoSE
       end
 
       # Output a list of query plans as text
-      def output_plans_txt(plans, file, indent, weights)
+      def output_plans_txt(plans, file, indent, weights = nil)
         plans.each do |plan|
           weight = (plan.weight || weights[plan.query || plan.name])
           cost = plan.cost * weight
@@ -224,6 +224,7 @@ require_relative 'cli/execute'
 require_relative 'cli/load'
 require_relative 'cli/genworkload'
 require_relative 'cli/graph'
+require_relative 'cli/plan_schema'
 require_relative 'cli/proxy'
 require_relative 'cli/random_plans'
 require_relative 'cli/reformat'
