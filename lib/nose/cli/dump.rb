@@ -18,7 +18,7 @@ module NoSE
           unless options[:mix] == 'default' && plans.mix != :default
 
         # Set the cost of each plan
-        cost_model = get_class('cost', options[:cost_model][:name]).new(**options[:cost_model])
+        cost_model = get_class_from_config options, 'cost', :cost_model
         plans.calculate_cost cost_model
 
         results = OpenStruct.new
@@ -32,9 +32,6 @@ module NoSE
         results.total_cost = plans.groups.values.flatten(1).sum_by do |plan|
           plan.cost * plan.weight
         end
-
-        cost_model = get_class('cost', options[:cost_model][:name])
-        results.cost_model = cost_model.new(**options[:cost_model])
 
         # Output the results in the specified format
         send(('output_' + options[:format]).to_sym, results)
