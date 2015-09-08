@@ -68,6 +68,12 @@ module NoSE
         end
       end
 
+      # Get a class given a set of options
+      def get_class_from_config(options, name, type)
+        cost_model_class = get_class name, options[type][:name]
+        cost_model_class.new(**options[type])
+      end
+
       # Collect all advisor results for schema design problem
       def search_result(workload, cost_model, max_space = Float::INFINITY,
                         objective = Search::Objective::COST)

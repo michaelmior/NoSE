@@ -31,8 +31,7 @@ module NoSE
         workload.mix = options[:mix].to_sym \
           unless options[:mix] == 'default' && workload.mix != :default
         workload.remove_updates if options[:read_only]
-        cost_model = get_class('cost', options[:cost_model][:name]) \
-                     .new(**options[:cost_model])
+        cost_model = get_class_from_config options, 'cost', :cost_model
         FileUtils.mkdir_p(directory) unless Dir.exist?(directory)
 
         # Run the search and output the results
