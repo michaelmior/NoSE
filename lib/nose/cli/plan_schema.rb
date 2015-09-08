@@ -5,10 +5,18 @@ module NoSE
       desc 'plan-schema WORKLOAD SCHEMA',
            'output plans for the given WORKLOAD using SCHEMA'
       long_desc <<-LONGDESC
-        `nose plan-schema`
+        `nose plan-schema` produces a set of plans for the given WORKLOAD
+        using the manually-defined SCHEMA.
+
+        This is useful to compare manually-defined execution plans with the
+        plans that NoSE would produce for the same schema.
       LONGDESC
+      option :mix, type: :string, default: 'default',
+                   banner: 'the name of the workload mix for weighting queries'
       def plan_schema(workload_name, schema_name)
         workload = Workload.load workload_name
+        workload.mix = options[:mix].to_sym \
+          unless options[:mix] == 'default' && workload.mix != :default
         schema = Schema.load schema_name
         indexes = schema.indexes.values
 
