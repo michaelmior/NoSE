@@ -6,6 +6,8 @@ module NoSE
       long_desc <<-LONGDESC
         `nose dump` will output results in the same format as `nose search`,
         but for manually defined execution plans in the `plans` subdirectory.
+
+        Note: This does not currently include update plans
       LONGDESC
       option :mix, type: :string, default: 'default',
                    banner: 'the name of the workload mix for weighting queries'
@@ -26,6 +28,7 @@ module NoSE
         results.indexes = plans.schema.indexes.values
         results.enumerated_indexes = []
         results.plans = plans.groups.values.flatten(1)
+        # TODO: Add update plans
         results.cost_model = cost_model
         results.weights = plans.weights
         results.total_size = results.indexes.sum_by(&:size)
