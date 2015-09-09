@@ -63,7 +63,7 @@ module NoSE
     # Strip the weights and return a list of statements
     # @return [Array<Statement>]
     def statements
-      @statement_weights[@mix].keys
+      (@statement_weights[@mix] || {}).keys
     end
 
     # Retrieve the weights for the current mix
