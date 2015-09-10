@@ -88,6 +88,7 @@ module NoSE
           measurement = bench_query backend, indexes, plan, index_values,
                                     options[:num_iterations], options[:repeat],
                                     weight: weight
+          next if measurement.empty?
 
           measurement.estimate = plan.cost
           group_totals[plan.group] += measurement.mean
@@ -114,6 +115,7 @@ module NoSE
             measurement = bench_update backend, indexes, plan, index_values,
                                        options[:num_iterations],
                                        options[:repeat], weight: weight
+            next if measurement.empty?
 
             measurement.estimate = plan.cost
             group_totals[plan.group] += measurement.mean

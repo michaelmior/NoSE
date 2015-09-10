@@ -11,7 +11,7 @@ module NoSE
 
       # Allow the values array to store numbers and compute stats
       extend Forwardable
-      def_delegators :@values, :each, :<<
+      def_delegators :@values, :each, :<<, :size, :count, :length, :empty?
 
       include Enumerable
       include DescriptiveStatistics
