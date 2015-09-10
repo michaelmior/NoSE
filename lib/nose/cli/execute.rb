@@ -101,13 +101,18 @@ module NoSE
                                   measurements: [total_measurement])
         end
 
-        output_table table, options[:format]
+        case options[:format]
+        when 'txt'
+          output_table table
+        else
+          output_csv table
+        end
       end
 
       private
 
-      # Output the table of results in the specified format
-      def output_table(table, format)
+      # Output the table of results
+      def output_table(table)
         columns = [
           'label', 'group',
           { 'measurements.name' => { display_name: 'name' } },
@@ -116,14 +121,29 @@ module NoSE
           { 'measurements.estimate' => { display_name: 'cost' } }
         ]
 
-        case format
-        when 'txt'
-          tp table, *columns
-        when 'csv'
-          printer = CSVPrint.new(table, columns)
-          TablePrint::Config.io.puts printer.csv_print
-          TablePrint::Returnable.new(printer.message)
+        tp table, *columns
+      end
+
+      # Output a CSV file of results
+      def output_csv(table)
+        csv_str = CSV.generate do |csv|
+          csv << ['label', 'group', 'name', 'weight', 'mean', 'cost']
+
+          table.each do |group|
+            group.measurements.each do |measurement|
+              csv << [
+                group.label,
+                group.group,
+                measurement.name,
+                measurement.weight,
+                measurement.mean,
+                measurement.estimate
+              ]
+            end
+          end
         end
+
+        puts csv_str
       end
 
       # Get the average execution time for a single query plan

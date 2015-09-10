@@ -1,34 +1,6 @@
 require 'csv'
 require 'table_print'
 
-# Make use the table_print gem to print in CSV format
-class CSVPrint < TablePrint::Printer
-  # Print the table in CSV format
-  def csv_print
-    # Copied from TablePrint#table_print
-    group = TablePrint::RowGroup.new
-    columns.each { |c| group.set_column(c) }
-    group_data = (@data.first.is_a?(Hash) || @data.first.is_a?(Struct)) ? [@data] : @data
-    group_data.each do |data|
-      group.add_children(TablePrint::Fingerprinter.new.lift(columns, data))
-    end
-    group.collapse!
-
-    # turn everything into a string for output
-    CSV.generate do |csv|
-      csv << group.columns.map(&:name)
-      group.children.flat_map(&:children).each do |subgroup|
-        top_row = subgroup.children.first.parent.parent.cells
-        csv << group.columns.map { |c| top_row[c.name] }
-        subgroup.children.each do |row|
-          row = top_row.merge(row.cells)
-          csv << group.columns.map { |c| row[c.name] }
-        end
-      end
-    end
-  end
-end
-
 module NoSE
   module CLI
     # Run performance tests on plans for a particular schema
@@ -145,7 +117,12 @@ module NoSE
                                   measurements: [total_measurement])
         end
 
-        output_table table, options[:format]
+        case options[:format]
+        when 'txt'
+          output_table table
+        else
+          output_csv table
+        end
       end
 
       private
