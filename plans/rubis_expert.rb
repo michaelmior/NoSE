@@ -205,7 +205,7 @@ NoSE::Plans::ExecutionPlans.new do
     Plan 'AddBid' do
       Support do
         Plan 'GetMaxBid' do
-          Select items.max_bid
+          Select items.max_bid, items.end_date
           Param  items.id, :==
           Lookup 'item_bids', [items.id, :==], limit: 1
         end
@@ -223,9 +223,9 @@ NoSE::Plans::ExecutionPlans.new do
     Plan 'AddToUserBids' do
       Param users.id, :==
       Param items.id, :==
+      Param items.end_date, :==
       Param bids.id, :==
       Param bids.qty, :==
-      Param bids.date, :==
       Insert 'user_items_bid_on'
     end
   end
@@ -308,8 +308,8 @@ NoSE::Plans::ExecutionPlans.new do
     Plan 'ItemsBid' do
       Select items['*']
       Param  users.id, :==
-      Param  bids.date, :>=
-      Lookup 'user_items_bid_on', [users.id, :==], [bids.date, :>=]
+      Param  items.end_date, :>=
+      Lookup 'user_items_bid_on', [users.id, :==], [items.end_date, :>=]
       Lookup 'items_with_category', [items.id, :==]
     end
   end

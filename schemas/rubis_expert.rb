@@ -29,7 +29,7 @@ NoSE::Schema.new do
 
   Index 'user_items_bid_on' do
     Hash    users.id
-    Ordered bids.date, bids.id, items.id
+    Ordered items.end_date, bids.id, items.id
     Extra   bids.qty
     Path    users.id, users.bids, bids.item
   end
