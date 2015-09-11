@@ -168,6 +168,7 @@ NoSE::Plans::ExecutionPlans.new do
       Param  items.id, :==
       Param  items.end_date, :==
       Insert 'items_with_category', items.id, categories.id, items.quantity
+      Delete 'items_by_category'
       Insert 'items_by_category', categories.id, items.end_date, items.id
     end
 
