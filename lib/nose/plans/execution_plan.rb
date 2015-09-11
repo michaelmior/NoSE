@@ -241,6 +241,21 @@ module NoSE
         @update_steps << step
       end
 
+      # Add a new deletion step from an index
+      def Delete(index_key)
+        @index = @schema.indexes[index_key]
+
+        step = Plans::DeletePlanStep.new @index
+
+        # Get cardinality from last step of each support query plan
+        # as in UpdatePlanner#find_plans_for_update
+        cardinalities = @query_plans.map { |p| p.steps.last.state.cardinality }
+        cardinality = cardinalities.inject(1, &:*)
+        step.state = OpenStruct.new cardinality: cardinality
+
+        @update_steps << step
+      end
+
       # rubocop:enable MethodName
     end
   end
