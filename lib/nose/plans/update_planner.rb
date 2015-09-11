@@ -46,7 +46,7 @@ module NoSE
 
       # Name the plan by the statement
       def name
-        @statement.text
+        "#{@statement.text} for #{@index.key}"
       end
 
       # The steps for this plan are the update steps
