@@ -237,7 +237,7 @@ module NoSE
           # Execute each plan and measure the time
           start_time = Time.now
           setting_list.zip(condition_list).each do |settings, conditions|
-            prepared.first.execute settings, conditions
+            prepared.each { |p| p.execute settings, conditions }
           end
           elapsed = Time.now - start_time
 
