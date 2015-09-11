@@ -186,7 +186,6 @@ module NoSE
       # Apply the DSL
       dsl = GroupDSL.new
       dsl.instance_eval(&block) if block_given?
-      mixes.each_key { |mix| mixes[mix] /= dsl.statements.length }
       dsl.statements.each do |statement|
         Q(statement, weight, **mixes, group: name)
       end
