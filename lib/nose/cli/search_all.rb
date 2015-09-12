@@ -7,24 +7,24 @@ module NoSE
       desc 'search-all NAME DIRECTORY',
            'output all possible schemas for the workload NAME under ' \
            'different storage constraints to DIRECTORY'
+
       long_desc <<-LONGDESC
         `nose search-all` is a convenience for executing `nose search` with a
         variety of different storage constraints. It will start with the
         smallest and largest possible schemas and then perform a binary search
         throughout the search space to discover schemas of various sizes.
       LONGDESC
+
+      shared_option :format
+      shared_option :mix
+
       option :enumerated, type: :boolean, aliases: '-e',
                           banner: 'whether enumerated indexes should be output'
       option :read_only, type: :boolean, default: false,
                          banner: 'whether to ignore update statements'
-      option :mix, type: :string, default: 'default',
-                   banner: 'the name of the workload mix for weighting queries'
       option :max_results, type: :numeric, default: Float::INFINITY,
                            aliases: '-n',
                            banner: 'the maximum number of results to produce'
-      option :format, type: :string, default: 'json',
-                      enum: %w(txt json yml), aliases: '-f',
-                      banner: 'the format of the produced plans'
       def search_all(name, directory)
         # Load the workload and cost model and create the output directory
         workload = Workload.load name

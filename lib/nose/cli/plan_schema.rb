@@ -4,6 +4,7 @@ module NoSE
     class NoSECLI < Thor
       desc 'plan-schema WORKLOAD SCHEMA',
            'output plans for the given WORKLOAD using SCHEMA'
+
       long_desc <<-LONGDESC
         `nose plan-schema` produces a set of plans for the given WORKLOAD
         using the manually-defined SCHEMA.
@@ -11,11 +12,10 @@ module NoSE
         This is useful to compare manually-defined execution plans with the
         plans that NoSE would produce for the same schema.
       LONGDESC
-      option :mix, type: :string, default: 'default',
-                   banner: 'the name of the workload mix for weighting queries'
-      option :format, type: :string, default: 'txt',
-                      enum: %w(txt json yml), aliases: '-f',
-                      banner: 'the format of the produced plans'
+
+      shared_option :format
+      shared_option :mix
+
       def plan_schema(workload_name, schema_name)
         workload = Workload.load workload_name
         workload.mix = options[:mix].to_sym \

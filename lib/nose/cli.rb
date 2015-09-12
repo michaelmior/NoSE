@@ -212,6 +212,8 @@ module NoSE
   end
 end
 
+require_relative 'cli/shared_options'
+
 # Require the various subcommands
 require_relative 'cli/analyze'
 require_relative 'cli/benchmark'

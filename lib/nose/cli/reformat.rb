@@ -4,10 +4,10 @@ module NoSE
     class NoSECLI < Thor
       desc 'reformat PLAN_FILE',
            'reformat the data in PLAN_FILE'
-      option :mix, type: :string, default: 'default',
-                   banner: 'the name of the workload mix for weighting queries'
-      option :format, type: :string, default: 'txt',
-                      enum: %w(txt json yml), aliases: '-f'
+
+      shared_option :format
+      shared_option :mix
+
       def reformat(plan_file)
         result = load_results plan_file
         result.workload.mix = options[:mix].to_sym \

@@ -4,19 +4,20 @@ module NoSE
     class NoSECLI < Thor
       desc 'random_plans WORKLOAD TAG',
            'output random plans for the statement with TAG in WORKLOAD'
+
       long_desc <<-LONGDESC
         `nose random-plans` produces a set of randomly chosen plans for a given
         workload. This is useful when evaluating the cost model for a given
         system as this should give a good range of different execution plans.
       LONGDESC
+
+      shared_option :format
+
       option :count, type: :numeric, default: 5, aliases: '-n',
                      banner: 'the number of random plans to produce'
       option :all, type: :boolean, default: false, aliases: '-a',
                    banner: 'whether to include all possible plans, if given ' \
                            'then --count is ignored'
-      option :format, type: :string, default: 'txt',
-                      enum: %w(txt json yml), aliases: '-f',
-                      banner: 'the format of the produced plans'
       option :output, type: :string, default: nil, aliases: '-o',
                       banner: 'a file where produced plans should be stored'
       def random_plans(workload_name, tag)
