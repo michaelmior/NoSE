@@ -217,7 +217,6 @@ require_relative 'cli/shared_options'
 # Require the various subcommands
 require_relative 'cli/analyze'
 require_relative 'cli/benchmark'
-require_relative 'cli/check_integrity'
 require_relative 'cli/collect_results'
 require_relative 'cli/create'
 require_relative 'cli/diff_plans'
