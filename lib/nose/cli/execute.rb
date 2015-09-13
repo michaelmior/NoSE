@@ -5,6 +5,7 @@ module NoSE
     # Run performance tests on plans for a particular schema
     class NoSECLI < Thor
       desc 'execute PLANS', 'test performance of the named PLANS'
+
       long_desc <<-LONGDESC
         `nose execute` is similar to `nose benchmark`. It will take manually
         defined plans with the given name stored in the `plans` subdirectory,
@@ -12,14 +13,14 @@ module NoSE
         Before runnng execute, `nose create` and `nose load` must be used to
         prepare the target database.
       LONGDESC
+
+      shared_option :mix
+
       option :num_iterations, type: :numeric, default: 100,
                               banner: 'the number of times to execute each ' \
                                       'statement'
       option :repeat, type: :numeric, default: 1,
                       banner: 'how many times to repeat the benchmark'
-      option :mix, type: :string, default: nil,
-                   banner: 'the workload mix to use for weighting execution ' \
-                           'time'
       option :group, type: :string, default: nil, aliases: '-g',
                      banner: 'restrict the benchmark to statements in the ' \
                              'given group'
@@ -30,6 +31,7 @@ module NoSE
       option :format, type: :string, default: 'txt',
                       enum: %w(txt csv), aliases: '-f',
                       banner: 'the format of the output data'
+
       def execute(plans_name)
         # Load the execution plans
         plans = Plans::ExecutionPlans.load plans_name
