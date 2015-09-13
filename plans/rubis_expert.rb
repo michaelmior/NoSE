@@ -159,7 +159,7 @@ NoSE::Plans::ExecutionPlans.new do
     Plan 'ReduceQuantity' do
       Support do
         Plan 'OldQuantity' do
-          Select items.quantity, categories.id
+          Select items.quantity, items.end_date, categories.id
           Param items.id, :==
           Lookup 'items_with_category', [items.id, :==]
         end
@@ -167,7 +167,8 @@ NoSE::Plans::ExecutionPlans.new do
 
       Param  items.id, :==
       Param  items.end_date, :==
-      Insert 'items_with_category', items.id, categories.id, items.quantity
+      Insert 'items_with_category', items.id, categories.id, items.quantity,
+             items.end_date
       Delete 'items_by_category'
       Insert 'items_by_category', categories.id, items.end_date, items.id
     end
@@ -213,12 +214,27 @@ NoSE::Plans::ExecutionPlans.new do
       end
 
       Param  items.id, :==
+      Param  items.nb_of_bids, :==
       Param  users.id, :==
       Param  bids.id, :==
       Param  bids.qty, :==
       Param  bids.bid, :==
       Param  bids.date, :==
       Insert 'item_bids'
+    end
+
+    Plan 'UpdateItem' do
+      Support do
+        Plan 'GetItemData' do
+          Select categories.id, items.max_bid, items.end_date, items.nb_of_bids
+          Param  items.id, :==
+          Lookup 'items_with_category', [items.id, :==]
+        end
+      end
+
+      Param items.id, :==
+      Insert 'items_with_category', items.id, categories.id,
+             items.max_bid, items.end_date, items.nb_of_bids
     end
 
     Plan 'AddToUserBids' do
