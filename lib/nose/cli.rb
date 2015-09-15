@@ -99,7 +99,7 @@ module NoSE
       end
 
       # Output a list of query plans as text
-      def output_plans_txt(plans, file, indent, weights = nil)
+      def output_plans_txt(plans, file, indent, weights)
         plans.each do |plan|
           weight = (plan.weight || weights[plan.query || plan.name])
           cost = plan.cost * weight

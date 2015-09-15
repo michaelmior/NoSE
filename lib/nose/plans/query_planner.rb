@@ -330,10 +330,7 @@ module NoSE
         return steps if steps.length > 0
 
         # Don't allow indices to be used multiple times
-        # XXX This is temporary until a better fix can
-        #     be found to avoid checking all indexes
-        # indexes = (indexes_by_path[state.path.first.parent] || Set.new).to_set
-        indexes = indexes_by_path.values.inject(Set.new, &:+)
+        indexes = (indexes_by_path[state.path.first.parent] || Set.new).to_set
         (indexes - used_indexes).each do |index|
           new_step = IndexLookupPlanStep.apply parent, index, state
           unless new_step.nil?

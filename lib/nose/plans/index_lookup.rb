@@ -46,18 +46,11 @@ module NoSE
       # Check if this step can be applied for the given index,
       # returning a possible application of the step
       def self.apply(parent, index, state)
-        # Restrict the path to entities for this query
-        if parent.is_a? RootPlanStep
-          index_path = index.path.for_entities state.path.entities
-        else
-          index_path = index.path
-        end
-
         # Try reversing the path for this query
         state_path = state.path
         reversed = state_path.reverse
-        if index_path.length > 1 &&
-           reversed[0..index_path.length - 1] == index_path
+        if index.path.length > 1 &&
+           reversed[0..index.path.length - 1] == index.path
           state_path = reversed
           reversed = true
         else
@@ -65,17 +58,16 @@ module NoSE
         end
 
         # Check that this index is a valid jump in the path
-        return nil unless state_path.start_with? index_path
+        return nil unless state_path.start_with? index.path
 
         # We must move forward on paths at each lookup
         # XXX This disallows plans which look up additional attributes
         #     for entities other than the final one in the query path
-        return nil if index_path.length == 1 && state_path.length > 1 &&
+        return nil if index.path.length == 1 && state_path.length > 1 &&
                       !parent.is_a?(RootPlanStep)
         return nil if index.identity? && state_path.length > 1
 
-        return nil if invalid_parent_index? index, index_path,
-                                            parent.parent_index
+        return nil if invalid_parent_index? index, parent.parent_index
 
         # We need all hash fields to perform the lookup
         return nil unless index.hash_fields.all? do |field|
@@ -84,7 +76,7 @@ module NoSE
 
         # Get fields in the query relevant to this index
         # and check that they are provided for us here
-        path_fields = state.fields_for_entities(index_path.entities).to_set
+        path_fields = state.fields_for_entities(index.path.entities).to_set
         path_fields -= parent.fields  # exclude fields already fetched
         return nil unless path_fields.all?(&index.all_fields.method(:include?))
 
@@ -96,7 +88,7 @@ module NoSE
         end
 
         return IndexLookupPlanStep.new(index, state, parent) \
-          if has_last_fields?(index, index_path, state, state_path)
+          if has_last_fields?(index, state, state_path)
 
         nil
       end
@@ -104,7 +96,7 @@ module NoSE
       private
 
       # Check if this index can be used after the current parent
-      def self.invalid_parent_index?(index, index_path, parent_index)
+      def self.invalid_parent_index?(index, parent_index)
         return false if parent_index.nil?
 
         # If the last step gave an ID, we must use it
@@ -114,20 +106,20 @@ module NoSE
         return true if has_ids && index.hash_fields.to_set != parent_ids
 
         # If we're looking up from a previous step, only allow lookup by ID
-        return true unless (index_path.length == 1 &&
-                           parent_index.path != index_path) ||
+        return true unless (index.path.length == 1 &&
+                           parent_index.path != index.path) ||
                           index.hash_fields == parent_ids
       end
 
       # Check that we have the required fields to move on with the next lookup
-      def self.has_last_fields?(index, index_path, state, path)
+      def self.has_last_fields?(index, state, path)
         # Get the possible fields we need to select
         # This always includes the ID of the last and next entities
         # as well as the selected fields if we're at the end of the path
-        last_choices = [index_path.entities.last.id_fields]
-        next_key = path[index_path.length]
+        last_choices = [index.path.entities.last.id_fields]
+        next_key = path[index.path.length]
         last_choices << next_key.parent.id_fields unless next_key.nil?
-        last_choices << state.fields if path == index_path
+        last_choices << state.fields if path == index.path
 
         last_choices.any? do |fields|
           fields.all?(&index.all_fields.method(:include?))
@@ -136,9 +128,6 @@ module NoSE
 
       # Modify the state to reflect the fields looked up by the index
       def update_state(parent)
-        # Shorten the index path if other entities aren't needed
-        index_path = index.path.for_entities state.path.entities
-
         # Get the set of fields which can be filtered by the ordered keys
         order_prefix = (@state.eq - @index.hash_fields) & @index.order_fields
         order_prefix << @state.range unless @state.range.nil?
@@ -162,11 +151,11 @@ module NoSE
         # We can't resolve ordering if we're doing an ID lookup
         # since only one record exists per row (if it's the same entity)
         # We also need to have the fields used in order
-        indexed_by_id = @index.hash_fields.include? index_path.first
+        indexed_by_id = @index.hash_fields.include? @index.path.first
         order_prefix = @state.order_by.longest_common_prefix \
           @index.order_fields
         unless indexed_by_id && order_prefix.map(&:parent).to_set ==
-                                Set.new([index_path.entities.first])
+                                Set.new([index.path.entities.first])
           @state.order_by -= order_prefix
         else
           order_prefix = []
@@ -175,12 +164,12 @@ module NoSE
 
         # Strip the path for this index, but if we haven't fetched all
         # fields, leave the last one so we can perform a separate ID lookup
-        if @state.fields_for_entities(index_path.entities,
+        if @state.fields_for_entities(@index.path.entities,
                                       select: true).empty? &&
-           @state.path == index_path
-          @state.path = @state.path[index_path.length..-1]
+           @state.path == index.path
+          @state.path = @state.path[index.path.length..-1]
         else
-          @state.path = @state.path[index_path.length - 1..-1]
+          @state.path = @state.path[index.path.length - 1..-1]
         end
 
         # Calculate the new cardinality assuming no limit
@@ -212,7 +201,7 @@ module NoSE
             @limit = @state.cardinality = @state.query.limit
 
             # If this is a final lookup by ID, go with the limit
-            if index_path.length == 1 && indexed_by_id
+            if index.path.length == 1 && indexed_by_id
               @state.hash_cardinality = @limit
             else
               @state.hash_cardinality = parent.state.cardinality

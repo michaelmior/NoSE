@@ -341,20 +341,6 @@ module NoSE
       @entities ||= @keys.map(&:entity)
     end
 
-    # Produce a version of this key path restricted to the
-    # portion containing the given entities
-    def for_entities(given_entities)
-      indexes = given_entities.map do |entity|
-        entities.index entity
-      end.compact
-
-      if indexes.empty?
-        KeyPath.new []
-      else
-        send :[], Range.new(*indexes.minmax)
-      end
-    end
-
     # Find where the path intersects the given
     # entity and splice in the target path
     def splice(target, entity)
