@@ -14,7 +14,7 @@ NoSE is a tool for schema design in NoSQL databases.
 ## OPTIONS
 
 <% options.each do |name, option| %>
-  * <%= (["--#{name}"] + option.aliases).join ', ' %>
+  * <%= option.usage %>
   <%= option.description  %>
 
 <% end %>

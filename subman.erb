@@ -13,7 +13,7 @@ end.join ', ' %>
 ## OPTIONS
 
 <% command.options.each do |name, option| %>
-  * <%= (["--#{name}"] + option.aliases).join ', ' %>
+  * <%= option.usage %>
   <%= option.description  %>
 
 <% end %>
