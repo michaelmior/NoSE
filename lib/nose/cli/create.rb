@@ -3,17 +3,20 @@ module NoSE
     # Add a command for creating the index data structures in a backend
     class NoSECLI < Thor
       desc 'create PLAN_FILE_OR_SCHEMA', 'create indexes from the given PLAN_FILE_OR_SCHEMA'
+
       long_desc <<-LONGDESC
         `nose create` will load a schema either from generated plan file from
         `nose search` or a named schema in the `schemas` directory. It will
         then create all the indexes in the configured backend.
       LONGDESC
+
       option :dry_run, type: :boolean, default: false,
-                       banner: 'print the DDL, but do not execute'
+                       desc: 'print the DDL, but do not execute'
       option :skip_existing, type: :boolean, default: false, aliases: '-s',
-                             banner: 'ignore indexes which already exist'
+                             desc: 'ignore indexes which already exist'
       option :drop_existing, type: :boolean, default: false, aliases: '-d',
-                             banner: 'drop existing indexes before recreation'
+                             desc: 'drop existing indexes before recreation'
+
       def create(*plan_files)
         plan_files.each do |plan_file|
           if File.exist? plan_file

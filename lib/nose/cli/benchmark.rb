@@ -17,20 +17,22 @@ module NoSE
       shared_option :mix
 
       option :num_iterations, type: :numeric, default: 100,
-                              banner: 'the number of times to execute each ' \
-                                      'statement'
+                              banner: 'ITERATIONS',
+                              desc: 'the number of times to execute each ' \
+                                    'statement'
       option :repeat, type: :numeric, default: 1,
-                      banner: 'how many times to repeat the benchmark'
+                      desc: 'how many times to repeat the benchmark'
       option :group, type: :string, default: nil, aliases: '-g',
-                     banner: 'restrict the benchmark to statements in the ' \
-                             'given group'
+                     desc: 'restrict the benchmark to statements in the ' \
+                           'given group'
       option :fail_on_empty, type: :boolean, default: true,
-                             banner: 'abort if a column family is empty'
+                             desc: 'abort if a column family is empty'
       option :totals, type: :boolean, default: false, aliases: '-t',
-                      banner: 'whether to include group totals in the output'
+                      desc: 'whether to include group totals in the output'
       option :format, type: :string, default: 'txt',
                       enum: %w(txt csv), aliases: '-f',
-                      banner: 'the format of the output data'
+                      desc: 'the format of the output data'
+
       def benchmark(plan_file)
         label = File.basename plan_file, '.*'
         result = load_results plan_file

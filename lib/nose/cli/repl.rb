@@ -11,12 +11,14 @@ module NoSE
     # Add a command to run a REPL which evaluates queries
     class NoSECLI < Thor
       desc 'repl PLAN_FILE', 'start the REPL with the given PLAN_FILE'
+
       long_desc <<-LONGDESC
         `nose repl` starts a terminal interface which loads execution plans
         from the given file. It then loops continuously and accepts statements
         from the workload and executes plans against the database. The result
         of any query will be printed to the terminal.
       LONGDESC
+
       def repl(plan_file)
         result = load_results plan_file
         backend = get_backend(options, result)

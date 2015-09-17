@@ -3,12 +3,14 @@ module NoSE
     # Add a command to run the advisor and benchmarks for a given workload
     class NoSECLI < Thor
       desc 'search-bench NAME', 'run the workload NAME and benchmarks'
+
       long_desc <<-LONGDESC
         `nose search-bench` is a convenient way to quickly test many different
         schemas. It will run `nose search`, `nose create`, `nose load`, and
         `nose benchmark` to produce final benchmark results. It also accepts
         all of the command-line options for each of those commands.
       LONGDESC
+
       def search_bench(name)
         # Open a tempfile which will be used for advisor output
         filename = Tempfile.new('workload').path

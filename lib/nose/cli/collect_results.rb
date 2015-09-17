@@ -4,14 +4,17 @@ module NoSE
     class NoSECLI < Thor
       desc 'collect-results CSV_FILES',
            'collect results from CSV_FILES and produce a `gnuplot` data file'
+
       long_desc <<-LONGDESC
         `nose collect-results` combines results from multiple statement
         execution runs and produces a data file which can be used to generate
         clustered bar charts in `gnuplot`.
       LONGDESC
+
       option :total, type: :boolean, default: false, aliases: '-t',
-                     banner: 'whether to include a line for totals in the '\
-                             'graph'
+                     desc: 'whether to include a line for totals in the '\
+                           'graph'
+
       def collect_results(*csv_files)
         # Load the data and output the header
         data = load_data csv_files, options[:total]

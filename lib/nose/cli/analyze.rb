@@ -7,15 +7,18 @@ module NoSE
     class NoSECLI < Thor
       desc 'analyze OUTPUT_FILE CSV_FILES',
            'output a graph to OUTPUT_FILE comparing the CSV_FILES'
+
       long_desc <<-LONGDESC
         `nose analyze` will create a graph comparing the runtimes from multiple
         runs of different schemas for a particular workload. The CSV files
         should be of the format produced from either `nose benchmark` or
         `nose execute`.
       LONGDESC
+
       option :total, type: :boolean, default: false, aliases: '-t',
-                     banner: 'whether to include a line for totals in the '\
-                             'graph'
+                     desc: 'whether to include a line for totals in the '\
+                           'graph'
+
       def analyze(output_file, *csv_files)
         # Load data from the files
         data = load_data csv_files, options[:total]

@@ -12,14 +12,14 @@ module NoSE
       LONGDESC
 
       shared_option :format
+      shared_option :output
 
       option :count, type: :numeric, default: 5, aliases: '-n',
-                     banner: 'the number of random plans to produce'
+                     desc: 'the number of random plans to produce'
       option :all, type: :boolean, default: false, aliases: '-a',
-                   banner: 'whether to include all possible plans, if given ' \
-                           'then --count is ignored'
-      option :output, type: :string, default: nil, aliases: '-o',
-                      banner: 'a file where produced plans should be stored'
+                   desc: 'whether to include all possible plans, if given ' \
+                         'then --count is ignored'
+
       def random_plans(workload_name, tag)
         workload = Workload.load workload_name
 

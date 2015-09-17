@@ -4,6 +4,7 @@ module NoSE
     class NoSECLI < Thor
       desc 'load PLAN_FILE_OR_SCHEMA',
            'create indexes from the given PLAN_FILE_OR_SCHEMA'
+
       long_desc <<-LONGDESC
         `nose load` will load a schema either from generated plan file from
         `nose search` or a named schema in the `schemas` directory. It will
@@ -11,13 +12,15 @@ module NoSE
         from the configured loader. It assumes that the indexes have already
         been created by `nose create`.
       LONGDESC
+
       option :progress, type: :boolean, default: true, aliases: '-p',
-                        banner: 'whether to display an indication of progress'
+                        desc: 'whether to display an indication of progress'
       option :limit, type: :numeric, default: nil, aliases: '-l',
-                     banner: 'limit the number of entries loaded ' \
-                             '(useful for testing)'
+                     desc: 'limit the number of entries loaded ' \
+                           '(useful for testing)'
       option :skip_nonempty, type: :boolean, default: true, aliases: '-s',
-                             banner: 'ignore indexes which are not empty'
+                             desc: 'ignore indexes which are not empty'
+
       def load(*plan_files)
         plan_files.each do |plan_file|
           if File.exist? plan_file

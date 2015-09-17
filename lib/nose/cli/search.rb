@@ -16,18 +16,18 @@ module NoSE
 
       shared_option :mix
       shared_option :format
+      shared_option :output
 
       option :max_space, type: :numeric, default: Float::INFINITY,
                          aliases: '-s'
       option :enumerated, type: :boolean, default: false, aliases: '-e',
-                          banner: 'whether enumerated indexes should be output'
+                          desc: 'whether enumerated indexes should be output'
       option :read_only, type: :boolean, default: false,
-                         banner: 'whether to ignore update statements'
+                         desc: 'whether to ignore update statements'
       option :objective, type: :string, default: 'cost',
                          enum: %w(cost space indexes),
-                         banner: 'the objective function to use in the ILP'
-      option :output, type: :string, default: nil, aliases: '-o',
-                      banner: 'a file where produced plans should be stored'
+                         desc: 'the objective function to use in the ILP'
+
       def search(name)
         # Get the workload and cost model
         workload = Workload.load name

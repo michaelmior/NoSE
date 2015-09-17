@@ -13,9 +13,12 @@ module NoSE
 
       check_unknown_options!
 
-      class_option :debug, type: :boolean, aliases: '-d'
-      class_option :parallel, type: :boolean, default: true
-      class_option :colour, type: :boolean, default: nil, aliases: '-c'
+      class_option :debug, type: :boolean, aliases: '-d',
+                           desc: 'enable detailed debugging information'
+      class_option :parallel, type: :boolean, default: true,
+                              desc: 'run various operations in parallel'
+      class_option :colour, type: :boolean, default: nil, aliases: '-c',
+                            desc: 'enabled coloured output'
 
       def initialize(_options, _local_options, config)
         super

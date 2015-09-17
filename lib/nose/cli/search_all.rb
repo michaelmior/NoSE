@@ -19,12 +19,12 @@ module NoSE
       shared_option :mix
 
       option :enumerated, type: :boolean, aliases: '-e',
-                          banner: 'whether enumerated indexes should be output'
+                          desc: 'whether enumerated indexes should be output'
       option :read_only, type: :boolean, default: false,
-                         banner: 'whether to ignore update statements'
+                         desc: 'whether to ignore update statements'
       option :max_results, type: :numeric, default: Float::INFINITY,
                            aliases: '-n',
-                           banner: 'the maximum number of results to produce'
+                           desc: 'the maximum number of results to produce'
       def search_all(name, directory)
         # Load the workload and cost model and create the output directory
         workload = Workload.load name

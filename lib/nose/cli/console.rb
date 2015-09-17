@@ -4,6 +4,7 @@ module NoSE
     class NoSECLI < Thor
       desc 'console PLAN_FILE', 'open a pry console preconfigured with ' \
                                 'variables from the given PLAN_FILE'
+
       long_desc <<-LONGDESC
         `nose console` gives a convenient way to perform manual exploration of
         generated plan data. It will load plans from the given file and then
@@ -12,6 +13,7 @@ module NoSE
         `model` used to generate the results, the `options` loaded from the
         configuration file, and an instance of the configured `backend`.
       LONGDESC
+
       def console(plan_file)
         # Load the results from the plan file and define each as a variable
         result = load_results plan_file

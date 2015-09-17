@@ -4,10 +4,12 @@ module NoSE
     class NoSECLI < Thor
       desc 'diff-plans PLAN1 PLAN2',
            'output the differing plans between PLAN1 and PLAN2'
+
       long_desc <<-LONGDESC
         `nose diff-plans` loads two sets of statement plans generated
         separately by `nose search` and outputs the plans which are different.
       LONGDESC
+
       def diff_plans(plan1, plan2)
         result1 = load_results plan1
         result2 = load_results plan2
