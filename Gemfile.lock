@@ -40,6 +40,7 @@ GEM
       rmagick4j (>= 0.3.9)
     guruby (0.0.3)
       ffi (~> 1.9)
+    hpricot (0.8.6)
     i18n (0.7.0)
     interception (0.5)
     ione (1.2.0)
@@ -52,6 +53,7 @@ GEM
     method_source (0.8.2)
     mini_portile (0.6.2)
     multi_json (1.10.1)
+    mustache (1.0.2)
     mysql2 (0.3.18)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
@@ -78,12 +80,17 @@ GEM
       pry (>= 0.9.11)
     rake (10.4.0)
     rbtree (0.4.2)
+    rdiscount (2.1.8)
     representable (2.2.3)
       multi_json
       nokogiri
       uber (~> 0.0.7)
     rmagick (2.15.4)
     rmagick4j (0.3.9-java)
+    ronn (0.7.3)
+      hpricot (>= 0.8.2)
+      mustache (>= 0.7.0)
+      rdiscount (>= 1.5.8)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
       rspec-expectations (~> 3.1.0)
@@ -143,6 +150,7 @@ DEPENDENCIES
   rake
   rbtree
   representable
+  ronn
   rspec
   rspec-collection_matchers
   ruby-graphviz
@@ -154,3 +162,6 @@ DEPENDENCIES
   thor
   yard
   yard-thor
+
+BUNDLED WITH
+   1.10.6

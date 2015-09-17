@@ -1,0 +1,39 @@
+nose(1) -- NoSQL Schema Evaluator
+========================================
+
+## SYNOPSIS
+
+`nose` <%= options.each_value.map do |option|
+  '[' + (option.aliases + ["--#{option.name}"]).join('|') + ']'
+end.join ', ' %>
+
+## DESCRIPTION
+
+NoSE is a tool for schema design in NoSQL databases.
+
+## OPTIONS
+
+<% options.each do |name, option| %>
+  * <%= (["--#{name}"] + option.aliases).join ', ' %>
+  <%= option.description  %>
+
+<% end %>
+
+## SUBCOMMANDS
+
+<% commands.each do |name, command| %>
+  `nose-<%= name %>`
+  <%= command.description %>
+
+
+<% end %>
+
+<% if false %>
+
+  XXX To add when we have subcommand man pages
+
+## SEE ALSO
+
+<%= commands.map { |name| "`nose-#{name}`(1)" }.join ', ' %>
+
+<% end %>

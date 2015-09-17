@@ -27,7 +27,7 @@ end
 group :test do
   gem 'aruba', require: false
   gem 'codeclimate-test-reporter', require: false
-  gem 'fakefs', require: 'fakefs/safe'
+  gem 'fakefs', require: 'fakefs/safe'  # used for testing
   gem 'rspec'
   gem 'rspec-collection_matchers'
   gem 'simplecov', require: false
@@ -42,12 +42,14 @@ platform :ruby do
   gem 'rbtree'  # for more efficient SortedSet implementation
 
   group :development do
+    gem 'fakefs', require: 'fakefs/safe'  # used for man page generation
     gem 'ruby-prof'
     gem 'pry-doc'
     gem 'pry-byebug'
     gem 'pry-stack_explorer'
     gem 'yard'
     gem 'yard-thor'
+    gem 'ronn'
   end
 end
 
