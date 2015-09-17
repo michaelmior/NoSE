@@ -22,18 +22,12 @@ NoSE is a tool for schema design in NoSQL databases.
 ## SUBCOMMANDS
 
 <% commands.each do |name, command| %>
-  `nose-<%= name %>`
+  `nose-<%= name %>`(1)
   <%= command.description %>
 
 
 <% end %>
 
-<% if false %>
-
-  XXX To add when we have subcommand man pages
-
 ## SEE ALSO
 
-<%= commands.map { |name| "`nose-#{name}`(1)" }.join ', ' %>
-
-<% end %>
+<%= commands.map { |name, _| "`nose-#{name}`(1)" }.join ', ' %>
