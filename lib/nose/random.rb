@@ -140,33 +140,39 @@ module NoSE
 
     # Generate a new random insertion to entities in the model
     # @return Insert
-    def random_insert
+    def random_insert(connection_count = 1)
       entity = @model.entities.values.sample
       settings = entity.fields.each_value.map do |field|
         "#{field.name}=?"
       end.join ', '
-      connection = entity.foreign_keys.values.sample
-      insert = "INSERT INTO #{entity.name} SET #{settings} " \
-               "AND CONNECT TO #{connection.name}(?)"
+      insert = "INSERT INTO #{entity.name} SET #{settings} "
+
+      # Optionally add connections to other entities
+      if connection_count > 0
+        connections = entity.foreign_keys.values.sample(2)
+        insert += 'AND CONNECT TO ' + connections.map do |connection|
+          "#{connection.name}(?)"
+        end.join(', ')
+      end
 
       Insert.new insert, @model
     end
 
     # Generate a new random update of entities in the model
     # @return Update
-    def random_update
-      path = random_path(1)
+    def random_update(path_length = 1, updated_fields = 2, condition_count = 1)
+      path = random_path(path_length)
 
       # Don't update key fields
       update_fields = path.entities.first.fields.values
       update_fields.reject! { |field| field.is_a? Fields::IDField }
 
-      settings = update_fields.sample(2).map do |field|
+      settings = update_fields.sample(updated_fields).map do |field|
         "#{field.name}=?"
       end.join ', '
       from = [path.first.parent.name] + path.entries[1..-1].map(&:name)
       update = "UPDATE #{from.first} FROM #{from.join '.'} SET #{settings} " +
-               random_where_clause(path, 1)
+               random_where_clause(path, condition_count)
 
       Update.new update, @model
     end
@@ -185,16 +191,16 @@ module NoSE
 
     # Generate a new random query from entities in the model
     # @return Query
-    def random_query
-      path = random_path(3)
-      select = path.entities.first.fields.values.sample 2
+    def random_query(path_length = 3, selected_fields = 2, condition_count = 2)
+      path = random_path(path_length)
+      select = path.entities.first.fields.values.sample selected_fields
 
       select_fields = select.map do |field|
         path.entities.first.name + '.' + field.name
       end.join ', '
       from = [path.first.parent.name] + path.entries[1..-1].map(&:name)
       query = "SELECT #{select_fields} FROM #{from.join '.'} " +
-              random_where_clause(path)
+              random_where_clause(path, condition_count)
 
       Query.new query, @model
     end
