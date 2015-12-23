@@ -1,6 +1,7 @@
 require 'rspec/core/rake_task'
 require 'yard'
 require 'yard-thor'
+require_relative 'yard_extensions'
 
 # XXX: Patch OpenStruct for yard-thor
 class OpenStruct
