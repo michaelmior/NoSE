@@ -39,8 +39,9 @@ module NoSE
                              convert_values_to_numeric: false) do |chunk|
             Parallel.each(chunk.each_slice(100),
                           finish: (lambda do |_, _, _|
+                            next unless show_progress
                             inc = [progress.total - progress.current, 100].min
-                            progress.increment inc if progress
+                            progress.increment inc
                           end)) do |minichunk|
               load_simple_chunk minichunk, entity, simple_index_list
             end
