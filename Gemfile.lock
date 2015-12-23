@@ -157,7 +157,7 @@ DEPENDENCIES
   pry-stack_explorer
   rake
   rbtree
-  representable
+  representable (< 3)
   ronn
   rspec
   rspec-collection_matchers
