@@ -100,7 +100,7 @@ module NoSE
         expect do
           Index.new [], [], [tweet['TweetId']],
                     [tweet.id_fields.first]
-        end.to raise_error
+        end.to raise_error InvalidIndexException
       end
 
       it 'cannot have hash fields involving multiple entities' do
@@ -108,7 +108,7 @@ module NoSE
           Index.new [tweet['Body'], user['City']],
                     tweet.id_fields + user.id_fields, [],
                     [tweet.id_fields.first, tweet['User']]
-        end.to raise_error
+        end.to raise_error InvalidIndexException
       end
 
       it 'must have fields at the start of the path' do

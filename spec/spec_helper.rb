@@ -14,8 +14,18 @@ require 'fakefs/spec_helpers'
 Dir['./spec/support/**/*.rb'].sort.each { |f| require f }
 
 RSpec.configure do |config|
-  config.expect_with :rspec do |c|
-    c.syntax = :expect
+  config.expect_with :rspec do |expectations|
+    expectations.syntax = :expect
+    expectations.include_chain_clauses_in_custom_matcher_descriptions = true
+  end
+
+  # rspec-mocks config goes here. You can use an alternate test double
+  # library (such as bogus or mocha) by changing the `mock_with` option here.
+  config.mock_with :rspec do |mocks|
+    # Prevents you from mocking or stubbing a method that does not exist on
+    # a real object. This is generally recommended, and will default to
+    # `true` in RSpec 4.
+    mocks.verify_partial_doubles = true
   end
 
   config.run_all_when_everything_filtered = true
@@ -25,6 +35,12 @@ RSpec.configure do |config|
   # the seed, which is printed after each run.
   #     --seed 1234
   config.order = 'random'
+
+  # Seed global randomization in this process using the `--seed` CLI option.
+  # Setting this allows you to use `--seed` to deterministically reproduce
+  # test failures related to randomization by passing the same `--seed` value
+  # as the one that triggered the failure.
+  Kernel.srand config.seed
 end
 
 require 'nose'
