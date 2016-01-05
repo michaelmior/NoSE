@@ -3,7 +3,7 @@
 [![Build Status](https://magnum.travis-ci.com/michaelmior/NoSE.svg?token=rM4RuzPrnmeRRxXcrK4C&branch=master)](https://magnum.travis-ci.com/michaelmior/NoSE)
 
 This is a work in progress tool to provide automated physical schema design for NoSQL data stores.
-NoSE is licensed under the [MIT license](LICENSE.md).
+NoSE is licensed under the [GPLv3 license](LICENSE.md).
 
 Testing has been done with Ruby 2+ with dependencies managed via [bundler](http://bundler.io/).
 Most of the code should also run under the latest [JRuby](http://jruby.org/).
