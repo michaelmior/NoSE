@@ -2,6 +2,12 @@
 
 This is adapted from the [Node.js contributor guidelines](https://github.com/nodejs/node/blob/master/CONTRIBUTING.md).
 
+## Issue Contributions
+
+When reporting an issue with NoSE, please provide as much context as possible.
+At minimum, try running the tests and post the output of any failed tests.
+Also be sure to provide the version of the Ruby interpreter you are using.
+
 ## Code Contributions
 
 This document will guide you through the contribution process.
