@@ -1,4 +1,0 @@
-image: ruby2.0.0
-script:
-  - bundle install --without=gurobi
-  - bundle exec rspec --tag ~gurobi
