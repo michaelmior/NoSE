@@ -3,6 +3,7 @@
 [![Build Status](https://magnum.travis-ci.com/michaelmior/NoSE.svg?token=rM4RuzPrnmeRRxXcrK4C&branch=master)](https://magnum.travis-ci.com/michaelmior/NoSE)
 
 This is a work in progress tool to provide automated physical schema design for NoSQL data stores.
+NoSE is licensed under the [MIT license](LICENSE.md).
 
 Testing has been done with Ruby 2+ with dependencies managed via [bundler](http://bundler.io/).
 Most of the code should also run under the latest [JRuby](http://jruby.org/).
@@ -27,3 +28,5 @@ An example configuration file for the different components of NoSE is given in [
 ## Publications
 
 ![ACM DL Author-ize service](http://dl.acm.org/images/oa.gif) Michael J. Mior. 2014. [Automated schema design for NoSQL databases](http://dl.acm.org/authorize?N71145). In Proceedings of the 2014 SIGMOD PhD symposium (SIGMOD'14 PhD Symposium). ACM, New York, NY, USA, 41-45.
+
+Mior, M.J.; Kenneth Salem; Ashraf Aboulnaga; Rui Liu, "NoSE: Schema Design for NoSQL Applications," in Data Engineering (ICDE), 2016 IEEE 32nd International Conference on, 16-20 May 2016 (to appear)
