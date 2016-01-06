@@ -193,11 +193,6 @@ module NoSE
 
       # Output the results of advising as YAML
       def output_yml(result, file = $stdout, enumerated = false)
-        # XXX This is temporarily not used to do an issue with the latest
-        #     version of the representable gem. Once this is fixed, it is
-        #     just necessary to add yml to the list of possible formats in
-        #     shared_options.rb.
-
         # Temporarily remove the enumerated indexes
         if enumerated
           enumerated = result.enumerated_indexes

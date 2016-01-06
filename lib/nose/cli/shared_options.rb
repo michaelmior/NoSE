@@ -16,7 +16,7 @@ module NoSE
       share_option :mix, type: :string, default: 'default',
                          desc: 'the name of the mix for weighting queries'
       share_option :format, type: :string, default: 'txt',
-                            enum: %w(txt json), aliases: '-f',
+                            enum: %w(txt json yml), aliases: '-f',
                             desc: 'the format of the produced plans'
       share_option :output, type: :string, default: nil, aliases: '-o',
                             banner: 'FILE',

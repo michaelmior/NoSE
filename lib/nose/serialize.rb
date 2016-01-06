@@ -31,6 +31,7 @@ module NoSE
     # Represents a field just by the entity and name
     class FieldRepresenter < Representable::Decorator
       include Representable::JSON
+      include Representable::YAML
 
       property :name
 
@@ -63,6 +64,7 @@ module NoSE
     # Represents a simple key for an index
     class IndexRepresenter < Representable::Decorator
       include Representable::JSON
+      include Representable::YAML
 
       property :key
     end
@@ -84,6 +86,7 @@ module NoSE
     # Represents all data of a field
     class EntityFieldRepresenter < Representable::Decorator
       include Representable::JSON
+      include Representable::YAML
 
       collection_representer class: Object, deserialize: FieldBuilder.new
 
@@ -135,6 +138,7 @@ module NoSE
     # Represent the whole entity and its fields
     class EntityRepresenter < Representable::Decorator
       include Representable::JSON
+      include Representable::YAML
 
       collection_representer class: Object, deserialize: EntityBuilder.new
 
@@ -152,6 +156,7 @@ module NoSE
     # Conversion of a statement is just the text
     class StatementRepresenter < Representable::Decorator
       include Representable::JSON
+      include Representable::YAML
 
       # Represent as the text of the statement
       def to_hash(*)
@@ -162,6 +167,7 @@ module NoSE
     # Base representation for query plan steps
     class PlanStepRepresenter < Representable::Decorator
       include Representable::JSON
+      include Representable::YAML
 
       property :subtype_name, as: :type
       property :cost
@@ -209,6 +215,7 @@ module NoSE
     # Represent a query plan as a sequence of steps
     class QueryPlanRepresenter < Representable::Decorator
       include Representable::JSON
+      include Representable::YAML
 
       property :group
       property :name
@@ -254,6 +261,7 @@ module NoSE
     # Represent an update plan
     class UpdatePlanRepresenter < Representable::Decorator
       include Representable::JSON
+      include Representable::YAML
 
       property :group
       property :name
@@ -343,6 +351,7 @@ module NoSE
     # Represent entities and statements in a workload
     class WorkloadRepresenter < Representable::Decorator
       include Representable::JSON
+      include Representable::YAML
 
       collection :statements, decorator: StatementRepresenter
       property :mix
@@ -500,6 +509,7 @@ module NoSE
     # Represent results of a search operation
     class SearchResultRepresenter < Representable::Decorator
       include Representable::JSON
+      include Representable::YAML
 
       property :workload, decorator: WorkloadRepresenter,
                           class: Workload,
