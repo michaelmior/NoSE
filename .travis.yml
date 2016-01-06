@@ -10,6 +10,6 @@ rvm:
 script: bundle exec rspec --tag ~gurobi
 addons:
   code_climate:
-    repo_token: 805451e02a4b10cdf4ac9db17a3783edc8e8dab907bb040ff45877f5fa22b3a3
+    repo_token: 6bb85eb10136dfdb11e56bf53a9679510ca99c3c0f2495c06d6a3cb9670b9954
   apt_packages:
     - graphviz
