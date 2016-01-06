@@ -31,4 +31,5 @@
 
 ## Configuration files
 *.yml
+!.codeclimate.yml
 !.travis.yml
