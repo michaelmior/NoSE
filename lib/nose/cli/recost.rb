@@ -1,5 +1,5 @@
 module NoSE
-    module CLI
+  module CLI
     # Add a command to recalculate costs with a new model
     class NoSECLI < Thor
       desc 'recost PLAN_FILE COST_MODEL',

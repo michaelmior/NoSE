@@ -101,10 +101,7 @@ module NoSE
         plan.instance_eval(&block)
 
         # Reset the parent plan if it was set
-        if set_parent
-          @parent_plan = nil
-          set_parent = false
-        end
+        @parent_plan = nil if set_parent
 
         @groups[@group] << plan
       end

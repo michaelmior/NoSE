@@ -1,5 +1,5 @@
 module NoSE
-    module CLI
+  module CLI
     # Add a command to dump a workload and its corresponding schema
     class NoSECLI < Thor
       desc 'dump PLANS', 'output the plans in PLANS'

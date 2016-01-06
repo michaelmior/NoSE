@@ -327,7 +327,7 @@ module NoSE
         end
 
         index_key = instance['index']['key']
-        index = object.indexes.find { |index| index.key == index_key }
+        index = object.indexes.find { |i| i.key == index_key }
         update_plan = Plans::UpdatePlan.new statement, index, [], update_steps,
                                             object.cost_model
 

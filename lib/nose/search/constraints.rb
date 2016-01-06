@@ -9,10 +9,8 @@ module NoSE
         end
       end
 
-      private
-
       # To be implemented in subclasses for query-specific constraints
-      def self.apply_query(*args)
+      def self.apply_query(*_args)
       end
     end
 
@@ -48,8 +46,6 @@ module NoSE
 
     # Constraints that force each query to have an available plan
     class CompletePlanConstraints < Constraint
-      private
-
       # Add the discovered constraints to the problem
       def self.add_query_constraints(query, q, constraints, problem)
         constraints.each do |entities, constraint|

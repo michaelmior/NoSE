@@ -319,9 +319,6 @@ module NoSE
           # Limit the size of the results in case we fetched multiple keys
           new_result[0..(@step.limit.nil? ? -1 : @step.limit)]
         end
-
-        private
-
       end
     end
   end

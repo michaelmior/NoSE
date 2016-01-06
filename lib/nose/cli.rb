@@ -245,4 +245,5 @@ begin
   require 'pry'
   require_relative 'cli/console'
 rescue LoadError
+  nil
 end

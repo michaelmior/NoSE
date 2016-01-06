@@ -210,7 +210,7 @@ module NoSE
                                     delete: 5 })
       pick = Pickup.new(weights)
       type = pick.pick(1)
-      send ('random_' + type.to_s).to_sym
+      send(('random_' + type.to_s).to_sym)
     end
 
     private

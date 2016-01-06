@@ -126,8 +126,8 @@ module NoSE
 
       # We must have the primary keys of the all entities on the path
       fail InvalidIndexException, 'missing path entity keys' \
-        unless @path.entities.flat_map(&:id_fields).all? \
-          &(@hash_fields + @order_fields).method(:include?)
+        unless @path.entities.flat_map(&:id_fields).all?(
+          &(@hash_fields + @order_fields).method(:include?))
     end
 
     # Precalculate the size of the index

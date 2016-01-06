@@ -39,7 +39,7 @@ module NoSE
     end
 
     # Add a new {Statement} to the workload or parse a string
-    def add_statement(statement, mixes = {}, group: group)
+    def add_statement(statement, mixes = {}, group: nil)
       statement = Statement.parse(statement, @model, group: group) \
         if statement.is_a? String
       statement.freeze

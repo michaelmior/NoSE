@@ -409,7 +409,7 @@ module NoSE
       klass.new text, model, group: group
     end
 
-    def initialize(type, text, model, group: group)
+    def initialize(type, text, model, group: nil)
       @group = group
       @text = text
 
@@ -731,7 +731,7 @@ module NoSE
     include StatementSettings
     include StatementSupportQuery
 
-    def initialize(statement, model, group: group)
+    def initialize(statement, model, group: nil)
       super :update, statement, model, group: group
 
       populate_conditions
@@ -782,7 +782,7 @@ module NoSE
 
     alias_method :entity, :from
 
-    def initialize(statement, model, group: group)
+    def initialize(statement, model, group: nil)
       super :insert, statement, model, group: group
 
       populate_settings
@@ -902,7 +902,7 @@ module NoSE
     include StatementConditions
     include StatementSupportQuery
 
-    def initialize(statement, model, group: group)
+    def initialize(statement, model, group: nil)
       super :delete, statement, model, group: group
 
       populate_conditions
@@ -1028,7 +1028,7 @@ module NoSE
 
   # A representation of a connect in the workload
   class Connect < Connection
-    def initialize(statement, model, group: group)
+    def initialize(statement, model, group: nil)
       super :connect, statement, model, group: group
       fail InvalidStatementException, 'DISCONNECT parsed as CONNECT' \
         unless @text.split.first == 'CONNECT'
@@ -1044,7 +1044,7 @@ module NoSE
 
   # A representation of a disconnect in the workload
   class Disconnect < Connection
-    def initialize(statement, model, group: group)
+    def initialize(statement, model, group: nil)
       super :connect, statement, model, group: group
       fail InvalidStatementException, 'CONNECT parsed as DISCONNECT' \
         unless @text.split.first == 'DISCONNECT'

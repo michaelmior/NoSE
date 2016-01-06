@@ -3,6 +3,7 @@
 begin
   require 'mysql2'
 rescue LoadError
+  nil
 end
 
 module NoSE
@@ -116,7 +117,7 @@ module NoSE
         return tables if index.path.length == 1
 
         tables += ' WHERE '
-        tables += index.path.each_cons(2).map do |prev_key, key|
+        tables += index.path.each_cons(2).map do |_prev_key, key|
           key = key.reverse if key.relationship == :one
           "#{key.parent.name}.#{key.name}=" \
             "#{key.entity.name}.#{key.entity.id_fields.first.name}"

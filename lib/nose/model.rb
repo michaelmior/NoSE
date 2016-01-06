@@ -69,7 +69,7 @@ module NoSE
         end
       end
 
-      graph.output **{format => filename}
+      graph.output(**{format => filename})
     end
   end
 

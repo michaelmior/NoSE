@@ -59,12 +59,12 @@ module NoSE
             Hash[headers.zip row]
           end.group_by { |row| row['group'] }
 
-          rows = grouped_lines.map do |group, rows|
-            mean = rows.inject(0) { |sum, row| sum + row['mean'].to_f }
+          rows = grouped_lines.map do |group, grouped_rows|
+            mean = grouped_rows.inject(0) { |sum, row| sum + row['mean'].to_f }
             {
-              'label' => rows.first['label'],
+              'label' => grouped_rows.first['label'],
               'group' => group,
-              'mean' => mean * rows.first['weight'].to_f
+              'mean' => mean * grouped_rows.first['weight'].to_f
             }
           end
 

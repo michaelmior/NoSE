@@ -83,8 +83,8 @@ module NoSE
       # Select the single query plan from a tree of plans
       def select_plan(tree)
         query = tree.query
-        plan = tree.find do |plan|
-          plan.indexes.to_set ==  @query_indexes[query]
+        plan = tree.find do |tree_plan|
+          tree_plan.indexes.to_set ==  @query_indexes[query]
         end
         plan.instance_variable_set :@workload, @workload
 

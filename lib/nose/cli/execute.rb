@@ -150,7 +150,7 @@ module NoSE
 
       # Get the average execution time for a single query plan
       def bench_query(backend, indexes, plan, index_values, iterations, repeat,
-                      weight: weight)
+                      weight: 1.0)
         # Construct a list of values to be substituted in the plan
         condition_list = 1.upto(iterations).map do |i|
           Hash[plan.params.map do |field_id, condition|
@@ -188,7 +188,7 @@ module NoSE
 
       # Get the average execution time for a single update plan
       def bench_update(backend, indexes, plan, index_values,
-                       iterations, repeat, weight: weight)
+                       iterations, repeat, weight: 1.0)
         params = plan.params
         condition_list = 1.upto(iterations).map do |i|
           Hash[params.map do |field_id, condition|

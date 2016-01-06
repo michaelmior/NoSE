@@ -66,7 +66,7 @@ module NoSE
         end]
 
         # Ensure we only use primary keys for conditions
-        params = Hash[params.map do |field_id, condition|
+        params = Hash[params.each_value.map do |condition|
           field = condition.field
           if field.is_a?(Fields::ForeignKeyField)
             field = field.entity.id_fields.first
@@ -83,7 +83,7 @@ module NoSE
       # Select query plans to actually use here
       def select_query_plans(indexes = nil, &block)
         if block_given?
-          @query_plans = @trees.map &block
+          @query_plans = @trees.map(&block)
         else
           @query_plans = @trees.map do |tree|
             plan = tree.select_using_indexes(indexes).min_by(&:cost)
