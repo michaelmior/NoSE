@@ -3,8 +3,9 @@ cache: bundler
 before_install: gem install bundler
 bundler_args: --without=development gurobi
 rvm:
-  - 2.2.0
-  - 2.1.5
+  - 2.3.0
+  - 2.2.4
+  - 2.1.8
   - jruby-9000
 script: bundle exec rspec --tag ~gurobi
 addons:
