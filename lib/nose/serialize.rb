@@ -2,6 +2,18 @@ require 'representable'
 require 'representable/json'
 require 'representable/yaml'
 
+# XXX Temporarily disable deprecations
+Representable.deprecations = false
+
+module Representable
+  module Uncached
+    def representable_map(options, format)
+      Representable::Binding::Map.new(
+        representable_bindings_for(format, options))
+    end
+  end
+end
+
 module NoSE
   # Serialization of workloads and statement execution plans
   module Serialize
@@ -9,15 +21,16 @@ module NoSE
     class FieldBuilder
       include Uber::Callable
 
-      def call(_object, _fragment, instance, **options)
+      def call(_, options)
+        instance = options[:fragment]
         field_class = Fields::Field.subtype_class instance['type']
 
         # Extract the correct parameters and create a new field instance
         if field_class == Fields::StringField && !instance['size'].nil?
           field = field_class.new instance['name'], instance['size']
         elsif field_class.ancestors.include? Fields::ForeignKeyField
-          field = field_class.new instance['name'],
-                                  options[:entity_map][instance['entity']]
+          entity = options[:user_options][:entity_map][instance['entity']]
+          field = field_class.new instance['name'], entity
         else
           field = field_class.new instance['name']
         end
@@ -30,8 +43,10 @@ module NoSE
 
     # Represents a field just by the entity and name
     class FieldRepresenter < Representable::Decorator
+      include Representable::Hash
       include Representable::JSON
       include Representable::YAML
+      include Representable::Uncached
 
       property :name
 
@@ -46,10 +61,10 @@ module NoSE
     class IndexBuilder
       include Uber::Callable
 
-      def call(object, _fragment, instance, **_options)
+      def call(_, options)
         # Extract the entities from the workload
-        workload = object.workload
-        model = workload.model
+        model = options[:represented].workload.model
+        instance = options[:fragment]
 
         # Pull the fields from each entity
         f = lambda do |fields|
@@ -63,8 +78,10 @@ module NoSE
 
     # Represents a simple key for an index
     class IndexRepresenter < Representable::Decorator
+      include Representable::Hash
       include Representable::JSON
       include Representable::YAML
+      include Representable::Uncached
 
       property :key
     end
@@ -85,8 +102,10 @@ module NoSE
 
     # Represents all data of a field
     class EntityFieldRepresenter < Representable::Decorator
+      include Representable::Hash
       include Representable::JSON
       include Representable::YAML
+      include Representable::Uncached
 
       collection_representer class: Object, deserialize: FieldBuilder.new
 
@@ -121,14 +140,17 @@ module NoSE
     class EntityBuilder
       include Uber::Callable
 
-      def call(_object, _fragment, instance, **options)
+      def call(_, options)
+        instance = options[:fragment]
+
         # Pull the field from the map of all entities
-        entity = options[:entity_map][instance['name']]
+        entity_map = options[:user_options][:entity_map]
+        entity = entity_map[instance['name']]
 
         # Add all fields from the entity
         fields = EntityFieldRepresenter.represent([])
         fields = fields.from_hash instance['fields'],
-                                  entity_map: options[:entity_map]
+                                  user_options: { entity_map: entity_map }
         fields.each { |field| entity.send(:<<, field, freeze: false) }
 
         entity
@@ -137,8 +159,10 @@ module NoSE
 
     # Represent the whole entity and its fields
     class EntityRepresenter < Representable::Decorator
+      include Representable::Hash
       include Representable::JSON
       include Representable::YAML
+      include Representable::Uncached
 
       collection_representer class: Object, deserialize: EntityBuilder.new
 
@@ -155,8 +179,10 @@ module NoSE
 
     # Conversion of a statement is just the text
     class StatementRepresenter < Representable::Decorator
+      include Representable::Hash
       include Representable::JSON
       include Representable::YAML
+      include Representable::Uncached
 
       # Represent as the text of the statement
       def to_hash(*)
@@ -166,8 +192,10 @@ module NoSE
 
     # Base representation for query plan steps
     class PlanStepRepresenter < Representable::Decorator
+      include Representable::Hash
       include Representable::JSON
       include Representable::YAML
+      include Representable::Uncached
 
       property :subtype_name, as: :type
       property :cost
@@ -214,21 +242,23 @@ module NoSE
 
     # Represent a query plan as a sequence of steps
     class QueryPlanRepresenter < Representable::Decorator
+      include Representable::Hash
       include Representable::JSON
       include Representable::YAML
+      include Representable::Uncached
 
       property :group
       property :name
       property :query, decorator: StatementRepresenter
       property :cost
       property :weight
-      collection :each, as: :steps, decorator: (lambda do |step, *|
+      collection :each, as: :steps, decorator: (lambda do |options|
         {
           index_lookup: IndexLookupStepRepresenter,
           filter: FilterStepRepresenter,
           sort: SortStepRepresenter,
           limit: LimitStepRepresenter
-        }[step.class.subtype_name.to_sym] || PlanStepRepresenter
+        }[options[:input].class.subtype_name.to_sym] || PlanStepRepresenter
       end)
     end
 
@@ -260,8 +290,10 @@ module NoSE
 
     # Represent an update plan
     class UpdatePlanRepresenter < Representable::Decorator
+      include Representable::Hash
       include Representable::JSON
       include Representable::YAML
+      include Representable::Uncached
 
       property :group
       property :name
@@ -294,7 +326,7 @@ module NoSE
     class UpdatePlanBuilder
       include Uber::Callable
 
-      def call(object, _fragment, instance, **_options)
+      def call(_, options)
         workload = object.workload
 
         if instance['statement'].nil?
@@ -350,8 +382,10 @@ module NoSE
 
     # Represent entities and statements in a workload
     class WorkloadRepresenter < Representable::Decorator
+      include Representable::Hash
       include Representable::JSON
       include Representable::YAML
+      include Representable::Uncached
 
       collection :statements, decorator: StatementRepresenter
       property :mix
@@ -383,8 +417,9 @@ module NoSE
     class WorkloadBuilder
       include Uber::Callable
 
-      def call(_object, fragment, instance, **_options)
-        workload = fragment.represented
+      def call(_, options)
+        workload = options[:input].represented
+        instance = options[:fragment]
 
         # Recreate all the entities
         entity_map = {}
@@ -395,7 +430,7 @@ module NoSE
         # Populate the entities and add them to the workload
         entities = EntityRepresenter.represent([])
         entities = entities.from_hash instance['entities'],
-                                      entity_map: entity_map
+                                      user_options: { entity_map: entity_map }
         entities.each { |entity| workload << entity }
 
         # Add all the reverse foreign keys
@@ -405,8 +440,8 @@ module NoSE
               field = entity_map[entity['name']] \
                 .foreign_keys[field_hash['name']]
               field.reverse = field.entity.foreign_keys[field_hash['reverse']]
-              field.instance_variable_set :@relationship,
-                                          field_hash['relationship'].to_sym
+              # field.instance_variable_set :@relationship,
+              #                             field_hash['relationship'].to_sym
             end
             field.freeze
           end
@@ -434,8 +469,10 @@ module NoSE
     class QueryPlanBuilder
       include Uber::Callable
 
-      def call(object, _fragment, instance, **_options)
+      def call(_, options)
+        object = options[:represented]
         workload = object.workload
+        instance = options[:fragment]
 
         if instance['query'].nil?
           query = nil
@@ -508,8 +545,10 @@ module NoSE
 
     # Represent results of a search operation
     class SearchResultRepresenter < Representable::Decorator
+      include Representable::Hash
       include Representable::JSON
       include Representable::YAML
+      include Representable::Uncached
 
       property :workload, decorator: WorkloadRepresenter,
                           class: Workload,
