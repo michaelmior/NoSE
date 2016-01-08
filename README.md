@@ -1,6 +1,7 @@
 # NoSQL Schema Evaluator (NoSE)
 
 [![Build Status](https://travis-ci.org/michaelmior/NoSE.svg)](https://travis-ci.org/michaelmior/NoSE)
+[![Dependency Status](https://gemnasium.com/michaelmior/NoSE.svg)](https://gemnasium.com/michaelmior/NoSE)
 
 This is a work in progress tool to provide automated physical schema design for NoSQL data stores.
 NoSE is licensed under the [GPLv3 license](LICENSE.md).
