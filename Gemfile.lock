@@ -85,7 +85,7 @@ GEM
     rake (10.4.2)
     rbtree (0.4.2)
     rdiscount (2.1.8)
-    representable (2.4.1)
+    representable (3.0.0)
       declarative (~> 0.0.5)
       uber (~> 0.0.15)
     rmagick (2.15.4)
@@ -153,7 +153,7 @@ DEPENDENCIES
   pry-stack_explorer
   rake
   rbtree
-  representable (~> 2.4.0)
+  representable
   ronn
   rspec
   rspec-collection_matchers

@@ -2,9 +2,6 @@ require 'representable'
 require 'representable/json'
 require 'representable/yaml'
 
-# XXX Temporarily disable deprecations
-Representable.deprecations = false
-
 module Representable
   module Uncached
     def representable_map(options, format)

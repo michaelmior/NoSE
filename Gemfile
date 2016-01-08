@@ -9,7 +9,7 @@ gem 'parallel'
 gem 'parslet'
 gem 'pickup'
 gem 'rake', require: false
-gem 'representable', '~> 2.4.0'
+gem 'representable'
 gem 'ruby-graphviz'
 gem 'ruby-mysql'  # this is used for the proxy because it's pure Ruby
 gem 'smarter_csv'
