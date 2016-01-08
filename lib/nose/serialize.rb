@@ -21,21 +21,20 @@ module NoSE
     class FieldBuilder
       include Uber::Callable
 
-      def call(_, options)
-        instance = options[:fragment]
-        field_class = Fields::Field.subtype_class instance['type']
+      def call(_, fragment:, user_options:, **)
+        field_class = Fields::Field.subtype_class fragment['type']
 
         # Extract the correct parameters and create a new field instance
-        if field_class == Fields::StringField && !instance['size'].nil?
-          field = field_class.new instance['name'], instance['size']
+        if field_class == Fields::StringField && !fragment['size'].nil?
+          field = field_class.new fragment['name'], fragment['size']
         elsif field_class.ancestors.include? Fields::ForeignKeyField
-          entity = options[:user_options][:entity_map][instance['entity']]
-          field = field_class.new instance['name'], entity
+          entity = user_options[:entity_map][fragment['entity']]
+          field = field_class.new fragment['name'], entity
         else
-          field = field_class.new instance['name']
+          field = field_class.new fragment['name']
         end
 
-        field *= instance['cardinality'] if instance['cardinality']
+        field *= fragment['cardinality'] if fragment['cardinality']
 
         field
       end
@@ -61,18 +60,17 @@ module NoSE
     class IndexBuilder
       include Uber::Callable
 
-      def call(_, options)
+      def call(_, represented:, fragment:, **)
         # Extract the entities from the workload
-        model = options[:represented].workload.model
-        instance = options[:fragment]
+        model = represented.workload.model
 
         # Pull the fields from each entity
         f = lambda do |fields|
-          instance[fields].map { |dict| model[dict['parent']][dict['name']] }
+          fragment[fields].map { |dict| model[dict['parent']][dict['name']] }
         end
 
         Index.new f.call('hash_fields'), f.call('order_fields'),
-                  f.call('extra'), f.call('path'), instance['key']
+                  f.call('extra'), f.call('path'), fragment['key']
       end
     end
 
@@ -140,16 +138,14 @@ module NoSE
     class EntityBuilder
       include Uber::Callable
 
-      def call(_, options)
-        instance = options[:fragment]
-
+      def call(_, fragment:, user_options:, **)
         # Pull the field from the map of all entities
-        entity_map = options[:user_options][:entity_map]
-        entity = entity_map[instance['name']]
+        entity_map = user_options[:entity_map]
+        entity = entity_map[fragment['name']]
 
         # Add all fields from the entity
         fields = EntityFieldRepresenter.represent([])
-        fields = fields.from_hash instance['fields'],
+        fields = fields.from_hash fragment['fields'],
                                   user_options: { entity_map: entity_map }
         fields.each { |field| entity.send(:<<, field, freeze: false) }
 
@@ -417,24 +413,23 @@ module NoSE
     class WorkloadBuilder
       include Uber::Callable
 
-      def call(_, options)
-        workload = options[:input].represented
-        instance = options[:fragment]
+      def call(_, input:, fragment:, **)
+        workload = input.represented
 
         # Recreate all the entities
         entity_map = {}
-        instance['entities'].each do |entity_hash|
+        fragment['entities'].each do |entity_hash|
           entity_map[entity_hash['name']] = Entity.new entity_hash['name']
         end
 
         # Populate the entities and add them to the workload
         entities = EntityRepresenter.represent([])
-        entities = entities.from_hash instance['entities'],
+        entities = entities.from_hash fragment['entities'],
                                       user_options: { entity_map: entity_map }
         entities.each { |entity| workload << entity }
 
         # Add all the reverse foreign keys
-        instance['entities'].each do |entity|
+        fragment['entities'].each do |entity|
           entity['fields'].each do |field_hash|
             if field_hash['type'] == 'foreign_key'
               field = entity_map[entity['name']] \
@@ -449,18 +444,18 @@ module NoSE
 
         # Add all statements to the workload
         statement_weights = Hash.new { |h, k| h[k] = {} }
-        instance['weights'].each do |mix, weights|
+        fragment['weights'].each do |mix, weights|
           mix = mix.to_sym
           weights.each do |statement, weight|
             statement_weights[statement][mix] = weight
           end
         end
-        instance['statements'].each do |statement|
+        fragment['statements'].each do |statement|
           workload.add_statement statement, statement_weights[statement],
-                                 group: instance['group']
+                                 group: fragment['group']
         end
 
-        workload.mix = instance['mix'].to_sym unless instance['mix'].nil?
+        workload.mix = fragment['mix'].to_sym unless fragment['mix'].nil?
         workload
       end
     end
@@ -469,37 +464,35 @@ module NoSE
     class QueryPlanBuilder
       include Uber::Callable
 
-      def call(_, options)
-        object = options[:represented]
-        workload = object.workload
-        instance = options[:fragment]
+      def call(_, represented:, fragment:, **)
+        workload = represented.workload
 
-        if instance['query'].nil?
+        if fragment['query'].nil?
           query = nil
           state = nil
         else
-          query = Query.new instance['query'], workload.model,
-                            group: instance['group']
+          query = Query.new fragment['query'], workload.model,
+                            group: fragment['group']
           state = Plans::QueryState.new query, workload
         end
 
         # Create a new query plan
-        plan = Plans::QueryPlan.new query, object.cost_model
+        plan = Plans::QueryPlan.new query, represented.cost_model
 
-        plan.instance_variable_set(:@name, instance['name']) \
-          unless instance['name'].nil?
-        plan.instance_variable_set(:@weight, instance['weight'])
+        plan.instance_variable_set(:@name, fragment['name']) \
+          unless fragment['name'].nil?
+        plan.instance_variable_set(:@weight, fragment['weight'])
 
         parent = Plans::RootPlanStep.new state
 
         f = ->(field) { workload.model[field['parent']][field['name']] }
 
         # Loop over all steps in the plan and reconstruct them
-        instance['steps'].each do |step_hash|
+        fragment['steps'].each do |step_hash|
           step_class = Plans::PlanStep.subtype_class step_hash['type']
           if step_class == Plans::IndexLookupPlanStep
             index_key = step_hash['index']['key']
-            step_index = object.indexes.find { |index| index.key == index_key }
+            step_index = represented.indexes.find { |i| i.key == index_key }
             step = step_class.new step_index, state, parent
 
             eq_filter = (step_hash['eq_filter'] || []).map(&f)
