@@ -3,7 +3,7 @@ module NoSE::Search
     include_context 'dummy_cost_model'
     include_context 'entities'
 
-    it 'raises an exception if there is no space' do
+    it 'raises an exception if there is no space', gurobi: true do
       workload.add_statement 'SELECT Tweet.Body FROM Tweet ' \
                              'WHERE Tweet.TweetId = ?'
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
