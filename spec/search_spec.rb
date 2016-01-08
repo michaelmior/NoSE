@@ -8,7 +8,9 @@ module NoSE::Search
                              'WHERE Tweet.TweetId = ?'
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
       search = Search.new(workload, cost_model)
-      expect { search.search_overlap(indexes, 1) }.to raise_error
+      expect do
+        search.search_overlap(indexes, 1)
+      end.to raise_error(NoSolutionException)
     end
 
     it 'produces a materialized view with sufficient space', gurobi: true do
