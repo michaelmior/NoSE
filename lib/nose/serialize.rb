@@ -321,20 +321,20 @@ module NoSE
     class UpdatePlanBuilder
       include Uber::Callable
 
-      def call(_, options)
-        workload = object.workload
+      def call(_, fragment:, represented:, **)
+        workload = represented.workload
 
-        if instance['statement'].nil?
+        if fragment['statement'].nil?
           statement = nil
         else
-          statement = Statement.parse instance['statement'], workload.model,
-                                      group: instance['group']
+          statement = Statement.parse fragment['statement'], workload.model,
+                                      group: fragment['group']
         end
 
-        update_steps = instance['update_steps'].map do |step_hash|
+        update_steps = fragment['update_steps'].map do |step_hash|
           step_class = Plans::PlanStep.subtype_class step_hash['type']
           index_key = step_hash['index']['key']
-          step_index = object.indexes.find { |index| index.key == index_key }
+          step_index = represented.indexes.find { |i| i.key == index_key }
 
           if statement.nil?
             state = nil
@@ -353,21 +353,21 @@ module NoSE
           step
         end
 
-        index_key = instance['index']['key']
-        index = object.indexes.find { |i| i.key == index_key }
+        index_key = fragment['index']['key']
+        index = represented.indexes.find { |i| i.key == index_key }
         update_plan = Plans::UpdatePlan.new statement, index, [], update_steps,
-                                            object.cost_model
+                                            represented.cost_model
 
-        update_plan.instance_variable_set(:@group, instance['group']) \
-          unless instance['group'].nil?
-        update_plan.instance_variable_set(:@name, instance['name']) \
-          unless instance['name'].nil?
-        update_plan.instance_variable_set(:@weight, instance['weight'])
+        update_plan.instance_variable_set(:@group, fragment['group']) \
+          unless fragment['group'].nil?
+        update_plan.instance_variable_set(:@name, fragment['name']) \
+          unless fragment['name'].nil?
+        update_plan.instance_variable_set(:@weight, fragment['weight'])
 
         # Reconstruct and assign the query plans
         builder = QueryPlanBuilder.new
-        query_plans = instance['query_plans'].map do |plan|
-          builder.call object, OpenStruct.new, plan
+        query_plans = fragment['query_plans'].map do |plan|
+          builder.call [], represented: represented, fragment: plan
         end
         update_plan.instance_variable_set(:@query_plans, query_plans)
 
