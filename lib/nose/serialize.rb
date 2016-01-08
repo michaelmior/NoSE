@@ -2,6 +2,8 @@ require 'representable'
 require 'representable/json'
 require 'representable/yaml'
 
+# XXX Caching currently breaks the use of multiple formatting modules
+#     see https://github.com/apotonick/representable/issues/180
 module Representable
   module Uncached
     def representable_map(options, format)
