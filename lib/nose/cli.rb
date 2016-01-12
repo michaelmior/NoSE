@@ -94,6 +94,22 @@ module NoSE
         representer.from_json(json)
       end
 
+      # Load plans either from an explicit file or the name
+      # of something in the plans/ directory
+      def load_plans(plan_file, options)
+        if File.exist? plan_file
+          result = load_results(plan_file)
+        else
+          schema = Schema.load plan_file
+          result = OpenStruct.new
+          result.workload = Workload.new schema.model
+          result.indexes = schema.indexes.values
+        end
+        backend = get_backend(options, result)
+
+        [result, backend]
+      end
+
       # Output a list of indexes as text
       def output_indexes_txt(header, indexes, file)
         file.puts Formatador.parse("[blue]#{header}[/]")

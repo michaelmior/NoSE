@@ -23,15 +23,7 @@ module NoSE
 
       def load(*plan_files)
         plan_files.each do |plan_file|
-          if File.exist? plan_file
-            result = load_results(plan_file)
-          else
-            schema = Schema.load plan_file
-            result = OpenStruct.new
-            result.workload = Workload.new schema.model
-            result.indexes = schema.indexes.values
-          end
-          backend = get_backend(options, result)
+          result, backend = load_plans plan_file, options
 
           # Create a new instance of the loader class
           loader_class = get_class 'loader', options

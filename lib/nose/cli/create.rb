@@ -19,15 +19,7 @@ module NoSE
 
       def create(*plan_files)
         plan_files.each do |plan_file|
-          if File.exist? plan_file
-            result = load_results(plan_file)
-          else
-            schema = Schema.load plan_file
-            result = OpenStruct.new
-            result.workload = Workload.new schema.model
-            result.indexes = schema.indexes.values
-          end
-          backend = get_backend(options, result)
+          _, backend = load_plans plan_file, options
 
           # Produce the DDL and execute unless the dry run option was given
           backend.indexes_ddl(!options[:dry_run], options[:skip_existing],
