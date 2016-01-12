@@ -85,7 +85,13 @@ module NoSE
         end
         return if !fk_class.nil? && child_class <= fk_class
 
-        # Add convenience methods for all field types for an entity DSL
+        add_field_method(child_class)
+        child_class.send(:include, Subtype)
+      end
+      private_class_method :inherited
+
+      # Add convenience methods for all field types for an entity DSL
+      def self.add_field_method(child_class)
         method_regex = /^NoSE::Fields::(.*?)(Field)?$/
         method_name = child_class.name.sub(method_regex, '\1')
         EntityDSL.send :define_method, method_name,
@@ -93,10 +99,8 @@ module NoSE
                          send(:instance_variable_get, :@entity).send \
                            :<<, child_class.new(*args)
                        end)
-
-        child_class.send(:include, Subtype)
       end
-      private_class_method :inherited
+      private_class_method :add_field_method
     end
 
     # Field holding an integer
@@ -170,11 +174,13 @@ module NoSE
 
       # Parse a DateTime from the provided parameter
       def self.value_from_string(string)
+        # rubocop:disable Style/RedundantBegin
         begin
           DateTime.parse(string).to_time
         rescue ArgumentError
-          fail TypeError
+          raise TypeError
         end
+        # rubocop:enable Style/RedundantBegin
       end
 
       # A random date within 2 years surrounding today
