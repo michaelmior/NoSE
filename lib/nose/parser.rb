@@ -685,7 +685,7 @@ module NoSE
 
       # XXX This should not be necessary, but we need it
       #     for now to keep each individual query unique
-      query += " -- #{query.hash}"  # XXX this should not be necess
+      query += " -- #{query.hash}"
 
       SupportQuery.new query, @model, self, index
     end
