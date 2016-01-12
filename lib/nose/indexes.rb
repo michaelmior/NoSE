@@ -154,7 +154,7 @@ module NoSE
     # @return [Index]
     def simple_index
       Index.new id_fields, [], fields.values - id_fields,
-                [self.id_fields.first], name
+                [id_fields.first], name
     end
   end
 

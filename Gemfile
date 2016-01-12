@@ -11,7 +11,7 @@ gem 'pickup'
 gem 'rake', require: false
 gem 'representable'
 gem 'ruby-graphviz'
-gem 'ruby-mysql'  # this is used for the proxy because it's pure Ruby
+gem 'ruby-mysql' # this is used for the proxy because it's pure Ruby
 gem 'smarter_csv'
 gem 'table_print'
 gem 'thor', require: false
@@ -21,13 +21,13 @@ group :gurobi do
 end
 
 platform :ruby do
-  gem 'mysql2'  # this is used for the loader for performance
+  gem 'mysql2' # this is used for the loader for performance
 end
 
 group :test do
   gem 'aruba', '~> 0.6.0', require: false
   gem 'codeclimate-test-reporter', require: false
-  gem 'fakefs', require: 'fakefs/safe'  # used for testing
+  gem 'fakefs', require: 'fakefs/safe' # used for testing
   gem 'rspec'
   gem 'rspec-collection_matchers'
   gem 'simplecov', require: false
@@ -39,10 +39,10 @@ group :development do
 end
 
 platform :ruby do
-  gem 'rbtree'  # for more efficient SortedSet implementation
+  gem 'rbtree' # for more efficient SortedSet implementation
 
   group :development do
-    gem 'fakefs', require: 'fakefs/safe'  # used for man page generation
+    gem 'fakefs', require: 'fakefs/safe' # used for man page generation
     gem 'ruby-prof'
     gem 'pry-doc'
     gem 'pry-byebug'

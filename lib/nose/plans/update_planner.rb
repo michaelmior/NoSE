@@ -26,7 +26,7 @@ module NoSE
         @statement = statement
         @index = index
         @trees = trees
-        @query_plans = nil  # these will be set later when we pick indexes
+        @query_plans = nil # these will be set later when we pick indexes
         update_steps.each { |step| step.calculate_cost cost_model }
         @update_steps = update_steps
         @cost_model = cost_model
@@ -56,10 +56,16 @@ module NoSE
 
       # Parameters to this update plan
       def params
-        conditions = @statement.respond_to?(:conditions) ? \
-          @statement.conditions : {}
-        settings = @statement.respond_to?(:settings) ? \
-          @statement.settings : []
+        if @statement.respond_to?(:conditions)
+          conditions = @statement.conditions
+        else
+          conditions = {}
+        end
+        if @statement.respond_to?(:settings)
+          settings = @statement.settings
+        else
+          settings = []
+        end
 
         params = conditions.merge Hash[settings.map do |setting|
           [setting.field.id, Condition.new(setting.field, :'=', setting.value)]
@@ -159,19 +165,8 @@ module NoSE
         indexes.map do |index|
           next unless statement.modifies_index?(index)
 
-          unless (@query_plans[statement] &&
-                  @query_plans[statement][index]).nil?
-            # Get the cardinality of the last step to use for the update state
-            trees = @query_plans[statement][index]
-            plans = trees.map do |tree|
-              tree.select_using_indexes(indexes).min_by(&:cost)
-            end
-
-            # Multiply the cardinalities because we are crossing multiple
-            # relationships and need the cross-product
-            cardinality = plans.product_by { |p| p.last.state.cardinality }
-            state = UpdateState.new statement, cardinality
-          else
+          if (@query_plans[statement] &&
+              @query_plans[statement][index]).nil?
             trees = []
 
             if statement.is_a? Insert
@@ -182,6 +177,17 @@ module NoSE
                                                statement.range_field
             end
 
+            state = UpdateState.new statement, cardinality
+          else
+            # Get the cardinality of the last step to use for the update state
+            trees = @query_plans[statement][index]
+            plans = trees.map do |tree|
+              tree.select_using_indexes(indexes).min_by(&:cost)
+            end
+
+            # Multiply the cardinalities because we are crossing multiple
+            # relationships and need the cross-product
+            cardinality = plans.product_by { |p| p.last.state.cardinality }
             state = UpdateState.new statement, cardinality
           end
 

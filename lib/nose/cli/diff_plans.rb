@@ -14,7 +14,6 @@ module NoSE
         result1 = load_results plan1
         result2 = load_results plan2
 
-
         puts Formatador.parse("[blue]#{plan1}\n" + '━' * 50 + '[/]')
         plans1 = result1.plans.reject { |p| result2.plans.include?(p) }
         output_plans_txt plans1, $stdout, 1, result1.workload.statement_weights

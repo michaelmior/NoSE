@@ -111,14 +111,14 @@ module NoSE
     def rewire_links
       (@node_degree / 2).times do |i|
         @nodes.each do |node|
-          if rand < @beta
-            neighbour = (node + i + 1) % @nodes_nb
-            remove_link node, neighbour
+          next unless rand < @beta
 
-            unlinkable_nodes = [node, neighbour] + @neighbours[node].to_a
-            new_neighbour = (@nodes.to_a - unlinkable_nodes).sample
-            add_link node, new_neighbour
-          end
+          neighbour = (node + i + 1) % @nodes_nb
+          remove_link node, neighbour
+
+          unlinkable_nodes = [node, neighbour] + @neighbours[node].to_a
+          new_neighbour = (@nodes.to_a - unlinkable_nodes).sample
+          add_link node, new_neighbour
         end
       end
     end
@@ -206,8 +206,8 @@ module NoSE
     end
 
     # Produce a random statement according to a given set of weights
-    def random_statement(weights= { query: 80, insert: 10, update: 5,
-                                    delete: 5 })
+    def random_statement(weights = { query: 80, insert: 10, update: 5,
+                                     delete: 5 })
       pick = Pickup.new(weights)
       type = pick.pick(1)
       send(('random_' + type.to_s).to_sym)

@@ -96,7 +96,7 @@ module NoSE
     def fields_exist?
       @statement_weights[@mix].each_key do |query|
         # Projected fields and fields in the where clause exist
-        fields = query.where.map { |condition| condition.field } + query.fields
+        fields = query.where.map(&:field) + query.fields
         fields.each do |field|
           return false unless @model.find_field field.value
         end

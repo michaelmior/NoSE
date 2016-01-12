@@ -42,9 +42,9 @@ module NoSE
           cls.send(:define_method, method) do |*args|
             $stderr.puts "#{cls}##{method}\tSTART"
 
-            start = Time.now
-            result = old_method.bind(self).(*args)
-            elapsed = Time.now - start
+            start = Time.now.utc
+            result = old_method.bind(self).call(*args)
+            elapsed = Time.now.utc - start
 
             $stderr.puts "#{cls}##{method}\tEND\t#{elapsed}"
 

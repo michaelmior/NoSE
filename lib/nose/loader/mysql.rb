@@ -19,7 +19,7 @@ module NoSE
 
       # Load a generated set of indexes with data from MySQL
       def load(indexes, config, show_progress = false, limit = nil,
-                                skip_existing = true)
+               skip_existing = true)
         # XXX Assuming backend is thread-safe
         Parallel.each(indexes, in_threads: 2) do |index|
           client = new_client config
@@ -52,7 +52,7 @@ module NoSE
         client = new_client config
 
         workload = Workload.new
-        client.query('SHOW TABLES').each(as: :array) do |table, |
+        client.query('SHOW TABLES').each(as: :array) do |table, *|
           entity = Entity.new table
           entity.count = client.query("SELECT COUNT(*) FROM #{table}") \
             .first.values.first
@@ -92,10 +92,10 @@ module NoSE
 
       # Create a new client from the given configuration
       def new_client(config)
-         Mysql2::Client.new host: config[:host],
-                            username: config[:username],
-                            password: config[:password],
-                            database: config[:database]
+        Mysql2::Client.new host: config[:host],
+                           username: config[:username],
+                           password: config[:password],
+                           database: config[:database]
       end
 
       # Get all the fields selected by this index

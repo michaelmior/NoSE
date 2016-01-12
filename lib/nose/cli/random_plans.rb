@@ -30,7 +30,8 @@ module NoSE
 
         # Generate a random set of plans
         indexes = IndexEnumerator.new(workload).indexes_for_workload
-        cost_model = get_class('cost', options[:cost_model][:name]).new(**options[:cost_model])
+        cost_model = get_class('cost', options[:cost_model][:name]) \
+                     .new(**options[:cost_model])
         planner = Plans::QueryPlanner.new workload, indexes, cost_model
         plans = planner.find_plans_for_query(statement).to_a
         plans = plans.sample options[:count] unless options[:all]
@@ -43,8 +44,11 @@ module NoSE
         results.cost_model = cost_model
 
         # Output the results in the specified format
-        file = options[:output].nil? ? $stdout :
-                                       File.open(options[:output], 'w')
+        if options[:output].nil?
+          file = $stdout
+        else
+          File.open(options[:output], 'w')
+        end
         begin
           send(('output_' + options[:format]).to_sym, results, file, true)
         ensure

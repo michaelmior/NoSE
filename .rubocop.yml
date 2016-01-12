@@ -1,13 +1,16 @@
 Metrics/ClassLength:
   Max: 200
 
-Style/ClassAndModuleChildren:
-  Exclude:
-    - 'spec/**/*'
-
 Metrics/MethodLength:
   Max: 20
 
 Metrics/ModuleLength:
   Exclude:
     - 'spec/**/*'
+
+Style/ClassAndModuleChildren:
+  Exclude:
+    - 'spec/**/*'
+
+Style/SingleLineBlockParams:
+  Enabled: false

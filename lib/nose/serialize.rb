@@ -5,6 +5,7 @@ require 'representable/yaml'
 # XXX Caching currently breaks the use of multiple formatting modules
 #     see https://github.com/apotonick/representable/issues/180
 module Representable
+  # Break caching used by representable to allow multiple representers
   module Uncached
     def representable_map(options, format)
       Representable::Binding::Map.new(
@@ -387,7 +388,8 @@ module NoSE
 
       def weights
         weights = {}
-        workload_weights = represented.instance_variable_get(:@statement_weights)
+        workload_weights = represented \
+                           .instance_variable_get(:@statement_weights)
         workload_weights.each do |mix, mix_weights|
           weights[mix] = {}
           mix_weights.each do |statement, weight|
@@ -432,7 +434,7 @@ module NoSE
           entity['fields'].each do |field_hash|
             if field_hash['type'] == 'foreign_key'
               field = entity_map[entity['name']] \
-                .foreign_keys[field_hash['name']]
+                      .foreign_keys[field_hash['name']]
               field.reverse = field.entity.foreign_keys[field_hash['reverse']]
               # field.instance_variable_set :@relationship,
               #                             field_hash['relationship'].to_sym
@@ -488,50 +490,63 @@ module NoSE
 
         # Loop over all steps in the plan and reconstruct them
         fragment['steps'].each do |step_hash|
-          step_class = Plans::PlanStep.subtype_class step_hash['type']
-          if step_class == Plans::IndexLookupPlanStep
-            index_key = step_hash['index']['key']
-            step_index = represented.indexes.find { |i| i.key == index_key }
-            step = step_class.new step_index, state, parent
-
-            eq_filter = (step_hash['eq_filter'] || []).map(&f)
-            step.instance_variable_set(:@eq_filter, eq_filter)
-
-            range_filter = step_hash['range_filter']
-            range_filter = f.call(range_filter) unless range_filter.nil?
-            step.instance_variable_set(:@range_filter, range_filter)
-
-            order_by = (step_hash['order_by'] || []).map(&f)
-            step.instance_variable_set(:@order_by, order_by)
-
-            limit = step_hash['limit']
-            step.instance_variable_set(:@limit, limit.to_i) unless limit.nil?
-          elsif step_class == Plans::FilterPlanStep
-            eq = step_hash['eq'].map(&f)
-            range = f.call(step_hash['range']) if step_hash['range']
-            step = step_class.new eq, range, parent.state
-          elsif step_class == Plans::SortPlanStep
-            sort_fields = step_hash['sort_fields'].map(&f)
-            step = step_class.new sort_fields, parent.state
-          elsif step_class == Plans::LimitPlanStep
-            limit = step_hash['limit'].to_i
-            step = step_class.new limit, parent.state
-          end
-
-          unless step.state.nil?
-            # Copy the correct cardinality
-            # XXX This may not preserve all the necessary state
-            state = step.state.dup
-            state.instance_variable_set :@cardinality, step_hash['cardinality']
-            step.instance_variable_set :@cost, step_hash['cost']
-            step.state = state.freeze
-          end
-
+          step = build_step step_hash, state, parent, represented.indexes, f
+          rebuild_step_state step, step_hash
           plan << step
           parent = step
         end
 
         plan
+      end
+
+      private
+
+      # Rebuild a step from a hash using the given set of indexes
+      # The final parameter is a function which maps field names to instances
+      def build_step(step_hash, state, parent, indexes, f)
+        step_class = Plans::PlanStep.subtype_class step_hash['type']
+        if step_class == Plans::IndexLookupPlanStep
+          index_key = step_hash['index']['key']
+          step_index = indexes.find { |i| i.key == index_key }
+          step = step_class.new step_index, state, parent
+
+          eq_filter = (step_hash['eq_filter'] || []).map(&f)
+          step.instance_variable_set(:@eq_filter, eq_filter)
+
+          range_filter = step_hash['range_filter']
+          range_filter = f.call(range_filter) unless range_filter.nil?
+          step.instance_variable_set(:@range_filter, range_filter)
+
+          order_by = (step_hash['order_by'] || []).map(&f)
+          step.instance_variable_set(:@order_by, order_by)
+
+          limit = step_hash['limit']
+          step.instance_variable_set(:@limit, limit.to_i) unless limit.nil?
+        elsif step_class == Plans::FilterPlanStep
+          eq = step_hash['eq'].map(&f)
+          range = f.call(step_hash['range']) if step_hash['range']
+          step = step_class.new eq, range, parent.state
+        elsif step_class == Plans::SortPlanStep
+          sort_fields = step_hash['sort_fields'].map(&f)
+          step = step_class.new sort_fields, parent.state
+        elsif step_class == Plans::LimitPlanStep
+          limit = step_hash['limit'].to_i
+          step = step_class.new limit, parent.state
+        end
+
+        step
+      end
+
+      # Rebuild the state of the step from the provided hash
+      def rebuild_step_state(step, step_hash)
+        return if step.state.nil?
+
+        # Copy the correct cardinality
+        # XXX This may not preserve all the necessary state
+        state = step.state.dup
+        state.instance_variable_set :@cardinality, step_hash['cardinality']
+        step.instance_variable_set :@cost, step_hash['cost']
+        step.state = state.freeze
       end
     end
 

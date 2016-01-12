@@ -8,7 +8,7 @@ module NoSE
     class CsvLoader < LoaderBase
       # Load data for all the indexes
       def load(indexes, config, show_progress = false, limit = nil,
-                                skip_existing = true)
+               skip_existing = true)
         simple_indexes = indexes.select do |index|
           index.path.length == 1 &&
           !(skip_existing && !@backend.index_empty?(index))
@@ -19,7 +19,7 @@ module NoSE
         end
         simple_indexes.each do |entity, simple_index_list|
           filename = File.join config[:directory], "#{entity.name}.csv"
-          total_rows = (limit || 0) - 1  # account for header row
+          total_rows = (limit || 0) - 1 # account for header row
           File.open(filename) { |file| file.each_line { total_rows += 1 } }
 
           if show_progress
@@ -28,7 +28,7 @@ module NoSE
 
             Formatador.new.redisplay_progressbar 0, total_rows
             progress = Formatador::ProgressBar.new total_rows,
-                                                   started_at: Time.now
+                                                   started_at: Time.now.utc
           else
             progress = nil
           end

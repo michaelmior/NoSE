@@ -96,12 +96,11 @@ module NoSE
       # Unset the old keys and set new ones,
       # we dup because the fields are frozen
       @entity.fields.each_value do |field|
-        if field.primary_key?
-          field = field.dup
-          field.primary_key = false
-          @entity.fields[field.name] = field
-          field.freeze
-        end
+        next unless field.primary_key?
+        field = field.dup
+        field.primary_key = false
+        @entity.fields[field.name] = field
+        field.freeze
       end
 
       names.each do |name|

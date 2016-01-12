@@ -165,12 +165,11 @@ module NoSE
           indexes << new_index unless new_index.nil?
 
           # Partition into the ordering portion
-          if index.length == max_eq_fields
-            index.partitions.each do |index_prefix, order_prefix|
-              new_index = generate_index index_prefix, order_prefix + order,
-                                         extra, path
-              indexes << new_index unless new_index.nil?
-            end
+          next unless index.length == max_eq_fields
+          index.partitions.each do |index_prefix, order_prefix|
+            new_index = generate_index index_prefix, order_prefix + order,
+                                       extra, path
+            indexes << new_index unless new_index.nil?
           end
         end
 

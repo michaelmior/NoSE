@@ -21,7 +21,6 @@ module NoSE
         end
       end
 
-
       # After setting the cost model, recalculate the cost
       def cost_model=(new_cost_model)
         recalculate_cost new_cost_model
@@ -84,7 +83,7 @@ module NoSE
       def select_plan(tree)
         query = tree.query
         plan = tree.find do |tree_plan|
-          tree_plan.indexes.to_set ==  @query_indexes[query]
+          tree_plan.indexes.to_set == @query_indexes[query]
         end
         plan.instance_variable_set :@workload, @workload
 

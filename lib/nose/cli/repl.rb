@@ -49,11 +49,10 @@ module NoSE
         end
 
         # Save the history file
-        if Object.const_defined? 'Readline'
-          File.open(history_file, 'w') do |f|
-            Readline::HISTORY.each do |line|
-              f.puts line
-            end
+        return unless Object.const_defined? 'Readline'
+        File.open(history_file, 'w') do |f|
+          Readline::HISTORY.each do |line|
+            f.puts line
           end
         end
       end
@@ -96,7 +95,7 @@ module NoSE
         return if statement.nil?
 
         begin
-          start_time = Time.now
+          start_time = Time.now.utc
 
           if statement.is_a? Query
             results = backend.query statement
@@ -105,7 +104,7 @@ module NoSE
             results = []
           end
 
-          elapsed = Time.now - start_time
+          elapsed = Time.now.utc - start_time
         rescue NotImplementedError, Backend::PlanNotFound => e
           puts '! ' + e.message
         else

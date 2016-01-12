@@ -76,7 +76,7 @@ module NoSE
 
       # Accept the new connection
       def accept_connection(server_socket)
-        client_socket, _ = server_socket.accept
+        client_socket, = server_socket.accept
         @read_sockets << client_socket
         @write_sockets << client_socket
       end

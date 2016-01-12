@@ -5,7 +5,7 @@ module NoSE
       # If this is not overridden, apply query-specific constraints
       def self.apply(problem)
         problem.queries.each_with_index do |query, q|
-          self.apply_query query, q, problem
+          apply_query query, q, problem
         end
       end
 

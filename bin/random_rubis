@@ -43,12 +43,12 @@ end
 # RubyProf.start
 
 # Execute NoSE for the random workload and report the time
-start = Time.now
+start = Time.now.utc
 indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
 search = NoSE::Search::Search.new(workload,
                                   NoSE::Cost::RequestCountCost.new)
 search.search_overlap(indexes)
-elapsed = Time.now - start
+elapsed = Time.now.utc - start
 puts "TOTAL: #{elapsed}"
 
 # Uncomment the lines below to save profile output

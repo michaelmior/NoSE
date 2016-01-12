@@ -109,7 +109,7 @@ module NoSE
       # Produce the cost of updates in the workload
       def update_costs(trees, indexes)
         planner = Plans::UpdatePlanner.new @workload.model, trees, @cost_model
-        update_costs = Hash.new { |h, k| h[k] = Hash.new }
+        update_costs = Hash.new { |h, k| h[k] = {} }
         update_plans = Hash.new { |h, k| h[k] = [] }
         @workload.statements.each do |statement|
           next if statement.is_a? Query

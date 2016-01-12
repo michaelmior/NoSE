@@ -14,7 +14,7 @@ module NoSE
         if state && state.query
           all_fields = state.query.all_fields
           @fields = (@index.hash_fields + @index.order_fields).to_set + \
-            (@index.extra.to_set & all_fields)
+                    (@index.extra.to_set & all_fields)
         else
           @fields = @index.all_fields
         end
@@ -76,7 +76,7 @@ module NoSE
         # Get fields in the query relevant to this index
         # and check that they are provided for us here
         path_fields = state.fields_for_entities(index.path.entities).to_set
-        path_fields -= parent.fields  # exclude fields already fetched
+        path_fields -= parent.fields # exclude fields already fetched
         return nil unless path_fields.all?(&index.all_fields.method(:include?))
 
         # Use the reversed path for the remainder of the plan
@@ -87,7 +87,7 @@ module NoSE
         end
 
         return IndexLookupPlanStep.new(index, state, parent) \
-          if has_last_fields?(index, state, state_path)
+          if last_fields?(index, state, state_path)
 
         nil
       end
@@ -107,11 +107,11 @@ module NoSE
         # If we're looking up from a previous step, only allow lookup by ID
         return true unless (index.path.length == 1 &&
                            parent_index.path != index.path) ||
-                          index.hash_fields == parent_ids
+                           index.hash_fields == parent_ids
       end
 
       # Check that we have the required fields to move on with the next lookup
-      def self.has_last_fields?(index, state, path)
+      def self.last_fields?(index, state, path)
         # Get the possible fields we need to select
         # This always includes the ID of the last and next entities
         # as well as the selected fields if we're at the end of the path
@@ -153,11 +153,11 @@ module NoSE
         indexed_by_id = @index.hash_fields.include? @index.path.first
         order_prefix = @state.order_by.longest_common_prefix \
           @index.order_fields
-        unless indexed_by_id && order_prefix.map(&:parent).to_set ==
-                                Set.new([index.path.entities.first])
-          @state.order_by -= order_prefix
-        else
+        if indexed_by_id && order_prefix.map(&:parent).to_set ==
+                            Set.new([index.path.entities.first])
           order_prefix = []
+        else
+          @state.order_by -= order_prefix
         end
         @order_by = order_prefix
 
@@ -173,14 +173,17 @@ module NoSE
 
         # Calculate the new cardinality assuming no limit
         # Hash cardinality starts at 1 or is the previous cardinality
-        @state.hash_cardinality = parent.is_a?(RootPlanStep) ?
-          1 : parent.state.cardinality
+        if parent.is_a?(RootPlanStep)
+          @state.hash_cardinality = 1
+        else
+          @state.hash_cardinality = parent.state.cardinality
+        end
 
         # Filter the total number of rows by filtering on non-hash fields
         cardinality = @index.per_hash_count * @state.hash_cardinality
         @state.cardinality = Cardinality.filter cardinality,
                                                 @eq_filter -
-                                                  @index.hash_fields,
+                                                @index.hash_fields,
                                                 @range_filter
 
         # Check if we can apply the limit from the query

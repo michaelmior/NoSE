@@ -23,7 +23,7 @@ module NoSE
         # since we'll only ever have rows with a single value
         @order_by -= @eq.to_a
 
-        @cardinality = 1  # this will be updated on the first index lookup
+        @cardinality = 1 # this will be updated on the first index lookup
         @hash_cardinality = 1
         @given_fields = @eq.dup
       end
@@ -53,7 +53,7 @@ module NoSE
 
         # Check if the limit has been applied
         done &&= @cardinality <= @query.limit unless @query.limit.nil? ||
-          !check_limit
+                                                     !check_limit
 
         done
       end
@@ -70,8 +70,8 @@ module NoSE
         if select
           path_fields += @fields
         else
-          path_fields += @fields.select do
-            |field| entities[0..-2].include? field.parent
+          path_fields += @fields.select do |field|
+            entities[0..-2].include? field.parent
           end
         end
 
@@ -333,11 +333,11 @@ module NoSE
         indexes = (indexes_by_path[state.path.first.parent] || Set.new).to_set
         (indexes - used_indexes).each do |index|
           new_step = IndexLookupPlanStep.apply parent, index, state
-          unless new_step.nil?
-            new_step.add_fields_from_index index
-            used_indexes << index
-            steps.push new_step
-          end
+          next if new_step.nil?
+
+          new_step.add_fields_from_index index
+          used_indexes << index
+          steps.push new_step
         end
 
         steps

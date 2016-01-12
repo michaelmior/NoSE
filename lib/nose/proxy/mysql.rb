@@ -59,21 +59,26 @@ module NoSE
       def process_query(protocol, query)
         begin
           @logger.debug { "Got query #{query}" }
-
-          query = Statement.parse query, @result.workload.model
-          result = @backend.query(query).lazy.map do |row|
-            Hash[query.select.map { |field| [field.name, row[field.id]] }]
-          end
-
+          result = query_result query
           @logger.debug "Executed query with #{result.size} results"
         rescue ParseFailed => exc
           protocol.error Mysql::ServerError::ER_PARSE_ERROR, exc.message
         rescue Backend::PlanNotFound => exc
           protocol.error Mysql::ServerError::ER_UNKNOWN_STMT_HANDLER,
-            exc.message
+                         exc.message
         end
 
         result
+      end
+
+      private
+
+      # Get the result of the query from the backend
+      def query_result(query)
+        query = Statement.parse query, @result.workload.model
+        @backend.query(query).lazy.map do |row|
+          Hash[query.select.map { |field| [field.name, row[field.id]] }]
+        end
       end
     end
   end
@@ -91,7 +96,7 @@ module NoSE
       def authenticate
         reset
         write InitialPacket.serialize
-        AuthenticationPacket.parse read  # TODO: Check auth
+        AuthenticationPacket.parse read # TODO: Check auth
         write ResultPacket.serialize 0
       end
 
@@ -139,7 +144,7 @@ module NoSE
       def write_fields(result, field_names)
         write ResultPacket.serialize field_names.count
         field_names.each do |field_name|
-          type, _ = Protocol.value2net result.first[field_name]
+          type, = Protocol.value2net result.first[field_name]
 
           write FieldPacket.serialize '', '', '', field_name, '', 1, type,
                                       Field::NOT_NULL_FLAG, 0, ''
@@ -170,7 +175,7 @@ module NoSE
           'AAAAAAAA',
           0,
           CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION,
-          33,  # utf8_general_ci
+          33, # utf8_general_ci
           SERVER_STATUS_AUTOCOMMIT,
           'AAAAAAAAAAAA'
         ].pack('CZ*Va8CvCvx13Z*')
@@ -180,42 +185,46 @@ module NoSE
     # Add serialization of result packets
     class ResultPacket
       # Serialize a simple OK response
+      # rubocop:disable Metrics/ParameterLists
       def self.serialize(field_count, affected_rows = 0, insert_id = 0,
                          server_status = 0, warning_count = 0, message = '')
         return Packet.lcb(field_count) unless field_count.zero?
 
         Packet.lcb(field_count) +
-        Packet.lcb(affected_rows) +
-        Packet.lcb(insert_id) +
-        [
-          server_status,
-          warning_count
-        ].pack('vv') +
-        Packet.lcs(message)
+          Packet.lcb(affected_rows) +
+          Packet.lcb(insert_id) +
+          [
+            server_status,
+            warning_count
+          ].pack('vv') +
+          Packet.lcs(message)
       end
+      # rubocop:enable Metrics/ParameterLists
     end
 
     # Add serialization of field packets
     class FieldPacket
       # Serialize all the data for a field
+      # rubocop:disable Metrics/ParameterLists
       def self.serialize(db, table, org_table, name, org_name, length, type,
                          flags, decimals, default)
-        Packet.lcs('def') +  # catalog
-        Packet.lcs(db) +
-        Packet.lcs(table) +
-        Packet.lcs(org_table) +
-        Packet.lcs(name) +
-        Packet.lcs(org_name) +
-        [
-          0x0c,
-          33,  # utf8_general_ci
-          length,
-          type,
-          flags,
-          decimals,
-          0
-        ].pack('CvVCvCv') + Packet.lcs(default)
+        Packet.lcs('def') + # catalog
+          Packet.lcs(db) +
+          Packet.lcs(table) +
+          Packet.lcs(org_table) +
+          Packet.lcs(name) +
+          Packet.lcs(org_name) +
+          [
+            0x0c,
+            33, # utf8_general_ci
+            length,
+            type,
+            flags,
+            decimals,
+            0
+          ].pack('CvVCvCv') + Packet.lcs(default)
       end
+      # rubocop:enable Metrics/ParameterLists
     end
 
     # Add parsing of auth packets

@@ -175,12 +175,12 @@ end
 class Object
   # Convert all the keys of a hash to symbols
   def deep_symbolize_keys
-    return inject({}) do |memo, (k, v)|
+    return each_with_object({}) do |(k, v), memo|
       memo[k.to_sym] = v.deep_symbolize_keys
       memo
     end if self.is_a? Hash
 
-    return inject([]) do |memo, v|
+    return each_with_object([]) do |v, memo|
       memo << v.deep_symbolize_keys
       memo
     end if self.is_a? Array

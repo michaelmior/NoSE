@@ -42,4 +42,3 @@ module NoSE
     end
   end
 end
-
