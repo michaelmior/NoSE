@@ -1,5 +1,7 @@
 require 'parslet'
 
+# rubocop:disable Style/ClassAndModuleChildren
+
 # Parslet DSL extension for capturing the input source
 class CaptureSource < Parslet::Atoms::Capture
   # Ugly hack to capture the source string that was parsed
@@ -21,7 +23,9 @@ end
 class Parslet::Atoms::Named < Parslet::Atoms::Base
   def initialize(parslet, name, array = false)
     super()
-    @parslet, @name, @array = parslet, name, array
+    @parslet = parslet
+    @name = name
+    @array = array
   end
 
   private
@@ -29,7 +33,7 @@ class Parslet::Atoms::Named < Parslet::Atoms::Base
   # Optionally wrap the produced single value in an array
   def produce_return_value(val)
     flatval = flatten(val, true)
-    flatval = [flatval] if @array and val.last == [:repetition]
+    flatval = [flatval] if @array && val.last == [:repetition]
     { name => flatval }
   end
 end
@@ -46,6 +50,8 @@ module Parslet::Atoms::DSL
     CaptureSource.new(self, name)
   end
 end
+
+# rubocop:enable Style/ClassAndModuleChildren
 
 module NoSE
   # rubocop:disable Style/BlockEndNewline, Style/BlockDelimiters
@@ -122,7 +128,7 @@ module NoSE
 
     rule(:comment)     { str(' -- ') >> match('.').repeat }
 
-    rule(:query)   {
+    rule(:query) {
       str('SELECT') >> space >> select_fields.as_array(:select) >>
       space >> str('FROM') >> space >> path.as_array(:path) >>
       where.maybe.as(:where) >> order.maybe.as(:order) >>
@@ -179,7 +185,8 @@ module NoSE
   # Simple transformations to clean up the CQL parse tree
   class CQLT < Parslet::Transform
     rule(identifier: simple(:identifier)) { identifier }
-    rule(identifier: simple(:identifier), identifier2: simple(:identifier2)) { [identifier, identifier2] }
+    rule(identifier: simple(:identifier),
+         identifier2: simple(:identifier2)) { [identifier, identifier2] }
     rule(field: sequence(:id)) { id.map(&:to_s) }
     rule(path: sequence(:id)) { id.map(&:to_s) }
     rule(str: simple(:string)) { string.to_s }
@@ -229,23 +236,7 @@ module NoSE
     # Populate the list of condition objects
     def populate_conditions
       conditions = @tree[:where].nil? ? [] : @tree[:where][:expression]
-      conditions = conditions.map do |condition|
-        field = find_field_with_prefix @tree[:path],
-                                       condition[:field]
-        value = condition[:value]
-
-        # Convert the value to the correct type
-        type = field.class.const_get 'TYPE'
-        value = field.class.value_from_string(value.to_s) \
-          unless type.nil? || value.nil?
-
-        # Don't allow predicates on foreign keys
-        fail InvalidStatementException, 'Predicates cannot use foreign keys' \
-          if field.is_a? Fields::ForeignKeyField
-
-        condition.delete :value
-        Condition.new field, condition[:op].to_sym, value
-      end
+      conditions = conditions.map { |condition| build_condition condition }
 
       @eq_fields = conditions.reject(&:range?).map(&:field).to_set
       @range_field = conditions.find(&:range?)
@@ -254,6 +245,32 @@ module NoSE
       @conditions = Hash[conditions.map do |condition|
         [condition.field.id, condition]
       end]
+    end
+
+    # Construct a condition object from the parse tree
+    def build_condition(condition)
+      field = find_field_with_prefix @tree[:path],
+                                     condition[:field]
+      Condition.new field, condition[:op].to_sym,
+                    condition_value(condition, field)
+    end
+
+    # Get the value of a condition from the parse tree
+    def condition_value(condition, field)
+      value = condition[:value]
+
+      # Convert the value to the correct type
+      type = field.class.const_get 'TYPE'
+      value = field.class.value_from_string(value.to_s) \
+        unless type.nil? || value.nil?
+
+      # Don't allow predicates on foreign keys
+      fail InvalidStatementException, 'Predicates cannot use foreign keys' \
+        if field.is_a? Fields::ForeignKeyField
+
+      condition.delete :value
+
+      value
     end
   end
 
@@ -287,7 +304,7 @@ module NoSE
     # Check if this path starts with another path
     def start_with?(other)
       other_keys = other.instance_variable_get(:@keys)
-      @keys[0..other_keys.length-1] == other_keys
+      @keys[0..other_keys.length - 1] == other_keys
     end
 
     # Combine two key paths by gluing together the keys
@@ -296,7 +313,7 @@ module NoSE
       other_keys = other.instance_variable_get(:@keys)
 
       # Just copy if there's no combining necessary
-      return self.dup if other_keys.empty?
+      return dup if other_keys.empty?
       return other.dup if @keys.empty?
 
       # Only allow combining if the entities match
@@ -402,7 +419,7 @@ module NoSE
         klass = Connect
       when 'DISCONNECT'
         klass = Disconnect
-      else  # SELECT
+      else # SELECT
         klass = Query
       end
 
@@ -422,8 +439,8 @@ module NoSE
         raise new_exc
       end
 
-      # TODO Ignore comments, this is needed as a hack so otherwise identical
-      #      queries can be treated differently everywhere
+      # TODO: Ignore comments, this is needed as a hack so otherwise identical
+      #       queries can be treated differently everywhere
       # @tree.delete(:comment)
 
       # XXX Save the where clause so we can convert to a query later
@@ -486,7 +503,7 @@ module NoSE
     def find_longest_path(path_entities)
       path = path_entities.map(&:to_s)[1..-1]
       @longest_entity_path = [@from]
-      keys = [@from.id_fields.first]  # XXX broken for composite keys
+      keys = [@from.id_fields.first] # XXX broken for composite keys
 
       path.each do |key|
         # Search through foreign keys
@@ -574,7 +591,7 @@ module NoSE
     # Support queries must also have their statement and index checked
     def ==(other)
       other.is_a?(SupportQuery) && @statement == other.statement &&
-                                   @index == other.index
+        @index == other.index
     end
     alias_method :eql?, :==
 
@@ -654,22 +671,8 @@ module NoSE
       query_from = query_keys.map(&:name)
       query_from[0] = query_keys.first.parent.name
 
-      # Don't require selecting fields given in the WHERE clause or settings
-      required_fields = index.hash_fields + index.order_fields
-      required_fields += index.extra if all
-      required_fields -= given_fields
-      return nil if required_fields.empty?
-
-      # Get the full name of each field to be used during selection
-      required_fields.map! do |field|
-        parent = query_keys.find_field_parent field
-        next if parent.nil?
-
-        "#{parent.name}.#{field.name}"
-      end
-
-      # These fields may not be in this part of path
-      required_fields.delete_if(&:nil?)
+      # Check if we actually need any fields
+      required_fields = required_fields index, query_keys, all
       return nil if required_fields.empty?
 
       # Reconstruct a valid where clause with the new path
@@ -680,7 +683,7 @@ module NoSE
         "#{parent.name}.#{condition.field.name} #{condition.operator} #{value}"
       end.join(' AND ') if where.nil?
 
-      query = "SELECT #{required_fields.to_a.join ', ' } " \
+      query = "SELECT #{required_fields.to_a.join(', ')} " \
               "FROM #{query_from.join '.'} #{where}"
 
       # XXX This should not be necessary, but we need it
@@ -709,6 +712,28 @@ module NoSE
     end
 
     private
+
+    # Get the names of all required fields on this path
+    def required_fields(index, query_keys, all)
+      # Don't require selecting fields given in the WHERE clause or settings
+      required_fields = index.hash_fields + index.order_fields
+      required_fields += index.extra if all
+      required_fields -= given_fields
+      return [] if required_fields.empty?
+
+      # Get the full name of each field to be used during selection
+      required_fields.map! do |field|
+        parent = query_keys.find_field_parent field
+        next if parent.nil?
+
+        "#{parent.name}.#{field.name}"
+      end
+
+      # These fields may not be in this part of path
+      required_fields.delete_if(&:nil?)
+
+      required_fields
+    end
 
     # Find where the index path intersects the update path
     # and splice in the path of the where clause from the update
@@ -805,7 +830,7 @@ module NoSE
 
       # We must be connecting on all components of the path
       # if the index is going to be modified by this insertion
-      key_count = keys.select { |key| index.path.include?(key) }.count
+      key_count = keys.count { |key| index.path.include?(key) }
       key_count == index.path.length - 1
     end
 
@@ -980,20 +1005,29 @@ module NoSE
       @tree.delete :source_pk
       @tree.delete :target_pk
 
-      # XXX Only works for non-composite PKs
-      source_type = @from.id_fields.first.class.const_get 'TYPE'
-      fail TypeError unless source_type.nil? || source_pk.nil? ||
-                            source_pk.is_a?(type)
-
-      target_type = @target.class.const_get 'TYPE'
-      fail TypeError unless target_type.nil? || target_pk.nil? ||
-                            target_pk.is_a?(type)
+      validate_keys
 
       # This is needed later when planning updates
       @eq_fields = [@target.parent.id_fields.first,
                     @target.entity.id_fields.first]
 
-      # Populate the conditions
+      populate_conditions
+    end
+
+    private
+
+    # Validate the types of the primary keys
+    def validate_keys
+      # XXX Only works for non-composite PKs
+      source_type = @from.id_fields.first.class.const_get 'TYPE'
+      fail TypeError unless source_type.nil? || source_pk.is_a?(type)
+
+      target_type = @target.class.const_get 'TYPE'
+      fail TypeError unless target_type.nil? || target_pk.is_a?(type)
+    end
+
+    # Populate the conditions
+    def populate_conditions
       source_id = @from.id_fields.first
       target_id = @target.entity.id_fields.first
       @conditions = {
@@ -1002,13 +1036,10 @@ module NoSE
       }
     end
 
-    private
-
     # The two key fields are provided with the connection
     def given_fields
       [@target.parent.id_fields.first, @target.entity.id_fields.first]
     end
-
 
     # Get the where clause for a support query over the given path
     def support_query_condition_for_path(path, reversed)
