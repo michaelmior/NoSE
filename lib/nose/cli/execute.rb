@@ -63,18 +63,11 @@ module NoSE
             next if options[:plan] && plan.name != options[:plan]
 
             update = !plan.steps.last.is_a?(Plans::IndexLookupPlanStep)
-            if update
-              measurement = bench_update backend, plans.schema.indexes.values,
-                                         plan, index_values,
-                                         options[:num_iterations],
-                                         options[:repeat], weight: group_weight
-            else
-              # Run the query and get the total time
-              measurement = bench_query backend, plans.schema.indexes.values,
-                                        plan, index_values,
-                                        options[:num_iterations],
-                                        options[:repeat], weight: group_weight
-            end
+            method = update ? :bench_update : :bench_query
+            measurement = send method, backend, plans.schema.indexes.values,
+                               plan, index_values,
+                               options[:num_iterations],
+                               options[:repeat], weight: group_weight
 
             # Run the query and get the total time
             group_total += measurement.mean
