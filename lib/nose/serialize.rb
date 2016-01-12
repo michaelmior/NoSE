@@ -311,8 +311,8 @@ module NoSE
       # Look up the cost model by name and attach to the results
       def cost_model=(options)
         options = options.deep_symbolize_keys
-        represented.cost_model = Cost::Cost.subtype_class(options[:name]) \
-          .new(**options)
+        cost_model_class = Cost::Cost.subtype_class(options[:name])
+        represented.cost_model = cost_model_class.new(**options)
       end
 
       property :cost_model, exec_context: :decorator
@@ -582,8 +582,8 @@ module NoSE
       # Look up the cost model by name and attach to the results
       def cost_model=(options)
         options = options.deep_symbolize_keys
-        represented.cost_model = Cost::Cost.subtype_class(options[:name]) \
-          .new(**options)
+        cost_model_class = Cost::Cost.subtype_class(options[:name])
+        represented.cost_model = cost_model_class.new(**options)
       end
 
       property :cost_model, exec_context: :decorator

@@ -49,10 +49,9 @@ module NoSE
 
           # We can also filter if we have a foreign key
           # XXX for now we assume this value is the same
-          if field.is_a? IDField
-            parent.fields.any? do |pfield|
-              pfield.is_a?(ForeignKeyField) && pfield.entity == field.parent
-            end
+          next unless field.is_a? IDField
+          parent.fields.any? do |pfield|
+            pfield.is_a?(ForeignKeyField) && pfield.entity == field.parent
           end
         end.all?
 
@@ -82,7 +81,7 @@ module NoSE
       def update_state
         @state.eq -= @eq
         @state.cardinality *= @eq.map { |field| 1.0 / field.cardinality } \
-          .inject(1.0, &:*)
+                              .inject(1.0, &:*)
 
         if @range
           @state.range = nil

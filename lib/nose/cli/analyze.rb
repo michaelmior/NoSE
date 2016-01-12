@@ -55,9 +55,10 @@ module NoSE
           lines = CSV.read(file)
           headers = lines.first if headers.nil?
 
-          grouped_lines = lines[1..-1].map do |row|
+          lines = lines[1..-1].map do |row|
             Hash[headers.zip row]
-          end.group_by { |row| row['group'] }
+          end
+          grouped_lines = lines.group_by { |row| row['group'] }
 
           rows = grouped_lines.map do |group, grouped_rows|
             mean = grouped_rows.inject(0) { |sum, row| sum + row['mean'].to_f }

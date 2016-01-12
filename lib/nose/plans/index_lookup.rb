@@ -190,24 +190,24 @@ module NoSE
         # This occurs either when we are on the first or last index lookup
         # and the ordering of the query has already been resolved
         order_resolved = @state.order_by.empty? && @state.path.length == 1
-        if (@state.answered?(check_limit: false) ||
-            parent.is_a?(RootPlanStep) && order_resolved) &&
-           !@state.query.limit.nil?
-          # XXX Assume that everything is limited by the limit value
-          #     which should be fine if the limit is small enough
-          @limit = @state.query.limit
-          if parent.is_a?(RootPlanStep)
-            @state.cardinality = [@limit, @state.cardinality].min
-            @state.hash_cardinality = 1
-          else
-            @limit = @state.cardinality = @state.query.limit
+        return unless (@state.answered?(check_limit: false) ||
+                      parent.is_a?(RootPlanStep) && order_resolved) &&
+                      !@state.query.limit.nil?
 
-            # If this is a final lookup by ID, go with the limit
-            if index.path.length == 1 && indexed_by_id
-              @state.hash_cardinality = @limit
-            else
-              @state.hash_cardinality = parent.state.cardinality
-            end
+        # XXX Assume that everything is limited by the limit value
+        #     which should be fine if the limit is small enough
+        @limit = @state.query.limit
+        if parent.is_a?(RootPlanStep)
+          @state.cardinality = [@limit, @state.cardinality].min
+          @state.hash_cardinality = 1
+        else
+          @limit = @state.cardinality = @state.query.limit
+
+          # If this is a final lookup by ID, go with the limit
+          if index.path.length == 1 && indexed_by_id
+            @state.hash_cardinality = @limit
+          else
+            @state.hash_cardinality = parent.state.cardinality
           end
         end
       end

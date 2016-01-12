@@ -55,7 +55,7 @@ module NoSE
         client.query('SHOW TABLES').each(as: :array) do |table, *|
           entity = Entity.new table
           entity.count = client.query("SELECT COUNT(*) FROM #{table}") \
-            .first.values.first
+                         .first.values.first
 
           describe = client.query("DESCRIBE #{table}")
           describe.each(as: :array) do |name, type, _, key, _, _|

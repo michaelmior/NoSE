@@ -81,7 +81,7 @@ module NoSE
       def search_result(workload, cost_model, max_space = Float::INFINITY,
                         objective = Search::Objective::COST)
         enumerated_indexes = IndexEnumerator.new(workload) \
-          .indexes_for_workload.to_a
+                             .indexes_for_workload.to_a
         Search::Search.new(workload, cost_model, objective) \
           .search_overlap enumerated_indexes, max_space
       end
@@ -176,7 +176,7 @@ module NoSE
         header = "Indexes\n" + '━' * 50
         output_indexes_txt header, result.indexes, file
 
-        file.puts Formatador.parse("  Total size: " \
+        file.puts Formatador.parse('  Total size: ' \
                                    "[blue]#{result.total_size}[/]\n\n")
 
         # Output query plans for the discovered indices

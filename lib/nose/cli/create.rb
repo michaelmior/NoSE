@@ -2,7 +2,8 @@ module NoSE
   module CLI
     # Add a command for creating the index data structures in a backend
     class NoSECLI < Thor
-      desc 'create PLAN_FILE_OR_SCHEMA', 'create indexes from the given PLAN_FILE_OR_SCHEMA'
+      desc 'create PLAN_FILE_OR_SCHEMA',
+           'create indexes from the given PLAN_FILE_OR_SCHEMA'
 
       long_desc <<-LONGDESC
         `nose create` will load a schema either from generated plan file from

@@ -77,7 +77,7 @@ module NoSE
           if options[:totals]
             total_measurement = Measurements::Measurement.new nil, 'TOTAL'
             total_measurement << group_table.map(&:weighted_mean) \
-                                            .inject(0, &:+)
+              .inject(0, &:+)
             group_table << total_measurement
           end
 
@@ -122,7 +122,7 @@ module NoSE
       # Output a CSV file of results
       def output_csv(table)
         csv_str = CSV.generate do |csv|
-          csv << %w{label group name weight mean cost}
+          csv << %w(label group name weight mean cost)
 
           table.each do |group|
             group.measurements.each do |measurement|
@@ -230,11 +230,11 @@ module NoSE
 
         1.upto(repeat) do
           # Execute each plan and measure the time
-          start_time = Time.now
+          start_time = Time.now.utc
           setting_list.zip(condition_list).each do |settings, conditions|
             prepared.each { |p| p.execute settings, conditions }
           end
-          elapsed = Time.now - start_time
+          elapsed = Time.now.utc - start_time
 
           measurement << (elapsed / iterations)
         end

@@ -185,8 +185,13 @@ module NoSE
 
       # A random date within 2 years surrounding today
       def random_value
-        Faker::Time.between DateTime.now.prev_year,
-                            DateTime.now.next_year
+        prev_year = DateTime.now.prev_year
+        prev_year = prev_year.new_offset(Rational(0, 24))
+
+        next_year = DateTime.now.next_year
+        next_year = next_year.new_offset(Rational(0, 24))
+
+        Faker::Time.between prev_year, next_year
       end
     end
 

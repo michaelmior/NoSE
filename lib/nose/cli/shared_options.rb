@@ -4,13 +4,13 @@ module NoSE
     class NoSECLI < Thor
       # Add a new option to those which can be potentially shared
       def self.share_option(name, options = {})
-        @@options ||= {}
-        @@options[name] = options
+        @options ||= {}
+        @options[name] = options
       end
 
       # Use a shared option for the current command
       def self.shared_option(name)
-        method_option name, @@options[name]
+        method_option name, @options[name]
       end
 
       share_option :mix, type: :string, default: 'default',

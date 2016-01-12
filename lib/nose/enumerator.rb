@@ -79,7 +79,10 @@ module NoSE
     def combine_indexes(indexes)
       no_order_indexes = indexes.select do |index|
         index.order_fields.empty?
-      end.group_by { |index| [index.hash_fields, index.path] }
+      end
+      no_order_indexes = no_order_indexes.group_by do |index|
+        [index.hash_fields, index.path]
+      end
 
       no_order_indexes.each do |(hash_fields, path), hash_indexes|
         extra_choices = hash_indexes.map(&:extra).uniq
