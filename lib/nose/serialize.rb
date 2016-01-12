@@ -542,6 +542,11 @@ module NoSE
       include Representable::YAML
       include Representable::Uncached
 
+      extend Forwardable
+
+      delegate :revision= => :represented
+      delegate :command= => :represented
+
       property :workload, decorator: WorkloadRepresenter,
                           class: Workload,
                           deserialize: WorkloadBuilder.new
@@ -582,11 +587,6 @@ module NoSE
         `git rev-parse HEAD 2> /dev/null`.strip
       end
 
-      # Set the revision string on the results object
-      def revision=(revision)
-        represented.revision = revision
-      end
-
       property :revision, exec_context: :decorator
 
       # The time the results were generated
@@ -604,11 +604,6 @@ module NoSE
       # The full command used to generate the results
       def command
         "#{$PROGRAM_NAME} #{ARGV.join ' '}"
-      end
-
-      # Set the command string on the results object
-      def command=(command)
-        represented.command = command
       end
 
       property :command, exec_context: :decorator

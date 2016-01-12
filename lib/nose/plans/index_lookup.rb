@@ -2,7 +2,10 @@ module NoSE
   module Plans
     # Superclass for steps using indices
     class IndexLookupPlanStep < PlanStep
+      extend Forwardable
+
       attr_reader :index, :eq_filter, :range_filter, :limit, :order_by
+      delegate hash: :index
 
       def initialize(index, state = nil, parent = nil)
         super()
@@ -38,10 +41,6 @@ module NoSE
         other.instance_of?(self.class) && @index == other.index
       end
       alias_method :eql?, :==
-
-      def hash
-        index.hash
-      end
 
       # Check if this step can be applied for the given index,
       # returning a possible application of the step
