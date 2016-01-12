@@ -25,14 +25,7 @@ module NoSE
                       drop_existing = false)
         Enumerator.new do |enum|
           @indexes.map do |index|
-            ddl = "CREATE COLUMNFAMILY \"#{index.key}\" (" \
-                  "#{field_names index.all_fields, true}, " \
-                  "PRIMARY KEY((#{field_names index.hash_fields})"
-
-            cluster_key = index.order_fields
-            ddl += ", #{field_names cluster_key}" unless cluster_key.empty?
-            ddl += '));'
-
+            ddl = index_cql index
             enum.yield ddl
 
             begin
@@ -59,14 +52,7 @@ module NoSE
 
         futures = []
         chunk.each do |row|
-          index_row = fields.map do |field|
-            value = row["#{field.parent.name}_#{field.name}"]
-            value = Cassandra::Uuid.new(value.to_i) \
-              if field.is_a?(Fields::IDField)
-
-            value
-          end
-
+          index_row = index_row(row, fields)
           futures.push client.execute_async(prepared, *index_row)
         end
         futures.each(&:join)
@@ -105,6 +91,30 @@ module NoSE
 
       private
 
+      # Produce an array of fields in the correct order for a CQL insert
+      def index_row(row, fields)
+        fields.map do |field|
+          value = row["#{field.parent.name}_#{field.name}"]
+          value = Cassandra::Uuid.new(value.to_i) \
+            if field.is_a?(Fields::IDField)
+
+          value
+        end
+      end
+
+      # Produce the CQL to create the definition for a given index
+      def index_cql(index)
+        ddl = "CREATE COLUMNFAMILY \"#{index.key}\" (" \
+          "#{field_names index.all_fields, true}, " \
+          "PRIMARY KEY((#{field_names index.hash_fields})"
+
+        cluster_key = index.order_fields
+        ddl += ", #{field_names cluster_key}" unless cluster_key.empty?
+        ddl += '));'
+
+        ddl
+      end
+
       # Get a comma-separated list of field names with optional types
       def field_names(fields, types = false)
         fields.map do |field|
@@ -117,7 +127,8 @@ module NoSE
       # Get a Cassandra client, connecting if not done already
       def client
         return @client unless @client.nil?
-        cluster = Cassandra.cluster hosts: @hosts, port: @port.to_s, timeout: nil
+        cluster = Cassandra.cluster hosts: @hosts, port: @port.to_s,
+                                    timeout: nil
         @client = cluster.connect @keyspace
       end
 
@@ -144,12 +155,7 @@ module NoSE
           @client = client
           @index = index
           @fields = fields.map(&:id) & index.all_fields.map(&:id)
-
-          # Prepare the statement required to perform the insertion
-          insert = "INSERT INTO #{index.key} ("
-          insert += @fields.join(', ') + ') VALUES ('
-          insert += (['?'] * @fields.length).join(', ') + ')'
-          @prepared = client.prepare insert
+          @prepared = client.prepare insert_cql
           @generator = Cassandra::Uuid::Generator.new
         end
 
@@ -162,8 +168,11 @@ module NoSE
 
               # If this is an ID, generate or construct a UUID object
               if cur_field.is_a?(Fields::IDField)
-                value = value.nil? ? @generator.uuid : \
-                                     Cassandra::Uuid.new(value.to_i)
+                if value.nil?
+                  value = @generator.uuid
+                else
+                  value = Cassandra::Uuid.new(value.to_i)
+                end
               end
 
               # XXX Useful to test that we never insert null values
@@ -173,6 +182,17 @@ module NoSE
             end
             @client.execute(@prepared, *values)
           end
+        end
+
+        private
+
+        # The CQL used to insert the fields into the index
+        def insert_cql
+          insert = "INSERT INTO #{@index.key} ("
+          insert += @fields.join(', ') + ') VALUES ('
+          insert += (['?'] * @fields.length).join(', ') + ')'
+
+          insert
         end
       end
 
@@ -193,18 +213,30 @@ module NoSE
         def process(results)
           # Delete each row from the index
           results.each do |result|
-            values = @index_keys.map do |key|
-              cur_field = @index.all_fields.find { |field| field.id == key.id }
-              cur_field.is_a?(Fields::IDField) ? \
-                Cassandra::Uuid.new(result[key.id].to_i): result[key.id]
-            end
+            values = delete_values result
             @client.execute(@prepared, *values)
+          end
+        end
+
+        private
+
+        # Get the values used in the WHERE clause for a CQL DELETE
+        def delete_values(result)
+          @index_keys.map do |key|
+            cur_field = @index.all_fields.find { |field| field.id == key.id }
+
+            if cur_field.is_a?(Fields::IDField)
+              Cassandra::Uuid.new(result[key.id].to_i)
+            else
+              result[key.id]
+            end
           end
         end
       end
 
       # A query step to look up data from a particular column family
       class IndexLookupStatementStep < BackendBase::IndexLookupStatementStep
+        # rubocop:disable Metrics/ParameterLists
         def initialize(client, select, conditions, step, next_step, prev_step)
           @logger = Logging.logger['nose::backend::cassandra::indexlookupstep']
           @client = client
@@ -213,59 +245,144 @@ module NoSE
           @prev_step = prev_step
           @next_step = next_step
 
-          # Decide which fields should be selected
+          # TODO: Check if we can apply the next filter via ALLOW FILTERING
+          @eq_fields = step.eq_filter
+          @range_field = step.range_filter
+
+          @prepared = client.prepare select_cql(select, conditions)
+        end
+        # rubocop:enable Metrics/ParameterLists
+
+        # Perform a column family lookup in Cassandra
+        def process(conditions, results)
+          results = initial_results(conditions) if results.nil?
+          condition_list = result_conditions conditions, results
+          new_result = fetch_all_queries condition_list, results
+
+          # Limit the size of the results in case we fetched multiple keys
+          new_result[0..(@step.limit.nil? ? -1 : @step.limit)]
+        end
+
+        private
+
+        # Produce the select CQL statement for a provided set of fields
+        def select_cql(select, conditions)
+          select = expand_selected_fields select
+          cql = "SELECT #{select.map(&:id).join ', '} FROM " \
+                "\"#{@step.index.key}\" WHERE #{cql_where_clause conditions}"
+          cql += cql_order_by
+
+          # Add an optional limit
+          cql += " LIMIT #{@step.limit}" unless @step.limit.nil?
+
+          cql
+        end
+
+        # Decide which fields should be selected
+        def expand_selected_fields(select)
           # We just pick whatever is contained in the index that is either
           # mentioned in the query or required for the next lookup
           # TODO: Potentially try query.all_fields for those not required
           #       It should be sufficient to check what is needed for future
           #       filtering and sorting and use only those + query.select
-          select += next_step.index.hash_fields \
-            unless next_step.nil? ||
-              !next_step.is_a?(Plans::IndexLookupPlanStep)
-          select &= step.index.all_fields
+          select += @next_step.index.hash_fields \
+            unless @next_step.nil? ||
+                   !@next_step.is_a?(Plans::IndexLookupPlanStep)
+          select &= @step.index.all_fields
 
-          # TODO: Check if we can apply the next filter via ALLOW FILTERING
-          @eq_fields = step.eq_filter
-          @range_field = step.range_filter
+          select
+        end
 
-          cql = "SELECT #{select.map(&:id).join ', '} FROM " \
-            "\"#{step.index.key}\" WHERE "
-          cql += @eq_fields.map do |field|
+        # Produce a CQL where clause using the given conditions
+        def cql_where_clause(conditions)
+          where = @eq_fields.map do |field|
             "#{field.id} = ?"
           end.join ' AND '
           unless @range_field.nil?
             condition = conditions.values.find(&:range?)
-            cql += " AND #{condition.field.id} #{condition.operator} ?"
+            where += " AND #{condition.field.id} #{condition.operator} ?"
           end
 
-          # Add the ORDER BY clause
+          where
+        end
+
+        # Produce the CQL ORDER BY clause for this step
+        def cql_order_by
           # TODO: CQL3 requires all clustered columns before the one actually
           #       ordered on also be specified
           #
           #       Example:
           #
           #         SELECT * FROM cf WHERE id=? AND col1=? ORDER by col1, col2
-          cql += ' ORDER BY ' + step.order_by.map(&:id).join(', ') \
-            unless step.order_by.empty?
-
-          # Add an optional limit
-          cql += " LIMIT #{step.limit}" unless step.limit.nil?
-
-          @prepared = client.prepare cql
+          ' ORDER BY ' + @step.order_by.map(&:id).join(', ') \
+            unless @step.order_by.empty?
         end
 
-        # Perform a column family lookup in Cassandra
-        def process(conditions, results)
-          # If this is the first lookup, get the lookup values from the query
-          if results.nil?
-            results = [Hash[conditions.map do |field_id, condition|
-              fail if condition.value.nil?
-              [field_id, condition.value]
-            end]]
-          end
+        # Lookup values from an index selecting the given
+        # fields and filtering on the given conditions
+        def fetch_all_queries(condition_list, results)
+          new_result = []
+          @logger.debug { "  #{@prepared.cql} * #{condition_list.size}" }
 
-          # Construct a list of conditions from the results
-          condition_list = results.map do |result|
+          # TODO: Chain enumerables of results instead
+          # Limit the total number of queries as well as the query limit
+          condition_list.zip(results).each do |condition_set, result|
+            # Loop over all pages to fetch results
+            values = lookup_values condition_set
+            fetch_query_pages values, new_result, result
+
+            # Don't continue with further queries
+            break if !@step.limit.nil? && new_result.length >= @step.limit
+          end
+          @logger.debug "Total result size = #{new_result.size}"
+
+          new_result
+        end
+
+        # Get the necessary pages of results for a given list of values
+        def fetch_query_pages(values, new_result, result)
+          new_results = @client.execute(@prepared, *values)
+          loop do
+            # Add the previous results to each row
+            rows = new_results.map { |row| result.merge row }
+
+            # XXX Ignore null values in results for now
+            # fail if rows.any? { |row| row.values.any?(&:nil?) }
+
+            new_result += rows
+            break if new_results.last_page? ||
+                     (!@step.limit.nil? && result.length >= @step.limit)
+            new_results = new_results.next_page
+            @logger.debug "Fetched #{result.length} results"
+          end
+        end
+
+        # Produce the values used for lookup on a given set of conditions
+        def lookup_values(condition_set)
+          condition_set.map do |condition|
+            value = condition.value ||
+                    conditions[condition.field.id].value
+            fail if value.nil?
+
+            if condition.field.is_a?(Fields::IDField)
+              Cassandra::Uuid.new(value.to_i)
+            else
+              value
+            end
+          end
+        end
+
+        # Get lookup values from the query for the first step
+        def initial_results(conditions)
+          [Hash[conditions.map do |field_id, condition|
+            fail if condition.value.nil?
+            [field_id, condition.value]
+          end]]
+        end
+
+        # Construct a list of conditions from the results
+        def result_conditions(conditions, results)
+          results.map do |result|
             result_condition = @eq_fields.map do |field|
               Condition.new field, :'=', result[field.id]
             end
@@ -278,46 +395,6 @@ module NoSE
 
             result_condition
           end
-
-          # Lookup values from an index selecting the given
-          # fields and filtering on the given conditions
-          # TODO: Chain enumerables of results instead
-          new_result = []
-          @logger.debug { "  #{@prepared.cql} * #{condition_list.size}" }
-
-          # Limit the total number of queries as well as the query limit
-          condition_list.zip(results).each do |condition_set, result|
-            values = condition_set.map do |condition|
-              value = condition.value ||
-                      conditions[condition.field.id].value
-              fail if value.nil?
-              condition.field.is_a?(Fields::IDField) ? \
-                Cassandra::Uuid.new(value.to_i) : value
-            end
-
-            # Loop over all pages to fetch results
-            new_results = @client.execute(@prepared, *values)
-            loop do
-              # Add the previous results to each row
-              rows = new_results.map { |row| result.merge row }
-
-              # XXX Ignore null values in results for now
-              # fail if rows.any? { |row| row.values.any?(&:nil?) }
-
-              new_result += rows
-              break if new_results.last_page? ||
-                       (!@step.limit.nil? && result.length >= @step.limit)
-              new_results = new_results.next_page
-              @logger.debug "Fetched #{result.length} results"
-            end
-
-            # Don't continue with further queries
-            break if (!@step.limit.nil? && new_result.length >= @step.limit)
-          end
-          @logger.debug "Total result size = #{new_result.size}"
-
-          # Limit the size of the results in case we fetched multiple keys
-          new_result[0..(@step.limit.nil? ? -1 : @step.limit)]
         end
       end
     end
