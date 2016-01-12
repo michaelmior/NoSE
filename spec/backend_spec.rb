@@ -27,7 +27,8 @@ module NoSE::Backend
       # Materialize a view for the given query
       query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
                                     'WHERE User.Username = "Bob" ' \
-                                    'ORDER BY Tweet.Timestamp LIMIT 10', workload.model
+                                    'ORDER BY Tweet.Timestamp LIMIT 10',
+                                    workload.model
       index = query.materialize_view
       planner = NoSE::Plans::QueryPlanner.new workload.model, [index],
                                               cost_model
@@ -35,9 +36,9 @@ module NoSE::Backend
 
       # Validate the expected CQL query
       client = double('client')
-      backend_query = "SELECT User_Username, Tweet_Timestamp, Tweet_Body " \
+      backend_query = 'SELECT User_Username, Tweet_Timestamp, Tweet_Body ' \
                       "FROM \"#{index.key}\" WHERE User_Username = ? " \
-                      "ORDER BY Tweet_Timestamp LIMIT 10"
+                      'ORDER BY Tweet_Timestamp LIMIT 10'
       expect(client).to receive(:prepare).with(backend_query) \
         .and_return(backend_query)
 
@@ -63,7 +64,7 @@ module NoSE::Backend
         'Link_URL' => 'http://www.example.com/'
       }]
       backend_insert = "INSERT INTO #{index.key} (Link_LinkId, Link_URL) " \
-                       "VALUES (?, ?)"
+                       'VALUES (?, ?)'
       expect(client).to receive(:prepare).with(backend_insert) \
         .and_return(backend_insert)
       expect(client).to receive(:execute) \

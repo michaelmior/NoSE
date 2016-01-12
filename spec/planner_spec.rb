@@ -90,7 +90,7 @@ module NoSE::Plans
       query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet ' \
                               'WHERE Tweet.TweetId = ?', workload.model
       expect { planner.find_plans_for_query query }.to \
-          raise_error NoPlanException
+        raise_error NoPlanException
     end
 
     it 'can find multiple plans' do
@@ -118,8 +118,8 @@ module NoSE::Plans
 
     it 'knows which fields are available at a given step' do
       index = NoSE::Index.new [tweet['TweetId']], [],
-                             [tweet['Body'], tweet['Timestamp']],
-                             [tweet.id_fields.first]
+                              [tweet['Body'], tweet['Timestamp']],
+                              [tweet.id_fields.first]
       planner = QueryPlanner.new workload.model, [index], cost_model
       query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet ' \
                               'WHERE Tweet.TweetId = ?', workload.model
@@ -136,7 +136,7 @@ module NoSE::Plans
       planner = QueryPlanner.new workload.model, [index], cost_model
       query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet WHERE ' \
                               'Tweet.TweetId = ? AND Tweet.Timestamp > ?',
-                               workload.model
+                              workload.model
 
       tree = planner.find_plans_for_query(query)
       expect(tree).to have(1).plan
@@ -291,7 +291,7 @@ module NoSE::Plans
       update_steps = [
         InsertPlanStep.new(index)
       ]
-      plan =  UpdatePlan.new update, index, trees, update_steps, cost_model
+      plan = UpdatePlan.new update, index, trees, update_steps, cost_model
       plan.select_query_plans indexes
       expect(plans).to match_array [plan]
     end

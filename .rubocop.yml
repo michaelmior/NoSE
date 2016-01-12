@@ -1,0 +1,7 @@
+Style/ClassAndModuleChildren:
+  Exclude:
+    - 'spec/**/*'
+
+Metrics/ModuleLength:
+  Exclude:
+    - 'spec/**/*'

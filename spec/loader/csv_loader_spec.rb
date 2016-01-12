@@ -23,11 +23,15 @@ module NoSE::Loader
                               [user['Username']],
                               [user.id_fields.first]
       loader = CsvLoader.new workload, backend
-      loader.load([index], {directory: '/tmp/csv'})
+      loader.load([index], directory: '/tmp/csv')
 
       expect(backend).to have_received(:index_insert_chunk).with(
         index,
-        [{'User_UserId' => '1', 'User_Username' => 'Alice', 'User_City' => 'Chicago'}])
+        [{
+          'User_UserId' => '1',
+          'User_Username' => 'Alice',
+          'User_City' => 'Chicago'
+        }])
     end
   end
 end

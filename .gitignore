@@ -33,3 +33,4 @@
 *.yml
 !.codeclimate.yml
 !.travis.yml
+!.rubocop.yml

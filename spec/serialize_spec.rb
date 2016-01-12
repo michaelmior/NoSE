@@ -4,12 +4,12 @@ module NoSE::Serialize
 
     it 'serializes a field and its properties' do
       field = EntityFieldRepresenter.represent(user['Username']).to_hash
-      expect(field).to eq({
+      expect(field).to eq(
         'name' => 'Username',
         'size' => 10,
         'cardinality' => 10,
         'type' => 'string'
-      })
+      )
     end
   end
 
@@ -18,7 +18,7 @@ module NoSE::Serialize
 
     it 'serializes a field to a simple hash' do
       field = FieldRepresenter.represent(user['Username']).to_hash
-      expect(field).to eq({'name' => 'Username', 'parent' => 'User'})
+      expect(field).to eq('name' => 'Username', 'parent' => 'User')
     end
   end
 
@@ -29,7 +29,7 @@ module NoSE::Serialize
       index = NoSE::Index.new [user['Username']], [user['UserId']], [],
                               [user.id_fields.first], 'IndexKey'
       hash = IndexRepresenter.represent(index).to_hash
-      expect(hash).to eq({'key' => 'IndexKey'})
+      expect(hash).to eq('key' => 'IndexKey')
     end
   end
 
@@ -37,8 +37,7 @@ module NoSE::Serialize
     it 'serializes an empty entity' do
       entity = NoSE::Entity.new('Foo') * 10
       hash = EntityRepresenter.represent(entity).to_hash
-      expect(hash).to eq({'name' => 'Foo', 'count' => 10, 'fields' => []})
-
+      expect(hash).to eq('name' => 'Foo', 'count' => 10, 'fields' => [])
     end
   end
 

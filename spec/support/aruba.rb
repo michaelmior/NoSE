@@ -39,6 +39,7 @@ module NoSE::CLI
 
     # Execute the app using the injected stuff
     # https://github.com/erikhuda/thor/wiki/Integrating-with-Aruba-In-Process-Runs
+    # rubocop:disable Metrics/MethodLength
     def execute!
       exit_code = begin
                     # Thor accesses these streams directly rather than
@@ -71,6 +72,7 @@ module NoSE::CLI
       # Proxy our exit code back to the injected kernel.
       @kernel.exit exit_code
     end
+    # rubocop:enable Metrics/MethodLength
   end
 end
 

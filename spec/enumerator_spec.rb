@@ -60,7 +60,7 @@ module NoSE
       workload = Workload.new model
       enum = IndexEnumerator.new workload
       update = Update.new 'UPDATE User SET Username = ? WHERE User.City = ?',
-               model
+                          model
       workload.add_statement update
       indexes = enum.indexes_for_workload
 
