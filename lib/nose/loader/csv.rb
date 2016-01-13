@@ -6,6 +6,12 @@ module NoSE
   module Loader
     # Load data into an index from a set of CSV files
     class CsvLoader < LoaderBase
+      def initialize(workload = nil, backend = nil)
+        super
+
+        @logger = Logging.logger['nose::loader::csvloader']
+      end
+
       # Load data for all the indexes
       def load(indexes, config, show_progress = false, limit = nil,
                skip_existing = true)
@@ -23,8 +29,8 @@ module NoSE
           File.open(filename) { |file| file.each_line { total_rows += 1 } }
 
           if show_progress
-            puts "Loading simple indexes for #{entity.name}"
-            puts "#{simple_index_list.map(&:key).join ', '}"
+            @logger.info "Loading simple indexes for #{entity.name}"
+            @logger.info "#{simple_index_list.map(&:key).join ', '}"
 
             Formatador.new.redisplay_progressbar 0, total_rows
             progress = Formatador::ProgressBar.new total_rows,

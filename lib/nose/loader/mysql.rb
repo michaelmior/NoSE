@@ -26,10 +26,10 @@ module NoSE
 
           # Skip this index if it's not empty
           if skip_existing && !@backend.index_empty?(index)
-            puts "Skipping index #{index.inspect}"
+            @logger.info "Skipping index #{index.inspect}" if show_progress
             next
           end
-          puts "#{index.inspect}" if show_progress
+          @logger.info "#{index.inspect}" if show_progress
 
           sql = index_sql index, limit
           results = client.query(sql, stream: true, cache_rows: false)
