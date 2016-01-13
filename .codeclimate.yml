@@ -6,6 +6,9 @@ engines:
     config:
       languages:
       - ruby
+    exclude_fingerprints:
+    # Ignore duplicated parse structure between INSERT and SELECT
+    - d17377f9c9cc5c60cb8358974c8d6ba2
   fixme:
     enabled: true
   rubocop:
