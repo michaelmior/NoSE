@@ -7,6 +7,9 @@ require 'graphviz'
 module NoSE
   # A representation of a query workload over a given set of entities
   class Workload
+    LOAD_PATH = 'workloads'
+    extend Loader
+
     attr_reader :model
     attr_accessor :mix
 
@@ -18,13 +21,6 @@ module NoSE
 
       # Apply the DSL
       WorkloadDSL.new(self).instance_eval(&block) if block_given?
-    end
-
-    # Find the workload with the given name
-    def self.load(name)
-      filename = File.expand_path "../../../workloads/#{name}.rb", __FILE__
-      contents = File.read(filename)
-      binding.eval contents, filename
     end
 
     # Add a new {Entity} or {Statement} to the workload

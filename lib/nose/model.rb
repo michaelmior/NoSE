@@ -4,6 +4,9 @@ require_relative 'model/fields'
 module NoSE
   # A conceptual data model of a set of entities
   class Model
+    LOAD_PATH = 'models'
+    extend Loader
+
     attr_reader :entities
 
     def initialize(&block)
@@ -11,13 +14,6 @@ module NoSE
 
       # Apply the DSL
       WorkloadDSL.new(self).instance_eval(&block) if block_given?
-    end
-
-    # Find the model with the given name
-    def self.load(name)
-      filename = File.expand_path "../../../models/#{name}.rb", __FILE__
-      contents = File.read(filename)
-      binding.eval contents, filename
     end
 
     # Retrieve an entity by name

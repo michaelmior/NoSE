@@ -2,6 +2,9 @@ module NoSE
   module Plans
     # Simple DSL for constructing execution plans
     class ExecutionPlans
+      LOAD_PATH = 'plans'
+      extend Loader
+
       attr_reader :groups, :weights, :schema, :mix
 
       def initialize(&block)
@@ -13,13 +16,6 @@ module NoSE
 
         # Reset the mix to force weight assignment
         self.mix = @mix
-      end
-
-      # Find the plans with the given name
-      def self.load(name)
-        filename = File.expand_path "../../../../plans/#{name}.rb", __FILE__
-        contents = File.read(filename)
-        binding.eval contents, filename
       end
 
       # Populate the cost of each plan

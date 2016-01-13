@@ -236,6 +236,18 @@ module NoSE
 
     module_function :mixin_fields
   end
+
+  # Add loading of class instances from the filesystem
+  module Loader
+    # Load a class with the given name from a directory specified
+    # by the LOAD_PATH class constant
+    def load(name)
+      path = const_get(:LOAD_PATH)
+      filename = File.expand_path "../../../#{path}/#{name}.rb", __FILE__
+      contents = File.read(filename)
+      binding.eval contents, filename
+    end
+  end
 end
 
 # Extend Time to allow conversion to DateTime instances
