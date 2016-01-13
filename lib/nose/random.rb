@@ -10,15 +10,9 @@ module NoSE
       @nodes_nb = params.fetch :nodes_nb, 10
       @node_degree = params.fetch :node_degree, 3
       @field_count = RandomGaussian.new params.fetch(:num_fields, 5), 1
-
-      @nodes = 0..(@nodes_nb - 1)
-      num_entities = RandomGaussian.new 10_000, 100
-      @entities = @nodes.map do |node|
-        Entity.new('E' + random_name(node)) * num_entities.rand
-      end
-
       @neighbours = Array.new(@nodes_nb) { Set.new }
 
+      create_entities
       pick_fields
       build_initial_links
       rewire_links
@@ -35,6 +29,15 @@ module NoSE
 
     private
 
+    # Create random entities to use in the model
+    def create_entities
+      @nodes = 0..(@nodes_nb - 1)
+      num_entities = RandomGaussian.new 10_000, 100
+      @entities = @nodes.map do |node|
+        Entity.new('E' + random_name(node)) * num_entities.rand
+      end
+    end
+
     # Probabilities of selecting various field types
     FIELD_TYPES = [
       [Fields::IntegerField, 0.45],
@@ -48,14 +51,18 @@ module NoSE
       @nodes.each do |node|
         @entities[node] << Fields::IDField.new(@entities[node].name + 'ID')
         0.upto(@field_count.rand).each do |field_index|
-          type_rand = rand
-          field = FIELD_TYPES.find do |_, threshold|
-            type_rand -= threshold
-            type_rand <= threshold
-          end[0].send(:new, 'F' + random_name(field_index))
-          @entities[node] << field
+          @entities[node] << random_field(field_index)
         end
       end
+    end
+
+    # Generate a random field to add to an entity
+    def random_field(field_index)
+      type_rand = rand
+      FIELD_TYPES.find do |_, threshold|
+        type_rand -= threshold
+        type_rand <= threshold
+      end[0].send(:new, 'F' + random_name(field_index))
     end
 
     # Add foreign key relationships for neighbouring nodes
@@ -115,12 +122,15 @@ module NoSE
 
           neighbour = (node + i + 1) % @nodes_nb
           remove_link node, neighbour
-
-          unlinkable_nodes = [node, neighbour] + @neighbours[node].to_a
-          new_neighbour = (@nodes.to_a - unlinkable_nodes).sample
-          add_link node, new_neighbour
+          add_link node, new_neighbour(node, neighbour)
         end
       end
+    end
+
+    # Find a new neighbour for a node
+    def new_neighbour(node, neighbour)
+      unlinkable_nodes = [node, neighbour] + @neighbours[node].to_a
+      (@nodes.to_a - unlinkable_nodes).sample
     end
 
     # Random names of variables combined to create random names
@@ -140,7 +150,7 @@ module NoSE
 
     # Generate a new random insertion to entities in the model
     # @return Insert
-    def random_insert(connection_count = 1)
+    def random_insert(connect = true)
       entity = @model.entities.values.sample
       settings = entity.fields.each_value.map do |field|
         "#{field.name}=?"
@@ -148,33 +158,40 @@ module NoSE
       insert = "INSERT INTO #{entity.name} SET #{settings} "
 
       # Optionally add connections to other entities
-      if connection_count > 0
-        connections = entity.foreign_keys.values.sample(2)
-        insert += 'AND CONNECT TO ' + connections.map do |connection|
-          "#{connection.name}(?)"
-        end.join(', ')
-      end
+      insert += random_connection(entity) if connect
 
       Insert.new insert, @model
+    end
+
+    # Generate a random connection for an Insert
+    def random_connection(entity)
+      connections = entity.foreign_keys.values.sample(2)
+      'AND CONNECT TO ' + connections.map do |connection|
+        "#{connection.name}(?)"
+      end.join(', ')
     end
 
     # Generate a new random update of entities in the model
     # @return Update
     def random_update(path_length = 1, updated_fields = 2, condition_count = 1)
       path = random_path(path_length)
-
-      # Don't update key fields
-      update_fields = path.entities.first.fields.values
-      update_fields.reject! { |field| field.is_a? Fields::IDField }
-
-      settings = update_fields.sample(updated_fields).map do |field|
-        "#{field.name}=?"
-      end.join ', '
+      settings = random_settings path, updated_fields
       from = [path.first.parent.name] + path.entries[1..-1].map(&:name)
       update = "UPDATE #{from.first} FROM #{from.join '.'} SET #{settings} " +
                random_where_clause(path, condition_count)
 
       Update.new update, @model
+    end
+
+    # Get random settings for an update
+    def random_settings(path, updated_fields)
+      # Don't update key fields
+      update_fields = path.entities.first.fields.values
+      update_fields.reject! { |field| field.is_a? Fields::IDField }
+
+      update_fields.sample(updated_fields).map do |field|
+        "#{field.name}=?"
+      end.join ', '
     end
 
     # Generate a new random deletion of entities in the model
@@ -193,16 +210,19 @@ module NoSE
     # @return Query
     def random_query(path_length = 3, selected_fields = 2, condition_count = 2)
       path = random_path(path_length)
-      select = path.entities.first.fields.values.sample selected_fields
-
-      select_fields = select.map do |field|
-        path.entities.first.name + '.' + field.name
-      end.join ', '
+      select_fields = random_select(path, selected_fields)
       from = [path.first.parent.name] + path.entries[1..-1].map(&:name)
       query = "SELECT #{select_fields} FROM #{from.join '.'} " +
               random_where_clause(path, condition_count)
 
       Query.new query, @model
+    end
+
+    # Get random fields to select for a Query
+    def random_select(path, selected_fields)
+      path.entities.first.fields.values.sample(selected_fields).map do |field|
+        path.entities.first.name + '.' + field.name
+      end.join ', '
     end
 
     # Produce a random statement according to a given set of weights
@@ -217,17 +237,22 @@ module NoSE
 
     # Produce a random where clause using fields along a given path
     def random_where_clause(path, count = 2)
-      conditions = 1.upto(count).map do
-        field = path.entities.sample.fields.values.sample
-        next nil if field.name == '**'
-
-        field
-      end.compact
+      conditions = random_where_conditions path, count
 
       return '' if conditions.empty?
       "WHERE #{conditions.map do |field|
         "#{path.find_field_parent(field).name}.#{field.name} = ?"
       end.join ' AND '}"
+    end
+
+    # Produce a random set of conditions for a where clause
+    def random_where_conditions(path, count)
+      1.upto(count).map do
+        field = path.entities.sample.fields.values.sample
+        next nil if field.name == '**'
+
+        field
+      end.compact
     end
 
     # Get the name to be used in the query for a condition field
@@ -253,7 +278,7 @@ module NoSE
       path = [@model.entities.values.sample.id_fields.first]
       while path.length < max_length
         # Find a list of keys to entities we have not seen before
-        last_entity = path.map(&:entity).last
+        last_entity = path.last.entity
         keys = last_entity.foreign_keys.values
         keys.reject! { |key| path.map(&:entity).include? key.entity }
         break if keys.empty?
