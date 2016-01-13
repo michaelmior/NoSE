@@ -144,24 +144,9 @@ module NoSE
       # Get the average execution time for a single query plan
       def bench_query(backend, indexes, plan, index_values, iterations, repeat,
                       weight: 1.0)
-        # Construct a list of values to be substituted in the plan
-        condition_list = 1.upto(iterations).map do |i|
-          Hash[plan.params.map do |field_id, condition|
-            value = nil
-            indexes.each do |index|
-              values = index_values[index]
-              next if values.empty?
-              value = values[i % values.length][condition.field.id]
-              break unless value.nil?
-            end
 
-            [
-              field_id,
-              Condition.new(condition.field, condition.operator, value)
-            ]
-          end]
-        end
-
+        condition_list = execute_conditions plan.params, indexes, index_values,
+                                            iterations
         prepared = backend.prepare_query nil, plan.select_fields, plan.params,
                                          [plan.steps]
 
@@ -182,23 +167,8 @@ module NoSE
       # Get the average execution time for a single update plan
       def bench_update(backend, indexes, plan, index_values,
                        iterations, repeat, weight: 1.0)
-        params = plan.params
-        condition_list = 1.upto(iterations).map do |i|
-          Hash[params.map do |field_id, condition|
-            value = nil
-            indexes.each do |index|
-              values = index_values[index]
-              next if values.empty?
-              value = values[i % values.length][condition.field.id]
-              break unless value.nil?
-            end
-
-            [
-              field_id,
-              Condition.new(condition.field, condition.operator, value)
-            ]
-          end]
-        end
+        condition_list = execute_conditions plan.params, indexes, index_values,
+                                            iterations
 
         # Get values for the fields which were provided as parameters
         fields = plan.update_steps.last.fields.select do |field|
@@ -240,6 +210,26 @@ module NoSE
         end
 
         measurement
+      end
+
+      # Construct a list of values to be substituted in the plan
+      def execute_conditions(params, indexes, index_values, iterations)
+        1.upto(iterations).map do |i|
+          Hash[params.map do |field_id, condition|
+            value = nil
+            indexes.each do |index|
+              values = index_values[index]
+              next if values.empty?
+              value = values[i % values.length][condition.field.id]
+              break unless value.nil?
+            end
+
+            [
+              field_id,
+              Condition.new(condition.field, condition.operator, value)
+            ]
+          end]
+        end
       end
     end
   end
