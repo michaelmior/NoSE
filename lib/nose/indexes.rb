@@ -10,45 +10,34 @@ module NoSE
       @extra = extra.to_set - @hash_fields - @order_fields.to_set
       @all_fields = @hash_fields + order_fields.to_set + @extra
       @path = path.is_a?(KeyPath) ? path : KeyPath.new(path)
-      @key = saved_key
 
       validate_index
-
-      # Initialize the hash function and freeze ourselves
-      hash
-      key
-      calculate_size
-      freeze
+      build_hash saved_key
     end
 
     # A simple key which uniquely identifies the index
     def key
-      # Temporarily set an empty key
-      if @key.nil?
-        join_fields = lambda do |fields|
-          fields.map { |field| "#{field.parent.name}.#{field.name}" }.join ', '
-        end
+      return @key unless @key.nil?
 
-        keystr = join_fields.call @hash_fields
-        keystr += ' ' + join_fields.call(@order_fields)
-        keystr += ' ' + join_fields.call(@extra)
-        keystr += ' ' + @path.map(&:name).join(', ')
-
-        @key = "i#{Zlib.crc32 keystr}"
+      # Join all of the fields in the key as well as entities on
+      # the path to create a string which is hashed to give the key
+      join_fields = lambda do |fields|
+        fields.map { |field| "#{field.parent.name}.#{field.name}" }.join ', '
       end
 
-      @key
+      keystr = [@hash_fields, @order_fields, @extra].map(&join_fields).join ' '
+      keystr += ' ' + @path.map(&:name).join(', ')
+
+      @key = "i#{Zlib.crc32 keystr}"
     end
 
     # :nocov:
     def to_color
-      hash_names = @hash_fields.map(&:inspect)
-      order_names = @order_fields.map(&:inspect)
-      extra_names = @extra.map(&:inspect)
-      '[magenta]' + @key + '[/] ' \
-      '[' + hash_names.join(', ') + ']' \
-        '[' + order_names.join(', ') + '] ' \
-        '→ [' + extra_names.join(', ') + ']' \
+      fields = [@hash_fields, @order_fields, @extra].map do |field_group|
+        '[' + field_group.map(&:inspect).join(', ') + ']'
+      end
+
+      "[magenta]#{key}[/] #{fields[0]} #{fields[1]} → #{fields[2]}" \
         " [yellow]$#{size}[/]" \
         " [magenta]#{@path.map(&:name).join(', ')}[/]"
     end
@@ -108,23 +97,54 @@ module NoSE
 
     private
 
+    # Initialize the hash function and freeze ourselves
+    def build_hash(saved_key)
+      @key = saved_key
+
+      hash
+      key
+      calculate_size
+      freeze
+    end
+
     # Ensure this index is valid
     def validate_index
+      validate_hash_fields
+      validate_nonempty
+      validate_path
+    end
+
+    # Check for valid hash fields in an index
+    def validate_hash_fields
       fail InvalidIndexException, 'hash fields cannot be empty' \
         if @hash_fields.empty?
 
-      fail InvalidIndexException, 'must have fields other than hash fields' \
-        if @order_fields.empty? && @extra.empty?
-
       fail InvalidIndexException, 'hash fields can only involve one entity' \
         if @hash_fields.map(&:parent).to_set.size > 1
+    end
 
+    # Ensure an index is nonempty
+    def validate_nonempty
+      fail InvalidIndexException, 'must have fields other than hash fields' \
+        if @order_fields.empty? && @extra.empty?
+    end
+
+    # Ensure an index and its fields correspond to a valid path
+    def validate_path
+      validate_path_entities
+      validate_path_keys
+    end
+
+    # Ensure the path of the index is valid
+    def validate_path_entities
       entities = @all_fields.map(&:parent).to_set
       fail InvalidIndexException, 'invalid path for index fields' \
         unless entities.include?(path.entities.first) &&
                entities.include?(path.entities.last)
+    end
 
-      # We must have the primary keys of the all entities on the path
+    # We must have the primary keys of the all entities on the path
+    def validate_path_keys
       fail InvalidIndexException, 'missing path entity keys' \
         unless @path.entities.flat_map(&:id_fields).all?(
           &(@hash_fields + @order_fields).method(:include?))
@@ -168,17 +188,28 @@ module NoSE
       hash_entity = @longest_entity_path.detect do |entity|
         @eq_fields.any? { |field| field.parent == entity }
       end
-      eq = @eq_fields.select { |field| field.parent == hash_entity }
-      eq = @longest_entity_path.last.id_fields if eq.empty?
-      order_fields = materialize_view_order(hash_entity) - eq
+
+      eq = materialized_view_eq hash_entity
+      order_fields = materialized_view_order(hash_entity) - eq
 
       Index.new(eq, order_fields,
                 all_fields - (@eq_fields + @order).to_set,
                 @key_path.reverse)
     end
 
+    private
+
+    # Get the fields used as parition keys for a materialized view
+    # based over a given entity
+    def materialized_view_eq(hash_entity)
+      eq = @eq_fields.select { |field| field.parent == hash_entity }
+      eq = @longest_entity_path.last.id_fields if eq.empty?
+
+      eq
+    end
+
     # Get the ordered keys for a materialized view
-    def materialize_view_order(hash_entity)
+    def materialized_view_order(hash_entity)
       # Start the ordered fields with the equality predicates
       # on other entities, followed by all of the attributes
       # used in ordering, then the range field
