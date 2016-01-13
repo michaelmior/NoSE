@@ -225,15 +225,14 @@ module NoSE
       def Insert(index_key, *fields)
         @index = @schema.indexes[index_key]
 
-        step = Plans::InsertPlanStep.new @index
-        fields = @index.all_fields if fields.empty?
-        step.instance_variable_set(:@fields, fields)
-
         # Get cardinality from last step of each support query plan
         # as in UpdatePlanner#find_plans_for_update
         cardinalities = @query_plans.map { |p| p.steps.last.state.cardinality }
         cardinality = cardinalities.inject(1, &:*)
-        step.state = OpenStruct.new cardinality: cardinality
+        state = OpenStruct.new cardinality: cardinality
+
+        fields = @index.all_fields if fields.empty?
+        step = Plans::InsertPlanStep.new @index, state, fields
 
         @update_steps << step
       end

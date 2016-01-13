@@ -29,17 +29,13 @@ module NoSE
 
       # Check if an external sort can used (if a sort is the last step)
       def self.apply(_parent, state)
-        new_step = nil
+        return nil unless state.fields.empty? && state.eq.empty? && \
+                          state.range.nil? && !state.order_by.empty?
 
-        if state.fields.empty? && state.eq.empty? && state.range.nil? && \
-           !state.order_by.empty?
-
-          new_state = state.dup
-          new_state.order_by = []
-          new_step = SortPlanStep.new(state.order_by)
-          new_step.state = new_state
-          new_step.state.freeze
-        end
+        new_state = state.dup
+        new_state.order_by = []
+        new_step = SortPlanStep.new(state.order_by, new_state)
+        new_step.state.freeze
 
         new_step
       end
