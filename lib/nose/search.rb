@@ -25,7 +25,28 @@ module NoSE
         index_sizes = indexes.map(&:size)
         return if indexes.empty?
 
-        # Get the cost of all queries
+        # Get the costs of all queries and updates
+        query_weights = combine_query_weights indexes
+        costs, trees = query_costs query_weights, indexes
+        update_costs, update_plans = update_costs trees, indexes
+
+        log_search_start costs, query_weights
+
+        solver_params = {
+          max_space: max_space,
+          index_sizes: index_sizes,
+          costs: costs,
+          update_costs: update_costs,
+          cost_model: @cost_model
+        }
+        search_result query_weights, indexes, solver_params, trees,
+                      update_plans
+      end
+
+      private
+
+      # Combine the weights of queries and statements
+      def combine_query_weights(indexes)
         query_weights = Hash[@workload.support_queries(indexes).map do |query|
           [query, @workload.statement_weights[query.statement]]
         end]
@@ -33,24 +54,25 @@ module NoSE
           stmt.is_a? Query
         end.to_h)
 
-        costs, trees = query_costs query_weights, indexes
-        update_costs, update_plans = update_costs trees, indexes
+        query_weights
+      end
 
+      # Produce a useful log message before starting the search
+      def log_search_start(costs, query_weights)
         @logger.debug do
           "Costs: \n" + pp_s(costs) + "\n" \
-          "Search with queries:\n" + \
+            "Search with queries:\n" + \
             query_weights.each_key.each_with_index.map do |query, i|
               "#{i} #{query.inspect}"
             end.join("\n")
         end
+      end
 
+      # Run the solver and get the results of search
+      def search_result(query_weights, indexes, solver_params, trees,
+                        update_plans)
         # Solve the LP using Gurobi
-        result = solve_gurobi query_weights.keys, indexes,
-                              max_space: max_space,
-                              index_sizes: index_sizes,
-                              costs: costs,
-                              update_costs: update_costs,
-                              cost_model: @cost_model
+        result = solve_gurobi query_weights.keys, indexes, **solver_params
 
         result.workload = @workload
         result.plans_from_trees trees
@@ -66,10 +88,9 @@ module NoSE
         result.update_plans = update_plans
 
         result.validate
+
         result
       end
-
-      private
 
       # Select the plans to use for a given set of indexes
       def select_plans(trees, indexes)
@@ -114,14 +135,21 @@ module NoSE
         @workload.statements.each do |statement|
           next if statement.is_a? Query
 
-          planner.find_plans_for_update(statement, indexes).each do |plan|
-            weight = @workload.statement_weights[statement]
-            update_costs[statement][plan.index] = plan.update_cost * weight
-            update_plans[statement] << plan
-          end
+          populate_update_costs planner, statement, indexes,
+                                update_costs, update_plans
         end
 
         [update_costs, update_plans]
+      end
+
+      # Populate the cost of all necessary plans for the given satement
+      def populate_update_costs(planner, statement, indexes,
+                                update_costs, update_plans)
+        planner.find_plans_for_update(statement, indexes).each do |plan|
+          weight = @workload.statement_weights[statement]
+          update_costs[statement][plan.index] = plan.update_cost * weight
+          update_plans[statement] << plan
+        end
       end
 
       # Get the cost of using each index for each query in a workload
