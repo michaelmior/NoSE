@@ -1,4 +1,5 @@
 require 'graphviz'
+require 'yaml'
 
 module NoSE::CLI
   describe NoSECLI do
@@ -52,17 +53,20 @@ module NoSE::CLI
     end
 
     it 'can export environment variables' do
+      config = { backend: { port: 9042, hosts: ['127.0.0.1'] } }
       FakeFS.activate!
 
       FileUtils.mkdir_p File.dirname(NoSECLI::TEST_CONFIG_FILE_NAME)
       File.open(NoSECLI::TEST_CONFIG_FILE_NAME, 'w') do |config_file|
-        config_file.write "backend:\n  port: 9042"
+        config_file.write config.to_yaml
       end
       run 'nose export'
 
       FakeFS.deactivate!
 
       expect(all_output).to eq "BACKEND_PORT=\"9042\"\n" \
+                               "BACKEND_HOSTS_COUNT=\"1\"\n" \
+                               "BACKEND_HOSTS_0=\"127.0.0.1\"\n" \
                                "PARALLEL=\"true\"\n"
     end
   end
