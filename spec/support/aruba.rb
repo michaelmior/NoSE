@@ -9,10 +9,12 @@ require 'nose/cli'
 
 module NoSE::CLI
   class NoSECLI
+    TEST_CONFIG_FILE_NAME = File.join File.dirname(__FILE__), '..', '..',
+                                      'nose.yml.example'
+
     def initialize(*args)
       suppress_warnings do
-        file = File.join File.dirname(__FILE__), '..', '..', 'nose.yml.example'
-        NoSECLI.const_set 'CONFIG_FILE_NAME', file
+        NoSECLI.const_set 'CONFIG_FILE_NAME', TEST_CONFIG_FILE_NAME
       end
 
       super(*args)

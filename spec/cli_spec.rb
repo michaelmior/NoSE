@@ -50,5 +50,20 @@ module NoSE::CLI
       run 'nose search rubis_synthetic --max-space=1'
       expect(last_exit_status).to eq(1)
     end
+
+    it 'can export environment variables' do
+      FakeFS.activate!
+
+      FileUtils.mkdir_p File.dirname(NoSECLI::TEST_CONFIG_FILE_NAME)
+      File.open(NoSECLI::TEST_CONFIG_FILE_NAME, 'w') do |config_file|
+        config_file.write "backend:\n  port: 9042"
+      end
+      run 'nose export'
+
+      FakeFS.deactivate!
+
+      expect(all_output).to eq "BACKEND_PORT=\"9042\"\n" \
+                               "PARALLEL=\"true\"\n"
+    end
   end
 end
