@@ -416,32 +416,8 @@ module NoSE
 
       def call(_, input:, fragment:, **)
         workload = input.represented
-
-        # Recreate all the entities
-        entity_map = {}
-        fragment['entities'].each do |entity_hash|
-          entity_map[entity_hash['name']] = Entity.new entity_hash['name']
-        end
-
-        # Populate the entities and add them to the workload
-        entities = EntityRepresenter.represent([])
-        entities = entities.from_hash fragment['entities'],
-                                      user_options: { entity_map: entity_map }
-        entities.each { |entity| workload << entity }
-
-        # Add all the reverse foreign keys
-        fragment['entities'].each do |entity|
-          entity['fields'].each do |field_hash|
-            if field_hash['type'] == 'foreign_key'
-              field = entity_map[entity['name']] \
-                      .foreign_keys[field_hash['name']]
-              field.reverse = field.entity.foreign_keys[field_hash['reverse']]
-              # field.instance_variable_set :@relationship,
-              #                             field_hash['relationship'].to_sym
-            end
-            field.freeze
-          end
-        end
+        entity_map = add_entities workload, fragment['entities']
+        add_reverse_foreign_keys entity_map, fragment['entities']
 
         # Add all statements to the workload
         statement_weights = Hash.new { |h, k| h[k] = {} }
@@ -458,6 +434,41 @@ module NoSE
 
         workload.mix = fragment['mix'].to_sym unless fragment['mix'].nil?
         workload
+      end
+
+      private
+
+      # Reconstruct entities and add them to the given workload
+      def add_entities(workload, entity_fragment)
+        # Recreate all the entities
+        entity_map = {}
+        entity_fragment.each do |entity_hash|
+          entity_map[entity_hash['name']] = Entity.new entity_hash['name']
+        end
+
+        # Populate the entities and add them to the workload
+        entities = EntityRepresenter.represent([])
+        entities = entities.from_hash entity_fragment,
+                                      user_options: { entity_map: entity_map }
+        entities.each { |entity| workload << entity }
+
+        entity_map
+      end
+
+      # Add all the reverse foreign keys
+      def add_reverse_foreign_keys(entity_map, entity_fragment)
+        entity_fragment.each do |entity|
+          entity['fields'].each do |field_hash|
+            if field_hash['type'] == 'foreign_key'
+              field = entity_map[entity['name']] \
+                      .foreign_keys[field_hash['name']]
+              field.reverse = field.entity.foreign_keys[field_hash['reverse']]
+              # field.instance_variable_set :@relationship,
+              #                             field_hash['relationship'].to_sym
+            end
+            field.freeze
+          end
+        end
       end
     end
 
@@ -477,64 +488,89 @@ module NoSE
           state = Plans::QueryState.new query, workload
         end
 
-        # Create a new query plan
-        plan = Plans::QueryPlan.new query, represented.cost_model
-
-        plan.instance_variable_set(:@name, fragment['name']) \
-          unless fragment['name'].nil?
-        plan.instance_variable_set(:@weight, fragment['weight'])
-
-        parent = Plans::RootPlanStep.new state
-
-        f = ->(field) { workload.model[field['parent']][field['name']] }
-
-        # Loop over all steps in the plan and reconstruct them
-        fragment['steps'].each do |step_hash|
-          step = build_step step_hash, state, parent, represented.indexes, f
-          rebuild_step_state step, step_hash
-          plan << step
-          parent = step
-        end
+        plan = build_plan query, represented.cost_model, fragment
+        add_plan_steps plan, workload, fragment['steps'], represented.indexes,
+                       state
 
         plan
       end
 
       private
 
+      # Build a new query plan
+      def build_plan(query, cost_model, fragment)
+        plan = Plans::QueryPlan.new query, cost_model
+
+        plan.instance_variable_set(:@name, fragment['name']) \
+          unless fragment['name'].nil?
+        plan.instance_variable_set(:@weight, fragment['weight'])
+
+        plan
+      end
+
+      # Loop over all steps in the plan and reconstruct them
+      def add_plan_steps(plan, workload, steps_fragment, indexes, state)
+        parent = Plans::RootPlanStep.new state
+        f = ->(field) { workload.model[field['parent']][field['name']] }
+
+        steps_fragment.each do |step_hash|
+          step = build_step step_hash, state, parent, indexes, f
+          rebuild_step_state step, step_hash
+          plan << step
+          parent = step
+        end
+      end
+
       # Rebuild a step from a hash using the given set of indexes
       # The final parameter is a function which maps field names to instances
       def build_step(step_hash, state, parent, indexes, f)
-        step_class = Plans::PlanStep.subtype_class step_hash['type']
-        if step_class == Plans::IndexLookupPlanStep
-          index_key = step_hash['index']['key']
-          step_index = indexes.find { |i| i.key == index_key }
-          step = step_class.new step_index, state, parent
+        send "build_#{step_hash['type']}_step".to_sym,
+             step_hash, state, parent, indexes, f
+      end
 
-          eq_filter = (step_hash['eq_filter'] || []).map(&f)
-          step.instance_variable_set(:@eq_filter, eq_filter)
+      # Rebuild a limit step
+      def build_limit_step(step_hash, _state, parent, _indexes, _f)
+        limit = step_hash['limit'].to_i
+        Plans::LimitPlanStep.new limit, parent.state
+      end
 
-          range_filter = step_hash['range_filter']
-          range_filter = f.call(range_filter) unless range_filter.nil?
-          step.instance_variable_set(:@range_filter, range_filter)
+      # Rebuild a sort step
+      def build_sort_step(step_hash, _state, parent, _indexes, f)
+        sort_fields = step_hash['sort_fields'].map(&f)
+        Plans::SortPlanStep.new sort_fields, parent.state
+      end
 
-          order_by = (step_hash['order_by'] || []).map(&f)
-          step.instance_variable_set(:@order_by, order_by)
+      # Rebuild a filter step
+      def build_filter_step(step_hash, _state, parent, _indexes, f)
+        eq = step_hash['eq'].map(&f)
+        range = f.call(step_hash['range']) if step_hash['range']
+        Plans::FilterPlanStep.new eq, range, parent.state
+      end
 
-          limit = step_hash['limit']
-          step.instance_variable_set(:@limit, limit.to_i) unless limit.nil?
-        elsif step_class == Plans::FilterPlanStep
-          eq = step_hash['eq'].map(&f)
-          range = f.call(step_hash['range']) if step_hash['range']
-          step = step_class.new eq, range, parent.state
-        elsif step_class == Plans::SortPlanStep
-          sort_fields = step_hash['sort_fields'].map(&f)
-          step = step_class.new sort_fields, parent.state
-        elsif step_class == Plans::LimitPlanStep
-          limit = step_hash['limit'].to_i
-          step = step_class.new limit, parent.state
-        end
+      # Rebuild an index lookup step
+      def build_index_lookup_step(step_hash, state, parent, indexes, f)
+        index_key = step_hash['index']['key']
+        step_index = indexes.find { |i| i.key == index_key }
+        step = Plans::IndexLookupPlanStep.new step_index, state, parent
+        add_index_lookup_filters step, step_hash, f
+
+        order_by = (step_hash['order_by'] || []).map(&f)
+        step.instance_variable_set(:@order_by, order_by)
+
+        limit = step_hash['limit']
+        step.instance_variable_set(:@limit, limit.to_i) unless limit.nil?
 
         step
+      end
+
+      # Add filters to a constructed index lookup step
+      def add_index_lookup_filters(step, step_hash, f)
+        eq_filter = (step_hash['eq_filter'] || []).map(&f)
+        step.instance_variable_set(:@eq_filter, eq_filter)
+
+        range_filter = step_hash['range_filter']
+        range_filter = f.call(range_filter) unless range_filter.nil?
+        step.instance_variable_set(:@range_filter, range_filter)
       end
 
       # Rebuild the state of the step from the provided hash
