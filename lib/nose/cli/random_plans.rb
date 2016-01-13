@@ -21,12 +21,9 @@ module NoSE
                          'then --count is ignored'
 
       def random_plans(workload_name, tag)
-        workload = Workload.load workload_name
-
         # Find the statement with the given tag
-        statement = workload.statements.find do |s|
-          s.text.end_with? "-- #{tag}"
-        end
+        workload = Workload.load workload_name
+        statement = workload.find_with_tag tag
 
         # Generate a random set of plans
         indexes = IndexEnumerator.new(workload).indexes_for_workload
@@ -36,6 +33,14 @@ module NoSE
         plans = planner.find_plans_for_query(statement).to_a
         plans = plans.sample options[:count] unless options[:all]
 
+        results = random_plan_results workload, indexes, plans, cost_model
+        output_random_plans results, options[:output], options[:format]
+      end
+
+      private
+
+      # Build a results structure for these plans
+      def random_plan_results(workload, indexes, plans, cost_model)
         results = OpenStruct.new
         results.workload = workload
         results.enumerated_indexes = indexes
@@ -43,16 +48,20 @@ module NoSE
         results.plans = plans
         results.cost_model = cost_model
 
-        # Output the results in the specified format
-        if options[:output].nil?
+        results
+      end
+
+      # Output the results in the specified format
+      def output_random_plans(results, output, format)
+        if output.nil?
           file = $stdout
         else
-          File.open(options[:output], 'w')
+          File.open(output, 'w')
         end
         begin
-          send(('output_' + options[:format]).to_sym, results, file, true)
+          send(('output_' + format).to_sym, results, file, true)
         ensure
-          file.close unless options[:output].nil?
+          file.close unless output.nil?
         end
       end
     end

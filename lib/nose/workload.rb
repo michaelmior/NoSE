@@ -75,6 +75,13 @@ module NoSE
       end
     end
 
+    # Find a statement in the workload with the provided tag
+    def find_with_tag(tag)
+      statements.find do |s|
+        s.text.end_with? "-- #{tag}"
+      end
+    end
+
     # Remove any updates from the workload
     def remove_updates
       @statement_weights[@mix].select! { |stmt, _| stmt.is_a? Query }

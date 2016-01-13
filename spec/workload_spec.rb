@@ -28,6 +28,14 @@ module NoSE
       end
     end
 
+    it 'can find statements with a given tag' do
+      query = Query.new 'SELECT Foo.Id FROM Foo WHERE Foo.Id = ? -- foo',
+        workload.model
+      workload.add_statement query
+
+      expect(workload.find_with_tag 'foo').to eq(query)
+    end
+
     it 'can find fields on entities from queries' do
       expect(workload.model.find_field %w(Foo Id)).to be field
     end
