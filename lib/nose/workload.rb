@@ -142,8 +142,13 @@ module NoSE
       @model.add_entity Entity.new(*args, &block)
     end
 
-    # Separate function for foreign keys to avoid circular dependencies
+    # Add a HasMany relationship which is just the opposite of HasOne
     def HasMany(from_name, to_name, entities, **options)
+      HasOne to_name, from_name, Hash[[entities.first.reverse]], **options
+    end
+
+    # Separate function for foreign keys to avoid circular dependencies
+    def HasOne(from_name, to_name, entities, **options)
       from_entity, to_entity = entities.first
       from_field = Fields::ForeignKeyField.new from_name,
                                                @model[to_entity],
@@ -161,11 +166,6 @@ module NoSE
       from_field.reverse = to_field
       @model[from_entity] << from_field
       @model[to_entity] << to_field
-    end
-
-    # Add a HasOne operation which is just the opposite of HasMany
-    def HasOne(from_name, to_name, entities, **options)
-      HasMany to_name, from_name, Hash[[entities.first.reverse]], **options
     end
 
     # Shortcut to add a new {Statement} to the workload

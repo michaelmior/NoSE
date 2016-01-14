@@ -122,4 +122,31 @@ module NoSE
       expect(field.random_value).to be_a Time
     end
   end
+
+  describe Model do
+    let(:model) do
+      Model.new do
+        Entity 'Foo' do
+          ID 'FooID'
+        end
+
+        Entity 'Bar' do
+          ID 'BarID'
+        end
+
+        HasOne 'foo',    'bars',
+               'Bar'  => 'Foo'
+      end
+    end
+
+    it 'can create a to-one relationship' do
+      bar_key = model.entities['Bar']['foo']
+      expect(bar_key.relationship).to eq(:one)
+    end
+
+    it 'can create a to-many relationship' do
+      foo_key = model.entities['Foo']['bars']
+      expect(foo_key.relationship).to eq(:many)
+    end
+  end
 end
