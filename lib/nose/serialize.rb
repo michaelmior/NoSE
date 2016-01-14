@@ -463,8 +463,8 @@ module NoSE
               field = entity_map[entity['name']] \
                       .foreign_keys[field_hash['name']]
               field.reverse = field.entity.foreign_keys[field_hash['reverse']]
-              # field.instance_variable_set :@relationship,
-              #                             field_hash['relationship'].to_sym
+              field.instance_variable_set :@relationship,
+                                          field_hash['relationship'].to_sym
             end
             field.freeze
           end
