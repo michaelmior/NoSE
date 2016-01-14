@@ -118,7 +118,7 @@ module NoSE
 
         tables += ' WHERE '
         tables += index.path.each_cons(2).map do |_prev_key, key|
-          key = key.reverse if key.relationship == :one
+          key = key.reverse if key.relationship == :many
           "#{key.parent.name}.#{key.name}=" \
             "#{key.entity.name}.#{key.entity.id_fields.first.name}"
         end.join ' AND '
