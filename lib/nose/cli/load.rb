@@ -22,17 +22,19 @@ module NoSE
                              desc: 'ignore indexes which are not empty'
 
       def load(*plan_files)
-        plan_files.each do |plan_file|
-          result, backend = load_plans plan_file, options
+        plan_files.each { |plan_file| load_plan plan_file, options }
+      end
 
-          # Create a new instance of the loader class
-          loader_class = get_class 'loader', options
-          loader = loader_class.new result.workload, backend
+      private
 
-          # Remove the name from the options and execute the loader
-          loader.load result.indexes, options[:loader], options[:progress],
-                      options[:limit], options[:skip_nonempty]
-        end
+      # Load data from a single plan file
+      def load_plan(plan_file, options)
+        result, backend = load_plans plan_file, options
+
+        # Create a new instance of the loader class and execute
+        loader = get_class('loader', options).new result.workload, backend
+        loader.load result.indexes, options[:loader], options[:progress],
+                    options[:limit], options[:skip_nonempty]
       end
     end
   end
