@@ -71,7 +71,7 @@ module NoSE
       end
 
       # Execute a query with the stored plans
-      def query(query, plans = nil)
+      def query(query, plans = [])
         prepared = prepare query, plans
         prepared.execute query.conditions
       end

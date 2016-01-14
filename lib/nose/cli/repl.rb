@@ -23,18 +23,7 @@ module NoSE
         result = load_results plan_file
         backend = get_backend(options, result)
 
-        # Load the history file
-        history_file = File.expand_path '~/.nose_history'
-        if Object.const_defined? 'Readline'
-          begin
-            File.foreach(history_file) do |line|
-              Readline::HISTORY.push line.chomp
-            end
-          rescue Errno::ENOENT
-            nil
-          end
-        end
-
+        load_history
         loop do
           begin
             line = read_line
@@ -47,17 +36,35 @@ module NoSE
 
           execute_statement line, result, backend
         end
+      end
 
-        # Save the history file
+      private
+
+      # Load the history file
+      def load_history
         return unless Object.const_defined? 'Readline'
+
+        history_file = File.expand_path '~/.nose_history'
+        begin
+          File.foreach(history_file) do |line|
+            Readline::HISTORY.push line.chomp
+          end
+        rescue Errno::ENOENT
+          nil
+        end
+      end
+
+      # Save the history file
+      def save_history
+        return unless Object.const_defined? 'Readline'
+
+        history_file = File.expand_path '~/.nose_history'
         File.open(history_file, 'w') do |f|
           Readline::HISTORY.each do |line|
             f.puts line
           end
         end
       end
-
-      private
 
       # Get the next inputted line in the REPL
       def read_line
@@ -95,22 +102,34 @@ module NoSE
         return if statement.nil?
 
         begin
-          start_time = Time.now.utc
-
-          if statement.is_a? Query
-            results = backend.query statement
-          else
-            backend.update statement
-            results = []
-          end
-
-          elapsed = Time.now.utc - start_time
+          results, elapsed = backend_execute_statement backend, statement
         rescue NotImplementedError, Backend::PlanNotFound => e
           puts '! ' + e.message
         else
-          Formatador.display_compact_table results unless results.empty?
-          puts format('(%d rows in %.2fs)', results.length, elapsed)
+          display_statement_result results, elapsed
         end
+      end
+
+      # Execute the statement on the provided backend and measure the runtime
+      def backend_execute_statement(backend, statement)
+        start_time = Time.now.utc
+
+        if statement.is_a? Query
+          results = backend.query statement
+        else
+          backend.update statement
+          results = []
+        end
+
+        elapsed = Time.now.utc - start_time
+
+        [results, elapsed]
+      end
+
+      # Show the results of executing a statement
+      def display_statement_result(results, elapsed)
+        Formatador.display_compact_table results unless results.empty?
+        puts format('(%d rows in %.2fs)', results.length, elapsed)
       end
     end
   end
