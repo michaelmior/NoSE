@@ -10,9 +10,9 @@ Testing has been done with Ruby 2+ with dependencies managed via [bundler](http:
 Most of the code should also run under the latest [JRuby](http://jruby.org/).
 To get started, run `bundle install` to install the necessary dependencies.
 However, under JRuby, any code depending on C extensions or MRI internals should be excluded with `--without=development gurobi mysql`.
-The `GUROBI_HOME` environment must be set to a valid [Gurobi](http://www.gurobi.com/) installation.
+
+NoSE makes use of the [Gurobi](http://www.gurobi.com/) solver.
 A free academic license can be obtained from the [Gurobi website](https://user.gurobi.com/download/licenses/free-academic).
-Note that this project depends on forks of several gems.
 
 Examples of the workload input format is given in the `workloads/` directory.
 To run the schema advisor against the workload `rubis`, simply execute the command below

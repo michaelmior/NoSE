@@ -34,3 +34,6 @@
 !.codeclimate.yml
 !.travis.yml
 !.rubocop.yml
+
+## Log files
+gurobi.log
