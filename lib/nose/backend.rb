@@ -165,9 +165,37 @@ module NoSE
           @index = step.index
           @prev_step = prev_step
           @next_step = next_step
+
+          @eq_fields = step.eq_filter
+          @range_field = step.range_filter
         end
 
         protected
+
+        # Get lookup values from the query for the first step
+        def initial_results(conditions)
+          [Hash[conditions.map do |field_id, condition|
+            fail if condition.value.nil?
+            [field_id, condition.value]
+          end]]
+        end
+
+        # Construct a list of conditions from the results
+        def result_conditions(conditions, results)
+          results.map do |result|
+            result_condition = @eq_fields.map do |field|
+              Condition.new field, :'=', result[field.id]
+            end
+
+            unless @range_field.nil?
+              operator = conditions.values.find(&:range?).operator
+              result_condition << Condition.new(@range_field, operator,
+                                                result[@range_field.id])
+            end
+
+            result_condition
+          end
+        end
 
         # Decide which fields should be selected
         def expand_selected_fields(select)
