@@ -152,8 +152,8 @@ module NoSE
       # Insert data into an index on the backend
       class InsertStatementStep < BackendBase::InsertStatementStep
         def initialize(client, index, fields)
-          @client = client
-          @index = index
+          super
+
           @fields = fields.map(&:id) & index.all_fields.map(&:id)
           @prepared = client.prepare insert_cql
           @generator = Cassandra::Uuid::Generator.new
@@ -199,8 +199,8 @@ module NoSE
       # Delete data from an index on the backend
       class DeleteStatementStep < BackendBase::DeleteStatementStep
         def initialize(client, index)
-          @client = client
-          @index = index
+          super
+
           @index_keys = @index.hash_fields + @index.order_fields.to_set
 
           # Prepare the statement required to perform the deletion
@@ -238,12 +238,9 @@ module NoSE
       class IndexLookupStatementStep < BackendBase::IndexLookupStatementStep
         # rubocop:disable Metrics/ParameterLists
         def initialize(client, select, conditions, step, next_step, prev_step)
+          super
+
           @logger = Logging.logger['nose::backend::cassandra::indexlookupstep']
-          @client = client
-          @step = step
-          @index = step.index
-          @prev_step = prev_step
-          @next_step = next_step
 
           # TODO: Check if we can apply the next filter via ALLOW FILTERING
           @eq_fields = step.eq_filter
@@ -276,21 +273,6 @@ module NoSE
           cql += " LIMIT #{@step.limit}" unless @step.limit.nil?
 
           cql
-        end
-
-        # Decide which fields should be selected
-        def expand_selected_fields(select)
-          # We just pick whatever is contained in the index that is either
-          # mentioned in the query or required for the next lookup
-          # TODO: Potentially try query.all_fields for those not required
-          #       It should be sufficient to check what is needed for future
-          #       filtering and sorting and use only those + query.select
-          select += @next_step.index.hash_fields \
-            unless @next_step.nil? ||
-                   !@next_step.is_a?(Plans::IndexLookupPlanStep)
-          select &= @step.index.all_fields
-
-          select
         end
 
         # Produce a CQL where clause using the given conditions

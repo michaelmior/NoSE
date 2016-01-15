@@ -15,6 +15,11 @@ module NoSE
         true
       end
 
+      # The base backend contains no indexes
+      def index_exists?(index)
+        false
+      end
+
       # @abstract Subclasses implement to allow inserting
       #           data into the backend database
       # :nocov:
@@ -26,6 +31,21 @@ module NoSE
       # @abstract Subclasses implement to generate a new random ID
       # :nocov:
       def generate_id
+        fail NotImplementedError
+      end
+      # :nocov:
+
+      # @abstract Subclasses should create indexes
+      # :nocov:
+      def indexes_ddl(execute = false, skip_existing = false,
+                      drop_existing = false)
+        fail NotImplementedError
+      end
+      # :nocov:
+
+      # @abstract Subclasses should return sample values from the index
+      # :nocov:
+      def indexes_sample(index, count)
         fail NotImplementedError
       end
       # :nocov:
@@ -139,14 +159,46 @@ module NoSE
 
       # Look up data on an index in the backend
       class IndexLookupStatementStep < StatementStep
+        def initialize(client, select, conditions, step, next_step, prev_step)
+          @client = client
+          @step = step
+          @index = step.index
+          @prev_step = prev_step
+          @next_step = next_step
+        end
+
+        protected
+
+        # Decide which fields should be selected
+        def expand_selected_fields(select)
+          # We just pick whatever is contained in the index that is either
+          # mentioned in the query or required for the next lookup
+          # TODO: Potentially try query.all_fields for those not required
+          #       It should be sufficient to check what is needed for future
+          #       filtering and sorting and use only those + query.select
+          select += @next_step.index.hash_fields \
+            unless @next_step.nil? ||
+              !@next_step.is_a?(Plans::IndexLookupPlanStep)
+          select &= @step.index.all_fields
+
+          select
+        end
       end
 
       # Insert data into an index on the backend
       class InsertStatementStep < StatementStep
+        def initialize(client, index, fields)
+          @client = client
+          @index = index
+        end
       end
 
       # Delete data from an index on the backend
       class DeleteStatementStep < StatementStep
+        def initialize(client, index)
+          @client = client
+          @index = index
+        end
       end
 
       # Perform filtering external to the backend
