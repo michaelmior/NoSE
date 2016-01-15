@@ -43,5 +43,12 @@ module NoSE
       Query.new 'SELECT Link.URL FROM Link.Tweets.User ' \
                 'WHERE User.Username = ? LIMIT 5', workload.model
     end
+
+    let(:index) do
+      NoSE::Index.new [user['Username']],
+                      [tweet['Timestamp'], user['UserId'], tweet['TweetId']],
+                      [tweet['Body']],
+                      [user.id_fields.first, user['Tweets']], 'TweetIndex'
+    end
   end
 end

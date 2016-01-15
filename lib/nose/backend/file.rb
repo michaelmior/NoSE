@@ -6,7 +6,7 @@ module NoSE
         super
 
         # Try to load data from file or start fresh
-        if File.file? config[:file]
+        if !config[:file].nil? && File.file?(config[:file])
           @index_data = Marshal.load File.open(config[:file])
         else
           @index_data = {}
@@ -120,7 +120,15 @@ module NoSE
       class InsertStatementStep < BackendBase::InsertStatementStep
         # Add new rows to the index
         def process(results)
-          results.each { |row| @client[index.key] << row }
+          results.each do |row|
+            # Populate IDs as needed
+            @index.all_fields.each do |field|
+              next unless field.is_a?(Fields::IDField)
+              row[field.id] = SecureRandom.uuid if row[field.id].nil?
+            end
+
+            @client[index.key] << row
+          end
         end
       end
 
