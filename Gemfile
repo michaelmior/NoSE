@@ -5,6 +5,7 @@ gem 'faker'
 gem 'formatador'
 gem 'gruff'
 gem 'logging'
+gem 'mipper', '0.0.4'
 gem 'parallel'
 gem 'parslet'
 gem 'pickup'
@@ -15,10 +16,6 @@ gem 'ruby-mysql' # this is used for the proxy because it's pure Ruby
 gem 'smarter_csv'
 gem 'table_print'
 gem 'thor', require: false
-
-group :gurobi do
-  gem 'guruby'
-end
 
 platform :ruby do
   gem 'mysql2' # this is used for the loader for performance

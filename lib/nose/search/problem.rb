@@ -1,11 +1,5 @@
 require 'logging'
-
-begin
-  require 'guruby'
-rescue LoadError
-  # We can't use most search functionality, but it won't explode
-  nil
-end
+require 'mipper'
 
 module NoSE
   module Search
@@ -50,9 +44,8 @@ module NoSE
 
         # Ensure we found a valid solution
         @status = model.status
-        if @status == Guruby::GRB_INFEASIBLE
-          @model.compute_IIS
-          log_model 'IIS', '.ilp'
+        if @status != :optimized
+          fail NoSolutionException.new @status
         elsif @objective_type != Objective::INDEXES
           @objective_value = @model.objective_value
 
@@ -73,8 +66,6 @@ module NoSE
           "Final objective value is #{@objective.inspect}" \
             " = #{@objective_value}"
         end
-
-        fail NoSolutionException if @status != Guruby::GRB_OPTIMAL
       end
 
       # Return the selected indices
@@ -107,8 +98,8 @@ module NoSE
 
       # Get the cost of all queries in the workload
       def total_cost
-        cost = @queries.reduce(Guruby::LinExpr.new) do |expr, query|
-          expr.add(@indexes.reduce(Guruby::LinExpr.new) do |subexpr, index|
+        cost = @queries.reduce(MIPPeR::LinExpr.new) do |expr, query|
+          expr.add(@indexes.reduce(MIPPeR::LinExpr.new) do |subexpr, index|
             subexpr.add total_query_cost(@data[:costs][query][index],
                                          @query_vars[index][query])
           end)
@@ -120,7 +111,7 @@ module NoSE
 
       # The total number of indexes
       def total_indexes
-        total = Guruby::LinExpr.new
+        total = MIPPeR::LinExpr.new
         @index_vars.each_value { |var| total += var * 1.0 }
 
         total
@@ -141,8 +132,7 @@ module NoSE
       # Build the ILP by creating all the variables and constraints
       def setup_model
         # Set up solver environment
-        env = Guruby::Environment.new
-        @model = Guruby::Model.new env
+        @model = MIPPeR::GurobiModel.new
         add_variables
         @model.update
         add_constraints
@@ -166,18 +156,17 @@ module NoSE
               end
 
         # Add the objective function as a variable
-        @obj_var = Guruby::Variable.new 0, Guruby::GRB_INFINITY, 1.0,
-                                        Guruby::GRB_CONTINUOUS, var_name
+        @obj_var = MIPPeR::Variable.new 0, Float::INFINITY, 1.0,
+                                        :continuous, var_name
         @model << @obj_var
         @model.update
 
-        @model << Guruby::Constraint.new(obj + @obj_var * -1.0,
-                                         Guruby::GRB_EQUAL, 0.0)
+        @model << MIPPeR::Constraint.new(obj + @obj_var * -1.0, :==, 0.0)
 
         @logger.debug { "Objective function is #{obj.inspect}" }
 
         @objective = obj
-        @model.set_sense Guruby::GRB_MINIMIZE
+        @model.sense = :min
       end
 
       # Initialize query and index variables
@@ -185,15 +174,13 @@ module NoSE
         @index_vars = {}
         @query_vars = {}
         @indexes.each do |index|
-          @index_vars[index] = Guruby::Variable.new 0, 1, 0,
-                                                    Guruby::GRB_BINARY,
-                                                    index.key
+          @index_vars[index] = MIPPeR::Variable.new 0, 1, 0, :binary, index.key
           @model << @index_vars[index]
 
           @query_vars[index] = {}
           @queries.each_with_index do |query, q|
             query_var = "q#{q}_#{index.key}"
-            var = Guruby::Variable.new 0, 1, 0, Guruby::GRB_BINARY, query_var
+            var = MIPPeR::Variable.new 0, 1, 0, :binary, query_var
             @model << var
             @query_vars[index][query] = var
           end
@@ -229,7 +216,7 @@ module NoSE
 
       # Get the total cost of the query for the objective function
       def total_query_cost(cost, query_var)
-        return Guruby::LinExpr.new if cost.nil?
+        return MIPPeR::LinExpr.new if cost.nil?
         query_cost = cost.last * 1.0
 
         query_var * query_cost

@@ -26,7 +26,7 @@ module NoSE
           :total_indexes,
           :solve
         ],
-        Guruby::Model => [
+        MIPPeR::Model => [
           :add_constraints,
           :add_variables,
           :update,

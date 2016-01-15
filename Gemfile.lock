@@ -45,8 +45,6 @@ GEM
       rmagick (>= 2.13.4)
     gruff (0.6.0-java)
       rmagick4j (>= 0.3.9)
-    guruby (0.0.4)
-      ffi (~> 1.9)
     hpricot (0.8.6)
     i18n (0.7.0)
     interception (0.5)
@@ -58,6 +56,8 @@ GEM
       little-plugger (~> 1.1)
       multi_json (~> 1.10)
     method_source (0.8.2)
+    mipper (0.0.4)
+      ffi (~> 1.9)
     multi_json (1.11.2)
     multi_test (0.1.2)
     mustache (1.0.2)
@@ -147,8 +147,8 @@ DEPENDENCIES
   faker
   formatador
   gruff
-  guruby
   logging
+  mipper (= 0.0.4)
   mysql2
   parallel
   parslet
