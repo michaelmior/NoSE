@@ -1,5 +1,11 @@
 require 'logging'
-require 'mipper'
+
+begin
+  require 'mipper'
+rescue LoadError
+  # We can't use most search functionality, but it won't explode
+  nil
+end
 
 module NoSE
   module Search
@@ -39,7 +45,7 @@ module NoSE
         return unless @status.nil?
 
         # Run the optimization
-        @model.write '/tmp/search.lp'
+        # @model.write '/tmp/search.lp'
         @model.optimize
 
         # Ensure we found a valid solution
@@ -132,7 +138,7 @@ module NoSE
       # Build the ILP by creating all the variables and constraints
       def setup_model
         # Set up solver environment
-        @model = MIPPeR::GurobiModel.new
+        @model = MIPPeR::CbcModel.new
         add_variables
         @model.update
         add_constraints
