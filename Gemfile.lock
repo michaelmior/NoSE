@@ -56,7 +56,7 @@ GEM
       little-plugger (~> 1.1)
       multi_json (~> 1.10)
     method_source (0.8.2)
-    mipper (0.0.4)
+    mipper (0.0.5)
       ffi (~> 1.9)
     multi_json (1.11.2)
     multi_test (0.1.2)
@@ -148,7 +148,7 @@ DEPENDENCIES
   formatador
   gruff
   logging
-  mipper (= 0.0.4)
+  mipper
   mysql2
   parallel
   parslet
