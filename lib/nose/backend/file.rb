@@ -72,68 +72,74 @@ module NoSE
         @index_data
       end
 
+      # Provide some helper functions which allow the matching of rows
+      # based on a set of list of conditions
+      module RowMatcher
+        # Check if a row matches the given condition
+        def row_matches?(row, conditions)
+          row_matches_eq?(row, conditions) &&
+            row_matches_range?(row, conditions)
+        end
+
+        # Check if a row matches the given condition on equality predicates
+        def row_matches_eq?(row, conditions)
+          @eq_fields.all? do |field|
+            row[field.id] == conditions.find { |c| c.field == field }.value
+          end
+        end
+
+        # Check if a row matches the given condition on the range predicate
+        def row_matches_range?(row, conditions)
+          return true if @range_field.nil?
+
+          range_cond = conditions.find { |c| c.field == @range_field }
+          row[@range_field.id].send range_cond.operator, range_cond.value
+        end
+      end
+
       # Look up data on an index in the backend
       class IndexLookupStatementStep < BackendBase::IndexLookupStatementStep
-        # rubocop:disable Metrics/ParameterLists
-        def initialize(client, select, conditions, step, next_step, prev_step)
-          super
-        end
-        # rubocop:enable Metrics/ParameterLists
+        include RowMatcher
 
         def process(conditions, results)
+          # Get the set of conditions we need to process
           results = initial_results(conditions) if results.nil?
           condition_list = result_conditions conditions, results
 
+          # Loop through all rows to find the matching ones
           rows = @client[@index.key]
           selected_rows = condition_list.flat_map do |condition|
             rows.select { |row| row_matches? row, condition }
           end.compact
 
-          selected_rows
-        end
-
-        private
-
-        # Check if a row matches the given condition
-        def row_matches?(row, condition)
-          row_matches_eq?(row, condition) && row_matches_range?(row, condition)
-        end
-
-        # Check if a row matches the given condition on equality predicates
-        def row_matches_eq?(row, condition)
-          @eq_fields.all? do |field|
-            row[field.id] == condition.find { |c| c.field == field }.value
-          end
-        end
-
-        # Check if a row matches the given condition on the range predicate
-        def row_matches_range?(row, condition)
-          return true if @range_field.nil?
-
-          range_cond = condition.find { |c| c.field == @range_field }
-          row[@range_field.id].send range_cond.operator, range_cond.value
+          selected_rows[0..(@step.limit.nil? ? -1 : @step.limit)]
         end
       end
 
       # Insert data into an index on the backend
       class InsertStatementStep < BackendBase::InsertStatementStep
-        def initialize(client, index, fields)
-          super
-        end
-
-        def process(_results)
-          fail NotImplementedError
+        # Add new rows to the index
+        def process(results)
+          results.each { |row| @client[index.key] << row }
         end
       end
 
       # Delete data from an index on the backend
       class DeleteStatementStep < BackendBase::DeleteStatementStep
-        def initialize(client, index)
-          super
-        end
+        include RowMatcher
 
-        def process(_results)
-          fail NotImplementedError
+        # Remove rows matching the results from the dataset
+        def process(results)
+          # Loop over all rows
+          @client[index.key].reject! do |row|
+            # Check against all results
+            results.any? do |result|
+              # If all fields match, drop the row
+              result.all? do |field, value|
+                row[field] == value
+              end
+            end
+          end
         end
       end
     end
