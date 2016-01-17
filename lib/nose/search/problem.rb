@@ -138,7 +138,7 @@ module NoSE
       # Build the ILP by creating all the variables and constraints
       def setup_model
         # Set up solver environment
-        @model = MIPPeR::CbcModel.new
+        @model = MIPPeR::GurobiModel.new
         add_variables
         @model.update
         add_constraints
