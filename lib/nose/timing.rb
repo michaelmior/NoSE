@@ -13,7 +13,7 @@ module NoSE
           :query_costs,
           :update_costs,
           :search_overlap,
-          :solve_gurobi
+          :solve_mipper
         ],
         Search::Problem => [
           :setup_model,

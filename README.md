@@ -9,10 +9,10 @@ NoSE is licensed under the [GPLv3 license](LICENSE.md).
 Testing has been done with Ruby 2+ with dependencies managed via [bundler](http://bundler.io/).
 Most of the code should also run under the latest [JRuby](http://jruby.org/).
 To get started, run `bundle install` to install the necessary dependencies.
-However, under JRuby, any code depending on C extensions or MRI internals should be excluded with `--without=development gurobi mysql`.
+However, under JRuby, any code depending on C extensions or MRI internals should be excluded with `--without=development mysql`.
 
-NoSE makes use of the [Gurobi](http://www.gurobi.com/) solver.
-A free academic license can be obtained from the [Gurobi website](https://user.gurobi.com/download/licenses/free-academic).
+NoSE makes use of the [Cbc](https://projects.coin-or.org/Cbc) solver.
+You will need the latest version to use NoSE.
 
 Examples of the workload input format is given in the `workloads/` directory.
 To run the schema advisor against the workload `rubis`, simply execute the command below
@@ -22,7 +22,7 @@ To run the schema advisor against the workload `rubis`, simply execute the comma
 All source code is documented and more details on the command line tool can be retrieved by running `bundle exec nose help`.
 You can view complete documentation by running `bundle exec rake doc` and viewing the output in the `doc/` directory.
 Tests are written using [RSpec](http://rspec.info/) and can be executed with `bundle exec rspec`.
-If you do not have a copy of Gurobi available, you can exclude tests depending on it with `--tag ~gurobi`.
+If you do not have a copy of the Cbc solver available, you can exclude tests depending on it with `--tag ~solver`.
 
 Some commands require a configuration file in lieu of command line options.
 An example configuration file for the different components of NoSE is given in [nose.yml.example](nose.yml.example).

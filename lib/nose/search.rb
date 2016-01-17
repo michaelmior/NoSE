@@ -71,8 +71,8 @@ module NoSE
       # Run the solver and get the results of search
       def search_result(query_weights, indexes, solver_params, trees,
                         update_plans)
-        # Solve the LP using Gurobi
-        result = solve_gurobi query_weights.keys, indexes, **solver_params
+        # Solve the LP using MIPPeR
+        result = solve_mipper query_weights.keys, indexes, **solver_params
 
         result.workload = @workload
         result.plans_from_trees trees
@@ -104,8 +104,8 @@ module NoSE
         end.compact
       end
 
-      # Solve the index selection problem using Gurobi
-      def solve_gurobi(queries, indexes, data)
+      # Solve the index selection problem using MIPPeR
+      def solve_mipper(queries, indexes, data)
         # Construct and solve the ILP
         problem = Problem.new queries, @workload.updates, indexes, data,
                               @objective

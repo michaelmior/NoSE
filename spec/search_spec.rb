@@ -3,7 +3,7 @@ module NoSE::Search
     include_context 'dummy_cost_model'
     include_context 'entities'
 
-    it 'raises an exception if there is no space', gurobi: true do
+    it 'raises an exception if there is no space', solver: true do
       workload.add_statement 'SELECT Tweet.Body FROM Tweet ' \
                              'WHERE Tweet.TweetId = ?'
       indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
@@ -13,7 +13,7 @@ module NoSE::Search
       end.to raise_error(NoSolutionException)
     end
 
-    it 'produces a materialized view with sufficient space', gurobi: true do
+    it 'produces a materialized view with sufficient space', solver: true do
       query = NoSE::Query.new 'SELECT User.UserId FROM User ' \
                               'WHERE User.City = ? ' \
                               'ORDER BY User.Username', workload.model
@@ -25,7 +25,7 @@ module NoSE::Search
       expect(indexes).to include query.materialize_view
     end
 
-    it 'can perform multiple index lookups on a path segment', gurobi: true do
+    it 'can perform multiple index lookups on a path segment', solver: true do
       query = NoSE::Query.new 'SELECT User.Username FROM User ' \
                               'WHERE User.City = ?', workload.model
       workload.add_statement query
@@ -42,7 +42,7 @@ module NoSE::Search
       end.to raise_error NoSolutionException
     end
 
-    it 'does not denormalize heavily updated data', gurobi: true do
+    it 'does not denormalize heavily updated data', solver: true do
       workload.add_statement 'UPDATE User SET Username = ? ' \
                              'WHERE User.UserId = ?', 0.98
       workload.add_statement 'SELECT User.Username FROM User ' \

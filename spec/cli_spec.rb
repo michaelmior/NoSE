@@ -15,7 +15,7 @@ module NoSE::CLI
       run_simple 'nose graph rubis /tmp/rubis.png'
     end
 
-    it 'can reformat output', gurobi: true do
+    it 'can reformat output', solver: true do
       # Run a simple search and output as JSON
       run_simple 'nose search rubis_synthetic --read-only --format=json'
       json = all_output
@@ -34,20 +34,20 @@ module NoSE::CLI
       expect { YAML.load get_process(reformat_cmd).stdout }.to_not raise_error
     end
 
-    it 'can search with no limits', gurobi: true do
+    it 'can search with no limits', solver: true do
       search_cmd = 'nose search rubis_synthetic --format=json'
       run_simple search_cmd
       expect { JSON.parse get_process(search_cmd).stdout }.to_not raise_error
     end
 
-    it 'can search with a limit', gurobi: true do
+    it 'can search with a limit', solver: true do
       search_cmd = 'nose search rubis_synthetic ' \
                    '--format=json --max-space=1000000000000'
       run_simple search_cmd
       expect { JSON.parse get_process(search_cmd).stdout }.to_not raise_error
     end
 
-    it 'fails with not enough space', gurobi: true do
+    it 'fails with not enough space', solver: true do
       run 'nose search rubis_synthetic --max-space=1'
       expect(last_exit_status).to eq(1)
     end
