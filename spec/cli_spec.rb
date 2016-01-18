@@ -67,7 +67,8 @@ module NoSE::CLI
       expect(all_output).to eq "BACKEND_PORT=\"9042\"\n" \
                                "BACKEND_HOSTS_COUNT=\"1\"\n" \
                                "BACKEND_HOSTS_0=\"127.0.0.1\"\n" \
-                               "PARALLEL=\"true\"\n"
+                               "PARALLEL=\"true\"\n" \
+                               "INTERACTIVE=\"true\"\n"
     end
   end
 end
