@@ -19,13 +19,18 @@ module NoSE
                               desc: 'run various operations in parallel'
       class_option :colour, type: :boolean, default: nil, aliases: '-c',
                             desc: 'enabled coloured output'
+      class_option :interactive, type: :boolean, default: true,
+                                 desc: 'allow actions which require user input'
 
-      def initialize(_options, _local_options, config)
+      def initialize(_options, local_options, config)
         super
 
         # Set up a logger for this command
         cmd_name = config[:current_command].name
         @logger = Logging.logger["nose::#{cmd_name}"]
+
+        # Peek ahead into the options and prompt the user to create a config
+        check_config_file interactive?(local_options)
 
         # Enable forcing the colour or no colour for output
         # We just lie to Formatador about whether or not $stdout is a tty
@@ -41,6 +46,25 @@ module NoSE
       end
 
       private
+
+      # Check if the user has disabled interaction
+      def interactive?(options = [])
+        parse_options = self.class.class_options
+        opts = Thor::Options.new(parse_options).parse(options)
+        opts[:interactive]
+      end
+
+      # Check if the user has created a configuration file
+      def check_config_file(interactive)
+        return if File.file?(CONFIG_FILE_NAME)
+
+        if interactive
+          no_create = no? 'nose.yml is missing, create from nose.yml.example?'
+          FileUtils.cp 'nose.yml.example', CONFIG_FILE_NAME unless no_create
+        else
+          @logger.warn 'Configuration file missing'
+        end
+      end
 
       # Add the possibility to set defaults via configuration
       def options
