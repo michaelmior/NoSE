@@ -3,7 +3,7 @@
 begin
   require 'mysql2'
 rescue LoadError
-  nil
+  require 'mysql'
 end
 
 module NoSE
@@ -31,8 +31,20 @@ module NoSE
           end
           @logger.info "#{index.inspect}" if show_progress
 
-          sql = index_sql index, limit
-          results = client.query(sql, stream: true, cache_rows: false)
+          sql, fields = index_sql index, limit
+          if @query_options
+            results = client.query(sql, **@query_options)
+          else
+            results = client.query(sql).map do |row|
+              row_hash = {}
+              fields.each_with_index do |field, i|
+                value = field.class.value_from_string row[i]
+                row_hash[field.id] = value
+              end
+
+              row_hash
+            end
+          end
 
           result_chunk = []
           results.each do |result|
@@ -52,13 +64,22 @@ module NoSE
         client = new_client config
 
         workload = Workload.new
-        client.query('SHOW TABLES').each(as: :array) do |table, *|
+        if @array_options
+          results = client.query('SHOW TABLES').each(**@array_options)
+        else
+          results = client.query('SHOW TABLES').each
+        end
+        results.each do |table, *|
           entity = Entity.new table
-          entity.count = client.query("SELECT COUNT(*) FROM #{table}") \
-                         .first.values.first
+          count = client.query("SELECT COUNT(*) FROM #{table}").first
+          entity.count = count.is_a?(Hash) ? count.values.first : count
 
-          describe = client.query("DESCRIBE #{table}")
-          describe.each(as: :array) do |name, type, _, key, _, _|
+          if @array_options
+            describe = client.query("DESCRIBE #{table}").each(**@array_options)
+          else
+            describe = client.query("DESCRIBE #{table}").each
+          end
+          describe.each do |name, type, _, key, _, _|
             if key == 'PRI'
               field_class = Fields::IDField
             else
@@ -92,10 +113,19 @@ module NoSE
 
       # Create a new client from the given configuration
       def new_client(config)
-        Mysql2::Client.new host: config[:host],
-                           username: config[:username],
-                           password: config[:password],
-                           database: config[:database]
+        if Object.const_defined?(:Mysql2)
+          @query_options = { stream: true, cache_rows: false }
+          @array_options = { as: :array }
+          Mysql2::Client.new host: config[:host],
+                             username: config[:username],
+                             password: config[:password],
+                             database: config[:database]
+        else
+          @query_options = false
+          @array_options = false
+          Mysql.connect config[:host], config[:username], config[:password],
+                        config[:database]
+        end
       end
 
       # Get all the fields selected by this index
@@ -103,10 +133,10 @@ module NoSE
         fields = index.hash_fields.to_a + index.order_fields + index.extra.to_a
         fields += index.path.entities.last.id_fields
 
-        fields.map do |field|
+        [fields, fields.map do |field|
           "#{field.parent.name}.#{field.name} AS " \
           "#{field.parent.name}_#{field.name}"
-        end
+        end]
       end
 
       # Get the list of tables along with the join condition
@@ -129,16 +159,16 @@ module NoSE
       # Construct a SQL statement to fetch the data to populate this index
       def index_sql(index, limit = nil)
         # Get all the necessary fields
-        fields = index_sql_select index
+        fields, select = index_sql_select index
 
         # Construct the join condition
         tables = index_sql_tables index
 
-        query = "SELECT #{fields.join ', '} FROM #{tables}"
+        query = "SELECT #{select.join ', '} FROM #{tables}"
         query += " LIMIT #{limit}" unless limit.nil?
 
         @logger.debug query
-        query
+        [query, fields]
       end
     end
   end
