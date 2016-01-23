@@ -65,7 +65,8 @@ module NoSE
             {
               'label' => grouped_rows.first['label'],
               'group' => group,
-              'mean' => mean * grouped_rows.first['weight'].to_f
+              'weight' => group,
+              'mean' => mean
             }
           end
 
@@ -74,6 +75,7 @@ module NoSE
             rows << {
               'label' => rows.first['label'],
               'group' => 'TOTAL',
+              'weight' => 1.0,
               'mean' => rows.inject(0) { |sum, row| sum + row['mean'].to_f }
             }
           end
