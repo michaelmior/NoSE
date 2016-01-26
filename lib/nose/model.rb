@@ -42,8 +42,8 @@ module NoSE
     # Output a PNG representation of entities in the model
     def output(format, filename, include_fields = false)
       graph = GraphViz.new :G, type: :digraph
-      add_graph_nodes graph, include_fields
-      add_graph_edges graph
+      nodes = add_graph_nodes graph, include_fields
+      add_graph_edges graph, nodes
 
       graph.output(**{format => filename})
     end
@@ -66,7 +66,7 @@ module NoSE
     end
 
     # Add the edges (foreign keys) to a GraphViz object
-    def add_graph_edges(graph)
+    def add_graph_edges(graph, nodes)
       @entities.each_value do |entity|
         entity.foreign_keys.each_value do |key|
           graph.add_edges nodes[entity.name], nodes[key.entity.name]
