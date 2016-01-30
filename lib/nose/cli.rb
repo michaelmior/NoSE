@@ -282,6 +282,7 @@ require_relative 'cli/recost'
 require_relative 'cli/search'
 require_relative 'cli/search_all'
 require_relative 'cli/search_bench'
+require_relative 'cli/texify'
 require_relative 'cli/why'
 
 # Only include the console command if pry is available

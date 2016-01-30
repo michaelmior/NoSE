@@ -43,6 +43,12 @@ module NoSE
       end
       # :nocov:
 
+      # :nocov:
+      def to_s
+        "#{@parent.name}.#{@name}"
+      end
+      # :nocov:
+
       # A simple string representing the field
       def id
         "#{@parent.name}_#{@name}"
