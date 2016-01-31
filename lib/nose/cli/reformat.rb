@@ -9,9 +9,7 @@ module NoSE
       shared_option :mix
 
       def reformat(plan_file)
-        result = load_results plan_file
-        result.workload.mix = options[:mix].to_sym \
-          unless options[:mix] == 'default' && result.workload.mix != :default
+        result = load_results plan_file, options[:mix]
         result.recalculate_cost
 
         # Output the results in the specified format

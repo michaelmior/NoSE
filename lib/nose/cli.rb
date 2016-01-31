@@ -111,11 +111,15 @@ module NoSE
       end
 
       # Load results of a previous search operation
-      def load_results(plan_file)
+      def load_results(plan_file, mix)
         representer = Serialize::SearchResultRepresenter.represent \
           Search::Results.new
         json = File.read(plan_file)
-        representer.from_json(json)
+        result = representer.from_json(json)
+        result.workload.mix = mix.to_sym \
+          unless mix == 'default' && result.workload.mix != :default
+
+        result
       end
 
       # Load plans either from an explicit file or the name
