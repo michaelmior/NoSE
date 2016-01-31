@@ -12,31 +12,39 @@ module NoSE
 
       shared_option :mix
 
+      option :nesting, type: :numeric, default: 0, aliases: '-n',
+                       desc: 'nesting level of LaTeX sections'
+
       def texify(plan_file)
         # Load the indexes from the file
         result = load_results plan_file, options[:mix]
 
-        puts "\\documentclass{article}\n\\begin{document}\n\\section{Indexes}"
-        texify_indexes result.indexes
+        # Print document header
+        puts "\\documentclass{article}\n\\begin{document}\n"
 
-        puts '\\section{Plans}'
-        texify_plans result.plans + result.update_plans
+        # Print the LaTeX for all indexes and plans
+        subs = 'sub' * options[:nesting]
+        texify_indexes result.indexes, subs
+        texify_plans result.plans + result.update_plans, subs
 
+        # End the document
         puts '\\end{document}'
       end
 
       private
 
       # Print the LaTeX for all query plans
-      def texify_plans(plans)
+      def texify_plans(plans, subs)
+        puts "\\#{subs}section{Plans}"
+
         plans.group_by(&:group).each do |group, grouped_plans|
-          texify_plan_group group, grouped_plans
+          texify_plan_group group, grouped_plans, subs
         end
       end
 
       # Print the LaTeX from a group of query plans
-      def texify_plan_group(group, grouped_plans)
-        puts "\\subsection{#{group}}"
+      def texify_plan_group(group, grouped_plans, subs)
+        puts "\\#{subs}subsection*{#{group}}"
 
         grouped_plans.each do |plan|
           if plan.is_a? Plans::QueryPlan
@@ -73,10 +81,12 @@ module NoSE
       # rubocop:enable
 
       # Print all LaTeX for a given index
-      def texify_indexes(indexes)
+      def texify_indexes(indexes, subs)
+        puts "\\#{subs}section{Indexes}"
+
         indexes.each do |index|
           # Print the key of the index
-          puts "\\subsection*{#{index.key}}"
+          puts "\\#{subs}subsection*{#{index.key}}"
 
           fields = index.hash_fields.map do |field|
             texify_field(field, true)
