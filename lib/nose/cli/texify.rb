@@ -33,18 +33,23 @@ module NoSE
 
       private
 
+      # Escape values for latex output
+      def tex_escape(str)
+        str.gsub '_', '\\_'
+      end
+
       # Print the LaTeX for all query plans
       def texify_plans(plans, subs)
         puts "\\#{subs}section{Plans}"
 
         plans.group_by(&:group).each do |group, grouped_plans|
-          texify_plan_group group, grouped_plans, subs
+          texify_plan_group tex_escape(group), grouped_plans, subs
         end
       end
 
       # Print the LaTeX from a group of query plans
       def texify_plan_group(group, grouped_plans, subs)
-        puts "\\#{subs}subsection*{#{group.gsub '_', '\\_'}}"
+        puts "\\#{subs}subsection*{#{group}}"
 
         grouped_plans.each do |plan|
           if plan.is_a? Plans::QueryPlan
@@ -64,7 +69,7 @@ module NoSE
         steps.map do |step|
           case step
           when Plans::IndexLookupPlanStep
-            "Request \\textbf{#{step.index.key.gsub '_', '\\_'}}"
+            "Request \\textbf{#{tex_escape step.index.key}}"
           when Plans::FilterPlanStep
             "Filter by #{texify_fields((step.eq + [step.range]).compact)}"
           when Plans::SortPlanStep
@@ -72,9 +77,9 @@ module NoSE
           when Plans::LimitPlanStep
             "Limit #{step.limit}"
           when Plans::DeletePlanStep
-            "Delete from \\textbf{#{step.index.key.gsub '_', '\\_'}}"
+            "Delete from \\textbf{#{tex_escape step.index.key}}"
           when Plans::InsertPlanStep
-            "Insert into \\textbf{#{step.index.key.gsub '_', '\\_'}}"
+            "Insert into \\textbf{#{tex_escape step.index.key}}"
           end
         end.join(', ')
       end
@@ -86,7 +91,7 @@ module NoSE
 
         indexes.each do |index|
           # Print the key of the index
-          puts "\\#{subs}subsection*{#{index.key.gsub '_', '\\_'}}"
+          puts "\\#{subs}subsection*{#{tex_escape index.key}}"
 
           fields = index.hash_fields.map do |field|
             texify_field(field, true)
@@ -109,7 +114,7 @@ module NoSE
 
       # Produce the LaTeX for a given index field
       def texify_field(field, underline = false, italic = false)
-        tex = "#{field.to_s.gsub '_', '\\_'}"
+        tex = "#{tex_escape field.to_s}"
         tex = "\\textit{#{tex}}" if italic
         tex = "\\underline{#{tex}}" if underline
 
