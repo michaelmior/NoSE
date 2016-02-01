@@ -326,7 +326,7 @@ module NoSE
         workload = represented.workload
 
         if fragment['statement'].nil?
-          statement = nil
+          statement = OpenStruct.new group: fragment['group']
         else
           statement = Statement.parse fragment['statement'], workload.model,
                                       group: fragment['group']
@@ -480,7 +480,7 @@ module NoSE
         workload = represented.workload
 
         if fragment['query'].nil?
-          query = nil
+          query = OpenStruct.new group: fragment['group']
           state = nil
         else
           query = Query.new fragment['query'], workload.model,
