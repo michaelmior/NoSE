@@ -161,14 +161,18 @@ module NoSE
       end
 
       # Output update plans as text
-      def output_update_plans_txt(update_plans, file, weights)
+      def output_update_plans_txt(update_plans, file, weights, mix = nil)
         unless update_plans.empty?
           header = "Update plans\n" + '━' * 50
           file.puts Formatador.parse("[blue]#{header}[/]")
         end
 
         update_plans.group_by(&:statement).each do |statement, plans|
-          weight = weights[statement]
+          if weights.key?(statement)
+            weight = weights[statement]
+          else
+            weight =  weights[statement.group][mix]
+          end
           total_cost = plans.sum_by(&:cost)
 
           file.puts "GROUP #{statement.group}" unless statement.group.nil?
@@ -215,7 +219,8 @@ module NoSE
         output_plans_txt result.plans, file, 1, weights
 
         result.update_plans = [] if result.update_plans.nil?
-        output_update_plans_txt result.update_plans, file, weights
+        output_update_plans_txt result.update_plans, file, weights,
+                                result.workload.mix
 
         file.puts Formatador.parse('  Total cost: ' \
                                    "[blue]#{result.total_cost}[/]\n")
