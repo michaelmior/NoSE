@@ -1,3 +1,5 @@
+require 'ostruct'
+
 module NoSE
   module CLI
     # Add a command to dump a workload and its corresponding schema
@@ -25,10 +27,28 @@ module NoSE
 
         results = OpenStruct.new
         results.workload = Workload.new plans.schema.model
+        results.workload.mix = plans.mix
         results.indexes = plans.schema.indexes.values
         results.enumerated_indexes = []
-        results.plans = plans.groups.values.flatten(1)
-        # TODO: Add update plans
+
+        results.plans = []
+        results.update_plans = []
+
+        # Store all the query and update plans
+        plans.groups.values.flatten(1).each do |plan|
+          if plan.update_steps.empty?
+            results.plans << plan
+          else
+            # XXX: Hack to build a valid update plan
+            statement = OpenStruct.new group: plan.group
+            update_plan = Plans::UpdatePlan.new statement, plan.index, nil,
+                                                plan.update_steps, cost_model
+            update_plan.instance_variable_set :@group, plan.group
+            update_plan.instance_variable_set :@query_plans, plan.query_plans
+            results.update_plans << update_plan
+          end
+        end
+
         results.cost_model = cost_model
         results.weights = plans.weights
         results.total_size = results.indexes.sum_by(&:size)
