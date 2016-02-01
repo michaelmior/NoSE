@@ -44,7 +44,7 @@ module NoSE
 
       # Print the LaTeX from a group of query plans
       def texify_plan_group(group, grouped_plans, subs)
-        puts "\\#{subs}subsection*{#{group}}"
+        puts "\\#{subs}subsection*{#{group.gsub '_', '\\_'}}"
 
         grouped_plans.each do |plan|
           if plan.is_a? Plans::QueryPlan
@@ -64,7 +64,7 @@ module NoSE
         steps.map do |step|
           case step
           when Plans::IndexLookupPlanStep
-            "Request \\textbf{#{step.index.key}}"
+            "Request \\textbf{#{step.index.key.gsub '_', '\\_'}}"
           when Plans::FilterPlanStep
             "Filter by #{texify_fields((step.eq + [step.range]).compact)}"
           when Plans::SortPlanStep
@@ -72,9 +72,9 @@ module NoSE
           when Plans::LimitPlanStep
             "Limit #{step.limit}"
           when Plans::DeletePlanStep
-            "Delete from \\textbf{#{step.index.key}}"
+            "Delete from \\textbf{#{step.index.key.gsub '_', '\\_'}}"
           when Plans::InsertPlanStep
-            "Insert into \\textbf{#{step.index.key}}"
+            "Insert into \\textbf{#{step.index.key.gsub '_', '\\_'}}"
           end
         end.join(', ')
       end
@@ -86,7 +86,7 @@ module NoSE
 
         indexes.each do |index|
           # Print the key of the index
-          puts "\\#{subs}subsection*{#{index.key}}"
+          puts "\\#{subs}subsection*{#{index.key.gsub '_', '\\_'}}"
 
           fields = index.hash_fields.map do |field|
             texify_field(field, true)
