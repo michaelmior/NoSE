@@ -116,8 +116,8 @@ module NoSE
           Search::Results.new
         json = File.read(plan_file)
         result = representer.from_json(json)
-        result.workload.mix = mix.to_sym \
-          unless mix == 'default' && result.workload.mix != :default
+        result.workload.mix = mix.to_sym unless mix.nil? || \
+          (mix == 'default' && result.workload.mix != :default)
 
         result
       end
@@ -126,7 +126,7 @@ module NoSE
       # of something in the plans/ directory
       def load_plans(plan_file, options)
         if File.exist? plan_file
-          result = load_results(plan_file)
+          result = load_results(plan_file, options[:mix])
         else
           schema = Schema.load plan_file
           result = OpenStruct.new
