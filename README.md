@@ -6,18 +6,29 @@
 This is a work in progress tool to provide automated physical schema design for NoSQL data stores.
 NoSE is licensed under the [GPLv3 license](LICENSE.md).
 
-Testing has been done with Ruby 2+ with dependencies managed via [bundler](http://bundler.io/).
-Most of the code should also run under the latest [JRuby](http://jruby.org/).
-To get started, run `bundle install` to install the necessary dependencies.
-However, under JRuby, any code depending on C extensions or MRI internals should be excluded with `--without=development mysql`.
+## Getting Started
 
-NoSE makes use of the [Cbc](https://projects.coin-or.org/Cbc) solver.
-You will need the latest version to use NoSE.
+ * [Ruby](https://www.ruby-lang.org/) 2+
+ * [bundler](http://bundler.io/)
+ * [Cbc](https://projects.coin-or.org/Cbc) solver (`coinor-libcbc3` and `coinor-libcbc-dev` on Ubuntu, [Homebrew](https://github.com/coin-or-tools/homebrew-coinor) maybe useful on Mac OS, but has not been tested)
 
+Ruby dependencies can be installed with `bundle install`.
 Examples of the workload input format is given in the `workloads/` directory.
-To run the schema advisor against the workload `rubis`, simply execute the command below
+These workloads should give you a sense of the input format and can be a starting point for your own workloads.
+For example, to run the schema advisor against the workload `rubis`, simply execute the command below
 
     bundle exec nose search rubis
+
+If you are prompted, accept the default configuration.
+Each recommended physical structure is referred to as an "index" and will be the first set of outputs.
+These indexes will be followed by a list of plans for each query which makes use of these indexes.
+More information on the other commands available can be found with `bundle exec nose help`.
+If you have any questions, please [open an issue](https://github.com/michaelmior/NoSE/issues/new) or contact [@michaelmior](https://github.com/michaelmior/).
+
+## Development
+
+Testing has been done with Ruby 2+ but most of the code should also run under the latest [JRuby](http://jruby.org/).
+However, under JRuby, any code depending on C extensions or MRI internals should be excluded with `--without=development mysql`.
 
 All source code is documented and more details on the command line tool can be retrieved by running `bundle exec nose help`.
 You can view complete documentation by running `bundle exec rake doc` and viewing the output in the `doc/` directory.

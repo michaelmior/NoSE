@@ -59,7 +59,8 @@ module NoSE
         return if File.file?(CONFIG_FILE_NAME)
 
         if interactive
-          no_create = no? 'nose.yml is missing, create from nose.yml.example?'
+          no_create = no? 'nose.yml is missing, ' \
+                          'create from nose.yml.example? [Yn]'
           FileUtils.cp 'nose.yml.example', CONFIG_FILE_NAME unless no_create
         else
           @logger.warn 'Configuration file missing'
