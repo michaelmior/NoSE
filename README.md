@@ -12,7 +12,12 @@ NoSE is licensed under the [GPLv3 license](LICENSE.md).
  * [bundler](http://bundler.io/)
  * [Cbc](https://projects.coin-or.org/Cbc) solver (`coinor-libcbc3` and `coinor-libcbc-dev` on Ubuntu, [Homebrew](https://github.com/coin-or-tools/homebrew-coinor) maybe useful on Mac OS, but has not been tested)
 
-Ruby dependencies can be installed with `bundle install`.
+Once dependencies have been installed, clone the repository and install the necessary Ruby gems
+
+    git clone https://github.com/michaelmior/NoSE.git
+    cd NoSE
+    bundle install --without=development mysql
+
 Examples of the workload input format is given in the `workloads/` directory.
 These workloads should give you a sense of the input format and can be a starting point for your own workloads.
 For example, to run the schema advisor against the workload `rubis`, simply execute the command below
