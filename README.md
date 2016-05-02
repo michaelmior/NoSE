@@ -8,9 +8,15 @@ NoSE is licensed under the [GPLv3 license](LICENSE.md).
 
 ## Getting Started
 
+If you want to quickly try NoSE, you can get a shell with all necessary dependencies using [Docker](https://www.docker.com/) as follows
+
+    docker run --interactive --tty --rm michaelmior/nose /bin/bash
+
+For continued use installing NoSE locally is more flexible and can be accomplished following the instructions below.
+
  * [Ruby](https://www.ruby-lang.org/) 2+
  * [bundler](http://bundler.io/)
- * [Cbc](https://projects.coin-or.org/Cbc) solver (`coinor-libcbc3` and `coinor-libcbc-dev` on Ubuntu, [Homebrew](https://github.com/coin-or-tools/homebrew-coinor) maybe useful on Mac OS, but has not been tested)
+ * [Cbc](https://projects.coin-or.org/Cbc) solver (see the [Dockerfile](Dockerfile) for packages on Ubuntu, [Homebrew](https://github.com/coin-or-tools/homebrew-coinor) maybe useful on Mac OS, but has not been tested)
 
 Once dependencies have been installed, clone the repository and install the necessary Ruby gems
 
