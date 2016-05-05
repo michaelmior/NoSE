@@ -116,6 +116,7 @@ module NoSE
 
       def initialize(name, **options)
         super(name, 8, **options)
+        @cardinality = 10
       end
 
       # Parse an Integer from the provided parameter

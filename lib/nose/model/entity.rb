@@ -81,6 +81,15 @@ module NoSE
     def field?(field)
       @fields.key? field
     end
+
+    # Generate a hash with random values for fields in the entity
+    def random_entity(prefix_entity=true)
+      Hash[@fields.map do |name, field|
+        key = name
+        key = "#{@name}_#{name}" if prefix_entity
+        [key, field.random_value]
+      end]
+    end
   end
 
   # A helper class for DSL creation to avoid messing with {Entity}

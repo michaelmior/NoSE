@@ -58,6 +58,12 @@ module NoSE
 
       expect(entity.id_fields).to match_array [entity['Baz'], entity['Quux']]
     end
+
+    it 'can generate random entities' do
+      entity << Fields::IntegerField.new('Bar')
+      expect(entity.random_entity).to be_a Hash
+      expect(entity.random_entity.keys).to match_array ['Foo_Bar']
+    end
   end
 
   describe Fields::Field do
