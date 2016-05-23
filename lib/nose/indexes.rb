@@ -31,6 +31,11 @@ module NoSE
       @key = "i#{Zlib.crc32 keystr}"
     end
 
+    # Look up a field in the index based on its ID
+    def [](field_id)
+      @all_fields.find { |field| field.id == field_id }
+    end
+
     # :nocov:
     def to_color
       fields = [@hash_fields, @order_fields, @extra].map do |field_group|

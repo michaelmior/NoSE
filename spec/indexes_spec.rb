@@ -21,6 +21,10 @@ module NoSE
       workload.add_statement order_query
     end
 
+    it 'can return fields by field ID' do
+      expect(index['Tweet_Body']).to eq(tweet['Body'])
+    end
+
     it 'contains fields' do
       index = Index.new [tweet['TweetId']], [], [tweet['Body']],
                         [tweet.id_fields.first]
