@@ -19,6 +19,7 @@ gem 'thor', require: false
 
 platform :ruby do
   gem 'mysql2' # this is used for the loader for performance
+  gem 'pg'
 end
 
 group :test do
