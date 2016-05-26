@@ -44,7 +44,7 @@ NoSE::Schema.new do
     Hash    users.id
     Ordered comments.id, items.id
     Extra   comments['*']
-    Path    items.id, items.comments, comments.to_user
+    Path    users.id, users.comments_received, comments.item
   end
 
   Index 'commenter' do
