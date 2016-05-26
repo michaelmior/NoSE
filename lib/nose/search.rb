@@ -22,7 +22,6 @@ module NoSE
       # non-overlapping indices
       # @return [Array<Index>]
       def search_overlap(indexes, max_space = Float::INFINITY)
-        index_sizes = indexes.map(&:size)
         return if indexes.empty?
 
         # Get the costs of all queries and updates
@@ -34,7 +33,6 @@ module NoSE
 
         solver_params = {
           max_space: max_space,
-          index_sizes: index_sizes,
           costs: costs,
           update_costs: update_costs,
           cost_model: @cost_model
