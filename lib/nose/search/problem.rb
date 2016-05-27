@@ -111,7 +111,7 @@ module NoSE
           end)
         end
 
-        cost = add_update_costs cost, data
+        cost = add_update_costs cost
         cost
       end
 
@@ -207,13 +207,13 @@ module NoSE
       end
 
       # Deal with updates which do not require support queries
-      def add_update_costs(min_cost, data)
+      def add_update_costs(min_cost)
         @updates.each do |update|
           @indexes.each do |index|
             next unless update.modifies_index?(index)
 
             min_cost.add @index_vars[index] *
-              data[:update_costs][update][index]
+              @data[:update_costs][update][index]
           end
         end
 
