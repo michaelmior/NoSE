@@ -54,5 +54,40 @@ module NoSE::Loader
       expect(entity.fields.values[4]).to be_a NoSE::Fields::StringField
       expect(entity.fields.values[5]).to be_a NoSE::Fields::StringField
     end
+
+    context 'when loading into a backend', mysql: true do
+      let(:workload) { NoSE::Workload.load 'rubis' }
+      let(:backend) do
+        dummy = double('backend')
+        expect(dummy).to receive(:index_empty?).and_return(true)
+
+        dummy
+      end
+
+      let(:config) do
+        {
+          host: '127.0.0.1',
+          username: 'root',
+          database: 'nose'
+        }
+      end
+
+      let(:loader) do
+        MysqlLoader.new workload, backend
+      end
+
+      it 'can load a simple ID index', mysql: true do
+        user = workload.model['users']
+        index = NoSE::Index.new [user['id']], [], [user['nickname']],
+                                [user['id']]
+        expect(backend).to receive(:index_insert_chunk).with(index, [
+          {
+            'users_id' => 2,
+            'users_nickname' => '08ec962a-fc56-40a3-9e07-1fca0520253c'
+          }
+        ])
+        loader.load([index], config, false, 1)
+      end
+    end
   end
 end

@@ -10,6 +10,8 @@ before_install:
   - sudo apt-get install -y graphviz
   - sudo apt-get install -y coinor-libcbc-dev coinor-libcbc3 coinor-libcoinutils-dev coinor-libcoinutils3v5 coinor-libosi-dev coinor-libosi1 coinor-libclp-dev coinor-libclp1 coinor-libcgl-dev coinor-libcgl1 libstdc++6
   - gem install bundler
+  - mysql -uroot -e 'create database nose;'
+  - mysql -uroot -Dnose < spec/support/data/mysql.sql
 bundler_args: --without=development
 rvm:
   - 2.3.0
@@ -19,7 +21,14 @@ rvm:
 matrix:
   allow_failures:
     - rvm: jruby-9000
-script: bundle exec rspec
+script:
+  - bundle exec rspec
+  - bundle exec rspec --tag mysql
 addons:
+  apt:
+    packages:
+      - mysql-server-5.6
+      - mysql-client-core-5.6
+      - mysql-client-5.6
   code_climate:
     repo_token: 6bb85eb10136dfdb11e56bf53a9679510ca99c3c0f2495c06d6a3cb9670b9954
