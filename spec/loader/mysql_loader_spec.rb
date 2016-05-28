@@ -88,6 +88,21 @@ module NoSE::Loader
         ])
         loader.load([index], config, false, 1)
       end
+
+      it 'can load an index across multiple entities', mysql: true do
+        user = workload.model['users']
+        item = workload.model['items']
+        index = NoSE::Index.new [user['id']], [item['id']], [item['name']],
+                                [user['id'], user['items_sold']]
+        expect(backend).to receive(:index_insert_chunk).with(index, [
+          {
+            'users_id' => 1,
+            'items_id' => 45,
+            'items_name' => 'repellat alias consequatur'
+          }
+        ])
+        loader.load([index], config, false, 1)
+      end
     end
   end
 end
