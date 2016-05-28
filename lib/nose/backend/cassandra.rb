@@ -53,7 +53,7 @@ module NoSE
         futures = []
         chunk.each do |row|
           index_row = index_row(row, fields)
-          futures.push client.execute_async(prepared, *index_row)
+          futures.push client.execute_async(prepared, arguments: index_row)
         end
         futures.each(&:join)
       end
@@ -127,7 +127,7 @@ module NoSE
       # Get a Cassandra client, connecting if not done already
       def client
         return @client unless @client.nil?
-        cluster = Cassandra.cluster hosts: @hosts, port: @port.to_s,
+        cluster = Cassandra.cluster hosts: @hosts, port: @port,
                                     timeout: nil
         @client = cluster.connect @keyspace
       end
