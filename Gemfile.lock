@@ -65,6 +65,7 @@ GEM
     parallel (1.8.0)
     parslet (1.7.1)
       blankslate (>= 2.0, <= 4.0)
+    pg (0.18.4)
     pickup (0.0.11)
     pry (0.10.3)
       coderay (~> 1.1.0)
@@ -153,6 +154,7 @@ DEPENDENCIES
   mysql2
   parallel
   parslet
+  pg
   pickup
   pry
   pry-byebug

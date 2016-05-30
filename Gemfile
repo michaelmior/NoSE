@@ -8,6 +8,7 @@ gem 'logging'
 gem 'mipper'
 gem 'parallel'
 gem 'parslet'
+gem 'pg'
 gem 'pickup'
 gem 'rake', require: false
 gem 'representable'
