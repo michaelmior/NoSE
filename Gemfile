@@ -13,6 +13,7 @@ gem 'rake', require: false
 gem 'representable'
 gem 'ruby-graphviz'
 gem 'ruby-mysql' # this is used for the proxy because it's pure Ruby
+gem 'sequel'
 gem 'smarter_csv'
 gem 'table_print'
 gem 'thor', require: false
