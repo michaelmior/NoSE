@@ -571,7 +571,8 @@ module NoSE
       end.flatten(1).to_set
 
       return @order = [] if @tree[:order].nil?
-      @order = @tree[:order][:fields].map do |field|
+      @order = @tree[:order][:fields].each_slice(2).map do |field|
+        field = field.first if field.first.is_a?(Array)
         find_field_with_prefix @tree[:path], field
       end
     end

@@ -343,5 +343,14 @@ module NoSE
       reverse_path = KeyPath.new [tweet.id_fields.first, tweet['User']]
       expect(key_path.reverse).to eq(reverse_path)
     end
+
+    it 'can order on multiple fields' do
+      query = Query.new 'SELECT Tweet.TweetId FROM Tweet.User ' \
+                        'WHERE User.UserId = ? ' \
+                        'ORDER BY Tweet.Timestamp, Tweet.Retweets',
+                        workload.model
+      expect(query.order).to match_array [tweet['Timestamp'],
+                                          tweet['Retweets']]
+    end
   end
 end
