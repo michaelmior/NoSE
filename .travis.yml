@@ -9,7 +9,6 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y graphviz
   - sudo apt-get install -y coinor-libcbc-dev coinor-libcbc3 coinor-libcoinutils-dev coinor-libcoinutils3v5 coinor-libosi-dev coinor-libosi1 coinor-libclp-dev coinor-libclp1 coinor-libcgl-dev coinor-libcgl1 libstdc++6
-  - gem install bundler
 bundler_args: --without=development
 rvm:
   - 2.3.0
