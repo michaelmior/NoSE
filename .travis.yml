@@ -15,10 +15,7 @@ rvm:
   - 2.3.0
   - 2.2.4
   - 2.1.8
-  - jruby-9000
-matrix:
-  allow_failures:
-    - rvm: jruby-9000
+  - jruby-head
 script: bundle exec rspec
 addons:
   code_climate:
