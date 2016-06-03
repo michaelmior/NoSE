@@ -130,6 +130,33 @@ module NoSE
       end
     end
 
+    # Field holding a boolean value
+    class BooleanField < Field
+      TYPE = Object
+
+      def initialize(name, **options)
+        super(name, 1, **options)
+        @cardinality = 2
+      end
+
+      # Check for strings true or false otherwise assume integer
+      def self.value_from_string(string)
+        string = string.downcase
+        if string[0] == 't'
+          return true
+        elsif string[0] == 'f'
+          return false
+        else
+          [false, true][string.to_i]
+        end
+      end
+
+      # Randomly true or false
+      def random_value
+        [false, true][rand(2)]
+      end
+    end
+
     # Field holding a float
     class FloatField < Field
       # Any Fixnum is a valid float

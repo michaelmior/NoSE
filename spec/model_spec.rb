@@ -129,6 +129,21 @@ module NoSE
     end
   end
 
+  describe Fields::BooleanField do
+    it 'can convert boolean strings' do
+      expect(Fields::BooleanField.value_from_string 'false').to be_falsey
+    end
+
+    it 'can convert integers in strings' do
+      expect(Fields::BooleanField.value_from_string '1').to be_truthy
+    end
+
+    it 'can produce random booleans' do
+      field = Fields::BooleanField.new 'Foo'
+      expect(field.random_value).to satisfy { |v| [true, false].include? v }
+    end
+  end
+
   describe Model do
     let(:model) do
       Model.new do
