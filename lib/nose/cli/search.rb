@@ -56,7 +56,7 @@ module NoSE
         begin
           backend = get_backend options, result rescue nil
           send(('output_' + options[:format]).to_sym,
-               result, file, options[:enumerated], backend: backend)
+               result, file, options[:enumerated], backend)
         ensure
           file.close unless options[:output].nil?
         end

@@ -194,7 +194,7 @@ module NoSE
       end
 
       # Output the results of advising as text
-      def output_txt(result, file = $stdout, enumerated = false)
+      def output_txt(result, file = $stdout, enumerated = false, backend = nil)
         if enumerated
           header = "Enumerated indexes\n" + '━' * 50
           output_indexes_txt header, result.enumerated_indexes, file
@@ -223,7 +223,7 @@ module NoSE
       end
 
       def output_html(result, file = $stdout, enumerated = false,
-                      backend: nil)
+                      backend = nil)
         # Get an SVG diagram of the model
         tmpfile = Tempfile.new %w(model svg)
         result.workload.model.output :svg, tmpfile.path, false
@@ -246,7 +246,8 @@ module NoSE
       end
 
       # Output the results of advising as JSON
-      def output_json(result, file = $stdout, enumerated = false)
+      def output_json(result, file = $stdout, enumerated = false,
+                      backend = nil)
         # Temporarily remove the enumerated indexes
         if enumerated
           enumerated = result.enumerated_indexes
@@ -260,7 +261,7 @@ module NoSE
       end
 
       # Output the results of advising as YAML
-      def output_yml(result, file = $stdout, enumerated = false)
+      def output_yml(result, file = $stdout, enumerated = false, backend = nil)
         # Temporarily remove the enumerated indexes
         if enumerated
           enumerated = result.enumerated_indexes
