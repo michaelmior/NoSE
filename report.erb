@@ -59,6 +59,17 @@
       <% end %>
     <% end %>
 
+    <% if enumerated_indexes %>
+      <h2>Enumerated Indexes</h2>
+      <% enumerated_indexes.each_with_index do |index, i| %>
+        <h3><%= index.key %></h3>
+        <% if ddl %>
+          <p><tt><%= ddl[i] %></tt></p>
+        <% end %>
+        <p><%= Ansi::To::Html.new(index.inspect).to_html %></p>
+      <% end %>
+    <% end %>
+
     <h2>Summary</h2>
     <dl>
       <dt>Total size</dt>

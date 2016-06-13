@@ -229,10 +229,12 @@ module NoSE
         result.workload.model.output :svg, tmpfile.path, false
         svg = File.open(tmpfile.path).read
 
+        enumerated &&= result.enumerated_indexes
         tmpl = File.read File.join(File.dirname(__FILE__), '../../report.erb')
         ns = OpenStruct.new svg: svg,
                             backend: backend,
                             indexes: result.indexes,
+                            enumerated_indexes: enumerated,
                             workload: result.workload,
                             update_plans: result.update_plans,
                             plans: result.plans,
