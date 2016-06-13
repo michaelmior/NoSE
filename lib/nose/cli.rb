@@ -223,9 +223,9 @@ module NoSE
       end
 
       def output_html(result, file = $stdout, enumerated = false,
-                      backend = nil)
+                      backend: nil)
         # Get an SVG diagram of the model
-        tmpfile = Tempfile.new ['model', 'svg']
+        tmpfile = Tempfile.new %w(model svg)
         result.workload.model.output :svg, tmpfile.path, false
         svg = File.open(tmpfile.path).read
 
