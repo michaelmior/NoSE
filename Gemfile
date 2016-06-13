@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'ansi-to-html'
 gem 'descriptive_statistics', require: false
 gem 'faker'
 gem 'formatador'

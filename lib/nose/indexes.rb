@@ -115,7 +115,7 @@ module NoSE
     # Ensure this index is valid
     def validate_index
       validate_hash_fields
-      validate_nonempty
+      # validate_nonempty
       validate_path
     end
 

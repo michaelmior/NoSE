@@ -1,3 +1,4 @@
+require 'erb'
 require 'formatador'
 require 'parallel'
 require 'thor'
@@ -32,13 +33,7 @@ module NoSE
         # Peek ahead into the options and prompt the user to create a config
         check_config_file interactive?(local_options)
 
-        # Enable forcing the colour or no colour for output
-        # We just lie to Formatador about whether or not $stdout is a tty
-        unless options[:colour].nil?
-          stdout_metaclass = class << $stdout; self; end
-          method = options[:colour] ? ->() { true } : ->() { false }
-          stdout_metaclass.send(:define_method, :tty?, &method)
-        end
+        force_colour(options[:colour]) unless options[:colour].nil?
 
         # Disable parallel processing if desired
         Parallel.instance_variable_set(:@processor_count, 0) \
@@ -227,6 +222,27 @@ module NoSE
                                    "[blue]#{result.total_cost}[/]\n")
       end
 
+      def output_html(result, file = $stdout, enumerated = false,
+                      backend = nil)
+        # Get an SVG diagram of the model
+        tmpfile = Tempfile.new ['model', 'svg']
+        result.workload.model.output :svg, tmpfile.path, false
+        svg = File.open(tmpfile.path).read
+
+        tmpl = File.read File.join(File.dirname(__FILE__), '../../report.erb')
+        ns = OpenStruct.new svg: svg,
+                            backend: backend,
+                            indexes: result.indexes,
+                            workload: result.workload,
+                            update_plans: result.update_plans,
+                            plans: result.plans,
+                            total_size: result.total_size,
+                            total_cost: result.total_cost
+
+        force_colour
+        file.write ERB.new(tmpl, nil, '>').result(ns.instance_eval { binding })
+      end
+
       # Output the results of advising as JSON
       def output_json(result, file = $stdout, enumerated = false)
         # Temporarily remove the enumerated indexes
@@ -260,6 +276,14 @@ module NoSE
           self.class.commands[command].options \
             .each_key.map(&:to_sym).include? key.to_sym
         end)
+      end
+
+      # Enable forcing the colour or no colour for output
+      # We just lie to Formatador about whether or not $stdout is a tty
+      def force_colour(colour=true)
+        stdout_metaclass = class << $stdout; self; end
+        method = colour ? ->() { true } : ->() { false }
+        stdout_metaclass.send(:define_method, :tty?, &method)
       end
     end
   end

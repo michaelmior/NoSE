@@ -1,0 +1,71 @@
+<% require 'ansi-to-html' %>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  </head>
+  <body style="margin: 1em">
+    <h1>NoSE Schema Recommendation</h1>
+
+    <h2>Model</h2>
+    <%= svg %>
+
+    <h2>Queries</h2>
+    <% workload.queries.each do |query| %>
+      <p><tt><%= query.text %></tt></p>
+    <% end %>
+
+    <h2>Indexes</h2>
+    <% ddl = backend ? backend.indexes_ddl.to_a : nil %>
+    <% indexes.each_with_index do |index, i| %>
+      <h3><%= index.key %></h3>
+      <% if ddl %>
+        <p><tt><%= ddl[i] %></tt></p>
+      <% end %>
+      <p><%= Ansi::To::Html.new(index.inspect).to_html %></p>
+    <% end %>
+
+    <h2>Query plans</h2>
+    <% plans.each do |plan| %>
+      <strong><%= Ansi::To::Html.new(plan.query.inspect).to_html %></strong>
+      <ol>
+      <% plan.each do |step| %>
+        <li><%= Ansi::To::Html.new(step.inspect).to_html %></li>
+      <% end %>
+      </ol>
+    <% end %>
+
+    <h2>Update plans</h2>
+    <% update_plans.group_by(&:statement).each do |statement, plans| %>
+      <strong><%= Ansi::To::Html.new(statement.inspect).to_html %></strong>
+      <% plans.each do |plan| %>
+        <% plan.query_plans.each do |query_plan| %>
+          <strong><%= Ansi::To::Html.new(query_plan.query.inspect).to_html %></strong>
+          <ol>
+          <% query_plan.each do |step| %>
+            <li><%= Ansi::To::Html.new(step.inspect).to_html %></li>
+          <% end %>
+          </ol>
+        <% end %>
+        <ol>
+        <% plan.update_steps.each do |step| %>
+          <li><%= Ansi::To::Html.new(step.inspect).to_html %></li>
+        <% end %>
+        </ol>
+      <% end %>
+    <% end %>
+
+    <h2>Summary</h2>
+    <dl>
+      <dt>Total size</dt>
+      <dd><%= total_size %></dd>
+
+      <dt>Total cost</dt>
+      <dd><%= total_cost %></dd>
+    </dl>
+  </body>
+</html>

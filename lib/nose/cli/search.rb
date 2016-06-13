@@ -54,8 +54,9 @@ module NoSE
         file = options[:output].nil? ? $stdout :
                                        File.open(options[:output], 'w')
         begin
+          backend = get_backend options, result rescue nil
           send(('output_' + options[:format]).to_sym,
-               result, file, options[:enumerated])
+               result, file, options[:enumerated], backend)
         ensure
           file.close unless options[:output].nil?
         end
