@@ -7,6 +7,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
     <title>NoSE Schema Recommendation</title>
   </head>
   <body style="margin: 1em">
@@ -17,7 +20,7 @@
 
     <h2>Queries</h2>
     <% workload.queries.each do |query| %>
-      <p><tt><%= query.text %></tt></p>
+      <pre><code class="lang-sql"><%= query.text %></code></pre>
     <% end %>
 
     <h2>Indexes</h2>
@@ -32,39 +35,56 @@
 
     <h2>Query plans</h2>
     <% plans.each do |plan| %>
-      <strong><%= Ansi::To::Html.new(plan.query.inspect).to_html %></strong>
-      <ol>
-      <% plan.each do |step| %>
-        <li><%= Ansi::To::Html.new(step.inspect).to_html %></li>
+      <h3><%= Ansi::To::Html.new(plan.query.inspect).to_html %></h3>
+
+      <% if plan.steps.length > 1 %>
+        <ol>
+        <% plan.each do |step| %>
+          <li><%= Ansi::To::Html.new(step.inspect).to_html %></li>
+        <% end %>
+        </ol>
+      <% else %>
+        <p><%= Ansi::To::Html.new(plan.steps.first.inspect).to_html %></p>
       <% end %>
-      </ol>
     <% end %>
 
     <h2>Update plans</h2>
     <% update_plans.group_by(&:statement).each do |statement, plans| %>
-      <p><strong><%= Ansi::To::Html.new(statement.inspect).to_html %></strong><p>
+      <h3><%= statement.text %></h3>
+
       <% plans.each do |plan| %>
+        <h4><%= plan.index.key %></h4>
+
         <% unless plan.query_plans.empty? %>
-          <p><strong>Support queries</strong><p>
+          <h5>Support queries</h5>
         <% end %>
 
         <% plan.query_plans.each do |query_plan| %>
           <p><strong><%= Ansi::To::Html.new(query_plan.query.inspect).to_html %></strong><p>
+          <% if query_plan.steps.length > 1 %>
+            <ol>
+            <% query_plan.each do |step| %>
+              <li><%= Ansi::To::Html.new(step.inspect).to_html %></li>
+            <% end %>
+            </ol>
+          <% else %>
+            <p><%= Ansi::To::Html.new(query_plan.steps.first.inspect).to_html %></p>
+          <% end %>
+        <% end %>
+
+        <h5>Updates</h5>
+
+        <% if plan.update_steps.length > 1 %>
           <ol>
-          <% query_plan.each do |step| %>
+          <% plan.update_steps.each do |step| %>
             <li><%= Ansi::To::Html.new(step.inspect).to_html %></li>
           <% end %>
           </ol>
+        <% else %>
+          <p><%= Ansi::To::Html.new(plan.update_steps.first.inspect).to_html %></p>
         <% end %>
-
-        <p><strong>Updates</strong><p>
-        <ol>
-        <% plan.update_steps.each do |step| %>
-          <li><%= Ansi::To::Html.new(step.inspect).to_html %></li>
-        <% end %>
-        </ol>
-        <hr>
       <% end %>
+      <hr>
     <% end %>
 
     <% if enumerated_indexes %>
