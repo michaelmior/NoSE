@@ -151,8 +151,8 @@ module NoSE
         # since only one record exists per row (if it's the same entity)
         # We also need to have the fields used in order
         indexed_by_id = @index.hash_fields.include? @index.path.first
-        order_prefix = @state.order_by.longest_common_prefix \
-          @index.order_fields
+        order_prefix = @state.order_by.longest_common_prefix(
+          @index.order_fields - @eq_filter.to_a)
         if indexed_by_id && order_prefix.map(&:parent).to_set ==
                             Set.new([index.path.entities.first])
           order_prefix = []
