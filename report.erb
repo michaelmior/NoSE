@@ -23,6 +23,11 @@
       <pre><code class="lang-sql"><%= query.text %></code></pre>
     <% end %>
 
+    <h2>Updates</h2>
+    <% workload.updates.each do |update| %>
+      <pre><code class="lang-sql"><%= update.text %></code></pre>
+    <% end %>
+
     <h2>Indexes</h2>
     <% ddl = backend ? backend.indexes_ddl.to_a : nil %>
     <% indexes.each_with_index do |index, i| %>
@@ -35,7 +40,7 @@
 
     <h2>Query plans</h2>
     <% plans.each do |plan| %>
-      <h3><%= Ansi::To::Html.new(plan.query.inspect).to_html %></h3>
+      <pre><code class="lang-sql"><%= Ansi::To::Html.new(plan.query.inspect).to_html %></code></pre>
 
       <% if plan.steps.length > 1 %>
         <ol>
@@ -46,11 +51,12 @@
       <% else %>
         <p><%= Ansi::To::Html.new(plan.steps.first.inspect).to_html %></p>
       <% end %>
+      <hr>
     <% end %>
 
     <h2>Update plans</h2>
     <% update_plans.group_by(&:statement).each do |statement, plans| %>
-      <h3><%= statement.text %></h3>
+      <pre><code class="lang-sql"><%= statement.text %></code></pre>
 
       <% plans.each do |plan| %>
         <h4><%= plan.index.key %></h4>
