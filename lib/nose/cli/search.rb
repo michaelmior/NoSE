@@ -19,7 +19,8 @@ module NoSE
       shared_option :output
 
       option :max_space, type: :numeric, default: Float::INFINITY,
-                         aliases: '-s'
+                         aliases: '-s',
+                         desc: 'maximum space allocated to indexes'
       option :enumerated, type: :boolean, default: false, aliases: '-e',
                           desc: 'whether enumerated indexes should be output'
       option :read_only, type: :boolean, default: false,
