@@ -307,6 +307,11 @@ module NoSE
       @keys[0..other_keys.length - 1] == other_keys
     end
 
+    # Check if a key is included in the path
+    def include?(key)
+      @keys.include?(key) || entities.any? { |e| e.id_fields.include? key }
+    end
+
     # Combine two key paths by gluing together the keys
     def +(other)
       fail TypeError unless other.is_a? KeyPath
@@ -829,10 +834,9 @@ module NoSE
       keys = @conditions.each_value.map(&:field)
       keys += keys.map(&:reverse)
 
-      # We must be connecting on all components of the path
+      # We must be connecting on some component of the path
       # if the index is going to be modified by this insertion
-      key_count = keys.count { |key| index.path.include?(key) }
-      key_count == index.path.length - 1
+      keys.count { |key| index.path.include?(key) } > 0
     end
 
     # Specifies that inserts require insertion
@@ -844,11 +848,12 @@ module NoSE
     def support_query_condition_for_path(keys, path)
       'WHERE ' + path.entries.map do |key|
         if keys.include?(key) ||
-           (key.is_a?(Fields::ForeignKeyField) && key.entity == @from)
+           (key.is_a?(Fields::ForeignKeyField) &&
+            path.entities.include?(key.entity))
           # Find the ID for this entity in the path and include a predicate
           id = key.entity.id_fields.first
           "#{path.find_field_parent(id).name}.#{id.name} = ?"
-        elsif key == @from.id_fields.first
+        elsif path.entities.map { |e| e.id_fields.first }.include?(key)
           # Include the key for the entity being inserted
           "#{path.find_field_parent(key).name}.#{key.name} = ?"
         end
