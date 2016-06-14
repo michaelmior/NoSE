@@ -43,8 +43,11 @@
     <h2>Update plans</h2>
     <% update_plans.group_by(&:statement).each do |statement, plans| %>
       <p><strong><%= Ansi::To::Html.new(statement.inspect).to_html %></strong><p>
-      <p><strong>Support queries</strong><p>
       <% plans.each do |plan| %>
+        <% unless plan.query_plans.empty? %>
+          <p><strong>Support queries</strong><p>
+        <% end %>
+
         <% plan.query_plans.each do |query_plan| %>
           <p><strong><%= Ansi::To::Html.new(query_plan.query.inspect).to_html %></strong><p>
           <ol>
