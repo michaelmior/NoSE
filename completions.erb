@@ -1,0 +1,56 @@
+_nose_complete() {
+  case $1 in
+  1) _nose_commands;;
+  2)
+    case "$2" in
+      help) _nose_commands;;
+      *) _nose_option;;
+    esac;;
+  *) _nose_option;;
+  esac
+}
+
+if type compdef 1>/dev/null 2>/dev/null; then
+  compdef _nose nose
+  _nose()          { _nose_complete $((${#words} - 1)) "${words[2]}"; }
+  _nose_commands() { list=(<%= commands.map { |name, c| "#{name}:\"#{Shellwords.escape(c.description)}\"" }.join(' ') %>) _describe -t common-commands 'common commands' list; }
+  _nose_option()   {
+    case "${words[2]}" in
+<%= commands.map do |name, c|
+"      #{name})  _arguments -s -S " + c.options.values.flat_map do |opt|
+    (opt.aliases << opt.switch_name).map do |switch|
+      "\"#{switch}[#{Shellwords.escape(opt.description)}]\""
+    end
+  end.uniq.join(' ') + ' \'*:file:_files\' && return 0;;'
+end.join("\n") %>
+    esac
+  }
+elif type compctl 1>/dev/null 2>/dev/null; then
+  compctl -K _nose nose
+  _nose()          { read -cA words && _nose_complete $((${#words} - 1)) "${words[2]}"; }
+  _nose_commands() { reply=(<%= commands.map { |name, _| "\"#{name}\"" }.join(' ') %>); }
+  _nose_option()   {
+    case "${words[2]}" in
+<%= commands.map do |name, c|
+"      #{name})  reply=(" + c.options.values.flat_map do |opt|
+    (opt.aliases << opt.switch_name).map { |s| "\"#{s}\"" }
+  end.uniq.join(' ') + ');;'
+end.join("\n") %>
+    esac
+  }
+elif type complete 1>/dev/null 2>/dev/null; then
+  complete -F _nose nose
+  _nose()          { _nose_complete "$COMP_CWORD" "${COMP_WORDS[1]}"; }
+  _nose_commands() { COMPREPLY=( $(compgen -W "<%= commands.map(&:first).join(' ') %>" -- "${COMP_WORDS[COMP_CWORD]}") ); }
+  _nose_option()   {
+    local options
+    case "${COMP_WORDS[1]}" in
+<%= commands.map do |name, c|
+"      #{name})  options=\"" + c.options.values.flat_map do |opt|
+    (opt.aliases << opt.switch_name)
+  end.uniq.join(' ') + '";;'
+end.join("\n") %>
+    esac
+    COMPREPLY=( $(compgen -W "$options" -- "${COMP_WORDS[COMP_CWORD]}") )
+  }
+fi
