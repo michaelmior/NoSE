@@ -209,9 +209,7 @@ module NoSE::Plans
 
       planner = QueryPlanner.new workload.model, indexes, cost_model
       plans = planner.find_plans_for_query(query)
-      plan_indexes = plans.map do |plan|
-        plan.select { |step| step.is_a? IndexLookupPlanStep }.map(&:index)
-      end
+      plan_indexes = plans.map(&:indexes)
 
       expect(plan_indexes).to include [query.materialize_view]
     end
@@ -258,9 +256,7 @@ module NoSE::Plans
       planner = QueryPlanner.new workload.model, indexes, cost_model
       plans = planner.find_plans_for_query query
 
-      expect(plans.all? do |plan|
-        plan.all? { |step| !step.is_a? LimitPlanStep }
-      end).to be_truthy
+      expect(plans).not_to include(a_kind_of(LimitPlanStep))
     end
 
     it 'uses implicit sorting when the clustering key is filtered' do

@@ -58,11 +58,8 @@ module NoSE::Search
 
       # Get the indexes actually used by the generated plans
       planner = NoSE::Plans::QueryPlanner.new workload, indexes, cost_model
-      plans = {}
-      workload.queries.each { |query| plans[query] = planner.min_plan query }
-      indexes = plans.map(&:to_a).flatten.select do |step|
-        step.is_a? NoSE::Plans::IndexLookupPlanStep
-      end.map(&:index).to_set
+      plans = workload.queries.map { |query| planner.min_plan query }
+      indexes = plans.flat_map(&:indexes).to_set
 
       expect(indexes).to match_array [
         NoSE::Index.new([user['Country']], [user['UserId']], [],
