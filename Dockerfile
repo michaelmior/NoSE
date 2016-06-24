@@ -13,6 +13,7 @@ RUN apt-get update -qq && \
       graphviz \
       libmagickwand-dev \
       libmysqlclient-dev \
+      libpq-dev \
       ruby2.3 \
       ruby2.3-dev \
     && apt-get clean
