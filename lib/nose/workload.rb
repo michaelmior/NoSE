@@ -35,8 +35,9 @@ module NoSE
     end
 
     # Add a new {Statement} to the workload or parse a string
-    def add_statement(statement, mixes = {}, group: nil)
-      statement = Statement.parse(statement, @model, group: group) \
+    def add_statement(statement, mixes = {}, group: nil, label: nil)
+      statement = Statement.parse(statement, @model,
+                                  group: group, label: label) \
         if statement.is_a? String
       statement.freeze
 
@@ -169,12 +170,12 @@ module NoSE
     end
 
     # Shortcut to add a new {Statement} to the workload
-    def Q(statement, weight = 1.0, group: nil, **mixes)
+    def Q(statement, weight = 1.0, group: nil, label: nil, **mixes)
       fail 'Statements require a workload' if @workload.nil?
 
       return if weight == 0 && mixes.empty?
       mixes = { default: weight } if mixes.empty?
-      @workload.add_statement statement, mixes, group: group
+      @workload.add_statement statement, mixes, group: group, label: label
     end
 
     # Allow setting the default workload mix

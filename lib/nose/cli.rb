@@ -150,6 +150,8 @@ module NoSE
           file.puts "GROUP #{plan.group}" unless plan.group.nil?
 
           weight = " * #{weight} = #{cost}"
+          file.puts '  ' * (indent - 1) + plan.query.label \
+            unless plan.query.label.nil?
           file.puts '  ' * (indent - 1) + plan.query.inspect + weight
           plan.each { |step| file.puts '  ' * indent + step.inspect }
           file.puts
@@ -173,6 +175,7 @@ module NoSE
 
           file.puts "GROUP #{statement.group}" unless statement.group.nil?
 
+          file.puts statement.label unless statement.label.nil?
           file.puts "#{statement.inspect} * #{weight} = #{total_cost * weight}"
           plans.each do |plan|
             file.puts Formatador.parse(" for [magenta]#{plan.index.key}[/] " \

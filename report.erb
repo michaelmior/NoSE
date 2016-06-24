@@ -20,11 +20,13 @@
 
     <h2>Queries</h2>
     <% workload.queries.each do |query| %>
+      <% unless query.label.nil? %><strong><%= query.label %></strong><% end %>
       <pre><code class="lang-sql"><%= query.text %></code></pre>
     <% end %>
 
     <h2>Updates</h2>
     <% workload.updates.each do |update| %>
+      <% unless update.label.nil? %><strong><%= update.label %></strong><% end %>
       <pre><code class="lang-sql"><%= update.text %></code></pre>
     <% end %>
 
@@ -40,6 +42,7 @@
 
     <h2>Query plans</h2>
     <% plans.each do |plan| %>
+      <% unless plan.query.label.nil? %><strong><%= plan.query.label %></strong><% end %>
       <pre><code class="lang-sql"><%= Ansi::To::Html.new(plan.query.inspect).to_html %></code></pre>
 
       <% if plan.steps.length > 1 %>
@@ -56,6 +59,7 @@
 
     <h2>Update plans</h2>
     <% update_plans.group_by(&:statement).each do |statement, plans| %>
+      <% unless statement.label.nil? %><strong><%= statement.label %></strong><% end %>
       <pre><code class="lang-sql"><%= statement.text %></code></pre>
 
       <% plans.each do |plan| %>
@@ -66,7 +70,8 @@
         <% end %>
 
         <% plan.query_plans.each do |query_plan| %>
-          <p><strong><%= Ansi::To::Html.new(query_plan.query.inspect).to_html %></strong><p>
+          <% unless query_plan.query.label.nil? %><strong><%= query_plan.query.label %></strong><% end %>
+          <pre><code class="lang-sql"><%= query_plan.query.text %></code></pre>
           <% if query_plan.steps.length > 1 %>
             <ol>
             <% query_plan.each do |step| %>

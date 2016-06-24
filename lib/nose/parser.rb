@@ -408,11 +408,11 @@ module NoSE
 
   # A CQL statement and its associated data
   class Statement
-    attr_reader :from, :longest_entity_path, :key_path,
+    attr_reader :from, :longest_entity_path, :key_path, :label,
                 :group, :text, :eq_fields, :range_field
 
     # Parse either a query or an update
-    def self.parse(text, model, group: nil)
+    def self.parse(text, model, group: nil, label: label)
       case text.split.first
       when 'INSERT'
         klass = Insert
@@ -428,11 +428,12 @@ module NoSE
         klass = Query
       end
 
-      klass.new text, model, group: group
+      klass.new text, model, group: group, label: label
     end
 
-    def initialize(type, text, model, group: nil)
+    def initialize(type, text, model, group: nil, label: label)
       @group = group
+      @label = label
       @text = text
 
       # If parsing fails, re-raise as our custom exception
@@ -527,8 +528,8 @@ module NoSE
 
     attr_reader :select, :order, :limit
 
-    def initialize(statement, model, group: nil)
-      super :query, statement, model, group: group
+    def initialize(statement, model, group: nil, label: label)
+      super :query, statement, model, group: group, label: label
 
       populate_conditions
       populate_fields
@@ -762,8 +763,8 @@ module NoSE
     include StatementSettings
     include StatementSupportQuery
 
-    def initialize(statement, model, group: nil)
-      super :update, statement, model, group: group
+    def initialize(statement, model, group: nil, label: label)
+      super :update, statement, model, group: group, label: label
 
       populate_conditions
       populate_settings
@@ -813,8 +814,8 @@ module NoSE
 
     alias_method :entity, :from
 
-    def initialize(statement, model, group: nil)
-      super :insert, statement, model, group: group
+    def initialize(statement, model, group: nil, label: label)
+      super :insert, statement, model, group: group, label: label
 
       populate_settings
       fail InvalidStatementException, 'Must insert primary key' \
@@ -934,8 +935,8 @@ module NoSE
     include StatementConditions
     include StatementSupportQuery
 
-    def initialize(statement, model, group: nil)
-      super :delete, statement, model, group: group
+    def initialize(statement, model, group: nil, label: label)
+      super :delete, statement, model, group: group, label: label
 
       populate_conditions
 
@@ -1066,8 +1067,8 @@ module NoSE
 
   # A representation of a connect in the workload
   class Connect < Connection
-    def initialize(statement, model, group: nil)
-      super :connect, statement, model, group: group
+    def initialize(statement, model, group: nil, label: label)
+      super :connect, statement, model, group: group, label: label
       fail InvalidStatementException, 'DISCONNECT parsed as CONNECT' \
         unless @text.split.first == 'CONNECT'
       populate_keys
@@ -1082,8 +1083,8 @@ module NoSE
 
   # A representation of a disconnect in the workload
   class Disconnect < Connection
-    def initialize(statement, model, group: nil)
-      super :connect, statement, model, group: group
+    def initialize(statement, model, group: nil, label: label)
+      super :connect, statement, model, group: group, label: label
       fail InvalidStatementException, 'CONNECT parsed as DISCONNECT' \
         unless @text.split.first == 'DISCONNECT'
       populate_keys
