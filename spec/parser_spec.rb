@@ -352,5 +352,17 @@ module NoSE
       expect(query.order).to match_array [tweet['Timestamp'],
                                           tweet['Retweets']]
     end
+
+    context 'when checking if something is included in the path' do
+      let(:path) { KeyPath.new [user['UserId'], user['Tweets']] }
+
+      it 'includes IDs of all entities on the path' do
+        expect(path).to include tweet['TweetId']
+      end
+
+      it 'includes keys traversed by the path' do
+        expect(path).to include user['Tweets']
+      end
+    end
   end
 end

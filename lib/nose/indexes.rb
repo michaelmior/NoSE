@@ -197,12 +197,9 @@ module NoSE
       eq = materialized_view_eq hash_entity
       order_fields = materialized_view_order(hash_entity) - eq
 
-      # Ensure the path starts with the hash entity
-      path = @key_path
-      path = path.reverse if @key_path.first.parent != hash_entity
-
       Index.new(eq, order_fields,
-                all_fields - (@eq_fields + @order).to_set, path)
+                all_fields - (@eq_fields + @order).to_set,
+                @key_path.reverse)
     end
 
     private
