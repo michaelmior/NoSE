@@ -829,6 +829,7 @@ module NoSE
     def modifies_index?(index)
       return true if modifies_single_entity_index?(index)
       return false if index.path.length == 1
+      return false unless index.path.entities.include? @from
 
       # Check if the index crosses any of the connection keys
       keys = @conditions.each_value.map(&:field)
