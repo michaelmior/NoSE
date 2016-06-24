@@ -262,6 +262,23 @@ module NoSE::Plans
         plan.all? { |step| !step.is_a? LimitPlanStep }
       end).to be_truthy
     end
+
+    it 'uses implicit sorting when the clustering key is filtered' do
+      query = NoSE::Query.new 'SELECT Tweets.Body FROM User.Tweets WHERE ' \
+                              'User.UserId = ? AND Tweets.Retweets = 0 ' \
+                              'ORDER BY Tweets.Timestamp', workload.model
+      index = NoSE::Index.new [user['UserId']],
+                              [tweet['Retweets'],
+                               tweet['Timestamp'],
+                               tweet['TweetId']],
+                              [tweet['Body']],
+                              [user.id_fields.first, user['Tweets']]
+
+      planner = QueryPlanner.new workload.model, [index], cost_model
+      plan = planner.min_plan query
+
+      expect(plan.steps).not_to include(a_kind_of(SortPlanStep))
+    end
   end
 
   describe UpdatePlanner do
