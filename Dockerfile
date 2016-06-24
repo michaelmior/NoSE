@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-MAINTAINER Michael Mior <mmior@uwaterloo.ca
+MAINTAINER Michael Mior <mmior@uwaterloo.ca>
 
 RUN apt-get update -qq && \
     apt-get install -qq \
