@@ -17,6 +17,7 @@ require_relative 'nose/proxy'
 require_relative 'nose/random'
 require_relative 'nose/schema'
 require_relative 'nose/search'
+require_relative 'nose/statements'
 require_relative 'nose/timing'
 require_relative 'nose/workload'
 
