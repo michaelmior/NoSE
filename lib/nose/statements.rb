@@ -1,7 +1,7 @@
 module NoSE
   # A CQL statement and its associated data
   class Statement
-    attr_reader :from, :longest_entity_path, :key_path, :label,
+    attr_reader :from, :longest_entity_path, :key_path, :label, :graph,
                 :group, :text, :eq_fields, :range_field
 
     # Parse either a query or an update
@@ -54,6 +54,7 @@ module NoSE
 
       @from = model[@tree[:path].first.to_s]
       find_longest_path @tree[:path]
+      build_query_graph
     end
 
     # Specifies if the statement modifies any data
@@ -117,6 +118,17 @@ module NoSE
       end
 
       @key_path = KeyPath.new(keys)
+    end
+
+    # Construct the query graph for this query
+    def build_query_graph
+      @graph = QueryGraph::Graph.new
+      prev_node = @graph.add_node @key_path.entries.first.parent
+      @key_path.entries[1..-1].each do |key|
+        next_node = @graph.add_node key.entity
+        @graph.add_edge prev_node, next_node, key
+        prev_node = next_node
+      end
     end
   end
 
