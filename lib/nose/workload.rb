@@ -2,7 +2,6 @@ require_relative 'model'
 require_relative 'parser'
 
 require 'erb'
-require 'graphviz'
 
 module NoSE
   # A representation of a query workload over a given set of entities

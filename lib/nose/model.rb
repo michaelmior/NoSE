@@ -1,6 +1,8 @@
 require_relative 'model/entity'
 require_relative 'model/fields'
 
+require 'graphviz'
+
 module NoSE
   # A conceptual data model of a set of entities
   class Model
