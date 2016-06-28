@@ -47,7 +47,7 @@ module NoSE
       nodes = add_graph_nodes graph, include_fields
       add_graph_edges graph, nodes
 
-      graph.output(**{format => filename})
+      graph.output(**{ format => filename })
     end
 
     private
