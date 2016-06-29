@@ -12,7 +12,7 @@ module NoSE
 
       attr_reader :name, :size, :parent
       attr_accessor :primary_key
-      alias_method :primary_key?, :primary_key
+      alias primary_key? primary_key
 
       # The Ruby type of values stored in this field
       TYPE = nil
@@ -29,7 +29,7 @@ module NoSE
         other.is_a?(Field) && @parent == other.parent &&
           @name == other.name
       end
-      alias_method :eql?, :==
+      alias eql? ==
 
       # Hash by entity and name
       # @return [Fixnum]
@@ -238,7 +238,7 @@ module NoSE
 
     # Field holding a unique identifier
     class IDField < Field
-      alias_method :entity, :parent
+      alias entity parent
 
       def initialize(name, **options)
         super(name, 16, **options)

@@ -26,7 +26,7 @@ module NoSE
         other.instance_of?(self.class) && @index == other.index && \
           @type == other.instance_variable_get(:@type)
       end
-      alias_method :eql?, :==
+      alias eql? ==
 
       def hash
         [@index, @type].hash

@@ -28,7 +28,7 @@ module NoSE
     def ==(other)
       @name == other.instance_variable_get(:@name)
     end
-    alias_method :eql?, :==
+    alias eql? ==
 
     # The hash is based on the name of the entity and its fields
     # @return [Fixnum]

@@ -18,7 +18,7 @@ module NoSE
       def ==(other)
         other.instance_of?(self.class) && @limit == other.limit
       end
-      alias_method :eql?, :==
+      alias eql? ==
 
       def hash
         @limit

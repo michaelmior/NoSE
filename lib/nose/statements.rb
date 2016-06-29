@@ -81,7 +81,7 @@ module NoSE
     def ==(other)
       other.is_a?(Statement) && @tree == other.instance_variable_get(:@tree)
     end
-    alias_method :eql?, :==
+    alias eql? ==
 
     def hash
       Zlib.crc32 @tree.to_s
@@ -193,7 +193,7 @@ module NoSE
       other.is_a?(SupportQuery) && @statement == other.statement &&
         @index == other.index
     end
-    alias_method :eql?, :==
+    alias eql? ==
 
     def hash
       Zlib.crc32_combine super, @index.hash, @index.hash_str.length
@@ -225,7 +225,7 @@ module NoSE
     def ==(other)
       other.field == @field && other.value == @value
     end
-    alias_method :eql?, :==
+    alias eql? ==
 
     # Hash by field and value
     def hash
@@ -405,7 +405,7 @@ module NoSE
     include StatementSettings
     include StatementSupportQuery
 
-    alias_method :entity, :from
+    alias entity from
 
     def initialize(statement, model, group: nil, label: label)
       super :insert, statement, model, group: group, label: label
@@ -562,7 +562,7 @@ module NoSE
     include StatementSupportQuery
 
     attr_reader :source_pk, :target, :target_pk, :conditions
-    alias_method :source, :from
+    alias source from
 
     # A connection modifies an index if the relationship is in the path
     def modifies_index?(index)

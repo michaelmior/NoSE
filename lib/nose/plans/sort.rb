@@ -21,7 +21,7 @@ module NoSE
       def ==(other)
         other.instance_of?(self.class) && @sort_fields == other.sort_fields
       end
-      alias_method :eql?, :==
+      alias eql? ==
 
       def hash
         Zlib.crc32 @sort_fields.map(&:id).to_s

@@ -53,7 +53,7 @@ module NoSE
     def ==(other)
       hash == other.hash
     end
-    alias_method :eql?, :==
+    alias eql? ==
 
     # Hash based on the fields, their keys, and the path
     # @return [String]

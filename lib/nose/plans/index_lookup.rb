@@ -40,7 +40,7 @@ module NoSE
       def ==(other)
         other.instance_of?(self.class) && @index == other.index
       end
-      alias_method :eql?, :==
+      alias eql? ==
 
       # Check if this step can be applied for the given index,
       # returning a possible application of the step

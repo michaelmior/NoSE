@@ -200,7 +200,7 @@ module NoSE
   # A single condition in a where clause
   class Condition
     attr_reader :field, :is_range, :operator, :value
-    alias_method :range?, :is_range
+    alias range? is_range
 
     def initialize(field, operator, value)
       @field = field
@@ -220,7 +220,7 @@ module NoSE
     def ==(other)
       @field == other.field && @operator == other.operator
     end
-    alias_method :eql?, :==
+    alias eql? ==
 
     def hash
       Zlib.crc32 [@field.id, @operator].to_s
@@ -299,7 +299,7 @@ module NoSE
     def ==(other)
       @keys == other.instance_variable_get(:@keys)
     end
-    alias_method :eql?, :==
+    alias eql? ==
 
     # Check if this path starts with another path
     def start_with?(other)
