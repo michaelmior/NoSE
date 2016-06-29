@@ -166,6 +166,24 @@ module NoSE
         all_subgraphs.to_set
       end
 
+      # Convert this graph into a path if possible
+      def to_path
+        fail 'Need root for path conversion' if @root.nil?
+        keys = [@root.entity.id_fields.first]
+        entities = Set.new [@root.entity]
+
+        edges = edges_for_entity keys.last.parent
+        until edges.empty?
+          break if (edges.map { |e| e.to.entity }.to_set - entities).empty?
+          fail 'Graph cannot be converted to path' if edges.size > 1
+          keys << edges.first.key
+          entities.add edges.first.to.entity
+          edges = edges_for_entity keys.last.parent
+        end
+
+        KeyPath.new keys
+      end
+
       # Output an image of the query graph
       def output(format, filename)
         graph = GraphViz.new :G, type: :graph
@@ -181,6 +199,13 @@ module NoSE
         end
 
         graph.output(**{ format => filename })
+      end
+
+      private
+
+      # Return all the edges starting at a given entity
+      def edges_for_entity(entity)
+        @edges.find { |n, _| n.entity == entity}.last
       end
     end
   end

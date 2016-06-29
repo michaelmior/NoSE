@@ -32,6 +32,19 @@ module NoSE
           ]
         end
       end
+
+      context 'when converting to a path' do
+        it 'can convert single node graphs' do
+          graph = Graph.new user
+          expect(graph.to_path).to eq KeyPath.new([user.id_fields.first])
+        end
+
+        it 'can convert longer paths' do
+          graph = Graph.new user, [user, tweet, user['Tweets']]
+          expect(graph.to_path).to eq KeyPath.new([user.id_fields.first,
+                                                   user['Tweets']])
+        end
+      end
     end
   end
 end
