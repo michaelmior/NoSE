@@ -136,14 +136,14 @@ module NoSE
       end
 
       # Produce an enumerator which yields all subgraphs of this graph
-      def subgraphs(recursive = true)
+      def subgraphs(include_self = true, recursive = true)
         # We have no subgraphs if there is only one node
-        return [] if @nodes.size == 1
+        return [self] if @nodes.size == 1
 
         # Construct a list of all unique edges in the graph
         all_edges = @edges.values.reduce(&:union).to_a.uniq(&:canonical_params)
 
-        all_subgraphs = Set.new
+        all_subgraphs = Set.new([self])
         all_edges.each do |remove_edge|
           # Construct new graphs rooted at either side of the cut edge
           graph1 = Graph.new(remove_edge.from)
@@ -167,15 +167,23 @@ module NoSE
       end
 
       # Convert this graph into a path if possible
-      def to_path
-        fail 'Need root for path conversion' if @root.nil?
-        keys = [@root.entity.id_fields.first]
-        entities = Set.new [@root.entity]
+      def to_path(root_entity = nil)
+        if root_entity.nil?
+          root = @root
+        else
+          root = @nodes.find { |n| n.entity == root_entity }
+        end
+
+        fail InvalidPathException, 'Need root for path conversion' \
+          if root.nil?
+        keys = [root.entity.id_fields.first]
+        entities = Set.new [root.entity]
 
         edges = edges_for_entity keys.last.parent
         until edges.empty?
           break if (edges.map { |e| e.to.entity }.to_set - entities).empty?
-          fail 'Graph cannot be converted to path' if edges.size > 1
+          fail InvalidPathException, 'Graph cannot be converted to path' \
+            if edges.size > 1
           keys << edges.first.key
           entities.add edges.first.to.entity
           edges = edges_for_entity keys.last.parent
@@ -205,8 +213,13 @@ module NoSE
 
       # Return all the edges starting at a given entity
       def edges_for_entity(entity)
-        @edges.find { |n, _| n.entity == entity}.last
+        pair = @edges.find { |n, _| n.entity == entity }
+        pair.nil? ? [] : pair.last
       end
     end
+  end
+
+  # Thrown when trying to convert a graph which is not a path
+  class InvalidPathException < StandardError
   end
 end

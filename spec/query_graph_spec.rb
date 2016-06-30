@@ -4,15 +4,16 @@ module NoSE
       include_context 'entities'
 
       context 'when producing subgraphs' do
-        it 'produces nothing for a single entity graph' do
+        it 'produces only itself for a single entity graph' do
           graph = Graph.new(user)
-          expect(graph.subgraphs).to be_empty
+          expect(graph.subgraphs).to match_array [graph]
         end
 
         it 'produces single node graphs when splitting with two nodes' do
           graph = Graph.new nil, [user, tweet, user['Tweets']]
           subgraphs = graph.subgraphs.to_a
           expect(subgraphs).to match_array [
+            graph,
             Graph.new(user),
             Graph.new(tweet)
           ]
@@ -24,6 +25,7 @@ module NoSE
                             [tweet, link, tweet['Link']]
           subgraphs = graph.subgraphs.to_a
           expect(subgraphs).to match_array [
+            graph,
             Graph.new(user),
             Graph.new(tweet),
             Graph.new(link),

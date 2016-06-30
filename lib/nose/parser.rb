@@ -301,10 +301,11 @@ module NoSE
       @keys = keys
     end
 
-    # Two key paths are equal if their underlying keys are equal
+    # Two key paths are equal if their underlying keys are equal or the reverse
     # @return [Boolean]
-    def ==(other)
-      @keys == other.instance_variable_get(:@keys)
+    def ==(other, check_reverse = true)
+      @keys == other.instance_variable_get(:@keys) ||
+        (check_reverse && reverse.send(:==, other.reverse, false))
     end
     alias eql? ==
 

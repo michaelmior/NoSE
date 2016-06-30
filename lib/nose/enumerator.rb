@@ -26,8 +26,9 @@ module NoSE
       range = range.group_by(&:parent)
       range.default_proc = ->(*) { [] }
 
-      indexes_for_path(query.key_path.reverse, query.select,
-                       eq, range) << query.materialize_view
+      query.graph.subgraphs.flat_map do |graph|
+        indexes_for_graph graph, query.select, eq, range
+      end.uniq << query.materialize_view
     end
 
     # Produce all possible indices for a given workload
@@ -99,43 +100,27 @@ module NoSE
       end
     end
 
-    # Produce all possible indices for a given path through the entity graph
-    # which select the given fields and possibly allow equality/range filtering
-    # @return [Set<Index>]
-    def indexes_for_path(path, select, eq, range)
-      indexes = Set.new
-
-      path.each_with_index do |_, i|
-        path[i..-1].each_with_index do |_, j|
-          j += i
-          indexes += indexes_for_step path[i..j], select, eq, range
-        end
-      end
-
-      indexes
-    end
-
     # Get all possible index fields for entities on a path
     # @return [Array<Array>]
-    def index_choices(path, eq)
-      path.entities.flat_map do |entity|
+    def index_choices(graph, eq)
+      graph.entities.flat_map do |entity|
         # Get the fields for the entity and add in the IDs
-        entity_fields = eq[entity] + [path.first]
+        entity_fields = eq[entity] + entity.id_fields
         1.upto(entity_fields.count).flat_map do |n|
           entity_fields.permutation(n).to_a
         end
       end
     end
 
-    # Get fields which should be included in an index for the given path
+    # Get fields which should be included in an index for the given graph
     # @return [Array<Array>]
-    def extra_choices(path_entities, select, eq, range)
-      filter_choices = eq[path_entities.last] + range[path_entities.last]
+    def extra_choices(graph, select, eq, range)
+      filter_choices = eq[graph.root.entity] + range[graph.root.entity]
       choices = [[]]
 
       # Include any fields which might be selected
       select_fields = select.select do |field|
-        path_entities.include? field.parent
+        graph.entities.include? field.parent
       end
 
       choices << select_fields unless select_fields.empty?
@@ -143,17 +128,18 @@ module NoSE
       choices
     end
 
-    # Get all possible indices which jump a given section in a query path
+    # Get all possible indices which jump a given piece of a query graph
     # @return [Array<Index>]
-    def indexes_for_step(path, select, eq, range)
-      @logger.debug "Enumerating indexes on path step #{path.map(&:name)}"
+    def indexes_for_graph(graph, select, eq, range)
+      index_choices = index_choices graph, eq
+      index_choices += index_choices.map(&:reverse)
+      max_eq_fields = index_choices.max_by(&:length).length
 
-      index_choices = index_choices path, eq
-      max_eq_fields = index_choices.map(&:length).max
-
-      range_fields = path.entities.map { |entity| range[entity] }.reduce(&:+)
-      order_choices = range_fields.prefixes.to_a << []
-      extra_choices = extra_choices path.entities, select, eq, range
+      range_fields = graph.entities.map { |entity| range[entity] }.reduce(&:+)
+      order_choices = range_fields.prefixes.flat_map do |fields|
+        fields.permutation.to_a
+      end.uniq << []
+      extra_choices = extra_choices graph, select, eq, range
 
       # Generate all possible indices based on the field choices
       choices = index_choices.product(extra_choices)
@@ -162,21 +148,21 @@ module NoSE
 
         order_choices.each do |order|
           # Append the primary key of the last entity in the path if needed
-          order += path.entities.flat_map(&:id_fields) - (index + order)
+          order += graph.entities.flat_map(&:id_fields) - (index + order)
 
           # Skip indices with only a hash component
           index_extra = extra - (index + order)
 
           next if order.empty? && index_extra.empty?
 
-          new_index = generate_index index, order, index_extra, path
+          new_index = generate_index index, order, index_extra, graph
           indexes << new_index unless new_index.nil?
 
           # Partition into the ordering portion
           next unless index.length == max_eq_fields
           index.partitions.each do |index_prefix, order_prefix|
             new_index = generate_index index_prefix, order_prefix + order,
-                                       extra, path
+                                       extra, graph
             indexes << new_index unless new_index.nil?
           end
         end
@@ -187,11 +173,11 @@ module NoSE
 
     # Generate a new index and ignore if invalid
     # @return [Index]
-    def generate_index(hash, order, extra, path)
+    def generate_index(hash, order, extra, graph)
       begin
-        index = Index.new hash, order, extra, path
+        index = Index.new hash, order, extra, graph.to_path(hash.first.parent)
         @logger.debug "Enumerated #{index.inspect}"
-      rescue InvalidIndexException
+      rescue InvalidIndexException, InvalidPathException
         # This combination of fields is not valid, that's ok
         index = nil
       end

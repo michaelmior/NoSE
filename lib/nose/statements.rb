@@ -122,9 +122,10 @@ module NoSE
 
     # Construct the query graph for this query
     def build_query_graph
-      @graph = QueryGraph::Graph.new
-      prev_node = @graph.add_node @key_path.entries.first.parent
-      @key_path.entries[1..-1].each do |key|
+      path = @key_path.reverse
+      @graph = QueryGraph::Graph.new(path.entries.first.parent)
+      prev_node = graph.root
+      path.entries[1..-1].each do |key|
         next_node = @graph.add_node key.entity
         @graph.add_edge prev_node, next_node, key
         prev_node = next_node
