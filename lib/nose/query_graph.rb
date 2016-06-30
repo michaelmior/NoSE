@@ -70,6 +70,17 @@ module NoSE
         edges.each { |edge| add_edge(*edge) }
       end
 
+      # Dump the nodes, root, and copy the edges (without the default proc)
+      def marshal_dump
+        [@nodes, @root, Hash[@edges]]
+      end
+
+      # Restore the deault proc on the edges
+      def marshal_load(array)
+        @nodes, @root, @edges = array
+        @edges.default_proc = ->(h, k) { h[k] = Set.new }
+      end
+
       def inspect
         "Graph(root: #{@root.inspect}, " \
               "nodes: #{@nodes.map(&:inspect).join(', ')}, " \
