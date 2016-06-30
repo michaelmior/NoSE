@@ -177,6 +177,19 @@ module NoSE
         all_subgraphs.to_set
       end
 
+      # Construct a graph from a KeyPath
+      def self.from_path(path)
+        graph = QueryGraph::Graph.new(path.entries.first.parent)
+        prev_node = graph.root
+        path.entries[1..-1].each do |key|
+          next_node = graph.add_node key.entity
+          graph.add_edge prev_node, next_node, key
+          prev_node = next_node
+        end
+
+        graph
+      end
+
       # Convert this graph into a path if possible
       def to_path(root_entity = nil)
         if root_entity.nil?

@@ -54,7 +54,7 @@ module NoSE
 
       @from = model[@tree[:path].first.to_s]
       find_longest_path @tree[:path]
-      build_query_graph
+      @graph = QueryGraph::Graph.from_path(@key_path.reverse)
     end
 
     # Specifies if the statement modifies any data
@@ -118,18 +118,6 @@ module NoSE
       end
 
       @key_path = KeyPath.new(keys)
-    end
-
-    # Construct the query graph for this query
-    def build_query_graph
-      path = @key_path.reverse
-      @graph = QueryGraph::Graph.new(path.entries.first.parent)
-      prev_node = graph.root
-      path.entries[1..-1].each do |key|
-        next_node = @graph.add_node key.entity
-        @graph.add_edge prev_node, next_node, key
-        prev_node = next_node
-      end
     end
   end
 
