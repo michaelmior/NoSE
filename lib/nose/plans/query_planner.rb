@@ -5,7 +5,7 @@ module NoSE
   module Plans
     # Ongoing state of a query throughout the execution plan
     class QueryState
-      attr_accessor :from, :fields, :eq, :range, :order_by, :path,
+      attr_accessor :from, :fields, :eq, :range, :order_by, :path, :graph,
                     :cardinality, :hash_cardinality, :given_fields
       attr_reader :query, :model
 
@@ -16,6 +16,7 @@ module NoSE
         @fields = query.select
         @eq = query.eq_fields.dup
         @range = query.range_field
+        @graph = query.graph
         @path = query.key_path.reverse
         @order_by = query.order.dup
 
@@ -42,7 +43,7 @@ module NoSE
           "\n      eq: " + @eq.map(&:to_color).to_a.to_color +
           "\n   range: " + (@range.nil? ? '(nil)' : @range.name) +
           "\n   order: " + @order_by.map(&:to_color).to_a.to_color +
-          "\n    path: " + @path.to_a.to_color
+          "\n    graph: " + @graph.inspect
       end
       # :nocov:
 

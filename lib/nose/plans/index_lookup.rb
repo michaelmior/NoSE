@@ -63,9 +63,9 @@ module NoSE
         # We must move forward on paths at each lookup
         # XXX This disallows plans which look up additional attributes
         #     for entities other than the final one in the query path
-        return nil if index.path.length == 1 && state_path.length > 1 &&
+        return nil if index.graph.size == 1 && state.graph.size > 1 &&
                       !parent.is_a?(RootPlanStep)
-        return nil if index.identity? && state_path.length > 1
+        return nil if index.identity? && state.graph.size > 1
 
         return nil if invalid_parent_index? index, parent.parent_index
 
@@ -76,9 +76,9 @@ module NoSE
 
         # Get fields in the query relevant to this index
         # and check that they are provided for us here
-        path_fields = state.fields_for_entities(index.path.entities).to_set
-        path_fields -= parent.fields # exclude fields already fetched
-        return nil unless path_fields.all?(&index.all_fields.method(:include?))
+        graph_fields = state.fields_for_entities(index.path.entities).to_set
+        graph_fields -= parent.fields # exclude fields already fetched
+        return nil unless graph_fields.all? { |f| index.all_fields.include? f }
 
         # Use the reversed path for the remainder of the plan
         if reversed
@@ -107,8 +107,8 @@ module NoSE
         return true if has_ids && index.hash_fields.to_set != parent_ids
 
         # If we're looking up from a previous step, only allow lookup by ID
-        return true unless (index.path.length == 1 &&
-                           parent_index.path != index.path) ||
+        return true unless (index.graph.size == 1 &&
+                           parent_index.graph != index.graph) ||
                            index.hash_fields == parent_ids
       end
 
@@ -154,11 +154,13 @@ module NoSE
         # We can't resolve ordering if we're doing an ID lookup
         # since only one record exists per row (if it's the same entity)
         # We also need to have the fields used in order
-        indexed_by_id = @index.hash_fields.include? @index.path.first
+        indexed_by_id = @index.hash_fields.include? \
+          @index.graph.root.entity.id_fields.first
         order_prefix = @state.order_by.longest_common_prefix(
-          @index.order_fields - @eq_filter.to_a)
+          @index.order_fields - @eq_filter.to_a
+        )
         if indexed_by_id && order_prefix.map(&:parent).to_set ==
-                            Set.new([index.path.entities.first])
+                            Set.new([index.hash_fields.first.parent])
           order_prefix = []
         else
           @state.order_by -= order_prefix
@@ -174,6 +176,8 @@ module NoSE
         else
           @state.path = @state.path[index.path.length - 1..-1]
         end
+
+        @state.graph = QueryGraph::Graph.from_path(@state.path)
 
         # Calculate the new cardinality assuming no limit
         # Hash cardinality starts at 1 or is the previous cardinality
@@ -193,7 +197,7 @@ module NoSE
         # Check if we can apply the limit from the query
         # This occurs either when we are on the first or last index lookup
         # and the ordering of the query has already been resolved
-        order_resolved = @state.order_by.empty? && @state.path.length == 1
+        order_resolved = @state.order_by.empty? && @state.graph.size == 1
         return unless (@state.answered?(check_limit: false) ||
                       parent.is_a?(RootPlanStep) && order_resolved) &&
                       !@state.query.limit.nil?
@@ -208,7 +212,7 @@ module NoSE
           @limit = @state.cardinality = @state.query.limit
 
           # If this is a final lookup by ID, go with the limit
-          if index.path.length == 1 && indexed_by_id
+          if index.graph.size == 1 && indexed_by_id
             @state.hash_cardinality = @limit
           else
             @state.hash_cardinality = parent.state.cardinality

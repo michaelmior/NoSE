@@ -98,6 +98,10 @@ module NoSE
         [@root, @nodes, @edges].hash
       end
 
+      def size
+        @nodes.size
+      end
+
       # Produce all entities contained in this graph
       def entities
         @nodes.map(&:entity).to_set
@@ -187,8 +191,10 @@ module NoSE
 
       # Construct a graph from a KeyPath
       def self.from_path(path)
+        return Graph.new if path.empty?
+
         path = path.entries if path.is_a?(KeyPath)
-        graph = QueryGraph::Graph.new(path.first.parent)
+        graph = Graph.new(path.first.parent)
         prev_node = graph.root
         path[1..-1].each do |key|
           next_node = graph.add_node key.entity
