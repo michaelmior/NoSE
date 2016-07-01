@@ -1,37 +1,41 @@
 require 'nose/loader/csv'
 
-module NoSE::Loader
-  describe CsvLoader do
-    include_context 'entities'
-    include FakeFS::SpecHelpers
+module NoSE
+  module Loader
+    describe CsvLoader do
+      include_context 'entities'
+      include FakeFS::SpecHelpers
 
-    before(:each) do
-      FileUtils.mkdir_p '/tmp/csv'
+      before(:each) do
+        FileUtils.mkdir_p '/tmp/csv'
 
-      File.open '/tmp/csv/User.csv', 'w' do |file|
-        file.puts <<-EOF.gsub(/^ {10}/, '')
-          UserId,Username,City
-          1,Alice,Chicago
-        EOF
+        File.open '/tmp/csv/User.csv', 'w' do |file|
+          file.puts <<-EOF.gsub(/^ {10}/, '')
+            UserId,Username,City
+            1,Alice,Chicago
+          EOF
+        end
       end
-    end
 
-    it 'can load data into a backend' do
-      backend = instance_spy NoSE::Backend::BackendBase
+      it 'can load data into a backend' do
+        backend = instance_spy NoSE::Backend::BackendBase
 
-      index = NoSE::Index.new [user['City']], [user['UserId']],
-                              [user['Username']],
-                              [user.id_fields.first]
-      loader = CsvLoader.new workload, backend
-      loader.load([index], directory: '/tmp/csv')
+        index = NoSE::Index.new [user['City']], [user['UserId']],
+                                [user['Username']],
+                                QueryGraph::Graph.from_path(
+                                  [user.id_fields.first]
+                                )
+        loader = CsvLoader.new workload, backend
+        loader.load([index], directory: '/tmp/csv')
 
-      expect(backend).to have_received(:index_insert_chunk).with(
-        index,
-        [{
-          'User_UserId' => '1',
-          'User_Username' => 'Alice',
-          'User_City' => 'Chicago'
-        }])
+        expect(backend).to have_received(:index_insert_chunk).with(
+          index,
+          [{
+            'User_UserId' => '1',
+            'User_Username' => 'Alice',
+            'User_City' => 'Chicago'
+          }])
+      end
     end
   end
 end

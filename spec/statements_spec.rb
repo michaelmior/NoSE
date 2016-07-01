@@ -117,7 +117,9 @@ module NoSE
       update = Update.new 'UPDATE User SET City = ? WHERE User.UserId = ?',
                           workload.model
       index = NoSE::Index.new [tweet['TweetId']], [], [tweet['Timestamp']],
-                              [tweet.id_fields.first], workload.model
+                              QueryGraph::Graph.from_path(
+                                [tweet.id_fields.first]
+                              ), workload.model
       expect(update.support_queries index).to be_empty
     end
 
@@ -127,8 +129,9 @@ module NoSE
       index = NoSE::Index.new [tweet['Timestamp']],
                               [tweet['TweetId'], user['UserId']],
                               [user['City']],
-                              [tweet.id_fields.first, tweet['User']],
-                              workload.model
+                              QueryGraph::Graph.from_path(
+                                [tweet.id_fields.first, tweet['User']]
+                              ), workload.model
       query = update.support_queries(index).first
       expect(query.text).to start_with \
         'SELECT Tweet.Timestamp, Tweet.TweetId ' \
@@ -141,8 +144,9 @@ module NoSE
       update = Update.new 'UPDATE User SET City = ? WHERE User.UserId = ?',
                           workload.model
       index = NoSE::Index.new [user['Username'], user['UserId']], [],
-                              [user['City']], [user.id_fields.first],
-                              workload.model
+                              [user['City']], QueryGraph::Graph.from_path(
+                                [user.id_fields.first]
+                              ), workload.model
       expect(update.support_queries(index).first.text).to start_with \
         'SELECT User.Username FROM User WHERE User.UserId = ?'
     end
@@ -184,13 +188,16 @@ module NoSE
 
     it 'does not require a support query if only related IDs are used' do
       index = Index.new [user['UserId']], [tweet['TweetId']], [tweet['Body']],
-                        [user['UserId'], user['Tweets']]
+                        QueryGraph::Graph.from_path([user['UserId'],
+                                                     user['Tweets']])
       expect(insert.support_queries index).to be_empty
     end
 
     it 'uses a support query for connected entities' do
       index = Index.new [user['Username']], [user['UserId'], tweet['TweetId']],
-                        [tweet['Body']], [user['UserId'], user['Tweets']]
+                        [tweet['Body']], QueryGraph::Graph.from_path(
+                          [user['UserId'], user['Tweets']]
+                        )
       queries = insert.support_queries index
       expect(queries).to have(1).item
       expect(queries.first.text).to start_with \
@@ -216,7 +223,8 @@ module NoSE
 
     it 'modifies an index if it crosses the path' do
       index = Index.new [user['UserId']], [tweet['TweetId']], [],
-                        [user['UserId'], user['Tweets']]
+                        QueryGraph::Graph.from_path([user['UserId'],
+                                                     user['Tweets']])
       connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
 
       expect(connect.modifies_index? index).to be true
@@ -224,7 +232,8 @@ module NoSE
 
     it 'modifies an index if crosses the path backwards' do
       index = Index.new [user['UserId']], [tweet['TweetId']], [],
-                        [tweet['TweetId'], tweet['User']]
+                        QueryGraph::Graph.from_path([tweet['TweetId'],
+                                                     tweet['User']])
       connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
 
       expect(connect.modifies_index? index).to be true
@@ -232,7 +241,9 @@ module NoSE
 
     it 'does not modify an index with a different path' do
       index = Index.new [user['UserId']], [tweet['TweetId']], [],
-                        [user['UserId'], user['Favourite']]
+                        QueryGraph::Graph.from_path(
+                          [user['UserId'], user['Favourite']]
+                        )
       connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
 
       expect(connect.modifies_index? index).to be false
@@ -240,7 +251,8 @@ module NoSE
 
     it 'can generate support queries' do
       index = Index.new [user['UserId']], [tweet['TweetId']], [user['City']],
-                        [tweet['TweetId'], tweet['User']]
+                        QueryGraph::Graph.from_path([tweet['TweetId'],
+                                                     tweet['User']])
       connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
 
       queries = connect.support_queries index
@@ -251,7 +263,8 @@ module NoSE
 
     it 'does not require support queries if all fields are given' do
       index = Index.new [user['UserId']], [tweet['TweetId']], [],
-                        [user['UserId'], user['Favourite']]
+                        QueryGraph::Graph.from_path([user['UserId'],
+                                                     user['Favourite']])
       connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
 
       expect(connect.support_queries(index)).to be_empty
@@ -259,7 +272,8 @@ module NoSE
 
     it 'can generate support queries' do
       index = Index.new [user['UserId']], [tweet['TweetId']], [user['City']],
-                        [user['UserId'], user['Favourite']]
+                        QueryGraph::Graph.from_path([user['UserId'],
+                                                     user['Favourite']])
       disconnect = Disconnect.new 'DISCONNECT Tweet("A") FROM User("B")',
                                   workload.model
 

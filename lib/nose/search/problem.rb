@@ -42,7 +42,7 @@ module NoSE
 
       # Run the solver and make the selected indexes available
       # @return [void]
-      def solve
+      def solve(previous_type = nil)
         return unless @status.nil?
 
         # Run the optimization
@@ -53,7 +53,8 @@ module NoSE
         @status = model.status
         if @status != :optimized
           fail NoSolutionException.new @status
-        elsif @objective_type != Objective::INDEXES
+        elsif @objective_type != Objective::INDEXES && previous_type.nil?
+          previous_type = @objective_type
           @objective_value = @model.objective_value
 
           # Pin the objective value and optimize again to minimize index usage
@@ -63,7 +64,19 @@ module NoSE
           define_objective 'objective_indexes'
 
           @status = nil
-          solve
+          solve previous_type
+          return
+        elsif !previous_type.nil? && previous_type != Objective::SPACE
+          @objective_value = @obj_var.value
+
+          # Pin the objective value and optimize again to minimize index usage
+          @obj_var.lower_bound = @objective_value
+          @obj_var.upper_bound = @objective_value
+          @objective_type = Objective::SPACE
+          define_objective 'objective_space'
+
+          @status = nil
+          solve Objective::SPACE
           return
         elsif @objective_value.nil?
           @objective_value = @model.objective_value

@@ -17,7 +17,8 @@ module NoSE
       users = model.entities['users']
 
       expect(schema.indexes.values).to match_array [
-        Index.new([users['id']], [], users.fields.values, [users['id']])
+        Index.new([users['id']], [], users.fields.values,
+                  QueryGraph::Graph.from_path([users['id']]))
       ]
     end
 
@@ -41,7 +42,7 @@ module NoSE
 
       expect(schema.indexes.values).to match_array [
         Index.new([users['id']], [regions['id']], [regions['name']],
-                  [users['id'], users['region']])
+                  QueryGraph::Graph.from_path([users['id'], users['region']]))
       ]
     end
   end

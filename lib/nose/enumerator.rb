@@ -28,7 +28,7 @@ module NoSE
 
       query.graph.subgraphs.flat_map do |graph|
         indexes_for_graph graph, query.select, eq, range
-      end.uniq << query.materialize_view
+      end.uniq
     end
 
     # Produce all possible indices for a given workload
@@ -83,10 +83,10 @@ module NoSE
         index.order_fields.empty?
       end
       no_order_indexes = no_order_indexes.group_by do |index|
-        [index.hash_fields, index.path]
+        [index.hash_fields, index.graph]
       end
 
-      no_order_indexes.each do |(hash_fields, path), hash_indexes|
+      no_order_indexes.each do |(hash_fields, graph), hash_indexes|
         extra_choices = hash_indexes.map(&:extra).uniq
 
         # XXX More combos?
@@ -94,13 +94,13 @@ module NoSE
 
         combos.map do |combo|
           indexes << Index.new(hash_fields, [], combo.inject(Set.new, &:+),
-                               path)
+                               graph)
           @logger.debug "Enumerated combined index #{indexes.last.inspect}"
         end
       end
     end
 
-    # Get all possible index fields for entities on a path
+    # Get all possible index fields for entities in a graph
     # @return [Array<Array>]
     def index_choices(graph, eq)
       graph.entities.flat_map do |entity|
@@ -147,7 +147,7 @@ module NoSE
         indexes = []
 
         order_choices.each do |order|
-          # Append the primary key of the last entity in the path if needed
+          # Append the primary key of the entities in the graph if needed
           order += graph.entities.flat_map(&:id_fields) - (index + order)
 
           # Skip indices with only a hash component
@@ -175,7 +175,7 @@ module NoSE
     # @return [Index]
     def generate_index(hash, order, extra, graph)
       begin
-        index = Index.new hash, order, extra, graph.to_path(hash.first.parent)
+        index = Index.new hash, order, extra, graph
         @logger.debug "Enumerated #{index.inspect}"
       rescue InvalidIndexException, InvalidPathException
         # This combination of fields is not valid, that's ok

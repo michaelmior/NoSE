@@ -71,7 +71,8 @@ module NoSE
         end
 
         Index.new f.call('hash_fields'), f.call('order_fields'),
-                  f.call('extra'), f.call('path'), fragment['key']
+                  f.call('extra'),
+                  QueryGraph::Graph.from_path(f.call('path')), fragment['key']
       end
     end
 

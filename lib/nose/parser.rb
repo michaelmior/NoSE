@@ -311,9 +311,10 @@ module NoSE
 
     # Check if this path starts with another path
     # @return [Boolean]
-    def start_with?(other)
+    def start_with?(other, check_reverse = true)
       other_keys = other.instance_variable_get(:@keys)
-      @keys[0..other_keys.length - 1] == other_keys
+      @keys[0..other_keys.length - 1] == other_keys ||
+        (check_reverse && reverse.start_with?(other.reverse, false))
     end
 
     # Check if a key is included in the path

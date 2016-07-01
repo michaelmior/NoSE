@@ -27,19 +27,19 @@ module NoSE
 
     it 'contains fields' do
       index = Index.new [tweet['TweetId']], [], [tweet['Body']],
-                        [tweet.id_fields.first]
+                        QueryGraph::Graph.from_path([tweet.id_fields.first])
       expect(index.contains_field? tweet['TweetId']).to be true
     end
 
     it 'can store additional fields' do
       index = Index.new [tweet['TweetId']], [], [tweet['Body']],
-                        [tweet.id_fields.first]
+                        QueryGraph::Graph.from_path([tweet.id_fields.first])
       expect(index.contains_field? tweet['Body']).to be true
     end
 
     it 'can calculate its size' do
       index = Index.new [tweet['TweetId']], [], [tweet['Body']],
-                        [tweet.id_fields.first]
+                        QueryGraph::Graph.from_path([tweet.id_fields.first])
       entry_size = tweet['TweetId'].size + tweet['Body'].size
       expect(index.entry_size).to eq(entry_size)
       expect(index.size).to eq(entry_size * tweet.count)
@@ -83,7 +83,7 @@ module NoSE
 
     it 'can tell if it maps identities for a field' do
       index = Index.new [tweet['TweetId']], [], [tweet['Body']],
-                        [tweet.id_fields.first]
+                        QueryGraph::Graph.from_path([tweet.id_fields.first])
       expect(index.identity_for? tweet).to be true
     end
 
@@ -103,7 +103,7 @@ module NoSE
       it 'cannot have empty hash fields' do
         expect do
           Index.new [], [], [tweet['TweetId']],
-                    [tweet.id_fields.first]
+                    QueryGraph::Graph.from_path([tweet.id_fields.first])
         end.to raise_error InvalidIndexException
       end
 
@@ -111,21 +111,24 @@ module NoSE
         expect do
           Index.new [tweet['Body'], user['City']],
                     tweet.id_fields + user.id_fields, [],
-                    [tweet.id_fields.first, tweet['User']]
+                    QueryGraph::Graph.from_path([tweet.id_fields.first,
+                                                 tweet['User']])
         end.to raise_error InvalidIndexException
       end
 
       it 'must have fields at the start of the path' do
         expect do
           Index.new [tweet['TweetId']], [], [],
-                    [tweet.id_fields.first, tweet['User']]
+                    QueryGraph::Graph.from_path([tweet.id_fields.first,
+                                                 tweet['User']])
         end.to raise_error InvalidIndexException
       end
 
       it 'must have fields at the end of the path' do
         expect do
           Index.new [user['City']], [], [],
-                    [tweet.id_fields.first, tweet['User']]
+                    QueryGraph::Graph.from_path([tweet.id_fields.first,
+                                                 tweet['User']])
         end.to raise_error InvalidIndexException
       end
     end

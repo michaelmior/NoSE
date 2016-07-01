@@ -2,16 +2,22 @@ module NoSE
   # A representation of materialized views over fields in an entity
   class Index
     attr_reader :hash_fields, :order_fields, :extra, :all_fields, :path,
-                :entries, :entry_size, :size, :hash_count, :per_hash_count
+                :entries, :entry_size, :size, :hash_count, :per_hash_count,
+                :graph
 
-    def initialize(hash_fields, order_fields, extra, path, saved_key = nil)
+    def initialize(hash_fields, order_fields, extra, graph, saved_key = nil)
       @hash_fields = hash_fields.to_set
       @order_fields = order_fields - hash_fields.to_a
       @extra = extra.to_set - @hash_fields - @order_fields.to_set
       @all_fields = @hash_fields + order_fields.to_set + @extra
-      @path = path.is_a?(KeyPath) ? path : KeyPath.new(path)
 
-      validate_index
+      validate_hash_fields
+
+      @graph = graph
+      @path = graph.to_path(hash_fields.first.parent)
+
+      validate_path
+
       build_hash saved_key
     end
 
@@ -76,14 +82,14 @@ module NoSE
     # @see Entity#id_fields
     # @return [Boolean]
     def identity_for?(entity)
-      @hash_fields == entity.id_fields.to_set && @path.length == 1
+      @hash_fields == entity.id_fields.to_set && @graph.nodes.size == 1
     end
 
     # Check if this index maps from the primary
     # key to fields from  a single index
     # @return [Boolean]
     def identity?
-      identity_for? @path.entities.first
+      !@graph.root.nil? && identity_for?(@graph.root.entity)
     end
 
     # Check if the index contains a given field
@@ -116,14 +122,6 @@ module NoSE
       freeze
     end
 
-    # Ensure this index is valid
-    # @return [void]
-    def validate_index
-      validate_hash_fields
-      # validate_nonempty
-      validate_path
-    end
-
     # Check for valid hash fields in an index
     # @return [void]
     def validate_hash_fields
@@ -152,16 +150,15 @@ module NoSE
     # @return [void]
     def validate_path_entities
       entities = @all_fields.map(&:parent).to_set
-      fail InvalidIndexException, 'invalid path for index fields' \
-        unless entities.include?(path.entities.first) &&
-               entities.include?(path.entities.last)
+      fail InvalidIndexException, 'path entities do match index' \
+        unless entities == path.entities.to_set
     end
 
-    # We must have the primary keys of the all entities on the path
+    # We must have the primary keys of the all entities in the graph
     # @return [void]
     def validate_path_keys
       fail InvalidIndexException, 'missing path entity keys' \
-        unless @path.entities.flat_map(&:id_fields).all?(
+        unless @graph.entities.flat_map(&:id_fields).all?(
           &(@hash_fields + @order_fields).method(:include?))
     end
 
@@ -172,7 +169,7 @@ module NoSE
 
       # XXX This only works if foreign keys span all possible keys
       #     Take the maximum possible count at each join and multiply
-      @entries = @path.entities.map(&:count).max
+      @entries = @graph.entities.map(&:count).max
       @per_hash_count = (@entries * 1.0 / @hash_count).round
 
       @entry_size = @all_fields.sum_by(&:size)
@@ -190,7 +187,7 @@ module NoSE
     # @return [Index]
     def simple_index
       Index.new id_fields, [], fields.values - id_fields,
-                [id_fields.first], name
+                QueryGraph::Graph.from_path([id_fields.first]), name
     end
   end
 
@@ -210,7 +207,7 @@ module NoSE
 
       Index.new(eq, order_fields,
                 all_fields - (@eq_fields + @order).to_set,
-                @key_path.reverse)
+                QueryGraph::Graph.from_path(@key_path.reverse))
     end
 
     private

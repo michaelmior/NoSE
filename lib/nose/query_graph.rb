@@ -63,7 +63,7 @@ module NoSE
       attr_reader :root, :nodes
 
       def initialize(root = nil, *edges)
-        @nodes = Set.new
+        @nodes = []
         @root = add_node root unless root.nil?
         @edges = Hash.new { |h, k| h[k] = Set.new }
 
@@ -105,8 +105,14 @@ module NoSE
 
       # Add a new node to the graph
       def add_node(node)
-        node = Node.new node if node.is_a? Entity
-        @nodes.add node
+        if node.is_a? Entity
+          existing = @nodes.find { |n| n.entity == node }
+          @nodes << Node.new(node) unless existing
+          node = existing || @nodes.last
+        else
+          @nodes << node
+        end
+
         node
       end
 
@@ -143,7 +149,7 @@ module NoSE
           end
         end
         @edges.reject! { |_, edges| edges.empty? }
-        @nodes = reachable
+        @nodes = reachable.to_a.sort_by { |n| @nodes.index n }
       end
 
       # Produce an enumerator which yields all subgraphs of this graph
@@ -152,7 +158,9 @@ module NoSE
         return [self] if @nodes.size == 1
 
         # Construct a list of all unique edges in the graph
-        all_edges = @edges.values.reduce(&:union).to_a.uniq(&:canonical_params)
+        all_edges = @edges.values.reduce(&:union).to_a
+        all_edges.sort_by! { |e| @nodes.index e.to.entity }
+        all_edges.uniq(&:canonical_params)
 
         all_subgraphs = Set.new([self])
         all_edges.each do |remove_edge|
@@ -179,9 +187,10 @@ module NoSE
 
       # Construct a graph from a KeyPath
       def self.from_path(path)
-        graph = QueryGraph::Graph.new(path.entries.first.parent)
+        path = path.entries if path.is_a?(KeyPath)
+        graph = QueryGraph::Graph.new(path.first.parent)
         prev_node = graph.root
-        path.entries[1..-1].each do |key|
+        path[1..-1].each do |key|
           next_node = graph.add_node key.entity
           graph.add_edge prev_node, next_node, key
           prev_node = next_node
@@ -203,14 +212,16 @@ module NoSE
         keys = [root.entity.id_fields.first]
         entities = Set.new [root.entity]
 
-        edges = edges_for_entity keys.last.parent
+        edges = edges_for_entity root.entity
         until edges.empty?
-          break if (edges.map { |e| e.to.entity }.to_set - entities).empty?
+          new_entities = edges.map { |e| e.to.entity }.to_set - entities
+          break if new_entities.empty?
           fail InvalidPathException, 'Graph cannot be converted to path' \
-            if edges.size > 1
-          keys << edges.first.key
-          entities.add edges.first.to.entity
-          edges = edges_for_entity keys.last.parent
+            if new_entities.size > 1
+          edge = edges.find { |e| !entities.include? e.to.entity }
+          keys << edge.key
+          entities.add edge.to.entity
+          edges = edges_for_entity edge.to.entity
         end
 
         KeyPath.new keys

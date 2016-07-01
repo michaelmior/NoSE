@@ -30,7 +30,7 @@ module NoSE
         # TODO: Find some estimate of sort cost
         #       This could be partially captured by the fact that sort + limit
         #       effectively removes the limit
-        Float::MIN
+        1
       end
 
       # The cost of performing a lookup via an index
