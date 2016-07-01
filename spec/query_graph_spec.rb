@@ -47,6 +47,24 @@ module NoSE
                                                    user['Tweets']])
         end
       end
+
+      context 'when converting from a path' do
+        it 'converts empty paths to empty graphs' do
+          path = KeyPath.new
+          expect(Graph.from_path(path)).to eq Graph.new
+        end
+
+        it 'converts single entity paths' do
+          path = KeyPath.new [user.id_fields.first]
+          expect(Graph.from_path(path)).to eq Graph.new(user)
+        end
+
+        it 'converts path with multiple entities' do
+          path = KeyPath.new [user.id_fields.first, user['Tweets']]
+          expect(Graph.from_path(path)).to eq \
+            Graph.new(user, [user, tweet, user['Tweets']])
+        end
+      end
     end
   end
 end

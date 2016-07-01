@@ -111,10 +111,10 @@ module NoSE
       def add_node(node)
         if node.is_a? Entity
           existing = @nodes.find { |n| n.entity == node }
-          @nodes << Node.new(node) unless existing
+          @nodes << Node.new(node) if existing.nil?
           node = existing || @nodes.last
         else
-          @nodes << node
+          @nodes << node unless @nodes.include? node
         end
 
         node
