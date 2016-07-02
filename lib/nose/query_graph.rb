@@ -107,6 +107,23 @@ module NoSE
         @nodes.map(&:entity).to_set
       end
 
+      # Find the node corresponding to a given entity in the graph
+      def entity_node(entity)
+        @nodes.find { |n| n.entity == entity }
+      end
+
+      # Check if the graph includes the given entity
+      def include_entity?(entity)
+        !entity_node(entity).nil?
+      end
+
+      # Check if this entity is a leaf in the graph (at most one edge)
+      def leaf_entity?(entity)
+        node = entity_node(entity)
+        return false if node.nil?
+        @edges[node].nil? || @edges[node].size <= 1
+      end
+
       # Add a new node to the graph
       def add_node(node)
         if node.is_a? Entity

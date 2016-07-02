@@ -76,7 +76,8 @@ module NoSE
 
         # Get fields in the query relevant to this index
         # and check that they are provided for us here
-        graph_fields = state.fields_for_entities(index.path.entities).to_set
+        hash_entity = index.hash_fields.first.parent
+        graph_fields = state.fields_for_graph(index.graph, hash_entity).to_set
         graph_fields -= parent.fields # exclude fields already fetched
         return nil unless graph_fields.all? { |f| index.all_fields.include? f }
 
@@ -169,8 +170,9 @@ module NoSE
 
         # Strip the path for this index, but if we haven't fetched all
         # fields, leave the last one so we can perform a separate ID lookup
-        if @state.fields_for_entities(@index.path.entities,
-                                      select: true).empty? &&
+        hash_entity = index.hash_fields.first.parent
+        if @state.fields_for_graph(index.graph, hash_entity,
+                                   select: true).empty? &&
            @state.path == index.path
           @state.path = @state.path[index.path.length..-1]
         else
@@ -188,7 +190,7 @@ module NoSE
         end
 
         # Filter the total number of rows by filtering on non-hash fields
-        cardinality = @index.per_hash_count * @state.hash_cardinality
+        cardinality = index.per_hash_count * @state.hash_cardinality
         @state.cardinality = Cardinality.filter cardinality,
                                                 @eq_filter -
                                                 @index.hash_fields,

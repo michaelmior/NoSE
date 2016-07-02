@@ -59,25 +59,24 @@ module NoSE
         done
       end
 
-      # Get all fields relevant for filtering in the query for entities
-      # in the given list, optionally including selected fields
+      # Get all fields relevant for filtering in the given
+      # graph, optionally including selected fields
       # @return [Array<Field>]
-      def fields_for_entities(entities, select: false)
-        path_fields = @eq + @order_by
+      def fields_for_graph(graph, include_entity, select: false)
+        graph_fields = @eq + @order_by
+        graph_fields << @range unless @range.nil?
 
         # If necessary, include ALL the fields which should be selected,
-        # otherwise we can exclude fields from the last entity set since
+        # otherwise we can exclude fields from leaf entity sets since
         # we may end up selecting these with a separate index lookup
-        if select
-          path_fields += @fields
-        else
-          path_fields += @fields.select do |field|
-            entities[0..-2].include? field.parent
-          end
+        entities = graph.entities
+        graph_fields += @fields.select do |field|
+          entities.include?(field.parent) &&
+            (select || !graph.leaf_entity?(field.parent) ||
+             (field.parent == include_entity && graph.size > 1))
         end
 
-        path_fields << @range unless @range.nil?
-        path_fields.select { |field| entities.include? field.parent }
+        graph_fields.select { |field| entities.include? field.parent }
       end
     end
 
@@ -336,7 +335,7 @@ module NoSE
       # @return [Array<PlanStep>]
       def find_steps_for_state(parent, state, indexes_by_path, used_indexes)
         steps = find_nonindexed_steps parent, state
-        return steps if steps.length > 0
+        return steps unless steps.empty?
 
         # Don't allow indices to be used multiple times
         indexes = (indexes_by_path[state.path.first.parent] || Set.new).to_set
