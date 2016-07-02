@@ -90,7 +90,7 @@ module NoSE
       def ==(other)
         return false unless other.is_a? Graph
         @root == other.root && @nodes == other.nodes &&
-          @edges = other.instance_variable_get(:@edges)
+          @edges == other.instance_variable_get(:@edges)
       end
       alias eql? ==
 
