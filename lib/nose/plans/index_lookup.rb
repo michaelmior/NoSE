@@ -89,7 +89,7 @@ module NoSE
         end
 
         return IndexLookupPlanStep.new(index, state, parent) \
-          if last_fields?(index, state, state_path)
+          if last_fields?(index, state)
 
         nil
       end
@@ -115,17 +115,19 @@ module NoSE
 
       # Check that we have the required fields to move on with the next lookup
       # @return [Boolean]
-      def self.last_fields?(index, state, path)
-        # Get the possible fields we need to select
-        # This always includes the ID of the last and next entities
-        # as well as the selected fields if we're at the end of the path
-        last_choices = [index.path.entities.last.id_fields]
-        next_key = path[index.path.length]
-        last_choices << next_key.parent.id_fields unless next_key.nil?
-        last_choices << state.fields if path == index.path
+      def self.last_fields?(index, state)
+        index_includes = lambda do |fields|
+          fields.all? { |f| index.all_fields.include? f }
+        end
 
-        last_choices.any? do |fields|
-          fields.all?(&index.all_fields.method(:include?))
+        # We must have either the ID or all the fields
+        # for leaf entities in the original graph
+        leaf_entities = index.graph.entities.select do |entity|
+          state.graph.leaf_entity?(entity)
+        end
+        leaf_entities.all? do |entity|
+          index_includes.call(entity.id_fields) ||
+            index_includes.call(state.fields.select { |f| f.parent == entity })
         end
       end
 
