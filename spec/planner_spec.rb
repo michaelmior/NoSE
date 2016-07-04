@@ -56,6 +56,27 @@ module NoSE
         expect(tree).to have(1).plan
       end
 
+      it 'can sort if data on all entities has been fetched' do
+        index1 = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
+                                 [user['Username']],
+                                 QueryGraph::Graph.from_path(
+                                   [user.id_fields.first, user['Tweets']]
+                                 )
+        index2 = NoSE::Index.new [tweet['TweetId']], [], [tweet['Body']],
+                                 QueryGraph::Graph.from_path(
+                                   [tweet.id_fields.first]
+                                 )
+        planner = QueryPlanner.new workload.model, [index1, index2], cost_model
+        query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User WHERE ' \
+                                'User.UserId = ? ORDER BY User.Username',
+                                workload.model
+        expect(planner.min_plan(query)).to eq [
+          IndexLookupPlanStep.new(index1),
+          SortPlanStep.new([user['Username']]),
+          IndexLookupPlanStep.new(index2)
+        ]
+      end
+
       it 'can apply a limit directly' do
         query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User WHERE ' \
                                 'User.UserId = ? LIMIT 5', workload.model
