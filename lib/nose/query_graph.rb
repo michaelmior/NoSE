@@ -173,22 +173,29 @@ module NoSE
         @nodes = reachable.to_a.sort_by { |n| @nodes.index n }
       end
 
+      # Construct a list of all unique edges in the graph
+      def unique_edges
+        all_edges = @edges.values.reduce(&:union).to_a
+        all_edges.sort_by! { |e| @nodes.index e.to.entity }
+        all_edges.uniq!(&:canonical_params)
+
+        all_edges
+      end
+
       # Produce an enumerator which yields all subgraphs of this graph
       def subgraphs(include_self = true, recursive = true)
         # We have no subgraphs if there is only one node
         return [self] if @nodes.size == 1
 
-        # Construct a list of all unique edges in the graph
-        all_edges = @edges.values.reduce(&:union).to_a
-        all_edges.sort_by! { |e| @nodes.index e.to.entity }
-        all_edges.uniq(&:canonical_params)
-
+        all_edges = unique_edges
         all_subgraphs = Set.new([self])
         all_edges.each do |remove_edge|
           # Construct new graphs rooted at either side of the cut edge
           graph1 = Graph.new(remove_edge.from)
           graph2 = Graph.new(remove_edge.to)
-          (all_edges - [remove_edge]).each do |edge|
+          all_edges.each do |edge|
+            next if edge == remove_edge
+
             graph1.add_edge edge.from, edge.to, edge.key
             graph2.add_edge edge.from, edge.to, edge.key
           end
