@@ -263,6 +263,27 @@ module NoSE
       KeyPath.new path
     end
 
+    # Produce a random query graph over the entity graph
+    def random_graph(max_nodes)
+      graph = QueryGraph::Graph.new @model.entities.values.sample
+      last_node = graph.root
+      while graph.size < max_nodes
+        # Get the possible foreign keys to use
+        keys = last_node.entity.foreign_keys.values
+        keys.reject! { |key| graph.nodes.map(&:entity).include? key.entity }
+        break if keys.empty?
+
+        # Pick a random foreign key to traverse
+        next_key = keys.sample
+        graph.add_edge last_node, next_key.entity, next_key
+
+        # Select a new node to start from
+        last_node = graph.nodes.sample
+      end
+
+      graph
+    end
+
     private
 
     # Produce a random where clause using fields along a given path

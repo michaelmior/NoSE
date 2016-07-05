@@ -46,5 +46,9 @@ module NoSE
     it 'generates valid queries' do
       expect(sgen.random_query).to be_a Query
     end
+
+    it 'generates random graphs' do
+      expect(sgen.random_graph(4)).to be_a QueryGraph::Graph
+    end
   end
 end
