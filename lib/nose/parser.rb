@@ -393,6 +393,18 @@ module NoSE
       parent
     end
 
+    # Produce all subpaths of this path
+    def subpaths(include_self = true)
+      Enumerator.new do |enum|
+        enum.yield self if include_self
+        1.upto(@keys.length) do |i|
+          i.upto(@keys.length) do |j|
+            enum.yield self[i - 1..j - 1]
+          end
+        end
+      end
+    end
+
     private
 
     # Get the reverse path
