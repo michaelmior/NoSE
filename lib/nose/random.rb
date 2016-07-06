@@ -233,6 +233,24 @@ module NoSE
       send(('random_' + type.to_s).to_sym)
     end
 
+    # Return a random path through the entity graph
+    # @return [Array<Entity>]
+    def random_path(max_length)
+      path = [@model.entities.values.sample.id_fields.first]
+      while path.length < max_length
+        # Find a list of keys to entities we have not seen before
+        last_entity = path.last.entity
+        keys = last_entity.foreign_keys.values
+        keys.reject! { |key| path.map(&:entity).include? key.entity }
+        break if keys.empty?
+
+        # Add a random new key to the path
+        path << keys.sample
+      end
+
+      KeyPath.new path
+    end
+
     private
 
     # Produce a random where clause using fields along a given path
@@ -270,24 +288,6 @@ module NoSE
       end
 
       field_path
-    end
-
-    # Return a random path through the entity graph
-    # @return [Array<Entity>]
-    def random_path(max_length)
-      path = [@model.entities.values.sample.id_fields.first]
-      while path.length < max_length
-        # Find a list of keys to entities we have not seen before
-        last_entity = path.last.entity
-        keys = last_entity.foreign_keys.values
-        keys.reject! { |key| path.map(&:entity).include? key.entity }
-        break if keys.empty?
-
-        # Add a random new key to the path
-        path << keys.sample
-      end
-
-      KeyPath.new path
     end
   end
 end
