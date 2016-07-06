@@ -277,8 +277,13 @@ module NoSE
         next_key = keys.sample
         graph.add_edge last_node, next_key.entity, next_key
 
-        # Select a new node to start from
-        last_node = graph.nodes.sample
+        # Select a new node to start from, making sure we pick one
+        # that still has valid outgoing edges
+        last_node = graph.nodes.reject do |node|
+          (node.entity.foreign_keys.each_value.map(&:entity) -
+           graph.nodes.map(&:entity)).empty?
+        end.sample
+        break if last_node.nil?
       end
 
       graph
