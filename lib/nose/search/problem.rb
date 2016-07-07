@@ -41,6 +41,7 @@ module NoSE
       end
 
       # Run the solver and make the selected indexes available
+      # @return [void]
       def solve
         return unless @status.nil?
 
@@ -75,6 +76,7 @@ module NoSE
       end
 
       # Return the selected indices
+      # @return [Set<Index>]
       def selected_indexes
         return if @status.nil?
         return @selected_indexes if @selected_indexes
@@ -85,6 +87,7 @@ module NoSE
       end
 
       # Return relevant data on the results of the ILP
+      # @return [Results]
       def result
         result = Results.new self
         result.enumerated_indexes = indexes
@@ -96,6 +99,7 @@ module NoSE
       end
 
       # Get the size of all indexes in the workload
+      # @return [MIPPeR::LinExpr]
       def total_size
         @indexes.map do |index|
           @index_vars[index] * (index.size * 1.0)
@@ -103,6 +107,7 @@ module NoSE
       end
 
       # Get the cost of all queries in the workload
+      # @return [MIPPeR::LinExpr]
       def total_cost
         cost = @queries.reduce(MIPPeR::LinExpr.new) do |expr, query|
           expr.add(@indexes.reduce(MIPPeR::LinExpr.new) do |subexpr, index|
@@ -116,6 +121,7 @@ module NoSE
       end
 
       # The total number of indexes
+      # @return [MIPPeR::LinExpr]
       def total_indexes
         total = MIPPeR::LinExpr.new
         @index_vars.each_value { |var| total += var * 1.0 }
@@ -126,6 +132,7 @@ module NoSE
       private
 
       # Write a model to a temporary file and log the file name
+      # @return [void]
       def log_model(type, extension)
         @logger.debug do
           tmpfile = Tempfile.new ['model', extension]
@@ -136,6 +143,7 @@ module NoSE
       end
 
       # Build the ILP by creating all the variables and constraints
+      # @return [void]
       def setup_model
         # Set up solver environment
         @model = MIPPeR::CbcModel.new
@@ -151,6 +159,7 @@ module NoSE
       private
 
       # Set the value of the objective function (workload cost)
+      # @return [void]
       def define_objective(var_name = 'objective')
         obj = case @objective_type
               when Objective::COST
@@ -176,6 +185,7 @@ module NoSE
       end
 
       # Initialize query and index variables
+      # @return [void]
       def add_variables
         @index_vars = {}
         @query_vars = {}
@@ -194,6 +204,7 @@ module NoSE
       end
 
       # Add all necessary constraints to the model
+      # @return [void]
       def add_constraints
         [
           IndexPresenceConstraints,
@@ -207,6 +218,7 @@ module NoSE
       end
 
       # Deal with updates which do not require support queries
+      # @return [MIPPeR::LinExpr]
       def add_update_costs(min_cost)
         @updates.each do |update|
           @indexes.each do |index|
@@ -221,6 +233,7 @@ module NoSE
       end
 
       # Get the total cost of the query for the objective function
+      # @return [MIPPeR::LinExpr]
       def total_query_cost(cost, query_var)
         return MIPPeR::LinExpr.new if cost.nil?
         query_cost = cost.last * 1.0

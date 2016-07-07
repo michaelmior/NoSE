@@ -36,6 +36,7 @@ module NoSE
       # Track usage of indexes in the set of query plans updating both
       # a dictionary of statements relevant to each index and a set
       # of unique statements used (optionally ignoring some)
+      # @return [void]
       def update_index_usage(plans, indexes_usage, statement_usage,
                              ignore = Set.new)
         plans.each do |plan|
@@ -51,6 +52,7 @@ module NoSE
       end
 
       # Print out the statements each index is used for
+      # @return [void]
       def print_index_usage(indexes_usage, query_count, support_count)
         indexes_usage.each do |index, statements|
           p index

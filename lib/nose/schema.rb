@@ -18,17 +18,20 @@ module NoSE
     # rubocop:disable MethodName
 
     # Set the model to be used by the schema
+    # @return [void]
     def Model(name)
       @model = Model.load name
       NoSE::DSL.mixin_fields @model.entities, IndexDSL
     end
 
     # Add a simple index for an entity
+    # @return [void]
     def SimpleIndex(entity)
       @indexes[entity] = @model[entity].simple_index
     end
 
     # Wrap commands for defining index attributes
+    # @return [void]
     def Index(key, &block)
       # Apply the DSL
       dsl = IndexDSL.new(self)
@@ -56,21 +59,25 @@ module NoSE
     # rubocop:disable MethodName
 
     # Define a list of hash fields
+    # @return [void]
     def Hash(*fields)
       @hash_fields += fields.flatten
     end
 
     # Define a list of ordered fields
+    # @return [void]
     def Ordered(*fields)
       @order_fields += fields.flatten
     end
 
     # Define a list of extra fields
+    # @return [void]
     def Extra(*fields)
       @extra += fields.flatten
     end
 
     # Define the keys for the index path
+    # @return [void]
     def Path(*keys)
       @path_keys += keys
     end

@@ -3,6 +3,7 @@ module NoSE
     # Base class for constraints
     class Constraint
       # If this is not overridden, apply query-specific constraints
+      # @return [void]
       def self.apply(problem)
         problem.queries.each_with_index do |query, q|
           apply_query query, q, problem
@@ -10,6 +11,7 @@ module NoSE
       end
 
       # To be implemented in subclasses for query-specific constraints
+      # @return [void]
       def self.apply_query(*_args)
       end
     end

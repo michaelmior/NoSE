@@ -1,7 +1,8 @@
 module NoSE
   # A representation of an object in the conceptual data model
   class Entity
-    attr_reader :fields, :foreign_keys, :name
+    attr_reader :fields
+    attr_reader :foreign_keys, :name
     attr_accessor :count
 
     def initialize(name, &block)
@@ -18,6 +19,7 @@ module NoSE
     end
 
     # :nocov:
+    # @return [String]
     def to_color
       "[light_blue]#{@name}[/] [#{fields.each_key.map(&:to_color).join ', '}]"
     end
@@ -43,6 +45,7 @@ module NoSE
     end
 
     # Adds a {Fields::Field} to the entity
+    # @return [self] the current entity to allow chaining
     def <<(field, freeze: true)
       if field.is_a? Fields::ForeignKeyField
         @foreign_keys[field.name] = field
@@ -83,6 +86,7 @@ module NoSE
     end
 
     # Generate a hash with random values for fields in the entity
+    # @return [Hash]
     def random_entity(prefix_entity=true)
       Hash[@fields.map do |name, field|
         key = name

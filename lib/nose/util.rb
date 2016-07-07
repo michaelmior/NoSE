@@ -9,6 +9,7 @@ require 'stringio'
 # Reopen to add utility methods
 module Enumerable
   # Enumerate all non-empty prefixes of the enumerable
+  # @return [Enumerator]
   def prefixes
     Enumerator.new do |enum|
       prefix = []
@@ -20,6 +21,7 @@ module Enumerable
   end
 
   # Enumerate all partitionings of an enumerable
+  # @return [Enumerator]
   def partitions
     Enumerator.new do |enum|
       1.upto(length - 1).map do |length|
@@ -29,11 +31,13 @@ module Enumerable
   end
 
   # Take the sum of the result of calling the block on each item
+  # @return [Object]
   def sum_by(initial = 0, &method)
     reduce(initial) { |sum, item| sum + method.call(item) }
   end
 
   # Take the product of the result of calling the block on each item
+  # @return [Object]
   def product_by(initial = 1, &method)
     reduce(initial) { |product, item| product * method.call(item) }
   end
@@ -42,6 +46,7 @@ end
 # Extend with some convenience methods
 class Array
   # Find the longest common prefix of two arrays
+  # @return [Array<Object>]
   def longest_common_prefix(other)
     fail TypeError unless other.is_a? Array
     (prefixes.to_a & other.prefixes.to_a).max_by(&:length) || []
@@ -50,6 +55,8 @@ end
 
 # Reopen to present as finite as with Float
 class Integer
+  # Convenience methods to allow integers to be considered finite
+  # @return [Boolean]
   def finite?
     true
   end
@@ -72,6 +79,7 @@ end
 # name of a subtype inheriting from this class
 module Supertype
   # Add class methods when this module is included
+  # @return [void]
   def self.included(base)
     base.extend ClassMethods
   end
@@ -79,6 +87,7 @@ module Supertype
   # Add a single method to get a class given the subtype name
   module ClassMethods
     # Get the class given the name of a subtype
+    # @return [Class] the concrete class with the given subtype name
     def subtype_class(name)
       class_name = self.name.split('::')[0..-2]
       class_name << (name.split('_').map do |name_part|
@@ -98,6 +107,7 @@ end
 # class, minus a common suffix also used in the superclass
 module Subtype
   # Add instance and class methods when this module is included
+  # @return [void]
   def self.included(base)
     base.send :include, InstanceMethods
     base.extend ClassMethods
@@ -106,6 +116,7 @@ module Subtype
   # Mirror the subtype method on class instances
   module InstanceMethods
     # A mirror of {Subtype::ClassMethods#subtype_name}
+    # @return [String]
     def subtype_name(**args)
       self.class.subtype_name(**args)
     end
@@ -114,7 +125,7 @@ module Subtype
   # Add a single method to retrieve the subtype name
   module ClassMethods
     # Get a unique string identify this subclass amongst sibling classes
-    # @return String
+    # @return [String]
     def subtype_name(name_case: :snake)
       super_name = name_array superclass
       self_name = name_array self
@@ -146,6 +157,7 @@ end
 # Simple helper class to facilitate cardinality estimates
 class Cardinality
   # Update the cardinality based on filtering implicit to the index
+  # @return [Fixnum]
   def self.filter(cardinality, eq_filter, range_filter)
     filtered = (range_filter.nil? ? 1.0 : 0.1) * cardinality
     filtered *= eq_filter.map do |field|
@@ -161,6 +173,7 @@ module Kernel
   private
 
   # Pretty print to a string
+  # @return [String]
   def pp_s(*objs)
     s = StringIO.new
     objs.each { |obj| PP.pp(obj, s) }
@@ -174,6 +187,7 @@ end
 # Add simple convenience methods
 class Object
   # Convert all the keys of a hash to symbols
+  # @return [Object]
   def deep_symbolize_keys
     return each_with_object({}) do |(k, v), memo|
       memo[k.to_sym] = v.deep_symbolize_keys
@@ -192,6 +206,7 @@ end
 # Extend the kernel to allow warning suppression
 module Kernel
   # Allow the suppression of warnings for a block of code
+  # @return [void]
   def suppress_warnings
     original_verbosity = $VERBOSE
     $VERBOSE = nil
@@ -206,6 +221,7 @@ module NoSE
   # Helper functions for building DSLs
   module DSL
     # Add methods to the class which can be used to access entities and fields
+    # @return [void]
     def mixin_fields(entities, cls)
       entities.each do |entity_name, entity|
         # Add fake entity object for the DSL
@@ -241,6 +257,7 @@ module NoSE
   module Loader
     # Load a class with the given name from a directory specified
     # by the LOAD_PATH class constant
+    # @return [Object] an instance of the class which included this module
     def load(name)
       path = const_get(:LOAD_PATH)
       filename = File.expand_path "../../../#{path}/#{name}.rb", __FILE__
@@ -254,6 +271,7 @@ end
 class Time
   # Convert to a DateTime instance
   # http://stackoverflow.com/a/279785/123695
+  # @return [DateTime]
   def to_datetime
     # Convert seconds + microseconds into a fractional number of seconds
     seconds = sec + Rational(usec, 10**6)

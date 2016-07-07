@@ -57,16 +57,19 @@ module NoSE
     end
 
     # Specifies if the statement modifies any data
+    # @return [Boolean]
     def read_only?
       false
     end
 
     # Specifies if the statement will require data to be inserted
+    # @return [Boolean]
     def requires_insert?(_index)
       false
     end
 
     # Specifies if the statement will require data to be deleted
+    # @return [Boolean]
     def requires_delete?(_index)
       false
     end
@@ -90,6 +93,7 @@ module NoSE
     private
 
     # A helper to look up a field based on the path specified in the statement
+    # @return [Fields::Field]
     def find_field_with_prefix(path, field)
       field_path = field.map(&:to_s)
       prefix_index = path.index(field_path.first)
@@ -99,6 +103,7 @@ module NoSE
     end
 
     # Calculate the longest path of entities traversed by the statement
+    # @return [KeyPath]
     def find_longest_path(path_entities)
       path = path_entities.map(&:to_s)[1..-1]
       @longest_entity_path = [@from]
@@ -145,6 +150,7 @@ module NoSE
     end
 
     # All fields referenced anywhere in the query
+    # @return [Set<Fields::Field>]
     def all_fields
       (@select + @conditions.each_value.map(&:field) + @order).to_set
     end
@@ -152,6 +158,7 @@ module NoSE
     private
 
     # Populate the fields selected by this query
+    # @return [void]
     def populate_fields
       @select = @tree[:select].flatten.each_slice(2).map do |field|
         # Find the entity along the path
@@ -240,6 +247,7 @@ module NoSE
     private
 
     # Populate all the variable settings
+    # @return [void]
     def populate_settings
       @settings = @tree[:settings].map do |setting|
         field = @from[setting[:field].to_s]
@@ -262,8 +270,22 @@ module NoSE
       !(@settings.map(&:field).to_set & index.all_fields).empty?
     end
 
+    # Support queries required to updating the given index with this statement
+    # @return [Array<SupportQuery>]
+    def support_queries(_index)
+      []
+    end
+
+    # The fields available with this statement
+    # @return [Array<Fields::Field>]
+    def given_fields
+      []
+    end
+
     protected
 
+    # Produce the support query for an index on the given path
+    # @return [SupportQuery]
     def support_query_for_path(index, query_keys, where = nil, all = false)
       # If this portion of the path is empty, then we have no support query
       return nil if query_keys.empty?
@@ -295,6 +317,7 @@ module NoSE
 
     # Get the support query for updating a given
     # set of fields for a particular index
+    # @return [SupportQuery]
     def support_query_for_fields(index, fields, all = false)
       # If this index is not modified, definitely no support queries needed
       return nil unless modifies_index?(index)
@@ -314,6 +337,7 @@ module NoSE
     private
 
     # Get the names of all required fields on this path
+    # @return [Array<String>]
     def required_fields(index, query_keys, all)
       # Don't require selecting fields given in the WHERE clause or settings
       required_fields = index.hash_fields + index.order_fields
@@ -337,6 +361,7 @@ module NoSE
 
     # Find where the index path intersects the update path
     # and splice in the path of the where clause from the update
+    # @return [KeyPath]
     def splice_path(source, target, from)
       if source.first.parent == from
         query_keys = KeyPath.new([from.id_fields.first])
@@ -377,6 +402,7 @@ module NoSE
     end
 
     # Get the support queries for updating an index
+    # @return [Array<SupportQuery>]
     def support_queries(index)
       # Get the updated fields and check if an update is necessary
       set_fields = settings.map(&:field).to_set
@@ -388,8 +414,6 @@ module NoSE
       updated_fields = set_fields & index.all_fields
       [support_query_for_fields(index, updated_fields, updated_key)].compact
     end
-
-    private
 
     # The condition fields are provided with the update
     # Note that we don't include the settings here because we
@@ -440,6 +464,7 @@ module NoSE
     end
 
     # Get the where clause for a support query over the given path
+    # @return [String]
     def support_query_condition_for_path(keys, path)
       'WHERE ' + path.entries.map do |key|
         if keys.include?(key) ||
@@ -457,6 +482,7 @@ module NoSE
 
     # Support queries are required for index insertion with connection
     # to select attributes of the other related entities
+    # @return [Array<SupportQuery>]
     def support_queries(index)
       return [] unless modifies_index?(index) &&
                        !modifies_single_entity_index?(index)
@@ -497,12 +523,14 @@ module NoSE
     private
 
     # Check if the insert modifies a single entity index
+    # @return [Boolean]
     def modifies_single_entity_index?(index)
       !(@settings.map(&:field).to_set & index.all_fields).empty? &&
         index.path.length == 1 && index.path.first.parent == @from
     end
 
     # Populate conditions with the foreign key settings
+    # @return [void]
     def populate_conditions
       connections = @tree[:connections] || []
       connections = connections.map do |connection|
@@ -597,6 +625,7 @@ module NoSE
     protected
 
     # Populate the keys and entities
+    # @return [void]
     def populate_keys
       @source_pk = @tree[:source_pk]
       @target = @from.foreign_keys[@tree[:target].to_s]
@@ -615,9 +644,15 @@ module NoSE
       populate_conditions
     end
 
+    # The two key fields are provided with the connection
+    def given_fields
+      [@target.parent.id_fields.first, @target.entity.id_fields.first]
+    end
+
     private
 
     # Validate the types of the primary keys
+    # @return [void]
     def validate_keys
       # XXX Only works for non-composite PKs
       source_type = @from.id_fields.first.class.const_get 'TYPE'
@@ -628,6 +663,7 @@ module NoSE
     end
 
     # Populate the conditions
+    # @return [void]
     def populate_conditions
       source_id = @from.id_fields.first
       target_id = @target.entity.id_fields.first
@@ -637,12 +673,8 @@ module NoSE
       }
     end
 
-    # The two key fields are provided with the connection
-    def given_fields
-      [@target.parent.id_fields.first, @target.entity.id_fields.first]
-    end
-
     # Get the where clause for a support query over the given path
+    # @return [String]
     def support_query_condition_for_path(path, reversed)
       key = (reversed ? target.entity : target.parent).id_fields.first
       path = path.reverse if path.entities.last != key.entity

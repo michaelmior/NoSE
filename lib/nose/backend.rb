@@ -10,19 +10,27 @@ module NoSE
         @update_plans = update_plans
       end
 
-      # The base shows all indexes as empty for testing purposes
+      # @abstract Subclasses implement to check if an index is empty
+      # @return [Boolean]
       def index_empty?(_index)
         true
       end
 
-      # The base backend contains no indexes
+      # @abstract Subclasses implement to check if an index already exists
+      # @return [Boolean]
       def index_exists?(index)
         false
+      end
+
+      # @abstract Subclasses implement to remove existing indexes
+      # @return [void]
+      def drop_index
       end
 
       # @abstract Subclasses implement to allow inserting
       #           data into the backend database
       # :nocov:
+      # @return [void]
       def index_insert_chunk(_index, _chunk)
         fail NotImplementedError
       end
@@ -30,6 +38,7 @@ module NoSE
 
       # @abstract Subclasses implement to generate a new random ID
       # :nocov:
+      # @return [Object]
       def generate_id
         fail NotImplementedError
       end
@@ -37,6 +46,7 @@ module NoSE
 
       # @abstract Subclasses should create indexes
       # :nocov:
+      # @return [Enumerable]
       def indexes_ddl(execute = false, skip_existing = false,
                       drop_existing = false)
         fail NotImplementedError
@@ -45,12 +55,14 @@ module NoSE
 
       # @abstract Subclasses should return sample values from the index
       # :nocov:
+      # @return [Array<Hash>]
       def indexes_sample(index, count)
         fail NotImplementedError
       end
       # :nocov:
 
       # Prepare a query to be executed with the given plans
+      # @return [PreparedQuery]
       def prepare_query(query, fields, conditions, plans = [])
         if plans.empty?
           plan = @plans.find do |possible_plan|
@@ -91,12 +103,14 @@ module NoSE
       end
 
       # Execute a query with the stored plans
+      # @return [Array<Hash>]
       def query(query, plans = [])
         prepared = prepare query, plans
         prepared.execute query.conditions
       end
 
       # Prepare an update for execution
+      # @return [PreparedUpdate]
       def prepare_update(update, update_settings, plans)
         # Search for plans if they were not given
         if plans.empty?
@@ -146,6 +160,7 @@ module NoSE
       end
 
       # Execute an update with the stored plans
+      # @return [void]
       def update(update, plans = [])
         prepared = prepare_update update, update.settings, plans
         prepared.each { |p| p.execute update.settings, update.conditions }
@@ -237,6 +252,7 @@ module NoSE
         end
 
         # Filter results by a list of fields given in the step
+        # @return [Array<Hash>]
         def process(conditions, results)
           # Extract the equality conditions
           eq_conditions = conditions.values.select do |condition|
@@ -272,6 +288,7 @@ module NoSE
         end
 
         # Sort results by a list of fields given in the step
+        # @return [Array<Hash>]
         def process(_conditions, results)
           results.sort_by! do |row|
             @step.sort_fields.map do |field|
@@ -289,6 +306,7 @@ module NoSE
         end
 
         # Remove results past the limit
+        # @return [Array<Hash>]
         def process(_conditions, results)
           results[0..@limit - 1]
         end
@@ -305,6 +323,7 @@ module NoSE
       end
 
       # Execute the query for the given set of conditions
+      # @return [Array<Hash>]
       def execute(conditions)
         results = nil
 
@@ -339,6 +358,7 @@ module NoSE
       end
 
       # Execute the statement for the given set of conditions
+      # @return [void]
       def execute(update_settings, update_conditions)
         # Execute all the support queries
         settings = initial_update_settings update_settings, update_conditions
@@ -373,6 +393,7 @@ module NoSE
       private
 
       # Get the initial values which will be used in the first plan step
+      # @return [Hash]
       def initial_update_settings(update_settings, update_conditions)
         if !@insert_step.nil? && @delete_step.nil?
           # Populate the data to insert for Insert statements
@@ -390,6 +411,7 @@ module NoSE
       end
 
       # Execute all the support queries
+      # @return [Array<Hash>]
       def support_results(settings)
         support = @support_plans.map do |query_plan|
           query_plan.execute settings

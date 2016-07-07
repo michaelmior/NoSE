@@ -22,6 +22,8 @@ module NoSE
       end
       # :nocov:
 
+      # Set the children of the current plan step
+      # @return [void]
       def children=(children)
         @children = children.to_set
 
@@ -34,6 +36,7 @@ module NoSE
       end
 
       # Mark the fields in this index as fetched
+      # @return [void]
       def add_fields_from_index(index)
         @fields += index.all_fields
       end
@@ -58,6 +61,7 @@ module NoSE
       end
 
       # Find the closest index to this step
+      # @return [PlanStep]
       def parent_index
         step = parent_steps.to_a.reverse_each.find do |parent_step|
           parent_step.is_a? IndexLookupPlanStep
@@ -66,11 +70,13 @@ module NoSE
       end
 
       # Calculate the cost of executing this step in the plan
+      # @return [Fixnum]
       def calculate_cost(cost_model)
         @cost = cost_model.method((subtype_name + '_cost').to_sym).call self
       end
 
       # Add the Subtype module to all step classes
+      # @return [void]
       def self.inherited(child_class)
         child_class.send(:include, Subtype)
       end
@@ -97,17 +103,18 @@ module NoSE
     class AbstractPlan
       attr_reader :group, :name, :weight
 
-      # Subclasses should produce the steps for executing this query
+      # @abstract Subclasses should produce the steps for executing this query
       def steps
         fail NotImplementedError
       end
 
-      # Subclasses should produce the fields selected by this plan
+      # @abstract Subclasses should produce the fields selected by this plan
       def select_fields
         []
       end
 
-      # Subclasses should produce the parameters necessary for this plan
+      # @abstract Subclasses should produce the parameters
+      # necessary for this plan
       def params
         fail NotImplementedError
       end

@@ -58,6 +58,7 @@ module NoSE
       private
 
       # Load a chunk of data from a simple entity index
+      # @return [void]
       def load_simple_chunk(chunk, entity, indexes)
         # Prefix all hash keys with the entity name and convert values
         chunk.map! do |row|

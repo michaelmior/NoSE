@@ -107,6 +107,7 @@ module NoSE
       private
 
       # Output the table of results
+      # @return [void]
       def output_table(table)
         columns = [
           'label', 'group',
@@ -120,6 +121,7 @@ module NoSE
       end
 
       # Output a CSV file of results
+      # @return [void]
       def output_csv(table)
         csv_str = CSV.generate do |csv|
           csv << %w(label group name weight mean cost)
@@ -142,6 +144,7 @@ module NoSE
       end
 
       # Get the average execution time for a single query plan
+      # @return [Measurements::Measurement]
       def bench_query(backend, indexes, plan, index_values, iterations, repeat,
                       weight: 1.0)
 
@@ -165,6 +168,7 @@ module NoSE
       end
 
       # Get the average execution time for a single update plan
+      # @return [Measurements::Measurement]
       def bench_update(backend, indexes, plan, index_values,
                        iterations, repeat, weight: 1.0)
         condition_list = execute_conditions plan.params, indexes, index_values,
@@ -213,6 +217,7 @@ module NoSE
       end
 
       # Construct a list of values to be substituted in the plan
+      # @return [Array<Hash>]
       def execute_conditions(params, indexes, index_values, iterations)
         1.upto(iterations).map do |i|
           Hash[params.map do |field_id, condition|

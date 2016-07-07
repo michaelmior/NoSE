@@ -44,6 +44,7 @@ module NoSE
 
       # Check if this step can be applied for the given index,
       # returning a possible application of the step
+      # @return [IndexLookupPlanStep]
       def self.apply(parent, index, state)
         # Try reversing the path for this query
         state_path = state.path
@@ -95,6 +96,7 @@ module NoSE
       private
 
       # Check if this index can be used after the current parent
+      # @return [Boolean]
       def self.invalid_parent_index?(index, parent_index)
         return false if parent_index.nil?
 
@@ -111,6 +113,7 @@ module NoSE
       end
 
       # Check that we have the required fields to move on with the next lookup
+      # @return [Boolean]
       def self.last_fields?(index, state, path)
         # Get the possible fields we need to select
         # This always includes the ID of the last and next entities
@@ -126,6 +129,7 @@ module NoSE
       end
 
       # Modify the state to reflect the fields looked up by the index
+      # @return [void]
       def update_state(parent)
         # Get the set of fields which can be filtered by the ordered keys
         order_prefix = (@state.eq - @index.hash_fields) & @index.order_fields

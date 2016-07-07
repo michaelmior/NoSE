@@ -9,6 +9,7 @@ module NoSE
       end
 
       # Use a shared option for the current command
+      # @return [void]
       def self.shared_option(name)
         method_option name, @options[name]
       end

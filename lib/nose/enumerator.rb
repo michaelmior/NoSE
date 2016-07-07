@@ -60,6 +60,7 @@ module NoSE
     private
 
     # Produce the indexes necessary for support queries for these indexes
+    # @return [Array<Index>]
     def support_indexes(indexes)
       # Collect all possible support queries
       queries = indexes.flat_map do |index|
@@ -100,6 +101,7 @@ module NoSE
 
     # Produce all possible indices for a given path through the entity graph
     # which select the given fields and possibly allow equality/range filtering
+    # @return [Set<Index>]
     def indexes_for_path(path, select, eq, range)
       indexes = Set.new
 
@@ -114,6 +116,7 @@ module NoSE
     end
 
     # Get all possible index fields for entities on a path
+    # @return [Array<Array>]
     def index_choices(path, eq)
       path.entities.flat_map do |entity|
         # Get the fields for the entity and add in the IDs
@@ -125,6 +128,7 @@ module NoSE
     end
 
     # Get fields which should be included in an index for the given path
+    # @return [Array<Array>]
     def extra_choices(path_entities, select, eq, range)
       filter_choices = eq[path_entities.last] + range[path_entities.last]
       choices = [[]]
@@ -140,6 +144,7 @@ module NoSE
     end
 
     # Get all possible indices which jump a given section in a query path
+    # @return [Array<Index>]
     def indexes_for_step(path, select, eq, range)
       @logger.debug "Enumerating indexes on path step #{path.map(&:name)}"
 
@@ -181,6 +186,7 @@ module NoSE
     end
 
     # Generate a new index and ignore if invalid
+    # @return [Index]
     def generate_index(hash, order, extra, path)
       begin
         index = Index.new hash, order, extra, path

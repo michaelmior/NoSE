@@ -42,6 +42,7 @@ module NoSE
       private
 
       # Get a list of all possible search results
+      # @return [Array<Search::Results>]
       def search_results(workload, cost_model, max_results)
         # Start with the maximum possible size and divide in two
         max_result = search_result workload, cost_model
@@ -99,6 +100,7 @@ module NoSE
       end
 
       # Output all results to file
+      # @return [void]
       def output_results(results, directory, options)
         results.sort_by!(&:total_size)
         results.each_with_index do |result, i|

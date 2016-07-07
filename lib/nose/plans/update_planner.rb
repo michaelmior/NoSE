@@ -11,6 +11,7 @@ module NoSE
 
       # XXX This is just a placeholder since this is
       #     currently used by the query planner
+      # @return [Boolean]
       def answered?
         true
       end
@@ -33,6 +34,7 @@ module NoSE
       end
 
       # The weight of this query for a given workload
+      # @return [Fixnum]
       def weight
         return 1 if @workload.nil?
 
@@ -40,16 +42,19 @@ module NoSE
       end
 
       # The group of the associated statement
+      # @return [String]
       def group
         @statement.group
       end
 
       # Name the plan by the statement
+      # @return [String]
       def name
         "#{@statement.text} for #{@index.key}"
       end
 
       # The steps for this plan are the update steps
+      # @return [Array<UpdatePlanStep>]
       def steps
         @update_steps
       end
@@ -87,6 +92,7 @@ module NoSE
       end
 
       # Select query plans to actually use here
+      # @return [void]
       def select_query_plans(indexes = nil, &block)
         if block_given?
           @query_plans = @trees.map(&block)
@@ -102,6 +108,7 @@ module NoSE
       end
 
       # Compare all the fields for the plan for equality
+      # @return [Boolean]
       def eql?(other)
         return false unless other.is_a? UpdatePlan
         fail 'plans must be resolved before checking equality' \
@@ -125,16 +132,19 @@ module NoSE
       # :nocov:
 
       # Two plans are compared by their execution cost
+      # @return [Boolean]
       def <=>(other)
         cost <=> other.cost
       end
 
       # The cost of performing the update on this index
+      # @return [Fixnum]
       def update_cost
         @update_steps.sum_by(&:cost)
       end
 
       # The cost is the sum of all the query costs plus the update costs
+      # @return [Fixnum]
       def cost
         @query_plans.sum_by(&:cost) + update_cost
       end
@@ -161,6 +171,7 @@ module NoSE
       end
 
       # Find the necessary update plans for a given set of indexes
+      # @return [Array<UpdatePlan>]
       def find_plans_for_update(statement, indexes)
         indexes.map do |index|
           next unless statement.modifies_index?(index)

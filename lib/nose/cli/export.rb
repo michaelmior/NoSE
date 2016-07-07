@@ -16,6 +16,7 @@ module NoSE
       private
 
       # Recursively export the values
+      # @return [void]
       def export_value(path, value)
         if value.is_a? Hash
           value.each do |key, nested_value|

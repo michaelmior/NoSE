@@ -29,6 +29,7 @@ module NoSE
       private
 
       # Get the total cost for a set of plans in a given workload
+      # @return [Fixnum]
       def total_cost(workload, plans)
         plan_hash = Hash[plans.map { |plan| [plan.query, plan] }]
 

@@ -41,6 +41,7 @@ module NoSE
       private
 
       # Load the history file
+      # @return [void]
       def load_history
         return unless Object.const_defined? 'Readline'
 
@@ -55,6 +56,7 @@ module NoSE
       end
 
       # Save the history file
+      # @return [void]
       def save_history
         return unless Object.const_defined? 'Readline'
 
@@ -67,6 +69,7 @@ module NoSE
       end
 
       # Get the next inputted line in the REPL
+      # @return [String]
       def read_line
         prefix = '>> '
 
@@ -84,6 +87,7 @@ module NoSE
       end
 
       # Parse a statement from a given string of text
+      # @return [Statement]
       def parse_statement(text, workload)
         begin
           statement = Statement.parse text, workload.model
@@ -96,6 +100,7 @@ module NoSE
       end
 
       # Try to execute a statement read from the REPL
+      # @return [void]
       def execute_statement(line, result, backend)
         # Parse the statement
         statement = parse_statement line, result.workload
@@ -127,6 +132,7 @@ module NoSE
       end
 
       # Show the results of executing a statement
+      # @return [void]
       def display_statement_result(results, elapsed)
         Formatador.display_compact_table results unless results.empty?
         puts format('(%d rows in %.2fs)', results.length, elapsed)

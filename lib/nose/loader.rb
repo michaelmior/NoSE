@@ -10,6 +10,7 @@ module NoSE
 
       # @abstract Subclasses should load data for the given list of indexes
       # :nocov:
+      # @return [void]
       def load(_indexes, _config, _show_progress = false)
         fail NotImplementedError
       end

@@ -43,6 +43,7 @@ module NoSE
       private
 
       # Check if the user has disabled interaction
+      # @return [Boolean]
       def interactive?(options = [])
         parse_options = self.class.class_options
         opts = Thor::Options.new(parse_options).parse(options)
@@ -50,6 +51,7 @@ module NoSE
       end
 
       # Check if the user has created a configuration file
+        # @return [void]
       def check_config_file(interactive)
         return if File.file?(CONFIG_FILE_NAME)
 
@@ -63,6 +65,7 @@ module NoSE
       end
 
       # Add the possibility to set defaults via configuration
+      # @return [Thor::CoreExt::HashWithIndifferentAccess]
       def options
         original_options = super
         return original_options unless File.exist? CONFIG_FILE_NAME
@@ -72,6 +75,7 @@ module NoSE
       end
 
       # Get a backend instance for a given configuration and dataset
+      # @return [Backend::BackendBase]
       def get_backend(config, result)
         be_class = get_class 'backend', config
         be_class.new result.workload.model, result.indexes,
@@ -79,6 +83,7 @@ module NoSE
       end
 
       # Get a class of a particular name from the configuration
+      # @return [Object]
       def get_class(class_name, config)
         name = config
         name = config[class_name.to_sym][:name] if config.is_a? Hash
@@ -92,12 +97,14 @@ module NoSE
       end
 
       # Get a class given a set of options
+      # @return [Object]
       def get_class_from_config(options, name, type)
-        cost_model_class = get_class name, options[type][:name]
-        cost_model_class.new(**options[type])
+        object_class = get_class name, options[type][:name]
+        object_class.new(**options[type])
       end
 
       # Collect all advisor results for schema design problem
+      # @return [Search::Results]
       def search_result(workload, cost_model, max_space = Float::INFINITY,
                         objective = Search::Objective::COST)
         enumerated_indexes = IndexEnumerator.new(workload) \
@@ -107,6 +114,7 @@ module NoSE
       end
 
       # Load results of a previous search operation
+      # @return [Search::Results]
       def load_results(plan_file, mix)
         representer = Serialize::SearchResultRepresenter.represent \
           Search::Results.new
@@ -135,6 +143,7 @@ module NoSE
       end
 
       # Output a list of indexes as text
+      # @return [void]
       def output_indexes_txt(header, indexes, file)
         file.puts Formatador.parse("[blue]#{header}[/]")
         indexes.sort_by(&:key).each { |index| file.puts index.inspect }
@@ -142,6 +151,7 @@ module NoSE
       end
 
       # Output a list of query plans as text
+      # @return [void]
       def output_plans_txt(plans, file, indent, weights)
         plans.each do |plan|
           weight = (plan.weight || weights[plan.query || plan.name])
@@ -159,6 +169,7 @@ module NoSE
       end
 
       # Output update plans as text
+      # @return [void]
       def output_update_plans_txt(update_plans, file, weights, mix = nil)
         unless update_plans.empty?
           header = "Update plans\n" + '━' * 50
@@ -197,6 +208,7 @@ module NoSE
       end
 
       # Output the results of advising as text
+      # @return [void]
       def output_txt(result, file = $stdout, enumerated = false, backend = nil)
         if enumerated
           header = "Enumerated indexes\n" + '━' * 50
@@ -225,6 +237,8 @@ module NoSE
                                    "[blue]#{result.total_cost}[/]\n")
       end
 
+      # Output an HTML file with a description of the search results
+      # @return [void]
       def output_html(result, file = $stdout, enumerated = false,
                       backend = nil)
         # Get an SVG diagram of the model
@@ -249,6 +263,7 @@ module NoSE
       end
 
       # Output the results of advising as JSON
+      # @return [void]
       def output_json(result, file = $stdout, enumerated = false,
                       backend = nil)
         # Temporarily remove the enumerated indexes
@@ -264,6 +279,7 @@ module NoSE
       end
 
       # Output the results of advising as YAML
+      # @return [void]
       def output_yml(result, file = $stdout, enumerated = false, backend = nil)
         # Temporarily remove the enumerated indexes
         if enumerated
@@ -277,6 +293,7 @@ module NoSE
       end
 
       # Filter an options hash for those only relevant to a given command
+      # @return [Thor::CoreExt::HashWithIndifferentAccess]
       def filter_command_options(opts, command)
         Thor::CoreExt::HashWithIndifferentAccess.new(opts.select do |key|
           self.class.commands[command].options \
@@ -286,6 +303,7 @@ module NoSE
 
       # Enable forcing the colour or no colour for output
       # We just lie to Formatador about whether or not $stdout is a tty
+      # @return [void]
       def force_colour(colour=true)
         stdout_metaclass = class << $stdout; self; end
         method = colour ? ->() { true } : ->() { false }

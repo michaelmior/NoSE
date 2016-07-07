@@ -141,6 +141,7 @@ module NoSE
 
       # Get the list of tables along with the join condition
       # for a query to fetch index data
+      # @return [String]
       def index_sql_tables(index)
         # Create JOIN statements
         tables = index.path.entities.map(&:name).join ' JOIN '
@@ -157,6 +158,7 @@ module NoSE
       end
 
       # Construct a SQL statement to fetch the data to populate this index
+      # @return [String]
       def index_sql(index, limit = nil)
         # Get all the necessary fields
         fields, select = index_sql_select index

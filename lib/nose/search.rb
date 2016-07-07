@@ -20,7 +20,7 @@ module NoSE
 
       # Search for optimal indices using an ILP which searches for
       # non-overlapping indices
-      # @return [Array<Index>]
+      # @return [Results]
       def search_overlap(indexes, max_space = Float::INFINITY)
         return if indexes.empty?
 
@@ -44,6 +44,7 @@ module NoSE
       private
 
       # Combine the weights of queries and statements
+      # @return [void]
       def combine_query_weights(indexes)
         query_weights = Hash[@workload.support_queries(indexes).map do |query|
           [query, @workload.statement_weights[query.statement]]
@@ -56,6 +57,7 @@ module NoSE
       end
 
       # Produce a useful log message before starting the search
+      # @return [void]
       def log_search_start(costs, query_weights)
         @logger.debug do
           "Costs: \n" + pp_s(costs) + "\n" \
@@ -67,6 +69,7 @@ module NoSE
       end
 
       # Run the solver and get the results of search
+      # @return [Results]
       def search_result(query_weights, indexes, solver_params, trees,
                         update_plans)
         # Solve the LP using MIPPeR
@@ -91,6 +94,7 @@ module NoSE
       end
 
       # Select the plans to use for a given set of indexes
+      # @return [Array<Plans::QueryPlan>]
       def select_plans(trees, indexes)
         trees.map do |tree|
           # Exclude support queries since they will be in update plans
@@ -103,6 +107,7 @@ module NoSE
       end
 
       # Solve the index selection problem using MIPPeR
+      # @return [Results]
       def solve_mipper(queries, indexes, data)
         # Construct and solve the ILP
         problem = Problem.new queries, @workload.updates, indexes, data,
@@ -141,6 +146,7 @@ module NoSE
       end
 
       # Populate the cost of all necessary plans for the given satement
+      # @return [void]
       def populate_update_costs(planner, statement, indexes,
                                 update_costs, update_plans)
         planner.find_plans_for_update(statement, indexes).each do |plan|
@@ -186,6 +192,7 @@ module NoSE
       end
 
       # Store the costs and indexes for this plan in a nested hash
+      # @return [void]
       def populate_query_costs(query_costs, steps_by_index, weight)
         # The first key is the query and the second is the index
         #

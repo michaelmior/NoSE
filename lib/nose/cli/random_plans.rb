@@ -40,6 +40,7 @@ module NoSE
       private
 
       # Build a results structure for these plans
+      # @return [OpenStruct]
       def random_plan_results(workload, indexes, plans, cost_model)
         results = OpenStruct.new
         results.workload = workload
@@ -52,6 +53,7 @@ module NoSE
       end
 
       # Output the results in the specified format
+      # @return [void]
       def output_random_plans(results, output, format)
         if output.nil?
           file = $stdout

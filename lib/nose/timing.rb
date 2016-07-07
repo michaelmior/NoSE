@@ -2,6 +2,7 @@ module NoSE
   # Tracks the runtime of various functions and outputs a measurement
   class Timer
     # Start tracking function runtime
+    # @return [void]
     def self.enable
       traced = {
         IndexEnumerator => [
@@ -58,6 +59,7 @@ module NoSE
     end
 
     # Stop tracking function runtime
+    # @return [void]
     def self.disable
       @old_methods.each do |cls, methods|
         methods.each do |method, old_method|

@@ -20,6 +20,7 @@ module NoSE
       end
 
       # Populate the cost of each plan
+      # @return [void]
       def calculate_cost(cost_model)
         @groups.each_value do |plans|
           plans.each do |plan|
@@ -45,6 +46,7 @@ module NoSE
       end
 
       # Set the weights on plans when the mix is changed
+      # @return [void]
       def mix=(mix)
         @mix = mix
 
@@ -61,6 +63,7 @@ module NoSE
       # rubocop:disable MethodName
 
       # Set the schema to be used by the execution plans
+      # @return [void]
       def Schema(name)
         @schema = Schema.load name
         NoSE::DSL.mixin_fields @schema.model.entities, QueryExecutionPlan
@@ -68,6 +71,7 @@ module NoSE
       end
 
       # Define a group of query execution plans
+      # @return [void]
       def Group(name, weight = 1.0, **mixes, &block)
         @group = name
 
@@ -82,6 +86,7 @@ module NoSE
       end
 
       # Define a single plan within a group
+      # @return [void]
       def Plan(name, &block)
         return unless block_given?
 
@@ -104,6 +109,7 @@ module NoSE
       end
 
       # Add support queries for updates in a plan
+      # @return [void]
       def Support(&block)
         # XXX Hack to swap the group name and capture support plans
         old_group = @group
@@ -147,11 +153,13 @@ module NoSE
       end
 
       # These plans have no associated query
+      # @return [nil]
       def query
         nil
       end
 
       # The estimated cost of executing this plan
+      # @return [Fixnum]
       def cost
         costs = @steps.map(&:cost) + @update_steps.map(&:cost)
         costs += @query_plans.map(&:steps).flatten.map(&:cost)
@@ -162,11 +170,13 @@ module NoSE
       # rubocop:disable MethodName
 
       # Identify fields to be selected
+      # @return [void]
       def Select(*fields)
         @select_fields = fields.flatten.to_set
       end
 
       # Add parameters which are used as input to the plan
+      # @return [void]
       def Param(field, operator, value = nil)
         operator = :'=' if operator == :==
         @params[field.id] = Condition.new(field, operator, value)
@@ -178,6 +188,7 @@ module NoSE
       end
 
       # Create a new index lookup step with a particular set of conditions
+      # @return [void]
       def Lookup(index_key, *conditions, limit: nil)
         index = @schema.indexes[index_key]
 
@@ -219,6 +230,7 @@ module NoSE
       end
 
       # Add a new insertion step into an index
+      # @return [void]
       def Insert(index_key, *fields)
         @index = @schema.indexes[index_key]
 
@@ -235,6 +247,7 @@ module NoSE
       end
 
       # Add a new deletion step from an index
+      # @return [void]
       def Delete(index_key)
         @index = @schema.indexes[index_key]
 

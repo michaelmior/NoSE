@@ -41,11 +41,13 @@ end
 # Extend the DSL to with some additional ways to capture the output
 module Parslet::Atoms::DSL
   # Like #as, but ensures that the result is always an array
+  # @return [Array<Parslet::Atoms::Named>]
   def as_array(name)
     Parslet::Atoms::Named.new(self, name, true)
   end
 
   # Capture some output along with the source string
+  # @return [CaptureSource]
   def capture_source(name)
     CaptureSource.new(self, name)
   end
@@ -217,6 +219,7 @@ module NoSE
     end
 
     # Compare conditions equal by their field and operator
+    # @return [Boolean]
     def ==(other)
       @field == other.field && @operator == other.operator
     end
@@ -234,6 +237,7 @@ module NoSE
     private
 
     # Populate the list of condition objects
+    # @return [void]
     def populate_conditions
       conditions = @tree[:where].nil? ? [] : @tree[:where][:expression]
       conditions = conditions.map { |condition| build_condition condition }
@@ -248,6 +252,7 @@ module NoSE
     end
 
     # Construct a condition object from the parse tree
+    # @return [void]
     def build_condition(condition)
       field = find_field_with_prefix @tree[:path],
                                      condition[:field]
@@ -256,6 +261,7 @@ module NoSE
     end
 
     # Get the value of a condition from the parse tree
+    # @return [Object]
     def condition_value(condition, field)
       value = condition[:value]
 
@@ -296,23 +302,27 @@ module NoSE
     end
 
     # Two key paths are equal if their underlying keys are equal
+    # @return [Boolean]
     def ==(other)
       @keys == other.instance_variable_get(:@keys)
     end
     alias eql? ==
 
     # Check if this path starts with another path
+    # @return [Boolean]
     def start_with?(other)
       other_keys = other.instance_variable_get(:@keys)
       @keys[0..other_keys.length - 1] == other_keys
     end
 
     # Check if a key is included in the path
+    # @return [Boolean]
     def include?(key)
       @keys.include?(key) || entities.any? { |e| e.id_fields.include? key }
     end
 
     # Combine two key paths by gluing together the keys
+    # @return [KeyPath]
     def +(other)
       fail TypeError unless other.is_a? KeyPath
       other_keys = other.instance_variable_get(:@keys)
@@ -329,6 +339,7 @@ module NoSE
     end
 
     # Return a slice of the path
+    # @return [KeyPath]
     def [](index)
       if index.is_a? Range
         keys = @keys[index]
@@ -344,27 +355,32 @@ module NoSE
     end
 
     # Return the reverse of this path
+    # @return [KeyPath]
     def reverse
       KeyPath.new reverse_path
     end
 
     # Reverse this path in place
+    # @return [void]
     def reverse!
       @keys = reverse_path
     end
 
     # Simple wrapper so that we continue to be a KeyPath
+    # @return [KeyPath]
     def to_a
       self
     end
 
     # Return all the entities along the path
+    # @return [Array<Entity>]
     def entities
       @entities ||= @keys.map(&:entity)
     end
 
     # Find where the path intersects the given
     # entity and splice in the target path
+    # @return [KeyPath]
     def splice(target, entity)
       if first.parent == entity
         query_keys = KeyPath.new([entity.id_fields.first])
@@ -380,6 +396,7 @@ module NoSE
     end
 
     # Find the parent of a given field
+    # @Return [Entity]
     def find_field_parent(field)
       parent = find do |key|
         field.parent == key.parent ||
@@ -394,6 +411,7 @@ module NoSE
     end
 
     # Produce all subpaths of this path
+    # @return [Enumerable<KeyPath>]
     def subpaths(include_self = true)
       Enumerator.new do |enum|
         enum.yield self if include_self
@@ -408,6 +426,7 @@ module NoSE
     private
 
     # Get the reverse path
+    # @return [Array<Fields::Field>]
     def reverse_path
       return [] if @keys.empty?
       [@keys.last.entity.id_fields.first] + @keys[1..-1].reverse.map(&:reverse)

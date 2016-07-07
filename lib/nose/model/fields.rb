@@ -120,11 +120,13 @@ module NoSE
       end
 
       # Parse an Integer from the provided parameter
+      # @return [Fixnum]
       def self.value_from_string(string)
         string.to_i
       end
 
       # Random numbers up to the given size
+      # @return [Fixnum]
       def random_value
         rand(@cardinality)
       end
@@ -142,6 +144,7 @@ module NoSE
       end
 
       # Check for strings true or false otherwise assume integer
+      # @return [Boolean]
       def self.value_from_string(string)
         string = string.downcase
         if string[0] == 't'
@@ -154,6 +157,7 @@ module NoSE
       end
 
       # Randomly true or false
+      # @return [Boolean]
       def random_value
         [false, true][rand(2)]
       end
@@ -189,11 +193,13 @@ module NoSE
       end
 
       # Return the String parameter as-is
+      # @return [String]
       def self.value_from_string(string)
         string
       end
 
       # A random string of the correct length
+      # @return [String]
       def random_value
         Faker::Lorem.characters(@size)
       end
@@ -209,6 +215,7 @@ module NoSE
       end
 
       # Parse a DateTime from the provided parameter
+      # @return [Time]
       def self.value_from_string(string)
         # rubocop:disable Style/RedundantBegin
         begin
@@ -220,6 +227,7 @@ module NoSE
       end
 
       # A random date within 2 years surrounding today
+      # @return [Time]
       def random_value
         prev_year = DateTime.now.prev_year
         prev_year = prev_year.new_offset(Rational(0, 24))
@@ -248,11 +256,13 @@ module NoSE
       end
 
       # Return the String parameter as-is
+      # @return [String]
       def self.value_from_string(string)
         string
       end
 
       # nil value which is interpreted by the backend as requesting a new ID
+      # @return [nil]
       def random_value
         nil
       end
@@ -272,6 +282,7 @@ module NoSE
 
       # The number of entities associated with the foreign key,
       # or a manually set cardinality
+      # @return [Fixnum]
       def cardinality
         @entity.count || super
       end

@@ -24,6 +24,7 @@ module NoSE
     end
 
     # Add a new {Entity} or {Statement} to the workload
+    # @return [self] the current workload to allow chaining
     def <<(other)
       if other.is_a? Entity
         @model.add_entity other.freeze
@@ -32,9 +33,12 @@ module NoSE
       else
         fail TypeError, 'can only add queries and entities to a workload'
       end
+
+      self
     end
 
     # Add a new {Statement} to the workload or parse a string
+    # @return [void]
     def add_statement(statement, mixes = {}, group: nil, label: nil)
       statement = Statement.parse(statement, @model,
                                   group: group, label: label) \
@@ -64,6 +68,7 @@ module NoSE
     end
 
     # Retrieve the weights for the current mix
+    # @return [Hash]
     def statement_weights
       @statement_weights[@mix]
     end
@@ -77,6 +82,7 @@ module NoSE
     end
 
     # Find a statement in the workload with the provided tag
+    # @return [Statement]
     def find_with_tag(tag)
       statements.find do |s|
         s.text.end_with? "-- #{tag}"
@@ -84,11 +90,13 @@ module NoSE
     end
 
     # Remove any updates from the workload
+    # @return [void]
     def remove_updates
       @statement_weights[@mix].select! { |stmt, _| stmt.is_a? Query }
     end
 
     # Get all the support queries for updates in the workload
+    # @return[Array<Statement>]
     def support_queries(indexes)
       updates.map do |update|
         indexes.map { |index| update.support_queries(index) }
@@ -110,6 +118,7 @@ module NoSE
     end
 
     # Write the workload
+    # @return [void]
     def output_rb(filename)
       ns = OpenStruct.new(workload: self)
       tmpl = File.read File.join(File.dirname(__FILE__), 'workload.erb')
@@ -139,16 +148,19 @@ module NoSE
     end
 
     # Shortcut to add a new {Entity} to the workload
+    # @return [Entity]
     def Entity(*args, &block)
       @model.add_entity Entity.new(*args, &block)
     end
 
     # Add a HasMany relationship which is just the opposite of HasOne
+    # @return [void]
     def HasMany(from_name, to_name, entities, **options)
       HasOne to_name, from_name, Hash[[entities.first.reverse]], **options
     end
 
     # Separate function for foreign keys to avoid circular dependencies
+    # @return [void]
     def HasOne(from_name, to_name, entities, **options)
       from_entity, to_entity = entities.first
       from_field = Fields::ForeignKeyField.new from_name,
@@ -170,6 +182,7 @@ module NoSE
     end
 
     # Shortcut to add a new {Statement} to the workload
+    # @return [void]
     def Q(statement, weight = 1.0, group: nil, label: nil, **mixes)
       fail 'Statements require a workload' if @workload.nil?
 
@@ -179,11 +192,13 @@ module NoSE
     end
 
     # Allow setting the default workload mix
+    # @return [void]
     def DefaultMix(mix)
       @workload.mix = mix
     end
 
     # Allow grouping statements with an associated weight
+    # @return [void]
     def Group(name, weight = 1.0, **mixes, &block)
       fail 'Groups require a workload' if @workload.nil?
 
@@ -209,6 +224,7 @@ module NoSE
     # rubocop:disable MethodName
 
     # Track a new statement to be added
+    # @return [void]
     def Q(statement)
       @statements << statement
     end

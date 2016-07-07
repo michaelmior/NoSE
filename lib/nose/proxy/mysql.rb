@@ -39,6 +39,7 @@ module NoSE
       private
 
       # Auth the client and prepare for query processsing
+      # @return [Boolean]
       def authenticate(socket)
         protocol = Mysql::ServerProtocol.new socket
 
@@ -167,6 +168,7 @@ module NoSE
     # Add serialization of the initial packet
     class InitialPacket
       # Serialize the initial server hello
+      # @return [String]
       def self.serialize
         [
           Mysql::Protocol::VERSION,
@@ -186,6 +188,7 @@ module NoSE
     class ResultPacket
       # Serialize a simple OK response
       # rubocop:disable Metrics/ParameterLists
+      # @return [String]
       def self.serialize(field_count, affected_rows = 0, insert_id = 0,
                          server_status = 0, warning_count = 0, message = '')
         return Packet.lcb(field_count) unless field_count.zero?
@@ -206,6 +209,7 @@ module NoSE
     class FieldPacket
       # Serialize all the data for a field
       # rubocop:disable Metrics/ParameterLists
+      # @return [String]
       def self.serialize(db, table, org_table, name, org_name, length, type,
                          flags, decimals, default)
         Packet.lcs('def') + # catalog
@@ -245,6 +249,7 @@ module NoSE
     # Simple EOF packet
     class EOFPacket
       # Static string to indicate EOF
+      # @return [String]
       def self.serialize
         "\xfe\x00\x00\x00\x00"
       end
@@ -253,6 +258,7 @@ module NoSE
     # Serialize an error message
     class ErrorPacket
       # Generate a packet with a given error number and message
+      # @return [String]
       def self.serialize(errno, message)
         [
           0xff,

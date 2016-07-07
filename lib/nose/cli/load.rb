@@ -28,6 +28,7 @@ module NoSE
       private
 
       # Load data from a single plan file
+      # @return [void]
       def load_plan(plan_file, options)
         result, backend = load_plans plan_file, options
 

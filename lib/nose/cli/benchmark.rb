@@ -131,6 +131,7 @@ module NoSE
       private
 
       # Get a sample of values from each index used by the queries
+      # @return [Hash]
       def index_values(indexes, backend, iterations, fail_on_empty = true)
         Hash[indexes.map do |index|
           values = backend.index_sample(index, iterations).to_a

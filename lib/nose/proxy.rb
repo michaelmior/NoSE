@@ -15,6 +15,7 @@ module NoSE
       end
 
       # Start the proxy server
+      # @return [void]
       def start
         @logger.info "Starting server on port #{@config[:port]}"
 
@@ -31,6 +32,7 @@ module NoSE
       # @abstract Subclasses should process a new connection
       #           on the given socket
       # :nocov:
+      # @return [void]
       def handle_connection(_socket)
         fail NotImplementedError
       end
@@ -38,12 +40,14 @@ module NoSE
 
       # @abstract Subclasses should dispose of state associated with the socket
       # :nocov:
+      # @return [void]
       def remove_connection(_socket)
         fail NotImplementedError
       end
       # :nocov:
 
       # Stop accepting connections
+      # @return [void]
       def stop
         @continue = false
       end
@@ -51,6 +55,7 @@ module NoSE
       private
 
       # Select sockets which are available to be processed
+      # @return [void]
       def select_connection(server_socket)
         read, write, error = IO.select @read_sockets, @write_sockets,
                                        @read_sockets + @write_sockets, 5
@@ -75,6 +80,7 @@ module NoSE
       end
 
       # Accept the new connection
+      # @return [void]
       def accept_connection(server_socket)
         client_socket, = server_socket.accept
         @read_sockets << client_socket
@@ -82,6 +88,7 @@ module NoSE
       end
 
       # Process all pending connections
+      # @return [void]
       def process_connections(sockets)
         sockets.each do |socket|
           @write_sockets.delete socket

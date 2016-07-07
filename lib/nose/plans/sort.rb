@@ -28,6 +28,7 @@ module NoSE
       end
 
       # Check if an external sort can used (if a sort is the last step)
+      # @return [SortPlanStep]
       def self.apply(_parent, state)
         return nil unless state.fields.empty? && state.eq.empty? && \
                           state.range.nil? && !state.order_by.empty?

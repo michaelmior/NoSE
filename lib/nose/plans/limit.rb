@@ -25,6 +25,7 @@ module NoSE
       end
 
       # Check if we can apply a limit
+      # @return [LimitPlanStep]
       def self.apply(_parent, state)
         # TODO: Apply if have IDs of the last entity set
         #       with no filter/sort needed

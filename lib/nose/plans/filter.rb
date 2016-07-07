@@ -16,6 +16,7 @@ module NoSE
       end
 
       # Two filtering steps are equal if they filter on the same fields
+      # @return [Boolean]
       def ==(other)
         other.instance_of?(self.class) && \
           @eq == other.eq && @range == other.range
@@ -63,6 +64,7 @@ module NoSE
       private_class_method :filter_fields
 
       # Check that we have all the fields we are filtering
+      # @return [Boolean]
       def self.required_fields?(filter_fields, parent)
         filter_fields.map do |field|
           next true if parent.fields.member? field
@@ -80,6 +82,7 @@ module NoSE
       private
 
       # Apply the filters and perform a uniform estimate on the cardinality
+      # @return [void]
       def update_state
         @state.eq -= @eq
         @state.cardinality *= @eq.map { |field| 1.0 / field.cardinality } \

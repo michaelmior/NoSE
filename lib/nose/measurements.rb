@@ -25,6 +25,7 @@ module NoSE
       end
 
       # The mean weighted by this measurement weight
+      # @return [Fixnum]
       def weighted_mean
         @weight * mean
       end

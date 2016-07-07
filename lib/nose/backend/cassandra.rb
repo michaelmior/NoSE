@@ -92,6 +92,7 @@ module NoSE
       private
 
       # Produce an array of fields in the correct order for a CQL insert
+      # @return [Array]
       def index_row(row, fields)
         fields.map do |field|
           value = row["#{field.parent.name}_#{field.name}"]
@@ -103,6 +104,7 @@ module NoSE
       end
 
       # Produce the CQL to create the definition for a given index
+      # @return [String]
       def index_cql(index)
         ddl = "CREATE COLUMNFAMILY \"#{index.key}\" (" \
           "#{field_names index.all_fields, true}, " \
@@ -116,6 +118,7 @@ module NoSE
       end
 
       # Get a comma-separated list of field names with optional types
+      # @return [String]
       def field_names(fields, types = false)
         fields.map do |field|
           name = "\"#{field.id}\""
@@ -133,6 +136,7 @@ module NoSE
       end
 
       # Return the datatype to use in Cassandra for a given field
+      # @return [Symbol]
       def cassandra_type(field_class)
         case [field_class]
         when [Fields::IntegerField]
@@ -260,6 +264,7 @@ module NoSE
         private
 
         # Produce the select CQL statement for a provided set of fields
+        # @return [String]
         def select_cql(select, conditions)
           select = expand_selected_fields select
           cql = "SELECT #{select.map(&:id).join ', '} FROM " \
@@ -273,6 +278,7 @@ module NoSE
         end
 
         # Produce a CQL where clause using the given conditions
+        # @return [String]
         def cql_where_clause(conditions)
           where = @eq_fields.map do |field|
             "#{field.id} = ?"
@@ -286,6 +292,7 @@ module NoSE
         end
 
         # Produce the CQL ORDER BY clause for this step
+        # @return [String]
         def cql_order_by
           # TODO: CQL3 requires all clustered columns before the one actually
           #       ordered on also be specified

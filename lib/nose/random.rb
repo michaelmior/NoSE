@@ -30,6 +30,7 @@ module NoSE
     private
 
     # Create random entities to use in the model
+    # @return [void]
     def create_entities
       @nodes = 0..(@nodes_nb - 1)
       num_entities = RandomGaussian.new 10_000, 100
@@ -47,6 +48,7 @@ module NoSE
     ]
 
     # Select random fields for each entity
+    # @return [void]
     def pick_fields
       @nodes.each do |node|
         @entities[node] << Fields::IDField.new(@entities[node].name + 'ID')
@@ -57,6 +59,7 @@ module NoSE
     end
 
     # Generate a random field to add to an entity
+    # @return [Fields::Field]
     def random_field(field_index)
       type_rand = rand
       FIELD_TYPES.find do |_, threshold|
@@ -66,6 +69,7 @@ module NoSE
     end
 
     # Add foreign key relationships for neighbouring nodes
+    # @return [void]
     def add_foreign_keys
       @neighbours.each_with_index do |other_nodes, node|
         other_nodes.each do |other_node|
@@ -94,12 +98,14 @@ module NoSE
     end
 
     # Add a new link between two nodes
+    # @return [void]
     def add_link(node, other_node)
       @neighbours[node] << other_node
       @neighbours[other_node] << node
     end
 
     # Set up the initial links between all nodes
+    # @return [void]
     def build_initial_links
       @nodes.each do |node|
         (@node_degree / 2).times do |i|
@@ -109,12 +115,14 @@ module NoSE
     end
 
     # Remove a link between two nodes
+    # @return [void]
     def remove_link(node, other_node)
       @neighbours[node].delete other_node
       @neighbours[other_node].delete node
     end
 
     # Rewire all links between nodes
+    # @return [void]
     def rewire_links
       (@node_degree / 2).times do |i|
         @nodes.each do |node|
@@ -137,6 +145,7 @@ module NoSE
     VARIABLE_NAMES = %w(Foo Bar Baz Quux Corge Grault Garply Waldo Fred Plugh)
 
     # Generate a random name for an attribute
+    # @return [String]
     def random_name(index)
       index.to_s.chars.map(&:to_i).map { |digit| VARIABLE_NAMES[digit] }.join
     end
@@ -149,7 +158,7 @@ module NoSE
     end
 
     # Generate a new random insertion to entities in the model
-    # @return Insert
+    # @return [Insert]
     def random_insert(connect = true)
       entity = @model.entities.values.sample
       settings = entity.fields.each_value.map do |field|
@@ -172,7 +181,7 @@ module NoSE
     end
 
     # Generate a new random update of entities in the model
-    # @return Update
+    # @return [Update]
     def random_update(path_length = 1, updated_fields = 2, condition_count = 1)
       path = random_path(path_length)
       settings = random_settings path, updated_fields
@@ -184,6 +193,7 @@ module NoSE
     end
 
     # Get random settings for an update
+    # @return [String]
     def random_settings(path, updated_fields)
       # Don't update key fields
       update_fields = path.entities.first.fields.values
@@ -195,7 +205,7 @@ module NoSE
     end
 
     # Generate a new random deletion of entities in the model
-    # @return Delete
+    # @return [Delete]
     def random_delete
       path = random_path(1)
 
@@ -207,7 +217,7 @@ module NoSE
     end
 
     # Generate a new random query from entities in the model
-    # @return Query
+    # @return [Query]
     def random_query(path_length = 3, selected_fields = 2, condition_count = 2)
       path = random_path(path_length)
       select_fields = random_select(path, selected_fields)
@@ -219,6 +229,7 @@ module NoSE
     end
 
     # Get random fields to select for a Query
+    # @return [String]
     def random_select(path, selected_fields)
       path.entities.first.fields.values.sample(selected_fields).map do |field|
         path.entities.first.name + '.' + field.name
@@ -226,6 +237,7 @@ module NoSE
     end
 
     # Produce a random statement according to a given set of weights
+    # @return [Statement]
     def random_statement(weights = { query: 80, insert: 10, update: 5,
                                      delete: 5 })
       pick = Pickup.new(weights)
@@ -234,7 +246,7 @@ module NoSE
     end
 
     # Return a random path through the entity graph
-    # @return [Array<Entity>]
+    # @return [KeyPath]
     def random_path(max_length)
       path = [@model.entities.values.sample.id_fields.first]
       while path.length < max_length
@@ -254,6 +266,7 @@ module NoSE
     private
 
     # Produce a random where clause using fields along a given path
+    # @return [String]
     def random_where_clause(path, count = 2)
       conditions = random_where_conditions path, count
 
@@ -264,6 +277,7 @@ module NoSE
     end
 
     # Produce a random set of conditions for a where clause
+    # @return [String]
     def random_where_conditions(path, count)
       1.upto(count).map do
         field = path.entities.sample.fields.values.sample
@@ -274,7 +288,7 @@ module NoSE
     end
 
     # Get the name to be used in the query for a condition field
-    # @return String
+    # @return [String]
     def condition_field_name(field, path)
       field_path = path.first.name
       path_end = path.index(field.parent)
@@ -304,6 +318,7 @@ class RandomGaussian
   end
 
   # Return the next valid random number
+  # @return [Fixnum]
   def rand
     if @valid
       @valid = false
@@ -325,6 +340,7 @@ class RandomGaussian
   end
 
   # Return a random number for the given distribution
+  # @return [Array<Fixnum>]
   def self.gaussian(mean, stddev)
     theta = 2 * Math::PI * rand
     rho = Math.sqrt(-2 * Math.log(1 - rand))

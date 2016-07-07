@@ -30,11 +30,13 @@ module NoSE
       private
 
       # Escape values for latex output
+      # @return [String]
       def tex_escape(str)
         str.gsub '_', '\\_'
       end
 
       # Print the LaTeX for all query plans
+      # @return [void]
       def texify_plans(plans)
         puts '\\bigskip\\textbf{Plans} \\\\\\bigskip'
 
@@ -44,6 +46,7 @@ module NoSE
       end
 
       # Print the LaTeX from a group of query plans
+      # @return [void]
       def texify_plan_group(group, grouped_plans)
         puts "\\textbf{#{group}} \\\\"
 
@@ -63,6 +66,7 @@ module NoSE
 
       # Print the LaTeX from a set of plan steps
       # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
+      # @return [void]
       def texify_plan_steps(steps)
         steps.map do |step|
           case step
@@ -84,6 +88,7 @@ module NoSE
       # rubocop:enable
 
       # Print all LaTeX for a given index
+      # @return [void]
       def texify_indexes(indexes)
         puts '\\bigskip\\textbf{Indexes} \\\\\\bigskip'
 
@@ -106,11 +111,13 @@ module NoSE
       end
 
       # Produce the LaTex for an array of fields
+      # @return [String]
       def texify_fields(fields)
         fields.map { |field| texify_field field }.join ', '
       end
 
       # Produce the LaTeX for a given index field
+      # @return [String]
       def texify_field(field, underline = false, italic = false)
         tex = "#{tex_escape field.to_s}"
         tex = "\\textit{#{tex}}" if italic

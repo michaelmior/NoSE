@@ -103,6 +103,7 @@ module NoSE
       end
 
       # The query this tree of plans is generated for
+      # @return [Query]
       def query
         @root.state.query
       end
@@ -168,6 +169,7 @@ module NoSE
       end
 
       # The weight of this query for a given workload
+      # @return [Fixnum]
       def weight
         return 1 if @workload.nil?
 
@@ -175,16 +177,19 @@ module NoSE
       end
 
       # Groups for plans are stored in the query
+      # @return [String]
       def group
         @query.group
       end
 
       # Name plans after the associated query
+      # @return [String]
       def name
         @query.text
       end
 
       # Fields selected by this plan
+      # @return [Array<Fields::Field>]
       def select_fields
         @query.select
       end
@@ -195,6 +200,7 @@ module NoSE
       end
 
       # Two plans are compared by their execution cost
+      # @return [Boolean]
       def <=>(other)
         cost <=> other.cost
       end
@@ -207,6 +213,7 @@ module NoSE
       end
 
       # Get the indexes used by this query plan
+      # @return [Array<Index>]
       def indexes
         @steps.select { |step| step.is_a? IndexLookupPlanStep }.map(&:index)
       end
@@ -280,7 +287,8 @@ module NoSE
         false
       end
 
-      # Find possible query plans for a query strating at the given step
+      # Find possible query plans for a query starting at the given step
+      # @return [void]
       def find_plans_for_step(step, indexes_by_path, used_indexes = Set.new,
                               prune: true)
         return if step.state.answered?

@@ -114,6 +114,7 @@ module NoSE
       property :subtype_name, as: :type
 
       # The entity name for foreign keys
+      # @return [String]
       def entity
         represented.entity.name \
           if represented.is_a? Fields::ForeignKeyField
@@ -121,6 +122,7 @@ module NoSE
       property :entity, exec_context: :decorator
 
       # The cardinality of the relationship
+      # @return [Symbol]
       def relationship
         represented.relationship \
           if represented.is_a? Fields::ForeignKeyField
@@ -128,6 +130,7 @@ module NoSE
       property :relationship, exec_context: :decorator
 
       # The reverse
+      # @return [String]
       def reverse
         represented.reverse.name \
           if represented.is_a? Fields::ForeignKeyField
@@ -205,6 +208,7 @@ module NoSE
       property :cardinality, exec_context: :decorator
 
       # The estimated hash cardinality at this step in the plan
+      # @return [Fixnum]
       def hash_cardinality
         state = represented.instance_variable_get(:@state)
         state.hash_cardinality if state.is_a?(Plans::QueryState)
@@ -265,11 +269,13 @@ module NoSE
       collection :fields, decorator: FieldRepresenter
 
       # Set the hidden type variable
+      # @return [Symbol]
       def type
         represented.instance_variable_get(:@type)
       end
 
       # Set the hidden type variable
+      # @return [void]
       def type=(type)
         represented.instance_variable_set(:@type, type)
       end
@@ -277,6 +283,7 @@ module NoSE
       property :type, exec_context: :decorator
 
       # The estimated cardinality of entities being updated
+      # @return [Fixnum]
       def cardinality
         state = represented.instance_variable_get(:@state)
         state.cardinality unless state.nil?
@@ -303,6 +310,7 @@ module NoSE
       collection :update_steps, decorator: UpdatePlanStepRepresenter
 
       # The backend cost model used to cost the updates
+      # @return [Cost::Cost]
       def cost_model
         options = represented.cost_model.instance_variable_get(:@options)
         options[:name] = represented.cost_model.subtype_name
@@ -310,6 +318,7 @@ module NoSE
       end
 
       # Look up the cost model by name and attach to the results
+      # @return [void]
       def cost_model=(options)
         options = options.deep_symbolize_keys
         cost_model_class = Cost::Cost.subtype_class(options[:name])
@@ -388,6 +397,7 @@ module NoSE
       property :mix
 
       # Produce weights of each statement in the workload for each mix
+      # @return [Hash]
       def weights
         weights = {}
         workload_weights = represented \
@@ -405,6 +415,7 @@ module NoSE
       property :weights, exec_context: :decorator
 
       # A simple array of the entities in the workload
+      # @return [Array<Entity>]
       def entities
         represented.model.entities.values
       end
@@ -458,6 +469,7 @@ module NoSE
       end
 
       # Add all the reverse foreign keys
+      # @return [void]
       def add_reverse_foreign_keys(entity_map, entity_fragment)
         entity_fragment.each do |entity|
           entity['fields'].each do |field_hash|
@@ -500,6 +512,7 @@ module NoSE
       private
 
       # Build a new query plan
+      # @return [Plans::QueryPlan]
       def build_plan(query, cost_model, fragment)
         plan = Plans::QueryPlan.new query, cost_model
 
@@ -511,6 +524,7 @@ module NoSE
       end
 
       # Loop over all steps in the plan and reconstruct them
+      # @return [void]
       def add_plan_steps(plan, workload, steps_fragment, indexes, state)
         parent = Plans::RootPlanStep.new state
         f = ->(field) { workload.model[field['parent']][field['name']] }
@@ -525,24 +539,28 @@ module NoSE
 
       # Rebuild a step from a hash using the given set of indexes
       # The final parameter is a function which maps field names to instances
+      # @return [Plans::PlanStep]
       def build_step(step_hash, state, parent, indexes, f)
         send "build_#{step_hash['type']}_step".to_sym,
              step_hash, state, parent, indexes, f
       end
 
       # Rebuild a limit step
+      # @return [Plans::LimitPlanStep]
       def build_limit_step(step_hash, _state, parent, _indexes, _f)
         limit = step_hash['limit'].to_i
         Plans::LimitPlanStep.new limit, parent.state
       end
 
       # Rebuild a sort step
+      # @return [Plans::SortPlanStep]
       def build_sort_step(step_hash, _state, parent, _indexes, f)
         sort_fields = step_hash['sort_fields'].map(&f)
         Plans::SortPlanStep.new sort_fields, parent.state
       end
 
       # Rebuild a filter step
+      # @return [Plans::FilterPlanStep]
       def build_filter_step(step_hash, _state, parent, _indexes, f)
         eq = step_hash['eq'].map(&f)
         range = f.call(step_hash['range']) if step_hash['range']
@@ -550,6 +568,7 @@ module NoSE
       end
 
       # Rebuild an index lookup step
+      # @return [Plans::IndexLookupPlanStep]
       def build_index_lookup_step(step_hash, state, parent, indexes, f)
         index_key = step_hash['index']['key']
         step_index = indexes.find { |i| i.key == index_key }
@@ -566,6 +585,7 @@ module NoSE
       end
 
       # Add filters to a constructed index lookup step
+      # @return [void]
       def add_index_lookup_filters(step, step_hash, f)
         eq_filter = (step_hash['eq_filter'] || []).map(&f)
         step.instance_variable_set(:@eq_filter, eq_filter)
@@ -576,6 +596,7 @@ module NoSE
       end
 
       # Rebuild the state of the step from the provided hash
+      # @return [void]
       def rebuild_step_state(step, step_hash)
         return if step.state.nil?
 
@@ -611,6 +632,7 @@ module NoSE
                                       deserialize: IndexBuilder.new
 
       # The backend cost model used to generate the schema
+      # @return [Hash]
       def cost_model
         options = represented.cost_model.instance_variable_get(:@options)
         options[:name] = represented.cost_model.subtype_name
@@ -618,6 +640,7 @@ module NoSE
       end
 
       # Look up the cost model by name and attach to the results
+      # @return [void]
       def cost_model=(options)
         options = options.deep_symbolize_keys
         cost_model_class = Cost::Cost.subtype_class(options[:name])
@@ -636,6 +659,7 @@ module NoSE
       property :total_cost
 
       # Include the revision of the code used to generate this output
+      # @return [String]
       def revision
         `git rev-parse HEAD 2> /dev/null`.strip
       end
@@ -643,11 +667,13 @@ module NoSE
       property :revision, exec_context: :decorator
 
       # The time the results were generated
+      # @return [Time]
       def time
         Time.now.rfc2822
       end
 
       # Reconstruct the time object from the timestamp
+      # @return [void]
       def time=(time)
         represented.time = Time.rfc2822 time
       end
@@ -655,6 +681,7 @@ module NoSE
       property :time, exec_context: :decorator
 
       # The full command used to generate the results
+      # @return [String]
       def command
         "#{$PROGRAM_NAME} #{ARGV.join ' '}"
       end

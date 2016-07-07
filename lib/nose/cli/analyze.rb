@@ -49,6 +49,7 @@ module NoSE
       private
 
       # Load the data from the given list of CSV files
+      # @return [Array<Hash>]
       def load_data(csv_files, total = false)
         headers = nil
         csv_files.map do |file|

@@ -22,12 +22,14 @@ module NoSE
       end
 
       # After setting the cost model, recalculate the cost
+      # @return [void]
       def cost_model=(new_cost_model)
         recalculate_cost new_cost_model
         @cost_model = new_cost_model
       end
 
       # After setting the cost model, recalculate the cost
+      # @return [void]
       def recalculate_cost(new_cost_model = nil)
         new_cost_model = @cost_model if new_cost_model.nil?
 
@@ -52,6 +54,7 @@ module NoSE
       end
 
       # Validate that the results of the search are consistent
+      # @return [void]
       def validate
         validate_indexes
         validate_query_indexes @plans
@@ -69,6 +72,7 @@ module NoSE
       end
 
       # Set the query plans which should be used based on the entire tree
+      # @return [void]
       def plans_from_trees(trees)
         @plans = trees.map do |tree|
           # Exclude support queries since they will be in update plans
@@ -80,6 +84,8 @@ module NoSE
       end
 
       # Select the single query plan from a tree of plans
+      # @return [Plans::QueryPlan]
+      # @raise [InvalidResultsException]
       def select_plan(tree)
         query = tree.query
         plan = tree.find do |tree_plan|
@@ -94,12 +100,14 @@ module NoSE
       private
 
       # Check that the indexes selected were actually enumerated
+      # @return [void]
       def validate_indexes
         fail InvalidResultsException unless \
           (@indexes - @enumerated_indexes).empty?
       end
 
       # Ensure we only have necessary update plans which use available indexes
+      # @return [void]
       def validate_update_indexes
         @update_plans.each do |plan|
           validate_query_indexes plan.query_plans
@@ -109,6 +117,7 @@ module NoSE
       end
 
       # Check that the objective function has the expected value
+      # @return [void]
       def validate_objective
         if @problem.objective_type == Objective::COST
           query_cost = @plans.reduce 0 do |sum, plan|
@@ -127,6 +136,7 @@ module NoSE
       end
 
       # Ensure that all the query plans use valid indexes
+      # @return [void]
       def validate_query_indexes(plans)
         plans.each do |plan|
           plan.each do |step|
@@ -138,6 +148,7 @@ module NoSE
       end
 
       # Validate the query plans from the original workload
+      # @return [void]
       def validate_query_plans(plans)
         # Check that these indexes are actually used by the query
         plans.each do |plan|
@@ -147,6 +158,7 @@ module NoSE
       end
 
       # Validate the support query plans for each update
+      # @return [void]
       def validate_update_plans
         @update_plans.each do |plan|
           plan.instance_variable_set :@workload, @workload

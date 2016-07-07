@@ -16,6 +16,7 @@ module NoSE
     end
 
     # A simple key which uniquely identifies the index
+    # @return [String]
     def key
       return @key unless @key.nil?
 
@@ -32,6 +33,7 @@ module NoSE
     end
 
     # Look up a field in the index based on its ID
+    # @return [Fields::Field]
     def [](field_id)
       @all_fields.find { |field| field.id == field_id }
     end
@@ -92,6 +94,7 @@ module NoSE
 
     # Create a new range over the entities traversed by an index using
     # the numerical indices into a list of entities
+    # @return [Range]
     def entity_range(entities)
       indexes = @path.entities.map do |entity|
         entities.index entity
@@ -103,6 +106,7 @@ module NoSE
     private
 
     # Initialize the hash function and freeze ourselves
+    # @return [void]
     def build_hash(saved_key)
       @key = saved_key
 
@@ -113,6 +117,7 @@ module NoSE
     end
 
     # Ensure this index is valid
+    # @return [void]
     def validate_index
       validate_hash_fields
       # validate_nonempty
@@ -120,6 +125,7 @@ module NoSE
     end
 
     # Check for valid hash fields in an index
+    # @return [void]
     def validate_hash_fields
       fail InvalidIndexException, 'hash fields cannot be empty' \
         if @hash_fields.empty?
@@ -129,18 +135,21 @@ module NoSE
     end
 
     # Ensure an index is nonempty
+    # @return [void]
     def validate_nonempty
       fail InvalidIndexException, 'must have fields other than hash fields' \
         if @order_fields.empty? && @extra.empty?
     end
 
     # Ensure an index and its fields correspond to a valid path
+    # @return [void]
     def validate_path
       validate_path_entities
       validate_path_keys
     end
 
     # Ensure the path of the index is valid
+    # @return [void]
     def validate_path_entities
       entities = @all_fields.map(&:parent).to_set
       fail InvalidIndexException, 'invalid path for index fields' \
@@ -149,6 +158,7 @@ module NoSE
     end
 
     # We must have the primary keys of the all entities on the path
+    # @return [void]
     def validate_path_keys
       fail InvalidIndexException, 'missing path entity keys' \
         unless @path.entities.flat_map(&:id_fields).all?(
@@ -156,6 +166,7 @@ module NoSE
     end
 
     # Precalculate the size of the index
+    # @return [void]
     def calculate_size
       @hash_count = @hash_fields.product_by(&:cardinality)
 
@@ -206,6 +217,7 @@ module NoSE
 
     # Get the fields used as parition keys for a materialized view
     # based over a given entity
+    # @return [Array<Fields::Field>]
     def materialized_view_eq(hash_entity)
       eq = @eq_fields.select { |field| field.parent == hash_entity }
       eq = @longest_entity_path.last.id_fields if eq.empty?
@@ -214,6 +226,7 @@ module NoSE
     end
 
     # Get the ordered keys for a materialized view
+    # @return [Array<Fields::Field>]
     def materialized_view_order(hash_entity)
       # Start the ordered fields with the equality predicates
       # on other entities, followed by all of the attributes

@@ -68,6 +68,7 @@ module NoSE
       end
 
       # We just produce the data here which can be manipulated as needed
+      # @return [Hash]
       def client
         @index_data
       end
@@ -76,12 +77,14 @@ module NoSE
       # based on a set of list of conditions
       module RowMatcher
         # Check if a row matches the given condition
+        # @return [Boolean]
         def row_matches?(row, conditions)
           row_matches_eq?(row, conditions) &&
             row_matches_range?(row, conditions)
         end
 
         # Check if a row matches the given condition on equality predicates
+        # @return [Boolean]
         def row_matches_eq?(row, conditions)
           @eq_fields.all? do |field|
             row[field.id] == conditions.find { |c| c.field == field }.value
@@ -89,6 +92,7 @@ module NoSE
         end
 
         # Check if a row matches the given condition on the range predicate
+        # @return [Boolean]
         def row_matches_range?(row, conditions)
           return true if @range_field.nil?
 
