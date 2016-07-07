@@ -6,6 +6,7 @@ require 'erb'
 module NoSE
   # A representation of a query workload over a given set of entities
   class Workload
+    # The subdirectory workloads are loaded from
     LOAD_PATH = 'workloads'
     extend Loader
 

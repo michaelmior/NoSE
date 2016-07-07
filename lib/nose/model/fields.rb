@@ -132,6 +132,8 @@ module NoSE
 
     # Field holding a boolean value
     class BooleanField < Field
+      # Since Ruby has no boolean type, we use Object
+      # but all values will be either false or true
       TYPE = Object
 
       def initialize(name, **options)

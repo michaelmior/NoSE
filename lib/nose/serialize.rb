@@ -7,6 +7,7 @@ require 'representable/yaml'
 module Representable
   # Break caching used by representable to allow multiple representers
   module Uncached
+    # Create a simple binding which does not use caching
     def representable_map(options, format)
       Representable::Binding::Map.new(
         representable_bindings_for(format, options))
@@ -386,6 +387,7 @@ module NoSE
       collection :statements, decorator: StatementRepresenter
       property :mix
 
+      # Produce weights of each statement in the workload for each mix
       def weights
         weights = {}
         workload_weights = represented \

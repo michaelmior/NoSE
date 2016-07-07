@@ -101,6 +101,7 @@ module NoSE
       class IndexLookupStatementStep < BackendBase::IndexLookupStatementStep
         include RowMatcher
 
+        # Filter all the rows in the specified index to those requested
         def process(conditions, results)
           # Get the set of conditions we need to process
           results = initial_results(conditions) if results.nil?

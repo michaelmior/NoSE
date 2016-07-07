@@ -2,6 +2,7 @@ module NoSE
   module Plans
     # Simple DSL for constructing execution plans
     class ExecutionPlans
+    # The subdirectory execution plans are loaded from
       LOAD_PATH = 'plans'
       extend Loader
 
