@@ -1,6 +1,7 @@
 require 'set'
 
 module NoSE
+  # Representations for connected entities which are referenced in a {Query}
   module QueryGraph
     # A single node in a query graph
     class Node
@@ -10,9 +11,11 @@ module NoSE
         @entity = entity
       end
 
+      # :nocov:
       def inspect
         @entity.name
       end
+      # :nocov:
 
       # Two nodes are equal if they represent the same entity
       def ==(other)
@@ -25,6 +28,7 @@ module NoSE
       end
     end
 
+    # An edge between two {Node}s in a {Graph}
     class Edge
       attr_reader :from, :to, :key
 
@@ -34,10 +38,14 @@ module NoSE
         @key = key
       end
 
+      # :nocov:
       def inspect
         @key.inspect
       end
+      # :nocov:
 
+      # Edges are equal if the canonical parameters used to construct
+      # them are the same
       def ==(other)
         return false unless other.is_a? Edge
         canonical_params == other.canonical_params
@@ -49,6 +57,8 @@ module NoSE
       end
 
       # Produce the parameters to initialize the canonical version of this edge
+      # (this accounts for different directionality of edges)
+      # @return [Array]
       def canonical_params
         if @from.entity.name > @to.entity.name
           [@from.entity.name, @to.entity.name, @key.name]
@@ -71,22 +81,27 @@ module NoSE
       end
 
       # Dump the nodes, root, and copy the edges (without the default proc)
+      # @return [Array]
       def marshal_dump
         [@nodes, @root, Hash[@edges]]
       end
 
       # Restore the deault proc on the edges
+      # @return [void]
       def marshal_load(array)
         @nodes, @root, @edges = array
         @edges.default_proc = ->(h, k) { h[k] = Set.new }
       end
 
+      # :nocov:
       def inspect
         "Graph(root: #{@root.inspect}, " \
               "nodes: #{@nodes.map(&:inspect).join(', ')}, " \
               "edges: #{@edges.inspect})"
       end
+      # :nocov:
 
+      # Graphs are equal if they have the same root, nodes, and edges
       def ==(other)
         return false unless other.is_a? Graph
         @root == other.root && @nodes == other.nodes &&
@@ -98,26 +113,32 @@ module NoSE
         [@root, @nodes, @edges].hash
       end
 
+      # The total number of nodes in the graph
+      # @return [Integer]
       def size
         @nodes.size
       end
 
       # Produce all entities contained in this graph
+      # @return [Set<Entity>]
       def entities
         @nodes.map(&:entity).to_set
       end
 
       # Find the node corresponding to a given entity in the graph
+      # @return [Node]
       def entity_node(entity)
         @nodes.find { |n| n.entity == entity }
       end
 
       # Check if the graph includes the given entity
+      # @return [Boolean]
       def include_entity?(entity)
         !entity_node(entity).nil?
       end
 
       # Check if this entity is a leaf in the graph (at most one edge)
+      # @return [Boolean]
       def leaf_entity?(entity)
         node = entity_node(entity)
         return false if node.nil?
@@ -125,6 +146,7 @@ module NoSE
       end
 
       # Add a new node to the graph
+      # @return [Node] the new node which was added
       def add_node(node)
         if node.is_a? Entity
           existing = @nodes.find { |n| n.entity == node }
@@ -138,6 +160,7 @@ module NoSE
       end
 
       # Add a new edge betwene two nodes in the graph
+      # @return [void]
       def add_edge(node1, node2, key)
         node1 = add_node node1
         node2 = add_node node2
@@ -147,6 +170,7 @@ module NoSE
       end
 
       # Prune nodes not reachable from the root
+      # @return [void]
       def prune
         fail 'Cannot prune without root' if @root.nil?
         to_visit = [@root]
@@ -174,6 +198,7 @@ module NoSE
       end
 
       # Construct a list of all unique edges in the graph
+      # @reutrn [Array<Edge>]
       def unique_edges
         all_edges = @edges.values.reduce(&:union).to_a
         all_edges.sort_by! { |e| @nodes.index e.to.entity }
@@ -183,6 +208,7 @@ module NoSE
       end
 
       # Produce an enumerator which yields all subgraphs of this graph
+      # @return [Set<Graph>]
       def subgraphs(include_self = true, recursive = true)
         # We have no subgraphs if there is only one node
         return [self] if @nodes.size == 1
@@ -214,6 +240,7 @@ module NoSE
       end
 
       # Construct a graph from a KeyPath
+      # @return [Graph]
       def self.from_path(path)
         return Graph.new if path.empty?
 
@@ -230,6 +257,8 @@ module NoSE
       end
 
       # Convert this graph into a path if possible
+      # @return [KeyPath]
+      # @raise [InvalidPathException]
       def to_path(root_entity = nil)
         if root_entity.nil?
           root = @root
@@ -258,6 +287,7 @@ module NoSE
       end
 
       # Output an image of the query graph
+      # @return [void]
       def output(format, filename)
         graph = GraphViz.new :G, type: :graph
         nodes = Hash[@nodes.map do |node|
@@ -277,6 +307,7 @@ module NoSE
       private
 
       # Return all the edges starting at a given entity
+      # @return [Array<Edge>]
       def edges_for_entity(entity)
         pair = @edges.find { |n, _| n.entity == entity }
         pair.nil? ? [] : pair.last
