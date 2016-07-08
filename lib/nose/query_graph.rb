@@ -70,53 +70,45 @@ module NoSE
 
     # A graph identifying entities and relationships involved in a query
     class Graph
-      attr_reader :root, :nodes
+      attr_reader :nodes
 
-      def initialize(root = nil, *edges)
-        @nodes = []
-        @root = add_node root unless root.nil?
+      def initialize(nodes = [], *edges)
+        @nodes = Set.new
+        nodes.each { |n| add_node n }
         @edges = Hash.new { |h, k| h[k] = Set.new }
 
         edges.each { |edge| add_edge(*edge) }
       end
 
-      # Dump the nodes, root, and copy the edges (without the default proc)
+      # Dump the nodes and copy the edges (without the default proc)
       # @return [Array]
       def marshal_dump
-        [@nodes, @root, Hash[@edges]]
+        [@nodes, Hash[@edges]]
       end
 
       # Restore the deault proc on the edges
       # @return [void]
       def marshal_load(array)
-        @nodes, @root, @edges = array
+        @nodes, @edges = array
         @edges.default_proc = ->(h, k) { h[k] = Set.new }
       end
 
       # :nocov:
       def inspect
-        "Graph(root: #{@root.inspect}, " \
-              "nodes: #{@nodes.map(&:inspect).join(', ')}, " \
+        "Graph(nodes: #{@nodes.map(&:inspect).join(', ')}, " \
               "edges: #{@edges.inspect})"
       end
       # :nocov:
 
-      # Graphs are equal if they have the same root, nodes, and edges
+      # Graphs are equal if they have the same nodes and edges
       def ==(other)
         return false unless other.is_a? Graph
-        @root == other.root && @nodes == other.nodes &&
-          @edges == other.instance_variable_get(:@edges)
+        @nodes == other.nodes && @edges == other.instance_variable_get(:@edges)
       end
       alias eql? ==
 
       def hash
-        [@root, @nodes, @edges].hash
-      end
-
-      # Change the root of the graph to a new node
-      # @return [void]
-      def root=(node)
-        @root = node.nil? ? nil : add_node(node)
+        [@nodes, @edges].hash
       end
 
       # The total number of nodes in the graph
@@ -190,10 +182,14 @@ module NoSE
       def add_node(node)
         if node.is_a? Entity
           existing = @nodes.find { |n| n.entity == node }
-          @nodes << Node.new(node) if existing.nil?
-          node = existing || @nodes.last
+          if existing.nil?
+            node = Node.new(node)
+            @nodes.add node
+          else
+            node = existing
+          end
         else
-          @nodes << node unless @nodes.include? node
+          @nodes.add node unless @nodes.include? node
         end
 
         node
@@ -209,14 +205,13 @@ module NoSE
         @edges[node2].add Edge.new(node2, node1, key.reverse)
       end
 
-      # Prune nodes not reachable from the root
+      # Prune nodes not reachable from a given starting node
       # @return [void]
-      def prune
-        fail 'Cannot prune without root' if @root.nil?
-        to_visit = [@root]
-        reachable = Set.new([@root])
+      def prune(start)
+        to_visit = [start]
+        reachable = Set.new([start])
 
-        # Determine which nodes are reachable from the root
+        # Determine which nodes are reachable
         until to_visit.empty?
           discovered = Set.new
           to_visit.each do |node|
@@ -234,14 +229,15 @@ module NoSE
           end
         end
         @edges.reject! { |_, edges| edges.empty? }
-        @nodes = reachable.to_a.sort_by { |n| @nodes.index n }
+        @nodes = reachable
       end
 
       # Construct a list of all unique edges in the graph
       # @reutrn [Array<Edge>]
       def unique_edges
         all_edges = @edges.values.reduce(&:union).to_a
-        all_edges.sort_by! { |e| @nodes.index e.to.entity }
+        ordered_nodes = @nodes.to_a
+        all_edges.sort_by! { |e| ordered_nodes.index e.to.entity }
         all_edges.uniq!(&:canonical_params)
 
         all_edges
@@ -256,9 +252,9 @@ module NoSE
         all_edges = unique_edges
         all_subgraphs = Set.new([self])
         all_edges.each do |remove_edge|
-          # Construct new graphs rooted at either side of the cut edge
-          graph1 = Graph.new(remove_edge.from)
-          graph2 = Graph.new(remove_edge.to)
+          # Construct new graphs from either side of the cut edge
+          graph1 = Graph.new [remove_edge.from]
+          graph2 = Graph.new [remove_edge.to]
           all_edges.each do |edge|
             next if edge == remove_edge
 
@@ -267,11 +263,11 @@ module NoSE
           end
 
           # Prune the graphs before yielding them and their subgraphs
-          graph1.prune
+          graph1.prune remove_edge.from
           all_subgraphs.add graph1
           all_subgraphs += graph1.subgraphs if recursive
 
-          graph2.prune
+          graph2.prune remove_edge.to
           all_subgraphs.add graph2
           all_subgraphs += graph2.subgraphs if recursive
         end
@@ -285,8 +281,8 @@ module NoSE
         return Graph.new if path.empty?
 
         path = path.entries if path.is_a?(KeyPath)
-        graph = Graph.new(path.first.parent)
-        prev_node = graph.root
+        graph = Graph.new
+        prev_node = graph.add_node path.first.parent
         path[1..-1].each do |key|
           next_node = graph.add_node key.entity
           graph.add_edge prev_node, next_node, key
@@ -299,19 +295,15 @@ module NoSE
       # Convert this graph into a path if possible
       # @return [KeyPath]
       # @raise [InvalidPathException]
-      def to_path(root_entity = nil)
-        if root_entity.nil?
-          root = @root
-        else
-          root = @nodes.find { |n| n.entity == root_entity }
-        end
+      def to_path(start_entity)
+        start = @nodes.find { |n| n.entity == start_entity }
 
-        fail InvalidPathException, 'Need root for path conversion' \
-          if root.nil?
-        keys = [root.entity.id_fields.first]
-        entities = Set.new [root.entity]
+        fail InvalidPathException, 'Need start for path conversion' \
+          if start.nil?
+        keys = [start.entity.id_fields.first]
+        entities = Set.new [start.entity]
 
-        edges = edges_for_entity root.entity
+        edges = edges_for_entity start.entity
         until edges.empty?
           new_entities = edges.map { |e| e.to.entity }.to_set - entities
           break if new_entities.empty?
