@@ -26,14 +26,15 @@ module NoSE
     def key
       return @key unless @key.nil?
 
-      # Join all of the fields in the key as well as entities on
-      # the path to create a string which is hashed to give the key
+      # Join all of the fields in the key as well as entities and edges
+      # in the graph to create a string which is hashed to give the key
       join_fields = lambda do |fields|
         fields.map { |field| "#{field.parent.name}.#{field.name}" }.join ', '
       end
 
       keystr = [@hash_fields, @order_fields, @extra].map(&join_fields).join ' '
-      keystr += ' ' + @path.map(&:name).join(', ')
+      keystr += ' ' + @graph.nodes.map { |n| n.entity.name }.join(', ')
+      keystr += ' ' + @graph.unique_edges.map { |e| e.key.name }.join(', ')
 
       @key = "i#{Zlib.crc32 keystr}"
     end
