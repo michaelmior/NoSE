@@ -28,7 +28,7 @@ module NoSE
 
       query.graph.subgraphs.flat_map do |graph|
         indexes_for_graph graph, query.select, eq, range, query.join_order
-      end.uniq
+      end.uniq << query.materialize_view
     end
 
     # Produce all possible indices for a given workload
