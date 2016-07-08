@@ -113,10 +113,50 @@ module NoSE
         [@root, @nodes, @edges].hash
       end
 
+      # Change the root of the graph to a new node
+      # @return [void]
+      def root=(node)
+        @root = node.nil? ? nil : add_node(node)
+      end
+
       # The total number of nodes in the graph
       # @return [Integer]
       def size
         @nodes.size
+      end
+
+      # Produce an array of entities in the desired join order
+      # @return [Array<Entity>]
+      def join_order(eq_fields)
+        # Start with a leaf entity which has an equality predicate
+        # and the lowest overall count of all such entities
+        entities = @nodes.map(&:entity).to_set
+        join_order = [entities.select do |entity|
+          leaf_entity?(entity) && eq_fields.map(&:parent).include?(entity)
+        end.min_by(&:count)]
+        entities.delete join_order.first
+
+        # Keep going until we have joined all entities
+        until entities.empty?
+          # Try to continue from the last entity
+          next_entities = edges_for_entity(join_order.last).map do |edge|
+            edge.to.entity
+          end.to_set
+
+          # Otherwise look for a new branch from the existing entities
+          if next_entities.empty?
+            next_entities = join_order.flat_map do |entity|
+              edges_for_entity entity
+            end.map { |edge| edge.to.entity }.to_set
+          end
+
+          # Pick the entity with the smallest count, remove it, and keep going
+          next_entity = (next_entities & entities).min_by(&:count)
+          join_order << next_entity
+          entities.delete next_entity
+        end
+
+        join_order
       end
 
       # Produce all entities contained in this graph

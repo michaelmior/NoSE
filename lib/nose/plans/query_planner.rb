@@ -6,7 +6,7 @@ module NoSE
     # Ongoing state of a query throughout the execution plan
     class QueryState
       attr_accessor :from, :fields, :eq, :range, :order_by, :path, :graph,
-                    :cardinality, :hash_cardinality, :given_fields
+                    :joins, :cardinality, :hash_cardinality, :given_fields
       attr_reader :query, :model
 
       def initialize(query, model)
@@ -17,6 +17,7 @@ module NoSE
         @eq = query.eq_fields.dup
         @range = query.range_field
         @graph = query.graph
+        @joins = query.materialize_view.graph.join_order(@eq)
         @path = query.key_path.reverse
         @order_by = query.order.dup
 

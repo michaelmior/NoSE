@@ -54,7 +54,7 @@ module NoSE
 
       @from = model[@tree[:path].first.to_s]
       find_longest_path @tree[:path]
-      @graph = QueryGraph::Graph.from_path(@key_path.reverse)
+      build_graph
     end
 
     # Specifies if the statement modifies any data
@@ -118,6 +118,16 @@ module NoSE
       end
 
       @key_path = KeyPath.new(keys)
+    end
+
+    # Construct the graph for this statement
+    def build_graph
+      # For now, construct the graph from the path
+      @graph = QueryGraph::Graph.from_path(@key_path.reverse)
+
+      # If we have some equality fields to use, ensure we start
+      # with predicates on the entity having the smallest count
+      @graph.root = graph.join_order(@eq_fields).first unless @eq_fields.nil?
     end
   end
 
