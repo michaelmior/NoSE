@@ -27,7 +27,7 @@ module NoSE
       range.default_proc = ->(*) { [] }
 
       query.graph.subgraphs.flat_map do |graph|
-        indexes_for_graph graph, query.select, eq, range
+        indexes_for_graph graph, query.select, eq, range, query.join_order
       end.uniq
     end
 
@@ -114,8 +114,9 @@ module NoSE
 
     # Get fields which should be included in an index for the given graph
     # @return [Array<Array>]
-    def extra_choices(graph, select, eq, range)
-      filter_choices = eq[graph.root.entity] + range[graph.root.entity]
+    def extra_choices(graph, select, eq, range, join_order)
+      first_join = join_order.detect { |e| graph.entities.include? e }
+      filter_choices = eq[first_join] + range[first_join]
       choices = [[]]
 
       # Include any fields which might be selected
@@ -130,7 +131,7 @@ module NoSE
 
     # Get all possible indices which jump a given piece of a query graph
     # @return [Array<Index>]
-    def indexes_for_graph(graph, select, eq, range)
+    def indexes_for_graph(graph, select, eq, range, join_order)
       index_choices = index_choices graph, eq
       index_choices += index_choices.map(&:reverse)
       max_eq_fields = index_choices.max_by(&:length).length
@@ -139,7 +140,7 @@ module NoSE
       order_choices = range_fields.prefixes.flat_map do |fields|
         fields.permutation.to_a
       end.uniq << []
-      extra_choices = extra_choices graph, select, eq, range
+      extra_choices = extra_choices graph, select, eq, range, join_order
 
       # Generate all possible indices based on the field choices
       choices = index_choices.product(extra_choices)

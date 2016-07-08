@@ -265,8 +265,8 @@ module NoSE
 
     # Produce a random query graph over the entity graph
     def random_graph(max_nodes)
-      graph = QueryGraph::Graph.new @model.entities.values.sample
-      last_node = graph.root
+      graph = QueryGraph::Graph.new
+      last_node = graph.add_node @model.entities.values.sample
       while graph.size < max_nodes
         # Get the possible foreign keys to use
         keys = last_node.entity.foreign_keys.values

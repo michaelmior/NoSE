@@ -157,8 +157,10 @@ module NoSE
         # We can't resolve ordering if we're doing an ID lookup
         # since only one record exists per row (if it's the same entity)
         # We also need to have the fields used in order
-        indexed_by_id = @index.hash_fields.include? \
-          @index.graph.root.entity.id_fields.first
+        first_join = @state.query.join_order.detect do |entity|
+          index.graph.entities.include? entity
+        end
+        indexed_by_id = @index.hash_fields.include?(first_join.id_fields.first)
         order_prefix = @state.order_by.longest_common_prefix(
           @index.order_fields - @eq_filter.to_a
         )

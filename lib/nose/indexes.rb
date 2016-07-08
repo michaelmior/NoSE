@@ -90,7 +90,7 @@ module NoSE
     # key to fields from  a single index
     # @return [Boolean]
     def identity?
-      !@graph.root.nil? && identity_for?(@graph.root.entity)
+      identity_for?(@hash_fields.first.parent)
     end
 
     # Check if the index contains a given field

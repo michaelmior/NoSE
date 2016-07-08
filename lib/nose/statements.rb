@@ -155,6 +155,12 @@ module NoSE
       freeze
     end
 
+    # The order entities should be joined according to the query graph
+    # @return [Array<Entity>]
+    def join_order
+      @graph.join_order(@eq_fields)
+    end
+
     # Specifies that queries don't modify data
     def read_only?
       true
