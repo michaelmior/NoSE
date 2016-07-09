@@ -23,6 +23,8 @@ module NoSE
         bad_index = good_index.dup
         path = NoSE::KeyPath.new [user.id_fields.first, user['Favourite']]
         bad_index.instance_variable_set :@path, path
+        bad_index.instance_variable_set :@graph,
+                                        NoSE::QueryGraph::Graph.from_path(path)
 
         # With the correct path, this should work
         planner = QueryPlanner.new workload.model, [good_index], cost_model
