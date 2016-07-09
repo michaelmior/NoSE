@@ -11,6 +11,7 @@ describe Enumerable do
 
   it 'can generate all partitionings of itself' do
     expect([1, 2, 3, 4].partitions).to match_array [
+      [[1, 2, 3, 4], []],
       [[1], [2, 3, 4]],
       [[1, 2], [3, 4]],
       [[1, 2, 3], [4]]]

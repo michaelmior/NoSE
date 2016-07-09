@@ -18,7 +18,7 @@ module NoSE
         @range = query.range_field
         @graph = query.graph
         @joins = query.materialize_view.graph.join_order(@eq)
-        @path = query.key_path.reverse
+        @path = query.key_path.dup
         @order_by = query.order.dup
 
         # We never need to order by fields listed in equality predicates
@@ -244,16 +244,18 @@ module NoSE
           index.entity_range(entities) != (nil..nil)
         end
 
-        indexes_by_path = Hash.new { |h, k| h[k] = Set.new }
+        indexes_by_joins = Hash.new { |h, k| h[k] = Set.new }
         indexes.each do |index|
-          indexes_by_path[index.path.entities.first].add index
-          indexes_by_path[index.path.entities.last].add index
+          first_entity = state.joins.find do |entity|
+            index.graph.entities.include?(entity)
+          end
+          indexes_by_joins[first_entity].add index
         end
-        find_plans_for_step tree.root, indexes_by_path
+        find_plans_for_step tree.root, indexes_by_joins
 
         if tree.root.children.empty?
           tree = QueryPlanTree.new state, @cost_model
-          find_plans_for_step tree.root, indexes_by_path, prune: false
+          find_plans_for_step tree.root, indexes_by_joins, prune: false
           fail NoPlanException, "#{query.inspect} #{tree.inspect}"
         end
 
@@ -290,19 +292,19 @@ module NoSE
 
       # Find possible query plans for a query starting at the given step
       # @return [void]
-      def find_plans_for_step(step, indexes_by_path, used_indexes = Set.new,
+      def find_plans_for_step(step, indexes_by_joins, used_indexes = Set.new,
                               prune: true)
         return if step.state.answered?
 
         steps = find_steps_for_state step, step.state,
-                                     indexes_by_path, used_indexes
+                                     indexes_by_joins, used_indexes
 
         if steps.length > 0
           step.children = steps
           steps.each { |new_step| new_step.calculate_cost @cost_model }
           new_used = used_indexes.clone
           steps.each do |child_step|
-            find_plans_for_step child_step, indexes_by_path, new_used
+            find_plans_for_step child_step, indexes_by_joins, new_used
 
             # Remove this step if finding a plan from here failed
             if child_step.children.length == 0 && !child_step.state.answered?
@@ -334,12 +336,12 @@ module NoSE
 
       # Get a list of possible next steps for a query in the given state
       # @return [Array<PlanStep>]
-      def find_steps_for_state(parent, state, indexes_by_path, used_indexes)
+      def find_steps_for_state(parent, state, indexes_by_joins, used_indexes)
         steps = find_nonindexed_steps parent, state
         return steps unless steps.empty?
 
         # Don't allow indices to be used multiple times
-        indexes = (indexes_by_path[state.path.first.parent] || Set.new).to_set
+        indexes = (indexes_by_joins[state.joins.first] || Set.new).to_set
         (indexes - used_indexes).each do |index|
           new_step = IndexLookupPlanStep.apply parent, index, state
           next if new_step.nil?

@@ -197,14 +197,8 @@ module NoSE
     # Construct an index which acts as a materialized view for a query
     # @return [Index]
     def materialize_view
-      # We must have hash fields, so if there are no equality
-      # predicates, use the ID at the end of the query path instead
-      hash_entity = @graph.join_order(@eq_fields).detect do |entity|
-        @eq_fields.any? { |field| field.parent == entity }
-      end
-
-      eq = materialized_view_eq hash_entity
-      order_fields = materialized_view_order(hash_entity) - eq
+      eq = materialized_view_eq join_order.first
+      order_fields = materialized_view_order(join_order.first) - eq
 
       Index.new(eq, order_fields,
                 all_fields - (@eq_fields + @order).to_set, @graph)
@@ -217,7 +211,7 @@ module NoSE
     # @return [Array<Fields::Field>]
     def materialized_view_eq(hash_entity)
       eq = @eq_fields.select { |field| field.parent == hash_entity }
-      eq = @graph.join_order(@eq_fields).last.id_fields if eq.empty?
+      eq = join_order.last.id_fields if eq.empty?
 
       eq
     end

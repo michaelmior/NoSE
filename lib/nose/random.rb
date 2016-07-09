@@ -294,7 +294,9 @@ module NoSE
     # Produce a random where clause using fields along a given path
     # @return [String]
     def random_where_clause(path, count = 2)
-      conditions = random_where_conditions path, count
+      # Ensure we have at least one condition at the beginning of the path
+      conditions = [path.entities.first.fields.values.sample]
+      conditions += random_where_conditions path, count - 1
 
       return '' if conditions.empty?
       "WHERE #{conditions.map do |field|

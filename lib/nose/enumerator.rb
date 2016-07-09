@@ -100,16 +100,20 @@ module NoSE
       end
     end
 
-    # Get all possible index fields for entities in a graph
+    # Get all possible choices of fields to use for equality
     # @return [Array<Array>]
-    def index_choices(graph, eq)
-      graph.entities.flat_map do |entity|
+    def eq_choices(graph, eq)
+      entity_choices = graph.entities.flat_map do |entity|
         # Get the fields for the entity and add in the IDs
         entity_fields = eq[entity] + entity.id_fields
         1.upto(entity_fields.count).flat_map do |n|
           entity_fields.permutation(n).to_a
         end
       end
+
+      2.upto(graph.entities.length).flat_map do |n|
+        entity_choices.permutation(n).map(&:flatten).to_a
+      end + entity_choices
     end
 
     # Get fields which should be included in an index for the given graph
@@ -132,10 +136,7 @@ module NoSE
     # Get all possible indices which jump a given piece of a query graph
     # @return [Array<Index>]
     def indexes_for_graph(graph, select, eq, range, join_order)
-      index_choices = index_choices graph, eq
-      index_choices += index_choices.map(&:reverse)
-      max_eq_fields = index_choices.max_by(&:length).length
-
+      eq_choices = eq_choices graph, eq
       range_fields = graph.entities.map { |entity| range[entity] }.reduce(&:+)
       order_choices = range_fields.prefixes.flat_map do |fields|
         fields.permutation.to_a
@@ -143,7 +144,7 @@ module NoSE
       extra_choices = extra_choices graph, select, eq, range, join_order
 
       # Generate all possible indices based on the field choices
-      choices = index_choices.product(extra_choices)
+      choices = eq_choices.product(extra_choices)
       choices.map do |index, extra|
         indexes = []
 
@@ -151,19 +152,18 @@ module NoSE
           # Append the primary key of the entities in the graph if needed
           order += graph.entities.flat_map(&:id_fields) - (index + order)
 
-          # Skip indices with only a hash component
-          index_extra = extra - (index + order)
-
-          next if order.empty? && index_extra.empty?
-
-          new_index = generate_index index, order, index_extra, graph
-          indexes << new_index unless new_index.nil?
-
           # Partition into the ordering portion
-          next unless index.length == max_eq_fields
           index.partitions.each do |index_prefix, order_prefix|
-            new_index = generate_index index_prefix, order_prefix + order,
-                                       extra, graph
+            hash_fields = index_prefix.take_while do |field|
+              field.parent == index.first.parent
+            end
+            order_fields = index_prefix[hash_fields.length..-1] + \
+                           order_prefix + order
+            extra_fields = extra - hash_fields - order_fields
+            next if order_fields.empty? && extra_fields.empty?
+
+            new_index = generate_index hash_fields, order_fields, extra_fields,
+                                       graph
             indexes << new_index unless new_index.nil?
           end
         end

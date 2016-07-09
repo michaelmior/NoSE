@@ -46,19 +46,8 @@ module NoSE
       # returning a possible application of the step
       # @return [IndexLookupPlanStep]
       def self.apply(parent, index, state)
-        # Try reversing the path for this query
-        state_path = state.path
-        reversed = state_path.reverse
-        if index.path.length > 1 &&
-           reversed[0..index.path.length - 1] == index.path
-          state_path = reversed
-          reversed = true
-        else
-          reversed = false
-        end
-
         # Check that this index is a valid jump in the path
-        return nil unless state_path.start_with? index.path
+        return nil unless state.path.start_with? index.path
 
         # We must move forward on paths at each lookup
         # XXX This disallows plans which look up additional attributes
@@ -79,14 +68,7 @@ module NoSE
         hash_entity = index.hash_fields.first.parent
         graph_fields = state.fields_for_graph(index.graph, hash_entity).to_set
         graph_fields -= parent.fields # exclude fields already fetched
-        return nil unless graph_fields.all? { |f| index.all_fields.include? f }
-
-        # Use the reversed path for the remainder of the plan
-        if reversed
-          state = state.dup
-          state.path = state_path
-          state.freeze
-        end
+        return nil unless graph_fields.subset?(index.all_fields)
 
         return IndexLookupPlanStep.new(index, state, parent) \
           if last_fields?(index, state)
@@ -179,8 +161,10 @@ module NoSE
                                    select: true).empty? &&
            @state.path == index.path
           @state.path = @state.path[index.path.length..-1]
+          @state.joins = @state.joins[index.path.length..-1]
         else
           @state.path = @state.path[index.path.length - 1..-1]
+          @state.joins = @state.joins[index.path.length - 1..-1]
         end
 
         @state.graph = QueryGraph::Graph.from_path(@state.path)

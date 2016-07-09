@@ -124,10 +124,6 @@ module NoSE
     def build_graph
       # For now, construct the graph from the path
       @graph = QueryGraph::Graph.from_path(@key_path.reverse)
-
-      # If we have some equality fields to use, ensure we start
-      # with predicates on the entity having the smallest count
-      @graph.root = graph.join_order(@eq_fields).first unless @eq_fields.nil?
     end
   end
 
@@ -142,6 +138,10 @@ module NoSE
 
       populate_conditions
       populate_fields
+
+      if join_order.first != @key_path.entities.first
+        @key_path = @key_path.reverse
+      end
 
       fail InvalidStatementException, 'must have an equality predicate' \
         if @conditions.empty? || @conditions.values.all?(&:is_range)
