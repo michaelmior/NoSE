@@ -47,7 +47,9 @@ module NoSE
       # @return [IndexLookupPlanStep]
       def self.apply(parent, index, state)
         # Check that this index is a valid jump in the path
-        return nil unless state.path.start_with? index.path
+        return nil unless index.graph.entities.include?(state.joins.first) &&
+          (index.graph.unique_edges &
+           state.graph.unique_edges == index.graph.unique_edges)
 
         # We must move forward on paths at each lookup
         # XXX This disallows plans which look up additional attributes
