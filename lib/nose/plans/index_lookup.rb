@@ -58,7 +58,7 @@ module NoSE
                       !parent.is_a?(RootPlanStep)
         return nil if index.identity? && state.graph.size > 1
 
-        return nil if invalid_parent_index? index, parent.parent_index
+        return nil if invalid_parent_index? state, index, parent.parent_index
 
         # We need all hash fields to perform the lookup
         return nil unless index.hash_fields.all? do |field|
@@ -82,13 +82,16 @@ module NoSE
 
       # Check if this index can be used after the current parent
       # @return [Boolean]
-      def self.invalid_parent_index?(index, parent_index)
+      def self.invalid_parent_index?(state, index, parent_index)
         return false if parent_index.nil?
 
         # If the last step gave an ID, we must use it
         # XXX This doesn't cover all cases
-        parent_ids = parent_index.path.entities.last.id_fields.to_set
-        has_ids = parent_ids.all?(&parent_index.extra.method(:include?))
+        last_parent_entity = state.joins.reverse.find do |entity|
+          parent_index.graph.entities.include? entity
+        end
+        parent_ids = last_parent_entity.id_fields.to_set
+        has_ids = parent_ids.subset? parent_index.all_fields
         return true if has_ids && index.hash_fields.to_set != parent_ids
 
         # If we're looking up from a previous step, only allow lookup by ID
