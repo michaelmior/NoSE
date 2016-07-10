@@ -46,14 +46,14 @@ module NoSE
       # returning a possible application of the step
       # @return [IndexLookupPlanStep]
       def self.apply(parent, index, state)
-        # Check that this index is a valid jump in the path
+        # Check that this index is a valid continuation of the set of joins
         return nil unless index.graph.entities.include?(state.joins.first) &&
           (index.graph.unique_edges &
            state.graph.unique_edges == index.graph.unique_edges)
 
-        # We must move forward on paths at each lookup
+        # We must move forward on each lookup
         # XXX This disallows plans which look up additional attributes
-        #     for entities other than the final one in the query path
+        #     for entities other than the final one
         return nil if index.graph.size == 1 && state.graph.size > 1 &&
                       !parent.is_a?(RootPlanStep)
         return nil if index.identity? && state.graph.size > 1
@@ -125,8 +125,7 @@ module NoSE
         order_prefix = order_prefix.take_while { |x, y| x == y }.map(&:first)
 
         # Find fields which are filtered by the index
-        @eq_filter = @state.eq & (@index.hash_fields + order_prefix).to_set
-        @eq_filter += @index.hash_fields
+        @eq_filter = @index.hash_fields + (@state.eq & order_prefix.to_set)
         if order_prefix.include?(@state.range)
           @range_filter = @state.range
           @state.range = nil
@@ -142,14 +141,14 @@ module NoSE
         # since only one record exists per row (if it's the same entity)
         # We also need to have the fields used in order
         first_join = @state.query.join_order.detect do |entity|
-          index.graph.entities.include? entity
+          @index.graph.entities.include? entity
         end
         indexed_by_id = @index.hash_fields.include?(first_join.id_fields.first)
         order_prefix = @state.order_by.longest_common_prefix(
           @index.order_fields - @eq_filter.to_a
         )
         if indexed_by_id && order_prefix.map(&:parent).to_set ==
-                            Set.new([index.hash_fields.first.parent])
+                            Set.new([@index.hash_fields.first.parent])
           order_prefix = []
         else
           @state.order_by -= order_prefix
@@ -158,15 +157,15 @@ module NoSE
 
         # Strip the path for this index, but if we haven't fetched all
         # fields, leave the last one so we can perform a separate ID lookup
-        hash_entity = index.hash_fields.first.parent
-        if @state.fields_for_graph(index.graph, hash_entity,
+        hash_entity = @index.hash_fields.first.parent
+        if @state.fields_for_graph(@index.graph, hash_entity,
                                    select: true).empty? &&
-           @state.path == index.path
-          @state.path = @state.path[index.path.length..-1]
-          @state.joins = @state.joins[index.path.length..-1]
+           @state.path == @index.path
+          @state.path = @state.path[@index.path.length..-1]
+          @state.joins = @state.joins[@index.path.length..-1]
         else
-          @state.path = @state.path[index.path.length - 1..-1]
-          @state.joins = @state.joins[index.path.length - 1..-1]
+          @state.path = @state.path[@index.path.length - 1..-1]
+          @state.joins = @state.joins[@index.path.length - 1..-1]
         end
 
         @state.graph = QueryGraph::Graph.from_path(@state.path)
@@ -180,7 +179,7 @@ module NoSE
         end
 
         # Filter the total number of rows by filtering on non-hash fields
-        cardinality = index.per_hash_count * @state.hash_cardinality
+        cardinality = @index.per_hash_count * @state.hash_cardinality
         @state.cardinality = Cardinality.filter cardinality,
                                                 @eq_filter -
                                                 @index.hash_fields,
@@ -204,7 +203,7 @@ module NoSE
           @limit = @state.cardinality = @state.query.limit
 
           # If this is a final lookup by ID, go with the limit
-          if index.graph.size == 1 && indexed_by_id
+          if @index.graph.size == 1 && indexed_by_id
             @state.hash_cardinality = @limit
           else
             @state.hash_cardinality = parent.state.cardinality
