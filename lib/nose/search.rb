@@ -185,7 +185,7 @@ module NoSE
             end
           end
 
-          populate_query_costs query_costs, steps_by_index, weight
+          populate_query_costs query_costs, steps_by_index, weight, query, tree
         end
 
         [query_costs, tree]
@@ -193,7 +193,8 @@ module NoSE
 
       # Store the costs and indexes for this plan in a nested hash
       # @return [void]
-      def populate_query_costs(query_costs, steps_by_index, weight)
+      def populate_query_costs(query_costs, steps_by_index, weight,
+                               query, tree)
         # The first key is the query and the second is the index
         #
         # The value is a two-element array with the indices which are
@@ -210,7 +211,22 @@ module NoSE
             current_cost = query_costs[index_step.index].last
 
             # We must always have the same cost
-            fail if current_cost != cost
+            if current_cost != cost
+              index = index_step.index
+              puts "Index #{index.key} does not have equivalent cost"
+              puts '======================================='
+              tree.each do |plan|
+                next unless plan.indexes.include?(index_step.index)
+                plan.each do |step|
+                  print(format('%.3f', step.cost).rjust(7) + ' ')
+                  p step
+                end
+                puts "#{format('%.3f', plan.cost).rjust(7)} total"
+                puts '======================================='
+              end
+
+              fail
+            end
           else
             # We either found a new plan or something cheaper
             query_costs[index_step.index] = [steps, cost]
