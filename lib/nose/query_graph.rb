@@ -164,11 +164,16 @@ module NoSE
         !@edges.key?(node) || @edges[node].size <= 1
       end
 
+      # Find the node which corresponds to a given entity
+      def find_entity_node(entity)
+        @nodes.find { |n| n.entity == entity }
+      end
+
       # Add a new node to the graph
       # @return [Node] the new node which was added
       def add_node(node)
         if node.is_a? Entity
-          existing = @nodes.find { |n| n.entity == node }
+          existing = find_entity_node node
           if existing.nil?
             node = Node.new(node)
             @nodes.add node
@@ -211,15 +216,23 @@ module NoSE
           reachable += discovered
         end
 
+        remove_nodes @nodes - reachable
+      end
+
+      # Remove nodes (or entities) from the graph
+      def remove_nodes(nodes)
+        # Find all the nodes to be removed if needed
+        nodes.map! { |n| n.is_a?(Node) ? n : find_entity_node(n) }
+
         # Remove any nodes and edges which are not reachable
-        @edges.select! { |node| reachable.include? node }
+        @edges.reject! { |node| nodes.include? node }
         @edges.each do |_, edges|
-          edges.select! do |edge|
-            reachable.include?(edge.to) && reachable.include?(edge.from)
+          edges.reject! do |edge|
+            nodes.include?(edge.to) || nodes.include?(edge.from)
           end
         end
         @edges.reject! { |_, edges| edges.empty? }
-        @nodes = reachable
+        @nodes -= nodes.to_set
       end
 
       # Construct a list of all unique edges in the graph
@@ -332,7 +345,7 @@ module NoSE
       # @return [Array<Edge>]
       def edges_for_entity(entity)
         pair = @edges.find { |n, _| n.entity == entity }
-        pair.nil? ? [] : pair.last
+        pair.nil? ? Set.new : pair.last
       end
     end
   end
