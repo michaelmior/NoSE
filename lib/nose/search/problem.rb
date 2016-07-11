@@ -133,11 +133,11 @@ module NoSE
 
       # Write a model to a temporary file and log the file name
       # @return [void]
-      def log_model(type, extension)
+      def log_model(type)
         @logger.debug do
-          tmpfile = Tempfile.new ['model', extension]
+          tmpfile = Tempfile.new ['model', '.mps']
           ObjectSpace.undefine_finalizer tmpfile
-          @model.write tmpfile.path
+          @model.write_mps tmpfile.path
           "#{type} written to #{tmpfile.path}"
         end
       end
@@ -153,7 +153,7 @@ module NoSE
         define_objective
         @model.update
 
-        log_model 'Model', '.lp'
+        log_model 'Model'
       end
 
       private
