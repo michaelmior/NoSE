@@ -164,7 +164,7 @@ class Cardinality
       1.0 / field.cardinality
     end.inject(1.0, &:*)
 
-    [1, filtered.round].max
+    filtered
   end
 end
 
