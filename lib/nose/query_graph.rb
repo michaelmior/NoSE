@@ -124,8 +124,8 @@ module NoSE
 
           # Otherwise look for a new branch from the existing entities
           if next_entities.empty?
-            next_entities = join_order.flat_map do |entity|
-              edges_for_entity entity
+            next_entities = join_order.reduce do |edges, entity|
+              edges.union(edges_for_entity(entity))
             end.map { |edge| edge.to.entity }.to_set
           end
 
