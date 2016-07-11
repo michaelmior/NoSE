@@ -75,22 +75,9 @@ module NoSE
       def initialize(nodes = [], *edges)
         @nodes = Set.new
         nodes.each { |n| add_node n }
-        @edges = Hash.new { |h, k| h[k] = Set.new }
+        @edges = {}
 
         edges.each { |edge| add_edge(*edge) }
-      end
-
-      # Dump the nodes and copy the edges (without the default proc)
-      # @return [Array]
-      def marshal_dump
-        [@nodes, Hash[@edges]]
-      end
-
-      # Restore the deault proc on the edges
-      # @return [void]
-      def marshal_load(array)
-        @nodes, @edges = array
-        @edges.default_proc = ->(h, k) { h[k] = Set.new }
       end
 
       # :nocov:
@@ -174,7 +161,7 @@ module NoSE
       def leaf_entity?(entity)
         node = entity_node(entity)
         return false if node.nil?
-        @edges[node].nil? || @edges[node].size <= 1
+        !@edges.key?(node) || @edges[node].size <= 1
       end
 
       # Add a new node to the graph
@@ -201,7 +188,9 @@ module NoSE
         node1 = add_node node1
         node2 = add_node node2
 
+        @edges[node1] = Set.new unless @edges.key? node1
         @edges[node1].add Edge.new(node1, node2, key)
+        @edges[node2] = Set.new unless @edges.key? node2
         @edges[node2].add Edge.new(node2, node1, key.reverse)
       end
 
@@ -215,6 +204,7 @@ module NoSE
         until to_visit.empty?
           discovered = Set.new
           to_visit.each do |node|
+            next unless @edges.key? node
             discovered += @edges[node].map(&:to).to_set
           end
           to_visit = discovered - reachable
