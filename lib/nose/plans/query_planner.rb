@@ -239,9 +239,8 @@ module NoSE
         tree = QueryPlanTree.new state, @cost_model
 
         # Limit indices to those which cross the query path
-        entities = query.longest_entity_path
         indexes = @indexes.clone.select do |index|
-          index.entity_range(entities) != (nil..nil)
+          index.graph.entities.to_set.subset?(query.graph.entities.to_set)
         end
 
         indexes_by_joins = Hash.new { |h, k| h[k] = Set.new }

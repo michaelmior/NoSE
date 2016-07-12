@@ -99,17 +99,6 @@ module NoSE
       @all_fields.include? field
     end
 
-    # Create a new range over the entities traversed by an index using
-    # the numerical indices into a list of entities
-    # @return [Range]
-    def entity_range(entities)
-      indexes = @path.entities.map do |entity|
-        entities.index entity
-      end.compact
-
-      indexes.empty? ? (nil..nil) : Range.new(*indexes.minmax)
-    end
-
     private
 
     # Initialize the hash function and freeze ourselves
