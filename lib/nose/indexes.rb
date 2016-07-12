@@ -24,19 +24,7 @@ module NoSE
     # A simple key which uniquely identifies the index
     # @return [String]
     def key
-      return @key unless @key.nil?
-
-      # Join all of the fields in the key as well as entities and edges
-      # in the graph to create a string which is hashed to give the key
-      join_fields = lambda do |fields|
-        fields.map { |field| "#{field.parent.name}.#{field.name}" }.join ', '
-      end
-
-      keystr = [@hash_fields, @order_fields, @extra].map(&join_fields).join ' '
-      keystr += ' ' + @graph.nodes.map { |n| n.entity.name }.join(', ')
-      keystr += ' ' + @graph.unique_edges.map { |e| e.key.name }.join(', ')
-
-      @key = "i#{Zlib.crc32 keystr}"
+      @key ||= "i#{Zlib.crc32 hash_str}"
     end
 
     # Look up a field in the index based on its ID
