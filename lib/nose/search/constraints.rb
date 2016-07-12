@@ -69,7 +69,7 @@ module NoSE
 
       # Add complete query plan constraints
       def self.apply_query(query, q, problem)
-        entities = query.longest_entity_path.reverse
+        entities = query.join_order
         query_constraints = Hash[entities.each_cons(2).map do |e, next_e|
           [[e, next_e], MIPPeR::LinExpr.new]
         end]
@@ -85,13 +85,13 @@ module NoSE
           # this is either the last step from IDs to entity
           # data or the first step going from data to IDs
           index_step = steps.first
-          fail if entities.length > 1 && index.path.length == 1 && \
+          fail if entities.length > 1 && index.graph.size == 1 && \
                   !(steps.last.state.answered? ||
                     index_step.parent.is_a?(Plans::RootPlanStep))
 
-          # Join each step along the entity path
+          # Join each step in the query graph
           index_var = problem.query_vars[index][query]
-          index.path.entities.each_cons(2) do |entity, next_entity|
+          entities.each_cons(2) do |entity, next_entity|
             # Make sure the constraints go in the correct direction
             if query_constraints.key?([entity, next_entity])
               query_constraints[[entity, next_entity]] += index_var
@@ -118,7 +118,7 @@ module NoSE
           problem.model << constr
         end
 
-        # Ensure we have exactly one index on each component of the query path
+        # Ensure we have exactly one index on each component of the query graph
         add_query_constraints query, q, query_constraints, problem
       end
     end

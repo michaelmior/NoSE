@@ -199,7 +199,7 @@ module NoSE
         #
         # The value is a two-element array with the indices which are
         # jointly used to answer a step in the query plan along with
-        # the cost of all plan steps for the part of the query path
+        # the cost of all plan steps for the part of the query graph
         steps_by_index.each do |steps|
           # Get the indexes for these plan steps
           index_step = steps.first
