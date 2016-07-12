@@ -158,17 +158,17 @@ module NoSE
         end
         @order_by = order_prefix
 
-        # Strip the path for this index, but if we haven't fetched all
+        # Strip the graph for this index, but if we haven't fetched all
         # fields, leave the last one so we can perform a separate ID lookup
         hash_entity = @index.hash_fields.first.parent
         if @state.fields_for_graph(@index.graph, hash_entity,
                                    select: true).empty? &&
-           @state.path == @index.path
+           @state.graph == @index.graph
           @state.path = @state.path[@index.path.length..-1]
-          @state.joins = @state.joins[@index.path.length..-1]
+          @state.joins = @state.joins[@index.graph.size..-1]
         else
           @state.path = @state.path[@index.path.length - 1..-1]
-          @state.joins = @state.joins[@index.path.length - 1..-1]
+          @state.joins = @state.joins[@index.graph.size - 1..-1]
         end
 
         @state.graph = QueryGraph::Graph.from_path(@state.path)
