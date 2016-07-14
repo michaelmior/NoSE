@@ -176,8 +176,8 @@ module NoSE
     # @return [Index]
     def generate_index(hash, order, extra, graph)
       begin
-        index = Index.new hash.uniq, order.uniq, extra.uniq, graph
-        @logger.debug "Enumerated #{index.inspect}"
+        index = Index.new hash, order, extra, graph
+        @logger.debug { "Enumerated #{index.inspect}" }
       rescue InvalidIndexException, InvalidPathException
         # This combination of fields is not valid, that's ok
         index = nil

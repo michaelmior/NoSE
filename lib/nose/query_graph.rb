@@ -308,7 +308,9 @@ module NoSE
 
         edges = edges_for_entity start.entity
         until edges.empty?
-          new_entities = edges.map { |e| e.to.entity }.to_set - entities
+          new_entities = edges.map { |e| e.to.entity }.to_set.delete_if do |n|
+            entities.include?(n)
+          end
           break if new_entities.empty?
           fail InvalidPathException, 'Graph cannot be converted to path' \
             if new_entities.size > 1

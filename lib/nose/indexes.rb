@@ -6,10 +6,13 @@ module NoSE
                 :graph
 
     def initialize(hash_fields, order_fields, extra, graph, saved_key = nil)
+      order_set = order_fields.to_set
       @hash_fields = hash_fields.to_set
-      @order_fields = order_fields - hash_fields.to_a
-      @extra = extra.to_set - @hash_fields - @order_fields.to_set
-      @all_fields = @hash_fields + order_fields.to_set + @extra
+      @order_fields = order_fields.delete_if { |e| hash_fields.include? e }
+      @extra = extra.to_set.delete_if do |e|
+        @hash_fields.include?(e) || order_set.include?(e)
+      end
+      @all_fields = Set.new.merge(@hash_fields).merge(order_set).merge(@extra)
 
       validate_hash_fields
 
@@ -58,7 +61,7 @@ module NoSE
       @hash_str ||= [
         @hash_fields.map(&:id).sort,
         @order_fields.map(&:id),
-        @extra.to_set.map(&:id).sort,
+        @extra.map(&:id).sort,
         @path.map(&:id)
       ].to_s
     end
@@ -129,15 +132,15 @@ module NoSE
     def validate_path_entities
       entities = @all_fields.map(&:parent).to_set
       fail InvalidIndexException, 'path entities do match index' \
-        unless entities == path.entities.to_set
+        unless entities == @path.entities.to_set
     end
 
     # We must have the primary keys of the all entities in the graph
     # @return [void]
     def validate_path_keys
       fail InvalidIndexException, 'missing path entity keys' \
-        unless @graph.entities.flat_map(&:id_fields).all?(
-          &(@hash_fields + @order_fields).method(:include?))
+        unless @graph.entities.flat_map(&:id_fields).to_set.subset? \
+          (@hash_fields + @order_fields).to_set
     end
 
     # Precalculate the size of the index
