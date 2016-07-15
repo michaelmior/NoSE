@@ -16,7 +16,7 @@ module NoSE
         commands = NoSE::CLI::NoSECLI.all_commands.to_a.sort_by(&:first)
 
         tmpl = File.read File.join(File.dirname(__FILE__),
-                                   '../../../completions.erb')
+                                   '../../../templates/completions.erb')
         ns = OpenStruct.new commands: commands
         puts ERB.new(tmpl, nil, '>').result(ns.instance_eval { binding })
       end

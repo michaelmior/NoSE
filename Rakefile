@@ -47,14 +47,14 @@ task :man do
   # Generate the man page for the main command
   ns = OpenStruct.new commands: NoSE::CLI::NoSECLI.commands,
                       options: NoSE::CLI::NoSECLI.class_options
-  tmpl = File.read File.join(File.dirname(__FILE__), 'man.erb')
+  tmpl = File.read File.join(File.dirname(__FILE__), 'templates/man.erb')
   out = ERB.new(tmpl, nil, '>').result(ns.instance_eval { binding })
   output_man out, 'nose'
 
   # Generate man pages for each subcommand
   NoSE::CLI::NoSECLI.commands.each_value do |command|
     ns = OpenStruct.new command: command
-    tmpl = File.read File.join(File.dirname(__FILE__), 'subman.erb')
+    tmpl = File.read File.join(File.dirname(__FILE__), 'templates/subman.erb')
     out = ERB.new(tmpl, nil, '>').result(ns.instance_eval { binding })
 
     output_man out, "nose-#{command.name}"

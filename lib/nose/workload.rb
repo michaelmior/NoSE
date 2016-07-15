@@ -121,7 +121,8 @@ module NoSE
     # @return [void]
     def output_rb(filename)
       ns = OpenStruct.new(workload: self)
-      tmpl = File.read File.join(File.dirname(__FILE__), 'workload.erb')
+      tmpl = File.read File.join(File.dirname(__FILE__),
+                                 '../../templates/workload.erb')
       out = ERB.new(tmpl, nil, '>').result(ns.instance_eval { binding })
       File.open(filename, 'w') { |file| file.write out }
     end

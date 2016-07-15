@@ -247,7 +247,8 @@ module NoSE
         svg = File.open(tmpfile.path).read
 
         enumerated &&= result.enumerated_indexes
-        tmpl = File.read File.join(File.dirname(__FILE__), '../../report.erb')
+        tmpl = File.read File.join(File.dirname(__FILE__),
+                                   '../../templates/report.erb')
         ns = OpenStruct.new svg: svg,
                             backend: backend,
                             indexes: result.indexes,
