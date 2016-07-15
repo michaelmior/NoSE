@@ -48,8 +48,9 @@ module NoSE
       def self.apply(parent, index, state)
         # Check that this index is a valid continuation of the set of joins
         return nil unless index.graph.entities.include?(state.joins.first) &&
-          (index.graph.unique_edges &
-           state.graph.unique_edges == index.graph.unique_edges)
+                          (index.graph.unique_edges &
+                           state.graph.unique_edges ==
+                           index.graph.unique_edges)
 
         # We must move forward on each lookup
         # XXX This disallows plans which look up additional attributes
@@ -78,8 +79,6 @@ module NoSE
         nil
       end
 
-      private
-
       # Check if this index can be used after the current parent
       # @return [Boolean]
       def self.invalid_parent_index?(state, index, parent_index)
@@ -99,6 +98,7 @@ module NoSE
                            parent_index.graph != index.graph) ||
                            index.hash_fields == parent_ids
       end
+      private_class_method :invalid_parent_index?
 
       # Check that we have the required fields to move on with the next lookup
       # @return [Boolean]
@@ -117,29 +117,22 @@ module NoSE
             index_includes.call(state.fields.select { |f| f.parent == entity })
         end
       end
+      private_class_method :last_fields?
 
-      # Modify the state to reflect the fields looked up by the index
-      # @return [void]
-      def update_state(parent)
-        # Get the set of fields which can be filtered by the ordered keys
+      private
+
+      # Get the set of fields which can be filtered by the ordered keys
+      # @return [Array<Fields::Field>]
+      def range_order_prefix
         order_prefix = (@state.eq - @index.hash_fields) & @index.order_fields
         order_prefix << @state.range unless @state.range.nil?
         order_prefix = order_prefix.zip(@index.order_fields)
-        order_prefix = order_prefix.take_while { |x, y| x == y }.map(&:first)
+        order_prefix.take_while { |x, y| x == y }.map(&:first)
+      end
 
-        # Find fields which are filtered by the index
-        @eq_filter = @index.hash_fields + (@state.eq & order_prefix.to_set)
-        if order_prefix.include?(@state.range)
-          @range_filter = @state.range
-          @state.range = nil
-        else
-          @range_filter = nil
-        end
-
-        # Remove fields resolved by this index
-        @state.fields -= @index.all_fields
-        @state.eq -= @eq_filter
-
+      # Perform any ordering implicit to this index
+      # @return [Boolean] whether this index is by ID
+      def resolve_order
         # We can't resolve ordering if we're doing an ID lookup
         # since only one record exists per row (if it's the same entity)
         # We also need to have the fields used in order
@@ -158,8 +151,13 @@ module NoSE
         end
         @order_by = order_prefix
 
-        # Strip the graph for this index, but if we haven't fetched all
-        # fields, leave the last one so we can perform a separate ID lookup
+        indexed_by_id
+      end
+
+      # Strip the graph for this index, but if we haven't fetched all
+      # fields, leave the last one so we can perform a separate ID lookup
+      # @return [void]
+      def strip_graph(parent)
         hash_entity = @index.hash_fields.first.parent
         if @state.fields_for_graph(@index.graph, hash_entity,
                                    select: true).empty? &&
@@ -172,7 +170,10 @@ module NoSE
         end
 
         @state.graph = QueryGraph::Graph.from_path(@state.path)
+      end
 
+      # Update the cardinality of this step, applying a limit if possible
+      def update_cardinality(parent, indexed_by_id)
         # Calculate the new cardinality assuming no limit
         # Hash cardinality starts at 1 or is the previous cardinality
         if parent.is_a?(RootPlanStep)
@@ -212,6 +213,29 @@ module NoSE
             @state.hash_cardinality = parent.state.cardinality
           end
         end
+      end
+
+      # Modify the state to reflect the fields looked up by the index
+      # @return [void]
+      def update_state(parent)
+        order_prefix = range_order_prefix.to_set
+
+        # Find fields which are filtered by the index
+        @eq_filter = @index.hash_fields + (@state.eq & order_prefix)
+        if order_prefix.include?(@state.range)
+          @range_filter = @state.range
+          @state.range = nil
+        else
+          @range_filter = nil
+        end
+
+        # Remove fields resolved by this index
+        @state.fields -= @index.all_fields
+        @state.eq -= @eq_filter
+
+        indexed_by_id = resolve_order
+        strip_graph parent
+        update_cardinality parent, indexed_by_id
       end
     end
   end
