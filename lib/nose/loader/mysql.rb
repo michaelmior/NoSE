@@ -22,40 +22,7 @@ module NoSE
                skip_existing = true)
         # XXX Assuming backend is thread-safe
         Parallel.each(indexes, in_threads: 2) do |index|
-          client = new_client config
-
-          # Skip this index if it's not empty
-          if skip_existing && !@backend.index_empty?(index)
-            @logger.info "Skipping index #{index.inspect}" if show_progress
-            next
-          end
-          @logger.info "#{index.inspect}" if show_progress
-
-          sql, fields = index_sql index, limit
-          if @query_options
-            results = client.query(sql, **@query_options)
-          else
-            results = client.query(sql).map do |row|
-              row_hash = {}
-              fields.each_with_index do |field, i|
-                value = field.class.value_from_string row[i]
-                row_hash[field.id] = value
-              end
-
-              row_hash
-            end
-          end
-
-          result_chunk = []
-          results.each do |result|
-            result_chunk.push result
-            if result_chunk.length >= 100
-              @backend.index_insert_chunk index, result_chunk
-              result_chunk = []
-            end
-          end
-          @backend.index_insert_chunk index, result_chunk \
-            unless result_chunk.empty?
+          load_index index, config, show_progress, limit, skip_existing
         end
       end
 
@@ -64,46 +31,15 @@ module NoSE
         client = new_client config
 
         workload = Workload.new
-        if @array_options
-          results = client.query('SHOW TABLES').each(**@array_options)
-        else
-          results = client.query('SHOW TABLES').each
-        end
+        results = if @array_options
+                    client.query('SHOW TABLES').each(**@array_options)
+                  else
+                    client.query('SHOW TABLES').each
+                  end
+
         results.each do |table, *|
-          entity = Entity.new table
-          count = client.query("SELECT COUNT(*) FROM #{table}").first
-          entity.count = count.is_a?(Hash) ? count.values.first : count
-
-          if @array_options
-            describe = client.query("DESCRIBE #{table}").each(**@array_options)
-          else
-            describe = client.query("DESCRIBE #{table}").each
-          end
-          describe.each do |name, type, _, key, _, _|
-            if key == 'PRI'
-              field_class = Fields::IDField
-            else
-              case type
-              when /datetime/
-                field_class = Fields::DateField
-              when /float/
-                field_class = Fields::FloatField
-              when /text/
-                # TODO: Get length
-                field_class = Fields::StringField
-              when /varchar\(([0-9]+)\)/
-                # TODO: Use length
-                field_class = Fields::StringField
-              when /(tiny)?int/
-                field_class = Fields::IntegerField
-              end
-            end
-
-            entity << field_class.new(name)
-          end
-
-          workload << entity
           # TODO: Handle foreign keys
+          workload << entity_for_table(client, table)
         end
 
         workload
@@ -126,6 +62,49 @@ module NoSE
           Mysql.connect config[:host], config[:username], config[:password],
                         config[:database]
         end
+      end
+
+      # Load a single index into the backend
+      # @return [void]
+      def load_index(index, config, show_progress, limit, skip_existing)
+        client = new_client config
+
+        # Skip this index if it's not empty
+        if skip_existing && !@backend.index_empty?(index)
+          @logger.info "Skipping index #{index.inspect}" if show_progress
+          return
+        end
+        @logger.info index.inspect if show_progress
+
+        sql, fields = index_sql index, limit
+        results = if @query_options
+                    client.query(sql, **@query_options)
+                  else
+                    client.query(sql).map { |row| hash_from_row row, fields }
+                  end
+
+        result_chunk = []
+        results.each do |result|
+          result_chunk.push result
+          next if result_chunk.length < 100
+
+          @backend.index_insert_chunk index, result_chunk
+          result_chunk = []
+        end
+        @backend.index_insert_chunk index, result_chunk \
+          unless result_chunk.empty?
+      end
+
+      # Construct a hash from the given row returned by the client
+      # @return [Hash]
+      def hash_from_row(row, fields)
+        row_hash = {}
+        fields.each_with_index do |field, i|
+          value = field.class.value_from_string row[i]
+          row_hash[field.id] = value
+        end
+
+        row_hash
       end
 
       # Get all the fields selected by this index
@@ -171,6 +150,46 @@ module NoSE
 
         @logger.debug query
         [query, fields]
+      end
+
+      # Generate an entity definition from a given table
+      # @return [Entity]
+      def entity_for_table(client, table)
+        entity = Entity.new table
+        count = client.query("SELECT COUNT(*) FROM #{table}").first
+        entity.count = count.is_a?(Hash) ? count.values.first : count
+
+        describe = if @array_options
+                     client.query("DESCRIBE #{table}").each(**@array_options)
+                   else
+                     client.query("DESCRIBE #{table}").each
+                   end
+
+        describe.each do |name, type, _, key|
+          field_class = key == 'PRI' ? Fields::IDField : field_class(type)
+          entity << field_class.new(name)
+        end
+
+        entity
+      end
+
+      # Produce the Ruby class used to represent a MySQL type
+      # @return [Class]
+      def field_class(type)
+        case type
+        when /datetime/
+          Fields::DateField
+        when /float/
+          Fields::FloatField
+        when /text/
+          # TODO: Get length
+          Fields::StringField
+        when /varchar\(([0-9]+)\)/
+          # TODO: Use length
+          Fields::StringField
+        when /(tiny)?int/
+          Fields::IntegerField
+        end
       end
     end
   end
