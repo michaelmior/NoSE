@@ -18,7 +18,7 @@ module NoSE
 
       # @abstract Subclasses implement to check if an index already exists
       # @return [Boolean]
-      def index_exists?(index)
+      def index_exists?(_index)
         false
       end
 
@@ -47,8 +47,8 @@ module NoSE
       # @abstract Subclasses should create indexes
       # :nocov:
       # @return [Enumerable]
-      def indexes_ddl(execute = false, skip_existing = false,
-                      drop_existing = false)
+      def indexes_ddl(_execute = false, _skip_existing = false,
+                      _drop_existing = false)
         fail NotImplementedError
       end
       # :nocov:
@@ -56,7 +56,7 @@ module NoSE
       # @abstract Subclasses should return sample values from the index
       # :nocov:
       # @return [Array<Hash>]
-      def indexes_sample(index, count)
+      def indexes_sample(_index, _count)
         fail NotImplementedError
       end
       # :nocov:
@@ -64,30 +64,12 @@ module NoSE
       # Prepare a query to be executed with the given plans
       # @return [PreparedQuery]
       def prepare_query(query, fields, conditions, plans = [])
-        if plans.empty?
-          plan = @plans.find do |possible_plan|
-            possible_plan.query == query
-          end unless query.nil?
-          fail PlanNotFound if plan.nil?
-        else
-          plan = plans.first
-        end
+        plan = plans.empty? ? find_query_plans(query) : plans.first
 
         state = Plans::QueryState.new(query, @model) unless query.nil?
         first_step = Plans::RootPlanStep.new state
         steps = [first_step] + plan.to_a + [nil]
-        exec_steps = steps.each_cons(3).map do |prev_step, step, next_step|
-          step_class = StatementStep.subtype_class step.subtype_name
-
-          # Check if the subclass has overridden this step
-          subclass_step_name = step_class.name.sub \
-            'NoSE::Backend::BackendBase', self.class.name
-          step_class = Object.const_get subclass_step_name
-          step_class.new client, fields, conditions,
-                         step, next_step, prev_step
-        end
-
-        PreparedQuery.new query, exec_steps
+        PreparedQuery.new query, prepare_query_steps(steps, fields, conditions)
       end
 
       # Prepare a statement to be executed with the given plans
@@ -113,11 +95,7 @@ module NoSE
       # @return [PreparedUpdate]
       def prepare_update(update, update_settings, plans)
         # Search for plans if they were not given
-        if plans.empty?
-          plans = @update_plans.select do |possible_plan|
-            possible_plan.statement == update
-          end
-        end
+        plans = find_update_plans(update) if plans.empty?
         fail PlanNotFound if plans.empty?
 
         # Prepare each plan
@@ -130,32 +108,11 @@ module NoSE
           end
 
           steps = []
-          if delete
-            step_class = DeleteStatementStep
-            subclass_step_name = step_class.name.sub \
-              'NoSE::Backend::BackendBase', self.class.name
-            step_class = Object.const_get subclass_step_name
-            steps << step_class.new(client, plan.index)
-          end
+          add_delete_step(plan, steps) if delete
           return PreparedUpdate.new update, [], steps if delete && !insert
+          add_insert_step(plan, steps, update_settings) if insert
 
-          if insert
-            step_class = InsertStatementStep
-            subclass_step_name = step_class.name.sub \
-              'NoSE::Backend::BackendBase', self.class.name
-            step_class = Object.const_get subclass_step_name
-            steps << step_class.new(client, plan.index,
-                                    update_settings.map(&:field))
-          end
-
-          # Prepare plans for each support query
-          support_plans = plan.query_plans.map do |query_plan|
-            query = query_plan.instance_variable_get(:@query)
-            prepare_query query, query_plan.select_fields, query_plan.params,
-                          [query_plan.steps]
-          end
-
-          PreparedUpdate.new update, support_plans, steps
+          PreparedUpdate.new update, prepare_support_plans(plan), steps
         end
       end
 
@@ -174,7 +131,8 @@ module NoSE
 
       # Look up data on an index in the backend
       class IndexLookupStatementStep < StatementStep
-        def initialize(client, select, conditions, step, next_step, prev_step)
+        def initialize(client, _select, _conditions,
+                       step, next_step, prev_step)
           @client = client
           @step = step
           @index = step.index
@@ -263,20 +221,26 @@ module NoSE
           #      the one in the query, which is always true for now
           range = @step.range && conditions.values.find(&:range?)
 
-          results.select! do |row|
-            select = eq_conditions.all? do |condition|
-              row[condition.field.id] == condition.value
-            end
-
-            if range
-              range_check = row[range.field.id].method(range.operator)
-              select &&= range_check.call range.value
-            end
-
-            select
-          end
+          results.select! { |row| include_row?(row, eq_conditions, range) }
 
           results
+        end
+
+        private
+
+        # Check if the row should be included in the result
+        # @return [Boolean]
+        def include_row?(row, eq_conditions, range)
+          select = eq_conditions.all? do |condition|
+            row[condition.field.id] == condition.value
+          end
+
+          if range
+            range_check = row[range.field.id].method(range.operator)
+            select &&= range_check.call range.value
+          end
+
+          select
         end
       end
 
@@ -309,6 +273,71 @@ module NoSE
         # @return [Array<Hash>]
         def process(_conditions, results)
           results[0..@limit - 1]
+        end
+      end
+
+      private
+
+      # Find plans for a given query
+      # @return [Array<Plans::QueryPlan>]
+      def find_query_plans(query)
+        plan = @plans.find do |possible_plan|
+          possible_plan.query == query
+        end unless query.nil?
+        fail PlanNotFound if plan.nil?
+      end
+
+      # Prepare all the steps for executing a given query
+      # @return [Array<StatementStep>]
+      def prepare_query_steps(steps, fields, conditions)
+        steps.each_cons(3).map do |prev_step, step, next_step|
+          step_class = StatementStep.subtype_class step.subtype_name
+
+          # Check if the subclass has overridden this step
+          subclass_step_name = step_class.name.sub \
+            'NoSE::Backend::BackendBase', self.class.name
+          step_class = Object.const_get subclass_step_name
+          step_class.new client, fields, conditions,
+                         step, next_step, prev_step
+        end
+      end
+
+      # Find plans for a given update
+      # @return [Array<Plans::UpdatePlan>]
+      def find_update_plans(update)
+        @update_plans.select do |possible_plan|
+          possible_plan.statement == update
+        end
+      end
+
+      # Add a delete step to a prepared update plan
+      # @return [void]
+      def add_delete_step(plan, steps)
+        step_class = DeleteStatementStep
+        subclass_step_name = step_class.name.sub \
+          'NoSE::Backend::BackendBase', self.class.name
+        step_class = Object.const_get subclass_step_name
+        steps << step_class.new(client, plan.index)
+      end
+
+      # Add an insert step to a prepared update plan
+      # @return [void]
+      def add_insert_step(plan, steps, update_settings)
+        step_class = InsertStatementStep
+        subclass_step_name = step_class.name.sub \
+          'NoSE::Backend::BackendBase', self.class.name
+        step_class = Object.const_get subclass_step_name
+        steps << step_class.new(client, plan.index,
+                                update_settings.map(&:field))
+      end
+
+      # Prepare plans for each support query
+      # @return [Array<PreparedQuery>]
+      def prepare_support_plans(plan)
+        plan.query_plans.map do |query_plan|
+          query = query_plan.instance_variable_get(:@query)
+          prepare_query query, query_plan.select_fields, query_plan.params,
+                        [query_plan.steps]
         end
       end
     end
@@ -418,7 +447,7 @@ module NoSE
         end
 
         # Combine the results from multiple support queries
-        if support.length > 0
+        if support.empty?
           support = support.first.product(*support[1..-1])
           support.map! { |results| results.reduce(&:merge) }
         end
