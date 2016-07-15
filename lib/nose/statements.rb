@@ -177,7 +177,7 @@ module NoSE
     # Populate the fields selected by this query
     # @return [void]
     def populate_fields
-      @select = @tree[:select].flatten.each_slice(2).map do |field|
+      @select = @tree[:select].flatten.each_slice(2).flat_map do |field|
         # Find the entity along the path
         entity = longest_entity_path[@tree[:path].index(field.first)]
 
@@ -191,7 +191,7 @@ module NoSE
 
           field
         end
-      end.flatten(1).to_set
+      end.to_set
 
       return @order = [] if @tree[:order].nil?
       @order = @tree[:order][:fields].each_slice(2).map do |field|
