@@ -29,7 +29,7 @@ module NoSE
     # Add an {Entity} to the workload
     # @return [Entity]
     def add_entity(entity)
-      fail InvalidEntity, 'no primary keys defined' if entity.id_fields.empty?
+      fail InvalidEntity, 'no primary key defined' if entity.id_field.nil?
       @entities[entity.name] = entity
     end
 

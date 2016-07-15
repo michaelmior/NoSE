@@ -21,7 +21,7 @@ module NoSE
                                 ' WHERE Tweet.TweetId = ?', workload.model
         good_index = query.materialize_view
         bad_index = good_index.dup
-        path = NoSE::KeyPath.new [user.id_fields.first, user['Favourite']]
+        path = NoSE::KeyPath.new [user.id_field, user['Favourite']]
         bad_index.instance_variable_set :@path, path
         bad_index.instance_variable_set :@graph,
                                         NoSE::QueryGraph::Graph.from_path(path)
@@ -41,7 +41,7 @@ module NoSE
                                 [user['UserId'], tweet['TweetId']],
                                 [tweet['Timestamp'], tweet['Body']],
                                 QueryGraph::Graph.from_path(
-                                  [user.id_fields.first, user['Tweets']]
+                                  [user.id_field, user['Tweets']]
                                 )
         planner = QueryPlanner.new workload.model, [index], cost_model
         query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User WHERE ' \
@@ -62,11 +62,11 @@ module NoSE
         index1 = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
                                  [user['Username']],
                                  QueryGraph::Graph.from_path(
-                                   [user.id_fields.first, user['Tweets']]
+                                   [user.id_field, user['Tweets']]
                                  )
         index2 = NoSE::Index.new [tweet['TweetId']], [], [tweet['Body']],
                                  QueryGraph::Graph.from_path(
-                                   [tweet.id_fields.first]
+                                   [tweet.id_field]
                                  )
         planner = QueryPlanner.new workload.model, [index1, index2], cost_model
         query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User WHERE ' \
@@ -95,7 +95,7 @@ module NoSE
         index = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
                                 [tweet['Timestamp'], tweet['Body']],
                                 QueryGraph::Graph.from_path(
-                                  [user.id_fields.first, user['Tweets']]
+                                  [user.id_field, user['Tweets']]
                                 )
         planner = QueryPlanner.new workload.model, [index], cost_model
         query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User WHERE ' \
@@ -126,12 +126,12 @@ module NoSE
                                  [tweet['Timestamp'], tweet['TweetId']],
                                  [tweet['Body']],
                                  QueryGraph::Graph.from_path(
-                                   [user.id_fields.first, user['Tweets']]
+                                   [user.id_field, user['Tweets']]
                                  )
         index2 = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
                                  [tweet['Timestamp'], tweet['Body']],
                                  QueryGraph::Graph.from_path(
-                                   [user.id_fields.first, user['Tweets']]
+                                   [user.id_field, user['Tweets']]
                                  )
         planner = QueryPlanner.new workload.model, [index1, index2], cost_model
         query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User ' \
@@ -152,7 +152,7 @@ module NoSE
         index = NoSE::Index.new [tweet['TweetId']], [],
                                 [tweet['Body'], tweet['Timestamp']],
                                 QueryGraph::Graph.from_path(
-                                  [tweet.id_fields.first]
+                                  [tweet.id_field]
                                 )
         planner = QueryPlanner.new workload.model, [index], cost_model
         query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet ' \
@@ -167,7 +167,7 @@ module NoSE
         index = NoSE::Index.new [tweet['TweetId']], [],
                                 [tweet['Body'], tweet['Timestamp']],
                                 QueryGraph::Graph.from_path(
-                                  [tweet.id_fields.first]
+                                  [tweet.id_field]
                                 )
         planner = QueryPlanner.new workload.model, [index], cost_model
         query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet WHERE ' \
@@ -220,7 +220,7 @@ module NoSE
           index = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
                                   [tweet['Body']],
                                   QueryGraph::Graph.from_path(
-                                    [user.id_fields.first, user['Tweets']]
+                                    [user.id_field, user['Tweets']]
                                   )
           step = IndexLookupPlanStep.new index, @state,
                                          RootPlanStep.new(@state)
@@ -231,9 +231,9 @@ module NoSE
       it 'fails if required fields are not available' do
         indexes = [
           NoSE::Index.new([user['Username']], [user['UserId']], [user['City']],
-                          QueryGraph::Graph.from_path([user.id_fields.first])),
+                          QueryGraph::Graph.from_path([user.id_field])),
           NoSE::Index.new([tweet['TweetId']], [], [tweet['Body']],
-                          QueryGraph::Graph.from_path([tweet.id_fields.first]))
+                          QueryGraph::Graph.from_path([tweet.id_field]))
         ]
         planner = QueryPlanner.new workload.model, indexes, cost_model
         query = NoSE::Query.new 'SELECT Tweet.Body FROM Tweet.User ' \
@@ -263,10 +263,10 @@ module NoSE
         indexes = [
           NoSE::Index.new([user['Username']],
                           [user['UserId'], tweet['TweetId']], [],
-                          QueryGraph::Graph.from_path([user.id_fields.first,
+                          QueryGraph::Graph.from_path([user.id_field,
                                                        user['Tweets']])),
           NoSE::Index.new([tweet['TweetId']], [], [tweet['Body']],
-                          QueryGraph::Graph.from_path([tweet.id_fields.first]))
+                          QueryGraph::Graph.from_path([tweet.id_field]))
         ]
 
         planner = QueryPlanner.new workload.model, indexes, cost_model
@@ -312,7 +312,7 @@ module NoSE
                                  tweet['TweetId']],
                                 [tweet['Body']],
                                 QueryGraph::Graph.from_path(
-                                  [user.id_fields.first, user['Tweets']]
+                                  [user.id_field, user['Tweets']]
                                 )
 
         planner = QueryPlanner.new workload.model, [index], cost_model
@@ -333,7 +333,7 @@ module NoSE
                                 [tweet['TweetId'], user['UserId']],
                                 [user['City']],
                                 QueryGraph::Graph.from_path(
-                                  [tweet.id_fields.first, tweet['User']]
+                                  [tweet.id_field, tweet['User']]
                                 )
         workload.add_statement update
         indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload \
@@ -361,7 +361,7 @@ module NoSE
                                   'WHERE User.UserId = ?', workload.model
         index = NoSE::Index.new [user['UserId']], [], [user['City']],
                                 QueryGraph::Graph.from_path(
-                                  [user.id_fields.first]
+                                  [user.id_field]
                                 )
         planner = UpdatePlanner.new workload.model, [], cost_model
         plans = planner.find_plans_for_update update, [index]

@@ -108,7 +108,7 @@ module NoSE
     def find_longest_path(path_entities)
       path = path_entities.map(&:to_s)[1..-1]
       @longest_entity_path = [@from]
-      keys = [@from.id_fields.first] # XXX broken for composite keys
+      keys = [@from.id_field]
 
       path.each do |key|
         # Search through foreign keys
@@ -381,7 +381,7 @@ module NoSE
     # @return [KeyPath]
     def splice_path(source, target, from)
       if source.first.parent == from
-        query_keys = KeyPath.new([from.id_fields.first])
+        query_keys = KeyPath.new([from.id_field])
       else
         query_keys = KeyPath.new(source.each_cons(2).take_while do |key, _|
           next true if key.instance_of?(Fields::IDField)
@@ -453,7 +453,7 @@ module NoSE
 
       populate_settings
       fail InvalidStatementException, 'Must insert primary key' \
-        unless @settings.map(&:field).include?(@from.id_fields.first)
+        unless @settings.map(&:field).include?(@from.id_field)
 
       populate_conditions
 
@@ -488,9 +488,9 @@ module NoSE
            (key.is_a?(Fields::ForeignKeyField) &&
             path.entities.include?(key.entity))
           # Find the ID for this entity in the path and include a predicate
-          id = key.entity.id_fields.first
+          id = key.entity.id_field
           "#{path.find_field_parent(id).name}.#{id.name} = ?"
-        elsif path.entities.map { |e| e.id_fields.first }.include?(key)
+        elsif path.entities.map { |e| e.id_field }.include?(key)
           # Include the key for the entity being inserted
           "#{path.find_field_parent(key).name}.#{key.name} = ?"
         end
@@ -513,7 +513,7 @@ module NoSE
       keys1 = []
       keys2 = []
       @conditions.each_value.map(&:field).each do |key|
-        key = key.entity.id_fields.first
+        key = key.entity.id_field
 
         keys1 << key if path1.include?(key)
         keys2 << key if path2.include?(key)
@@ -533,7 +533,7 @@ module NoSE
     # The settings fields are provided with the insertion
     def given_fields
       @settings.map(&:field) + @conditions.each_value.map do |condition|
-        condition.field.entity.id_fields.first
+        condition.field.entity.id_field
       end
     end
 
@@ -655,15 +655,15 @@ module NoSE
       validate_keys
 
       # This is needed later when planning updates
-      @eq_fields = [@target.parent.id_fields.first,
-                    @target.entity.id_fields.first]
+      @eq_fields = [@target.parent.id_field,
+                    @target.entity.id_field]
 
       populate_conditions
     end
 
     # The two key fields are provided with the connection
     def given_fields
-      [@target.parent.id_fields.first, @target.entity.id_fields.first]
+      [@target.parent.id_field, @target.entity.id_field]
     end
 
     private
@@ -672,7 +672,7 @@ module NoSE
     # @return [void]
     def validate_keys
       # XXX Only works for non-composite PKs
-      source_type = @from.id_fields.first.class.const_get 'TYPE'
+      source_type = @from.id_field.class.const_get 'TYPE'
       fail TypeError unless source_type.nil? || source_pk.is_a?(type)
 
       target_type = @target.class.const_get 'TYPE'
@@ -682,8 +682,8 @@ module NoSE
     # Populate the conditions
     # @return [void]
     def populate_conditions
-      source_id = @from.id_fields.first
-      target_id = @target.entity.id_fields.first
+      source_id = @from.id_field
+      target_id = @target.entity.id_field
       @conditions = {
         source_id.id => Condition.new(source_id, :'=', @source_pk),
         target_id.id => Condition.new(target_id, :'=', @target_pk)
@@ -693,14 +693,14 @@ module NoSE
     # Get the where clause for a support query over the given path
     # @return [String]
     def support_query_condition_for_path(path, reversed)
-      key = (reversed ? target.entity : target.parent).id_fields.first
+      key = (reversed ? target.entity : target.parent).id_field
       path = path.reverse if path.entities.last != key.entity
       eq_key = path.entries[-1]
       if eq_key.is_a? Fields::ForeignKeyField
-        where = "WHERE #{eq_key.name}.#{eq_key.entity.id_fields.first.name} = ?"
+        where = "WHERE #{eq_key.name}.#{eq_key.entity.id_field.name} = ?"
       else
         where = "WHERE #{eq_key.parent.name}." \
-                "#{eq_key.parent.id_fields.first.name} = ?"
+                "#{eq_key.parent.id_field.name} = ?"
       end
 
       where

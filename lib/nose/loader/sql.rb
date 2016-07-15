@@ -52,7 +52,7 @@ module NoSE
       # Get all the fields selected by this index
       def index_sql_select(index)
         fields = index.hash_fields.to_a + index.order_fields + index.extra.to_a
-        fields += index.path.entities.last.id_fields
+        fields << index.path.entities.last.id_field
 
         [fields, fields.map do |field|
           "#{field.parent.name}__#{field.name}___" \
@@ -70,7 +70,7 @@ module NoSE
         keys = index.path.each_cons(2).map do |_prev_key, key|
           is_many = key.relationship == :many
           key = key.reverse if is_many
-          fields = [key.entity.id_fields.first.name.to_sym, key.name.to_sym]
+          fields = [key.entity.id_field.name.to_sym, key.name.to_sym]
           fields = fields.reverse if is_many
           Hash[[fields]]
         end

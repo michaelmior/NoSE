@@ -80,7 +80,7 @@ module NoSE
         params = Hash[params.each_value.map do |condition|
           field = condition.field
           if field.is_a?(Fields::ForeignKeyField)
-            field = field.entity.id_fields.first
+            field = field.entity.id_field
             condition = Condition.new field, condition.operator,
                                       condition.value
           end

@@ -90,7 +90,7 @@ module NoSE
         last_parent_entity = state.joins.reverse.find do |entity|
           parent_index.graph.entities.include? entity
         end
-        parent_ids = last_parent_entity.id_fields.to_set
+        parent_ids = Set.new [last_parent_entity.id_field]
         has_ids = parent_ids.subset? parent_index.all_fields
         return true if has_ids && index.hash_fields.to_set != parent_ids
 
@@ -113,7 +113,7 @@ module NoSE
           state.graph.leaf_entity?(entity)
         end
         leaf_entities.all? do |entity|
-          index_includes.call(entity.id_fields) ||
+          index_includes.call([entity.id_field]) ||
             index_includes.call(state.fields.select { |f| f.parent == entity })
         end
       end
@@ -146,7 +146,7 @@ module NoSE
         first_join = @state.query.join_order.detect do |entity|
           @index.graph.entities.include? entity
         end
-        indexed_by_id = @index.hash_fields.include?(first_join.id_fields.first)
+        indexed_by_id = @index.hash_fields.include?(first_join.id_field)
         order_prefix = @state.order_by.longest_common_prefix(
           @index.order_fields - @eq_filter.to_a
         )

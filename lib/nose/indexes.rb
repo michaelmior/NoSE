@@ -71,10 +71,10 @@ module NoSE
     end
 
     # Check if this index is a mapping from the key of the given entity
-    # @see Entity#id_fields
+    # @see Entity#id_field
     # @return [Boolean]
     def identity_for?(entity)
-      @hash_fields == entity.id_fields.to_set && @graph.nodes.size == 1
+      @hash_fields == [entity.id_field].to_set && @graph.nodes.size == 1
     end
 
     # Check if this index maps from the primary
@@ -139,7 +139,7 @@ module NoSE
     # @return [void]
     def validate_path_keys
       fail InvalidIndexException, 'missing path entity keys' \
-        unless @graph.entities.flat_map(&:id_fields).to_set.subset? \
+        unless @graph.entities.map(&:id_field).to_set.subset? \
           (@hash_fields + @order_fields).to_set
     end
 
@@ -167,8 +167,8 @@ module NoSE
     # Create a simple index which maps entity keys to other fields
     # @return [Index]
     def simple_index
-      Index.new id_fields, [], fields.values - id_fields,
-                QueryGraph::Graph.from_path([id_fields.first]), name
+      Index.new [id_field], [], fields.values - [id_field],
+                QueryGraph::Graph.from_path([id_field]), name
     end
   end
 
@@ -191,7 +191,7 @@ module NoSE
     # @return [Array<Fields::Field>]
     def materialized_view_eq(hash_entity)
       eq = @eq_fields.select { |field| field.parent == hash_entity }
-      eq = join_order.last.id_fields if eq.empty?
+      eq = [join_order.last.id_field] if eq.empty?
 
       eq
     end
@@ -210,7 +210,7 @@ module NoSE
       end
 
       # Ensure we include IDs of the final entity
-      order_fields += join_order.flat_map(&:id_fields)
+      order_fields += join_order.map(&:id_field)
 
       order_fields.uniq
     end

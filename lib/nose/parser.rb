@@ -320,7 +320,7 @@ module NoSE
     # Check if a key is included in the path
     # @return [Boolean]
     def include?(key)
-      @keys.include?(key) || entities.any? { |e| e.id_fields.include? key }
+      @keys.include?(key) || entities.any? { |e| e.id_field == key }
     end
 
     # Combine two key paths by gluing together the keys
@@ -345,12 +345,12 @@ module NoSE
     def [](index)
       if index.is_a? Range
         keys = @keys[index]
-        keys[0] = keys[0].entity.id_fields.first \
+        keys[0] = keys[0].entity.id_field \
           unless keys.empty? || keys[0].instance_of?(Fields::IDField)
         KeyPath.new(keys)
       else
         key = @keys[index]
-        key = key.entity.id_fields.first \
+        key = key.entity.id_field \
           unless key.nil? || key.instance_of?(Fields::IDField)
         key
       end
@@ -385,7 +385,7 @@ module NoSE
     # @return [KeyPath]
     def splice(target, entity)
       if first.parent == entity
-        query_keys = KeyPath.new([entity.id_fields.first])
+        query_keys = KeyPath.new([entity.id_field])
       else
         query_keys = []
         each do |key|
@@ -431,7 +431,7 @@ module NoSE
     # @return [Array<Fields::Field>]
     def reverse_path
       return [] if @keys.empty?
-      [@keys.last.entity.id_fields.first] + @keys[1..-1].reverse.map(&:reverse)
+      [@keys.last.entity.id_field] + @keys[1..-1].reverse.map(&:reverse)
     end
   end
 

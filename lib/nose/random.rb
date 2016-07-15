@@ -248,7 +248,7 @@ module NoSE
     # Return a random path through the entity graph
     # @return [KeyPath]
     def random_path(max_length)
-      path = [@model.entities.values.sample.id_fields.first]
+      path = [@model.entities.values.sample.id_field]
       while path.length < max_length
         # Find a list of keys to entities we have not seen before
         last_entity = path.last.entity

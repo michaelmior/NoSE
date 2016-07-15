@@ -23,7 +23,7 @@ module NoSE
         index = NoSE::Index.new [user['City']], [user['UserId']],
                                 [user['Username']],
                                 QueryGraph::Graph.from_path(
-                                  [user.id_fields.first]
+                                  [user.id_field]
                                 )
         loader = CsvLoader.new workload, backend
         loader.load([index], directory: '/tmp/csv')

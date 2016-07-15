@@ -303,7 +303,7 @@ module NoSE
 
         fail InvalidPathException, 'Need start for path conversion' \
           if start.nil?
-        keys = [start.entity.id_fields.first]
+        keys = [start.entity.id_field]
         entities = Set.new [start.entity]
 
         edges = edges_for_entity start.entity

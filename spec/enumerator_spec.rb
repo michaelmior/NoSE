@@ -11,7 +11,7 @@ module NoSE
 
       expect(indexes.to_a).to include \
         Index.new [user['City']], [user['UserId']], [user['Username']],
-                  QueryGraph::Graph.from_path([user.id_fields.first])
+                  QueryGraph::Graph.from_path([user.id_field])
     end
 
     it 'produces a simple index for a foreign key join' do
@@ -22,7 +22,7 @@ module NoSE
       expect(indexes).to include \
         Index.new [user['City']], [user['UserId'], tweet['TweetId']],
                   [tweet['Body']],
-                  QueryGraph::Graph.from_path([user.id_fields.first,
+                  QueryGraph::Graph.from_path([user.id_field,
                                                user['Tweets']])
     end
 
@@ -32,7 +32,7 @@ module NoSE
       indexes = enum.indexes_for_query query
       expect(indexes).to include \
         Index.new [user['UserId']], [tweet['TweetId']], [],
-                  QueryGraph::Graph.from_path([tweet.id_fields.first,
+                  QueryGraph::Graph.from_path([tweet.id_field,
                                                tweet['User']])
     end
 
@@ -44,7 +44,7 @@ module NoSE
 
       expect(indexes.to_a).to include \
         Index.new [user['City']], [user['UserId']], [user['Username']],
-                  QueryGraph::Graph.from_path([user.id_fields.first])
+                  QueryGraph::Graph.from_path([user.id_field])
     end
 
     it 'does not produce empty indexes' do
@@ -88,7 +88,7 @@ module NoSE
 
       expect(indexes.to_a).to include \
         Index.new [user['City']], [user['UserId']], [user['Username']],
-                  QueryGraph::Graph.from_path([user.id_fields.first])
+                  QueryGraph::Graph.from_path([user.id_field])
     end
   end
 end

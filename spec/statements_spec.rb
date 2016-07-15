@@ -118,7 +118,7 @@ module NoSE
                           workload.model
       index = NoSE::Index.new [tweet['TweetId']], [], [tweet['Timestamp']],
                               QueryGraph::Graph.from_path(
-                                [tweet.id_fields.first]
+                                [tweet.id_field]
                               ), workload.model
       expect(update.support_queries index).to be_empty
     end
@@ -130,7 +130,7 @@ module NoSE
                               [tweet['TweetId'], user['UserId']],
                               [user['City']],
                               QueryGraph::Graph.from_path(
-                                [tweet.id_fields.first, tweet['User']]
+                                [tweet.id_field, tweet['User']]
                               ), workload.model
       query = update.support_queries(index).first
       expect(query.text).to start_with \
@@ -145,7 +145,7 @@ module NoSE
                           workload.model
       index = NoSE::Index.new [user['Username'], user['UserId']], [],
                               [user['City']], QueryGraph::Graph.from_path(
-                                [user.id_fields.first]
+                                [user.id_field]
                               ), workload.model
       expect(update.support_queries(index).first.text).to start_with \
         'SELECT User.Username FROM User WHERE User.UserId = ?'
@@ -329,32 +329,32 @@ module NoSE
 
       it 'fails if keys do not match' do
         expect do
-          KeyPath.new [user.id_fields.first, tweet['User']]
+          KeyPath.new [user.id_field, tweet['User']]
         end.to raise_error InvalidKeyPathException
       end
     end
 
     it 'can give the list of entities traversed' do
-      key_path = KeyPath.new [user.id_fields.first, user['Tweets']]
+      key_path = KeyPath.new [user.id_field, user['Tweets']]
       expect(key_path.entities).to match_array [user, tweet]
     end
 
     it 'can give a key from a single index' do
-      key_path = KeyPath.new [user.id_fields.first, user['Tweets']]
-      expect(key_path[1]).to eq(tweet.id_fields.first)
+      key_path = KeyPath.new [user.id_field, user['Tweets']]
+      expect(key_path[1]).to eq(tweet.id_field)
     end
 
     it 'can give a new path from a range' do
-      key_path = KeyPath.new [user.id_fields.first,
+      key_path = KeyPath.new [user.id_field,
                               user['Tweets'],
                               tweet['Link']]
-      new_path = KeyPath.new [tweet.id_fields.first, tweet['Link']]
+      new_path = KeyPath.new [tweet.id_field, tweet['Link']]
       expect(key_path[1..2]).to eq(new_path)
     end
 
     it 'can reverse itself' do
-      key_path = KeyPath.new [user.id_fields.first, user['Tweets']]
-      reverse_path = KeyPath.new [tweet.id_fields.first, tweet['User']]
+      key_path = KeyPath.new [user.id_field, user['Tweets']]
+      reverse_path = KeyPath.new [tweet.id_field, tweet['User']]
       expect(key_path.reverse).to eq(reverse_path)
     end
 

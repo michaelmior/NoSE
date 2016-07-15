@@ -47,18 +47,6 @@ module NoSE
       expect { entity['Bar'] }.to raise_error FieldNotFound
     end
 
-    it 'can have composite primary keys' do
-      entity = Entity.new 'Foo' do
-        ID 'Bar'
-        Integer 'Baz'
-        Integer 'Quux'
-
-        PrimaryKey 'Baz', 'Quux'
-      end
-
-      expect(entity.id_fields).to match_array [entity['Baz'], entity['Quux']]
-    end
-
     it 'can generate random entities' do
       entity << Fields::IntegerField.new('Bar')
       expect(entity.random_entity).to be_a Hash

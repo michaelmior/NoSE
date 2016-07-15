@@ -33,9 +33,9 @@ module NoSE
 
         indexes = [
           NoSE::Index.new([user['City']], [user['UserId']], [],
-                          QueryGraph::Graph.from_path([user.id_fields.first])),
+                          QueryGraph::Graph.from_path([user.id_field])),
           NoSE::Index.new([user['UserId']], [], [user['Username']],
-                          QueryGraph::Graph.from_path([user.id_fields.first]))
+                          QueryGraph::Graph.from_path([user.id_field]))
         ]
         search = Search.new(workload, cost_model)
         expect do
@@ -64,11 +64,11 @@ module NoSE
 
         expect(indexes).to match_array [
           NoSE::Index.new([user['Country']], [user['UserId']], [],
-                          QueryGraph::Graph.from_path([user.id_fields.first])),
+                          QueryGraph::Graph.from_path([user.id_field])),
           NoSE::Index.new([user['City']], [user['UserId']], [],
-                          QueryGraph::Graph.from_path([user.id_fields.first])),
+                          QueryGraph::Graph.from_path([user.id_field])),
           NoSE::Index.new([user['UserId']], [], [user['Username']],
-                          QueryGraph::Graph.from_path([user.id_fields.first]))
+                          QueryGraph::Graph.from_path([user.id_field]))
         ]
       end
     end

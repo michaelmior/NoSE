@@ -48,7 +48,7 @@ module NoSE
       NoSE::Index.new [user['Username']],
                       [tweet['Timestamp'], user['UserId'], tweet['TweetId']],
                       [tweet['Body']],
-                      QueryGraph::Graph.from_path([user.id_fields.first,
+                      QueryGraph::Graph.from_path([user.id_field,
                                                    user['Tweets']]),
                       'TweetIndex'
     end

@@ -105,7 +105,8 @@ module NoSE
     def eq_choices(graph, eq)
       entity_choices = graph.entities.flat_map do |entity|
         # Get the fields for the entity and add in the IDs
-        entity_fields = eq[entity] + entity.id_fields
+        entity_fields = eq[entity] << entity.id_field
+        entity_fields.uniq!
         1.upto(entity_fields.count).flat_map do |n|
           entity_fields.permutation(n).to_a
         end
@@ -150,7 +151,7 @@ module NoSE
 
         order_choices.each do |order|
           # Append the primary key of the entities in the graph if needed
-          order += graph.entities.flat_map(&:id_fields) - (index + order)
+          order += graph.entities.map(&:id_field) - (index + order)
 
           # Partition into the ordering portion
           index.partitions.each do |index_prefix, order_prefix|

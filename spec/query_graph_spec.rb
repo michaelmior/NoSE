@@ -37,12 +37,12 @@ module NoSE
       context 'when converting to a path' do
         it 'can convert single node graphs' do
           graph = Graph.new [user]
-          expect(graph.to_path(user)).to eq KeyPath.new([user.id_fields.first])
+          expect(graph.to_path(user)).to eq KeyPath.new([user.id_field])
         end
 
         it 'can convert longer paths' do
           graph = Graph.new [], [user, tweet, user['Tweets']]
-          expect(graph.to_path(user)).to eq KeyPath.new([user.id_fields.first,
+          expect(graph.to_path(user)).to eq KeyPath.new([user.id_field,
                                                          user['Tweets']])
         end
       end
@@ -54,12 +54,12 @@ module NoSE
         end
 
         it 'converts single entity paths' do
-          path = KeyPath.new [user.id_fields.first]
+          path = KeyPath.new [user.id_field]
           expect(Graph.from_path(path)).to eq Graph.new([user])
         end
 
         it 'converts path with multiple entities' do
-          path = KeyPath.new [user.id_fields.first, user['Tweets']]
+          path = KeyPath.new [user.id_field, user['Tweets']]
           expect(Graph.from_path(path)).to eq \
             Graph.new([], [user, tweet, user['Tweets']])
         end
