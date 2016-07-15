@@ -60,35 +60,24 @@ module NoSE
       end
 
       # Parameters to this update plan
+      # @return [Hash]
       def params
-        if @statement.respond_to?(:conditions)
-          conditions = @statement.conditions
-        else
-          conditions = {}
-        end
-        if @statement.respond_to?(:settings)
-          settings = @statement.settings
-        else
-          settings = []
-        end
+        conditions = if @statement.respond_to?(:conditions)
+                       @statement.conditions
+                     else
+                       {}
+                     end
+        settings = if @statement.respond_to?(:settings)
+                     @statement.settings
+                   else
+                     []
+                   end
 
         params = conditions.merge Hash[settings.map do |setting|
           [setting.field.id, Condition.new(setting.field, :'=', setting.value)]
         end]
 
-        # Ensure we only use primary keys for conditions
-        params = Hash[params.each_value.map do |condition|
-          field = condition.field
-          if field.is_a?(Fields::ForeignKeyField)
-            field = field.entity.id_field
-            condition = Condition.new field, condition.operator,
-                                      condition.value
-          end
-
-          [field.id, condition]
-        end]
-
-        params
+        convert_param_keys params
       end
 
       # Select query plans to actually use here
@@ -148,6 +137,23 @@ module NoSE
       def cost
         @query_plans.sum_by(&:cost) + update_cost
       end
+
+      private
+
+      # Ensure we only use primary keys for conditions
+      # @return [Hash]
+      def convert_param_keys(params)
+        Hash[params.each_value.map do |condition|
+          field = condition.field
+          if field.is_a?(Fields::ForeignKeyField)
+            field = field.entity.id_field
+            condition = Condition.new field, condition.operator,
+                                      condition.value
+          end
+
+          [field.id, condition]
+        end]
+      end
     end
 
     # A planner for update statements in the workload
@@ -187,8 +193,6 @@ module NoSE
                                                statement.eq_fields,
                                                statement.range_field
             end
-
-            state = UpdateState.new statement, cardinality
           else
             # Get the cardinality of the last step to use for the update state
             trees = @query_plans[statement][index]
@@ -199,25 +203,33 @@ module NoSE
             # Multiply the cardinalities because we are crossing multiple
             # relationships and need the cross-product
             cardinality = plans.product_by { |p| p.last.state.cardinality }
-            state = UpdateState.new statement, cardinality
           end
 
-          # Find the required update steps
-          update_steps = []
-          update_steps << DeletePlanStep.new(index, state) \
-            if statement.requires_delete?(index)
-
-          if statement.is_a?(Connect)
-            fields = statement.conditions.each_value.map(&:field)
-          elsif statement.requires_insert?(index)
-            fields = statement.settings.map(&:field)
-          end
-
-          update_steps << InsertPlanStep.new(index, state, fields) \
-            if statement.requires_insert?(index)
-
+          state = UpdateState.new statement, cardinality
+          update_steps = update_steps statement, index, state
           UpdatePlan.new statement, index, trees, update_steps, @cost_model
         end.compact
+      end
+
+      private
+
+      # Find the required update steps
+      # @return [Array<UpdatePlanStep>]
+      def update_steps(statement, index, state)
+        update_steps = []
+        update_steps << DeletePlanStep.new(index, state) \
+          if statement.requires_delete?(index)
+
+        fields = if statement.is_a?(Connect)
+                   statement.conditions.each_value.map(&:field)
+                 elsif statement.requires_insert?(index)
+                   statement.settings.map(&:field)
+                 end
+
+        update_steps << InsertPlanStep.new(index, state, fields) \
+          if statement.requires_insert?(index)
+
+        update_steps
       end
     end
   end
