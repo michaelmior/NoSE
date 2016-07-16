@@ -5,14 +5,13 @@ module NoSE
   module Plans
     # Ongoing state of a query throughout the execution plan
     class QueryState
-      attr_accessor :from, :fields, :eq, :range, :order_by, :path, :graph,
+      attr_accessor :fields, :eq, :range, :order_by, :path, :graph,
                     :joins, :cardinality, :hash_cardinality, :given_fields
       attr_reader :query, :model
 
       def initialize(query, model)
         @query = query
         @model = model
-        @from = query.from
         @fields = query.select
         @eq = query.eq_fields.dup
         @range = query.range_field

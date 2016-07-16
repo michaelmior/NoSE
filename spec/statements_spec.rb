@@ -26,10 +26,6 @@ module NoSE
       let(:statement) { query }
     end
 
-    it 'reports the entity being selected from' do
-      expect(query.from).to eq tweet
-    end
-
     it 'knows its limits' do
       expect(query.limit).to eq 5
     end
