@@ -267,7 +267,7 @@ module NoSE
     # @return [void]
     def populate_settings
       @settings = @tree[:settings].map do |setting|
-        field = @from[setting[:field].to_s]
+        field = entity[setting[:field].to_s]
         value = setting[:value]
 
         type = field.class.const_get 'TYPE'
@@ -344,8 +344,8 @@ module NoSE
 
       # Get the new KeyPath for the support query based on the longest
       # path from the intersection with the statement and index paths
-      path1 = index.path.splice @key_path, @from
-      path2 = index.path.reverse.splice @key_path, @from
+      path1 = index.path.splice @key_path, entity
+      path2 = index.path.reverse.splice @key_path, entity
 
       query_keys = [path1, path2].max_by(&:length)
       support_query_for_path index, query_keys, nil, all
@@ -397,6 +397,8 @@ module NoSE
     include StatementConditions
     include StatementSettings
     include StatementSupportQuery
+
+    alias entity from
 
     def initialize(statement, model, group: nil, label: label)
       super :update, statement, model, group: group, label: label
@@ -453,7 +455,7 @@ module NoSE
 
       populate_settings
       fail InvalidStatementException, 'Must insert primary key' \
-        unless @settings.map(&:field).include?(@from.id_field)
+        unless @settings.map(&:field).include?(entity.id_field)
 
       populate_conditions
 
@@ -464,7 +466,7 @@ module NoSE
     def modifies_index?(index)
       return true if modifies_single_entity_index?(index)
       return false if index.path.length == 1
-      return false unless index.path.entities.include? @from
+      return false unless index.path.entities.include? entity
 
       # Check if the index crosses any of the connection keys
       keys = @conditions.each_value.map(&:field)
@@ -505,7 +507,7 @@ module NoSE
                        !modifies_single_entity_index?(index)
 
       # Get the two path components
-      entity_index = index.path.entities.index @from
+      entity_index = index.path.entities.index entity
       path1 = index.path[0..entity_index - 1]
       path2 = index.path[entity_index + 1..-1]
 
@@ -543,7 +545,7 @@ module NoSE
     # @return [Boolean]
     def modifies_single_entity_index?(index)
       !(@settings.map(&:field).to_set & index.all_fields).empty? &&
-        index.path.length == 1 && index.path.first.parent == @from
+        index.path.length == 1 && index.path.first.parent == entity
     end
 
     # Populate conditions with the foreign key settings
@@ -551,7 +553,7 @@ module NoSE
     def populate_conditions
       connections = @tree[:connections] || []
       connections = connections.map do |connection|
-        field = @from[connection[:target].to_s]
+        field = entity[connection[:target].to_s]
         value = connection[:target_pk]
 
         type = field.class.const_get 'TYPE'
@@ -573,6 +575,8 @@ module NoSE
     include StatementConditions
     include StatementSupportQuery
 
+    alias entity from
+
     def initialize(statement, model, group: nil, label: label)
       super :delete, statement, model, group: group, label: label
 
@@ -583,7 +587,7 @@ module NoSE
 
     # Index contains the single entity to be deleted
     def modifies_index?(index)
-      index.path.entities == [@from]
+      index.path.entities == [entity]
     end
 
     # Specifies that deletes require deletion
@@ -593,7 +597,7 @@ module NoSE
 
     # Get the support queries for deleting from an index
     def support_queries(index)
-      [support_query_for_fields(index, @from.fields)].compact
+      [support_query_for_fields(index, entity.fields)].compact
     end
 
     # The condition fields are provided with the deletion
@@ -645,7 +649,7 @@ module NoSE
     # @return [void]
     def populate_keys
       @source_pk = @tree[:source_pk]
-      @target = @from.foreign_keys[@tree[:target].to_s]
+      @target = source.foreign_keys[@tree[:target].to_s]
       @target_pk = @tree[:target_pk]
 
       # Remove keys from the tree so we match on equality comparisons
@@ -672,7 +676,7 @@ module NoSE
     # @return [void]
     def validate_keys
       # XXX Only works for non-composite PKs
-      source_type = @from.id_field.class.const_get 'TYPE'
+      source_type = source.id_field.class.const_get 'TYPE'
       fail TypeError unless source_type.nil? || source_pk.is_a?(type)
 
       target_type = @target.class.const_get 'TYPE'
@@ -682,7 +686,7 @@ module NoSE
     # Populate the conditions
     # @return [void]
     def populate_conditions
-      source_id = @from.id_field
+      source_id = source.id_field
       target_id = @target.entity.id_field
       @conditions = {
         source_id.id => Condition.new(source_id, :'=', @source_pk),
