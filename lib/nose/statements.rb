@@ -1,4 +1,240 @@
 module NoSE
+  # A single condition in a where clause
+  class Condition
+    attr_reader :field, :is_range, :operator, :value
+    alias range? is_range
+
+    def initialize(field, operator, value)
+      @field = field
+      @operator = operator
+      @is_range = [:>, :>=, :<, :<=].include? operator
+      @value = value
+
+      # XXX: Not frozen by now to support modification during query execution
+      # freeze
+    end
+
+    def inspect
+      "#{@field.inspect} #{@operator} #{value}"
+    end
+
+    # Compare conditions equal by their field and operator
+    # @return [Boolean]
+    def ==(other)
+      @field == other.field && @operator == other.operator
+    end
+    alias eql? ==
+
+    def hash
+      Zlib.crc32 [@field.id, @operator].to_s
+    end
+  end
+
+  # Used to add a list of conditions to a {Statement}
+  module StatementConditions
+    attr_reader :conditions
+
+    private
+
+    # Populate the list of condition objects
+    # @return [void]
+    def populate_conditions
+      conditions = @tree[:where].nil? ? [] : @tree[:where][:expression]
+      conditions = conditions.map { |condition| build_condition condition }
+
+      @eq_fields = conditions.reject(&:range?).map(&:field).to_set
+      @range_field = conditions.find(&:range?)
+      @range_field = @range_field.field unless @range_field.nil?
+
+      @conditions = Hash[conditions.map do |condition|
+        [condition.field.id, condition]
+      end]
+    end
+
+    # Construct a condition object from the parse tree
+    # @return [void]
+    def build_condition(condition)
+      field = find_field_with_prefix @tree[:path],
+                                     condition[:field]
+      Condition.new field, condition[:op].to_sym,
+                    condition_value(condition, field)
+    end
+
+    # Get the value of a condition from the parse tree
+    # @return [Object]
+    def condition_value(condition, field)
+      value = condition[:value]
+
+      # Convert the value to the correct type
+      type = field.class.const_get 'TYPE'
+      value = field.class.value_from_string(value.to_s) \
+        unless type.nil? || value.nil?
+
+      # Don't allow predicates on foreign keys
+      fail InvalidStatementException, 'Predicates cannot use foreign keys' \
+        if field.is_a? Fields::ForeignKeyField
+
+      condition.delete :value
+
+      value
+    end
+  end
+
+  # A path from a primary key to a chain of foreign keys
+  class KeyPath
+    include Enumerable
+
+    extend Forwardable
+    def_delegators :@keys, :each, :inspect, :to_s, :length, :count, :last,
+                   :empty?
+
+    def initialize(keys = [])
+      fail InvalidKeyPathException, 'first key must be an ID' \
+        unless keys.empty? || keys.first.instance_of?(Fields::IDField)
+
+      keys_match = keys.each_cons(2).map do |prev_key, key|
+        key.parent == prev_key.entity
+      end.all?
+      fail InvalidKeyPathException, 'keys must match along the path' \
+        unless keys_match
+
+      @keys = keys
+    end
+
+    # Two key paths are equal if their underlying keys are equal or the reverse
+    # @return [Boolean]
+    def ==(other, check_reverse = true)
+      @keys == other.instance_variable_get(:@keys) ||
+        (check_reverse && reverse.send(:==, other.reverse, false))
+    end
+    alias eql? ==
+
+    # Check if this path starts with another path
+    # @return [Boolean]
+    def start_with?(other, check_reverse = true)
+      other_keys = other.instance_variable_get(:@keys)
+      @keys[0..other_keys.length - 1] == other_keys ||
+        (check_reverse && reverse.start_with?(other.reverse, false))
+    end
+
+    # Check if a key is included in the path
+    # @return [Boolean]
+    def include?(key)
+      @keys.include?(key) || entities.any? { |e| e.id_field == key }
+    end
+
+    # Combine two key paths by gluing together the keys
+    # @return [KeyPath]
+    def +(other)
+      fail TypeError unless other.is_a? KeyPath
+      other_keys = other.instance_variable_get(:@keys)
+
+      # Just copy if there's no combining necessary
+      return dup if other_keys.empty?
+      return other.dup if @keys.empty?
+
+      # Only allow combining if the entities match
+      fail ArgumentError unless other_keys.first.parent == entities.last
+
+      # Combine the two paths
+      KeyPath.new(@keys + other_keys[1..-1])
+    end
+
+    # Return a slice of the path
+    # @return [KeyPath]
+    def [](index)
+      if index.is_a? Range
+        keys = @keys[index]
+        keys[0] = keys[0].entity.id_field \
+          unless keys.empty? || keys[0].instance_of?(Fields::IDField)
+        KeyPath.new(keys)
+      else
+        key = @keys[index]
+        key = key.entity.id_field \
+          unless key.nil? || key.instance_of?(Fields::IDField)
+        key
+      end
+    end
+
+    # Return the reverse of this path
+    # @return [KeyPath]
+    def reverse
+      KeyPath.new reverse_path
+    end
+
+    # Reverse this path in place
+    # @return [void]
+    def reverse!
+      @keys = reverse_path
+    end
+
+    # Simple wrapper so that we continue to be a KeyPath
+    # @return [KeyPath]
+    def to_a
+      self
+    end
+
+    # Return all the entities along the path
+    # @return [Array<Entity>]
+    def entities
+      @entities ||= @keys.map(&:entity)
+    end
+
+    # Find where the path intersects the given
+    # entity and splice in the target path
+    # @return [KeyPath]
+    def splice(target, entity)
+      if first.parent == entity
+        query_keys = KeyPath.new([entity.id_field])
+      else
+        query_keys = []
+        each do |key|
+          query_keys << key
+          break if key.is_a?(Fields::ForeignKeyField) && key.entity == entity
+        end
+        query_keys = KeyPath.new(query_keys)
+      end
+      query_keys + target
+    end
+
+    # Find the parent of a given field
+    # @Return [Entity]
+    def find_field_parent(field)
+      parent = find do |key|
+        field.parent == key.parent ||
+        (key.is_a?(Fields::ForeignKeyField) && field.parent == key.entity)
+      end
+
+      # This field is not on this portion of the path, so skip
+      return nil if parent.nil?
+
+      parent = parent.parent unless parent.is_a?(Fields::ForeignKeyField)
+      parent
+    end
+
+    # Produce all subpaths of this path
+    # @return [Enumerable<KeyPath>]
+    def subpaths(include_self = true)
+      Enumerator.new do |enum|
+        enum.yield self if include_self
+        1.upto(@keys.length) do |i|
+          i.upto(@keys.length) do |j|
+            enum.yield self[i - 1..j - 1]
+          end
+        end
+      end
+    end
+
+    private
+
+    # Get the reverse path
+    # @return [Array<Fields::Field>]
+    def reverse_path
+      return [] if @keys.empty?
+      [@keys.last.entity.id_field] + @keys[1..-1].reverse.map(&:reverse)
+    end
+  end
+
   # A CQL statement and its associated data
   class Statement
     attr_reader :from, :longest_entity_path, :key_path, :label, :graph,
@@ -745,5 +981,13 @@ module NoSE
 
   # Thrown when something tries to parse an invalid statement
   class InvalidStatementException < StandardError
+  end
+
+  # Thrown when trying to construct a KeyPath which is not valid
+  class InvalidKeyPathException < StandardError
+  end
+
+  # Thrown when parsing a statement fails
+  class ParseFailed < StandardError
   end
 end
