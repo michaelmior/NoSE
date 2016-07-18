@@ -26,6 +26,10 @@ module NoSE
       let(:statement) { query }
     end
 
+    it 'can be converted back to query text' do
+      expect(query.unparse).to eq query.text
+    end
+
     it 'knows its limits' do
       expect(query.limit).to eq 5
     end

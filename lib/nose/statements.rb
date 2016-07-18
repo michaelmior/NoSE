@@ -277,6 +277,7 @@ module NoSE
       # TODO: Ignore comments, this is needed as a hack so otherwise identical
       #       queries can be treated differently everywhere
       # @tree.delete(:comment)
+      @comment = @tree[:comment]
 
       # XXX Save the where clause so we can convert to a query later
       #     Ideally this would be in {StatementSupportQuery}
@@ -389,6 +390,29 @@ module NoSE
       end
 
       freeze
+    end
+
+    # Produce the SQL text corresponding to this query
+    # @return [String]
+    def unparse
+      query = 'SELECT ' + @select.map(&:to_s).join(', ')
+
+      path = @key_path.reverse
+      query += " FROM #{path.first.parent.name}"
+      query += '.' + path.entries[1..-1].map(&:name).join('.') \
+        if @key_path.length > 1
+
+      query += ' WHERE ' + @conditions.values.map do |condition|
+        value = condition.value.nil? ? '?' : condition.value
+        "#{condition.field} #{condition.operator} #{value}"
+      end.join(' AND ')
+
+      query += ' ORDER BY ' + @order.map(&:to_s).join(', ') \
+        unless @order.empty?
+      query += " LIMIT #{@limit}" unless @limit.nil?
+      query += " -- #{@comment}" unless @comment.nil?
+
+      query
     end
 
     # The order entities should be joined according to the query graph
