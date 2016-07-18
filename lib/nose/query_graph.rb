@@ -323,6 +323,21 @@ module NoSE
         KeyPath.new keys
       end
 
+      # Produce a path through the graph of maximum length
+      # @return [KeyPath]
+      def longest_path
+        longest_path = []
+        @nodes.each do |node|
+          next unless leaf_entity?(node.entity)
+
+          longest_path = longest_path_visit node, Set.new([node]), [],
+                                            longest_path
+        end
+
+        KeyPath.new [longest_path.first.from.entity.id_field] +
+                    longest_path.map(&:key)
+      end
+
       # Output an image of the query graph
       # @return [void]
       def output(format, filename)
@@ -343,33 +358,22 @@ module NoSE
 
       private
 
-      # Produce a topological sort of nodes
-      # @return [Array<Node>]
-      def topo_sort
-        sorted = []
-        leaves = Set.new @nodes.select { |n| leaf_entity? n.entity }
-        removed_edges = Set.new
+      def longest_path_visit(node, visited_nodes, edges, longest_path)
+        # Find new edges we may want to traverse
+        new_edges = @edges[node].reject { |e| visited_nodes.include? e.to }
 
-        until leaves.empty?
-          leaf = leaves.first
-          leaves.delete leaf
-          sorted << leaf
-
-          @edges[leaf].each do |edge|
-            params = edge.canonical_params
-            next if removed_edges.include? params
-
-            removed_edges.add params
-            leaves.add(edge.to) \
-              if (@edges[edge.to].map(&:canonical_params).to_set -
-                  removed_edges).empty?
-          end
+        # If we reached the end of a path, see if we found a longer one
+        if new_edges.empty?
+          return edges.length > longest_path.length ? edges : longest_path
         end
 
-        fail 'Cycle found when sorting graph' \
-          if unique_edges.map(&:canonical_params).to_set != removed_edges
+        new_edges.each do |edge|
+          longest_path = longest_path_visit edge.to,
+                                            visited_nodes.dup.add(edge.to),
+                                            edges.dup << edge, longest_path
+        end
 
-        sorted
+        longest_path
       end
 
       # Return all the edges starting at a given entity

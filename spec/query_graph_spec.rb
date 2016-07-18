@@ -65,10 +65,10 @@ module NoSE
         end
       end
 
-      it 'can perform a topological sort of nodes' do
+      it 'can find the longest path through a graph' do
         graph = Graph.new [], [user, tweet, user['Tweets']],
                           [tweet, link, tweet['Link']]
-        expect(graph.send(:topo_sort).map(&:entity)).to eq([user, link, tweet])
+        expect(graph.longest_path.entities).to eq([user, tweet, link])
       end
     end
   end
