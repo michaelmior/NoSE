@@ -279,10 +279,6 @@ module NoSE
       # @tree.delete(:comment)
       @comment = @tree[:comment]
 
-      # XXX Save the where clause so we can convert to a query later
-      #     Ideally this would be in {StatementSupportQuery}
-      @where_source = (@tree.delete(:where_source) || '').strip
-
       @model = model
       @tree[:path] ||= [@tree[:entity]]
       fail InvalidStatementException,
