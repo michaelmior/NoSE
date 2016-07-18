@@ -64,6 +64,12 @@ module NoSE
             Graph.new([], [user, tweet, user['Tweets']])
         end
       end
+
+      it 'can perform a topological sort of nodes' do
+        graph = Graph.new [], [user, tweet, user['Tweets']],
+                          [tweet, link, tweet['Link']]
+        expect(graph.send(:topo_sort).map(&:entity)).to eq([user, link, tweet])
+      end
     end
   end
 end

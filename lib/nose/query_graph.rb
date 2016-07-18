@@ -343,6 +343,35 @@ module NoSE
 
       private
 
+      # Produce a topological sort of nodes
+      # @return [Array<Node>]
+      def topo_sort
+        sorted = []
+        leaves = Set.new @nodes.select { |n| leaf_entity? n.entity }
+        removed_edges = Set.new
+
+        until leaves.empty?
+          leaf = leaves.first
+          leaves.delete leaf
+          sorted << leaf
+
+          @edges[leaf].each do |edge|
+            params = edge.canonical_params
+            next if removed_edges.include? params
+
+            removed_edges.add params
+            leaves.add(edge.to) \
+              if (@edges[edge.to].map(&:canonical_params).to_set -
+                  removed_edges).empty?
+          end
+        end
+
+        fail 'Cycle found when sorting graph' \
+          if unique_edges.map(&:canonical_params).to_set != removed_edges
+
+        sorted
+      end
+
       # Return all the edges starting at a given entity
       # @return [Array<Edge>]
       def edges_for_entity(entity)
