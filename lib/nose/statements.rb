@@ -345,6 +345,37 @@ module NoSE
       end
     end
 
+    # Generate a string which can be used
+    # in the "FROM" clause of a statement
+    # @return [String]
+    def from_path(path)
+      from = path.first.parent.name
+      from += '.' + path.entries[1..-1].map(&:name).join('.') \
+        if path.length > 1
+
+      from
+    end
+
+    # Produce a string which can be used
+    # as the settings clause in a statement
+    # @return [String]
+    def settings_clause
+      'SET ' + @settings.map do |setting|
+        value = maybe_quote setting.value, setting.field
+        "#{setting.field.name} = #{value}"
+      end.join(', ')
+    end
+
+    # Produce a string which can be used
+    # as the WHERE clause in a statement
+    # @return [String]
+    def where_clause
+      ' WHERE ' + @conditions.values.map do |condition|
+        value = condition.value.nil? ? '?' : condition.value
+        "#{condition.field} #{condition.operator} #{value}"
+      end.join(' AND ')
+    end
+
     private
 
     # A helper to look up a field based on the path specified in the statement
@@ -413,16 +444,8 @@ module NoSE
     # @return [String]
     def unparse
       query = 'SELECT ' + @select.map(&:to_s).join(', ')
-
-      path = @key_path.reverse
-      query += " FROM #{path.first.parent.name}"
-      query += '.' + path.entries[1..-1].map(&:name).join('.') \
-        if @key_path.length > 1
-
-      query += ' WHERE ' + @conditions.values.map do |condition|
-        value = condition.value.nil? ? '?' : condition.value
-        "#{condition.field} #{condition.operator} #{value}"
-      end.join(' AND ')
+      query += " FROM #{from_path @key_path.reverse}"
+      query += where_clause
 
       query += ' ORDER BY ' + @order.map(&:to_s).join(', ') \
         unless @order.empty?
@@ -690,20 +713,9 @@ module NoSE
     # @return [String]
     def unparse
       update = "UPDATE #{entity.name} "
-
-      update += "FROM #{@key_path.first.parent.name}"
-      update += '.' + @key_path.entries[1..-1].map(&:name).join('.') \
-        if @key_path.length > 1
-
-      update += ' SET ' + @settings.map do |setting|
-        value = maybe_quote setting.value, setting.field
-        "#{setting.field.name} = #{value}"
-      end.join(', ')
-
-      update += ' WHERE ' + @conditions.values.map do |condition|
-        value = condition.value.nil? ? '?' : condition.value
-        "#{condition.field} #{condition.operator} #{value}"
-      end.join(' AND ')
+      update += "FROM #{from_path @key_path} "
+      update += settings_clause
+      update += where_clause
 
       update
     end
@@ -764,10 +776,8 @@ module NoSE
     # Produce the SQL text corresponding to this insert
     # @return [String]
     def unparse
-      insert = "INSERT INTO #{entity.name} SET " + @settings.map do |setting|
-        value = maybe_quote setting.value, setting.field
-        "#{setting.field.name} = #{value}"
-      end.join(', ')
+      insert = "INSERT INTO #{entity.name} "
+      insert += settings_clause
 
       insert += ' AND CONNECT TO ' + @conditions.values.map do |condition|
         value = maybe_quote condition.value, condition.field
