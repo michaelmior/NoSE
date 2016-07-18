@@ -224,6 +224,10 @@ module NoSE
     it_behaves_like 'a statement' do
       let(:statement) { delete }
     end
+
+    it 'can be converted back to delete text' do
+      expect(delete.unparse).to eq delete.text
+    end
   end
 
   describe Connection do

@@ -910,6 +910,16 @@ module NoSE
       freeze
     end
 
+    # Produce the SQL text corresponding to this delete
+    # @return [String]
+    def unparse
+      delete = "DELETE #{entity.name} "
+      delete += "FROM #{from_path @key_path}"
+      delete += where_clause
+
+      delete
+    end
+
     # Index contains the single entity to be deleted
     def modifies_index?(index)
       index.path.entities == [entity]
