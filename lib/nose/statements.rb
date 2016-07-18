@@ -686,6 +686,28 @@ module NoSE
       freeze
     end
 
+    # Produce the SQL text corresponding to this update
+    # @return [String]
+    def unparse
+      update = "UPDATE #{entity.name} "
+
+      update += "FROM #{@key_path.first.parent.name}"
+      update += '.' + @key_path.entries[1..-1].map(&:name).join('.') \
+        if @key_path.length > 1
+
+      update += ' SET ' + @settings.map do |setting|
+        value = maybe_quote setting.value, setting.field
+        "#{setting.field.name} = #{value}"
+      end.join(', ')
+
+      update += ' WHERE ' + @conditions.values.map do |condition|
+        value = condition.value.nil? ? '?' : condition.value
+        "#{condition.field} #{condition.operator} #{value}"
+      end.join(' AND ')
+
+      update
+    end
+
     # Specifies that updates require insertion
     def requires_insert?(_index)
       true

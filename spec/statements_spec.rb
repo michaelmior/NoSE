@@ -107,6 +107,10 @@ module NoSE
       let(:statement) { update }
     end
 
+    it 'can be converted back to update text' do
+      expect(update.unparse).to eq update.text
+    end
+
     it 'can parse field settings' do
       expect(update.settings).to match_array [
         FieldSetting.new(tweet['Body'], 'foo')
