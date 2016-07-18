@@ -296,6 +296,11 @@ module NoSE
   describe Connect do
     include_context 'entities'
 
+    it 'can be converted back to connection text' do
+      connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
+      expect(connect.unparse).to eq connect.text
+    end
+
     it 'can parse simple connect statements' do
       connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
 
@@ -317,6 +322,12 @@ module NoSE
 
   describe Disconnect do
     include_context 'entities'
+
+    it 'can be converted back to disconnection text' do
+      disconnect = Disconnect.new 'DISCONNECT Tweet("A") FROM User("B")',
+                                  workload.model
+      expect(disconnect.unparse).to eq disconnect.text
+    end
 
     it 'can parse simple disconnect statements' do
       connect = Disconnect.new 'DISCONNECT Tweet("A") FROM User("B")',

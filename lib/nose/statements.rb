@@ -948,6 +948,13 @@ module NoSE
     attr_reader :source_pk, :target, :target_pk, :conditions
     alias source from
 
+    # Produce the SQL text corresponding to this connection
+    # @return [String]
+    def unparse
+      "CONNECT #{source.name}(\"#{source_pk}\") TO " \
+        "#{target.name}(\"#{target_pk}\")"
+    end
+
     # A connection modifies an index if the relationship is in the path
     def modifies_index?(index)
       index.path.include?(@target) || index.path.include?(@target.reverse)
@@ -1070,6 +1077,13 @@ module NoSE
         unless @text.split.first == 'DISCONNECT'
       populate_keys
       freeze
+    end
+
+    # Produce the SQL text corresponding to this disconnection
+    # @return [String]
+    def unparse
+      "DISCONNECT #{source.name}(\"#{source_pk}\") FROM " \
+        "#{target.name}(\"#{target_pk}\")"
     end
 
     # Specifies that disconnections require deletion
