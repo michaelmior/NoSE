@@ -328,6 +328,23 @@ module NoSE
       Zlib.crc32 @tree.to_s
     end
 
+    protected
+
+    # Quote the value of an identifier used as
+    # a value for a field, quoted if needed
+    # @return [String]
+    def maybe_quote(value, field)
+      if value.nil?
+        '?'
+      elsif [Fields::IDField,
+             Fields::ForeignKeyField,
+             Fields::StringField].include? field.class
+        "\"#{value}\""
+      else
+        value.to_s
+      end
+    end
+
     private
 
     # A helper to look up a field based on the path specified in the statement
@@ -720,6 +737,22 @@ module NoSE
       populate_conditions
 
       freeze
+    end
+
+    # Produce the SQL text corresponding to this insert
+    # @return [String]
+    def unparse
+      insert = "INSERT INTO #{entity.name} SET " + @settings.map do |setting|
+        value = maybe_quote setting.value, setting.field
+        "#{setting.field.name} = #{value}"
+      end.join(', ')
+
+      insert += ' AND CONNECT TO ' + @conditions.values.map do |condition|
+        value = maybe_quote condition.value, condition.field
+        "#{condition.field.name}(#{value})"
+      end.join(', ') unless @conditions.empty?
+
+      insert
     end
 
     # Determine if this insert modifies an index

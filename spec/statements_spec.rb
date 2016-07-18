@@ -163,9 +163,13 @@ module NoSE
     include_context 'entities'
 
     let(:insert) do
-      Insert.new 'INSERT INTO Tweet SET Body = "Test", TweetId = 1 ' \
+      Insert.new 'INSERT INTO Tweet SET Body = "Test", TweetId = "1" ' \
                  'AND CONNECT TO User("1"), Link("1")',
                  workload.model
+    end
+
+    it 'can be converted back to insert text' do
+      expect(insert.unparse).to eq insert.text
     end
 
     it 'can parse field settings' do
