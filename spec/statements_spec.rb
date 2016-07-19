@@ -93,6 +93,16 @@ module NoSE
                   workload.model
       end.to raise_error InvalidStatementException
     end
+
+    it 'can have branching in the fields being selected' do
+      query = Query.new 'SELECT Tweet.Link.URL, Tweet.Body FROM Tweet ' \
+                        'WHERE Tweet.TweetId= ?', workload.model
+      graph = QueryGraph::Graph.from_path(
+        [tweet.id_field, tweet['Link']]
+      )
+
+      expect(query.graph).to eq graph
+    end
   end
 
   describe Update do

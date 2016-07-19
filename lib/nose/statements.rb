@@ -54,7 +54,7 @@ module NoSE
     # Construct a condition object from the parse tree
     # @return [void]
     def build_condition(condition)
-      field = find_field_with_prefix @tree[:path],
+      field = add_field_with_prefix @tree[:path],
                                      condition[:field]
       Condition.new field, condition[:op].to_sym,
                     condition_value(condition, field)
@@ -376,12 +376,20 @@ module NoSE
 
     # A helper to look up a field based on the path specified in the statement
     # @return [Fields::Field]
-    def find_field_with_prefix(path, field)
+    def add_field_with_prefix(path, field)
       field_path = field.map(&:to_s)
       prefix_index = path.index(field_path.first)
       field_path = path[0..prefix_index - 1] + field_path \
         unless prefix_index == 0
-      @model.find_field field_path.map(&:to_s)
+      field_path.map!(&:to_s)
+
+      # Expand the graph to include any keys which were found
+      field_path[0..-2].prefixes.drop(1).each do |key_path|
+        key = @model.find_field key_path
+        @graph.add_edge key.parent, key.entity, key
+      end
+
+      @model.find_field field_path
     end
 
     # Calculate the longest path of entities traversed by the statement
@@ -479,7 +487,7 @@ module NoSE
           entity = longest_entity_path[@tree[:path].index(field.first)]
           entity.fields.values
         else
-          field = find_field_with_prefix @tree[:path], field
+          field = add_field_with_prefix @tree[:path], field
 
           fail InvalidStatementException, 'Foreign keys cannot be selected' \
             if field.is_a? Fields::ForeignKeyField
@@ -491,7 +499,7 @@ module NoSE
       return @order = [] if @tree[:order].nil?
       @order = @tree[:order][:fields].each_slice(2).map do |field|
         field = field.first if field.first.is_a?(Array)
-        find_field_with_prefix @tree[:path], field
+        add_field_with_prefix @tree[:path], field
       end
     end
   end
