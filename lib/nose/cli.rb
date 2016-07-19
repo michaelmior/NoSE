@@ -16,7 +16,7 @@ module NoSE
 
       class_option :debug, type: :boolean, aliases: '-d',
                            desc: 'enable detailed debugging information'
-      class_option :parallel, type: :boolean, default: true,
+      class_option :parallel, type: :boolean, default: false,
                               desc: 'run various operations in parallel'
       class_option :colour, type: :boolean, default: nil, aliases: '-c',
                             desc: 'enabled coloured output'

@@ -73,7 +73,7 @@ module NoSE::CLI
         "BACKEND_PORT=\"9042\"\n" \
         "BACKEND_HOSTS_COUNT=\"1\"\n" \
         "BACKEND_HOSTS_0=\"127.0.0.1\"\n" \
-        "PARALLEL=\"true\"\n" \
+        "PARALLEL=\"false\"\n" \
         "INTERACTIVE=\"true\""
     end
   end
