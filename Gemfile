@@ -25,7 +25,7 @@ platform :ruby do
 end
 
 group :test do
-  gem 'aruba', '~> 0.9.0', require: false
+  gem 'aruba', require: false
   gem 'codeclimate-test-reporter', require: false
   gem 'fakefs', require: 'fakefs/safe' # used for testing
   gem 'rspec'

@@ -27,26 +27,27 @@ module NoSE::CLI
 
       FileUtils.mkdir_p '/tmp'
       File.write '/tmp/x.json', json
-      reformat_cmd = 'nose reformat --format=yml /tmp/x.json'
-      run_simple reformat_cmd
+      run_simple 'nose reformat --format=yml /tmp/x.json'
 
       FakeFS.deactivate!
 
       # Try parsing the reformat output
-      expect { YAML.load get_process(reformat_cmd).stdout }.to_not raise_error
+      expect do
+        YAML.load last_command_stopped.stdout
+      end.to_not raise_error
     end
 
     it 'can search with no limits', solver: true do
-      search_cmd = 'nose search rubis --mix=bidding --format=json'
-      run_simple search_cmd
-      expect { JSON.parse get_process(search_cmd).stdout }.to_not raise_error
+      run_simple 'nose search rubis --mix=bidding --format=json'
+      expect { JSON.parse last_command_stopped.stdout }.to_not raise_error
     end
 
     it 'can search with a limit', solver: true do
-      search_cmd = 'nose search rubis --mix=bidding ' \
-                   '--format=json --max-space=1000000000000'
-      run_simple search_cmd
-      expect { JSON.parse get_process(search_cmd).stdout }.to_not raise_error
+      run_simple 'nose search rubis --mix=bidding ' \
+                 '--format=json --max-space=1000000000000'
+      expect do
+        JSON.parse last_command_stopped.stdout
+      end.to_not raise_error
     end
 
     it 'fails with not enough space', solver: true do
