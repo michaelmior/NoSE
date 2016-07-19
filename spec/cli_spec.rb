@@ -5,8 +5,8 @@ module NoSE::CLI
   describe NoSECLI do
     it 'can output help text' do
       run_simple 'nose help'
-      expect(all_output).to start_with 'Commands:'
-      expect(last_exit_status).to eq 0
+      expect(last_command_stopped).to have_output_on_stdout(/^Commands:/)
+      expect(last_command_stopped.exit_status).to eq 0
     end
 
     it 'can output a graph of a workload' do
@@ -18,7 +18,7 @@ module NoSE::CLI
     it 'can reformat output', solver: true do
       # Run a simple search and output as JSON
       run_simple 'nose search ebay --format=json'
-      json = all_output
+      json = last_command_stopped.stdout
 
       # Save the JSON to a file and reformat
       pwd = Dir.pwd
@@ -51,7 +51,7 @@ module NoSE::CLI
 
     it 'fails with not enough space', solver: true do
       run 'nose search rubis --max-space=1'
-      expect(last_exit_status).to eq(1)
+      expect(last_command_stopped.exit_status).to eq(1)
     end
 
     it 'can export environment variables' do
@@ -68,11 +68,12 @@ module NoSE::CLI
 
       FakeFS.deactivate!
 
-      expect(all_output).to eq "BACKEND_PORT=\"9042\"\n" \
-                               "BACKEND_HOSTS_COUNT=\"1\"\n" \
-                               "BACKEND_HOSTS_0=\"127.0.0.1\"\n" \
-                               "PARALLEL=\"true\"\n" \
-                               "INTERACTIVE=\"true\"\n"
+      expect(last_command_stopped).to have_output_on_stdout \
+        "BACKEND_PORT=\"9042\"\n" \
+        "BACKEND_HOSTS_COUNT=\"1\"\n" \
+        "BACKEND_HOSTS_0=\"127.0.0.1\"\n" \
+        "PARALLEL=\"true\"\n" \
+        "INTERACTIVE=\"true\""
     end
   end
 end
