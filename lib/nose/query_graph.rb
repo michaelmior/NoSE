@@ -305,6 +305,8 @@ module NoSE
       # @return [KeyPath]
       # @raise [InvalidPathException]
       def to_path(start_entity)
+        return KeyPath.new if @nodes.empty?
+
         start = @nodes.find { |n| n.entity == start_entity }
 
         fail InvalidPathException, 'Need start for path conversion' \

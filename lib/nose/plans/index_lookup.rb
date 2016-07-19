@@ -158,19 +158,27 @@ module NoSE
       # fields, leave the last one so we can perform a separate ID lookup
       # @return [void]
       def strip_graph
+        # require 'pry'; binding.pry
         hash_entity = @index.hash_fields.first.parent
+        @state.graph = Marshal.load(Marshal.dump(@state.graph))
         required_fields = @state.fields_for_graph(@index.graph, hash_entity,
                                                   select: true).to_set
         if required_fields.subset?(@index.all_fields) &&
            @state.graph == @index.graph
-          @state.path = @state.path[@index.path.length..-1]
+          removed_nodes = @state.joins[0..@index.graph.size]
           @state.joins = @state.joins[@index.graph.size..-1]
         else
-          @state.path = @state.path[@index.path.length - 1..-1]
+          removed_nodes = if index.graph.size == 1
+                            []
+                          else
+                            @state.joins[0..@index.graph.size - 2]
+                          end
           @state.joins = @state.joins[@index.graph.size - 1..-1]
         end
 
-        @state.graph = QueryGraph::Graph.from_path(@state.path)
+        # Remove nodes which have been processed from the graph
+        @state.graph.remove_nodes removed_nodes
+        @state.path = @state.graph.to_path(@state.joins.first)
       end
 
       # Update the cardinality of this step, applying a limit if possible
