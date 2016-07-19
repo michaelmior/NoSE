@@ -50,7 +50,8 @@ module NoSE
       # Check if the query has been fully answered
       # @return [Boolean]
       def answered?(check_limit: true)
-        done = @fields.empty? && @eq.empty? && @range.nil? && @order_by.empty?
+        done = @fields.empty? && @eq.empty? && @range.nil? &&
+               @order_by.empty? && @joins.empty? && @graph.empty?
 
         # Check if the limit has been applied
         done &&= @cardinality <= @query.limit unless @query.limit.nil? ||

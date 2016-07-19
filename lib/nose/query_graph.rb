@@ -104,6 +104,12 @@ module NoSE
         @nodes.size
       end
 
+      # Check if the graph is empty
+      # @return [Boolean]
+      def empty?
+        @nodes.empty?
+      end
+
       # Produce an array of entities in the desired join order
       # @return [Array<Entity>]
       def join_order(eq_fields)

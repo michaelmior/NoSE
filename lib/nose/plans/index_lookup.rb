@@ -157,10 +157,11 @@ module NoSE
       # Strip the graph for this index, but if we haven't fetched all
       # fields, leave the last one so we can perform a separate ID lookup
       # @return [void]
-      def strip_graph(parent)
+      def strip_graph
         hash_entity = @index.hash_fields.first.parent
-        if @state.fields_for_graph(@index.graph, hash_entity,
-                                   select: true).empty? &&
+        required_fields = @state.fields_for_graph(@index.graph, hash_entity,
+                                                  select: true).to_set
+        if required_fields.subset?(@index.all_fields) &&
            @state.graph == @index.graph
           @state.path = @state.path[@index.path.length..-1]
           @state.joins = @state.joins[@index.graph.size..-1]
@@ -234,7 +235,7 @@ module NoSE
         @state.eq -= @eq_filter
 
         indexed_by_id = resolve_order
-        strip_graph parent
+        strip_graph
         update_cardinality parent, indexed_by_id
       end
     end
