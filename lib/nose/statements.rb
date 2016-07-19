@@ -473,14 +473,13 @@ module NoSE
     # Populate the fields selected by this query
     # @return [void]
     def populate_fields
-      @select = @tree[:select].flatten.each_slice(2).flat_map do |field|
-        # Find the entity along the path
-        entity = longest_entity_path[@tree[:path].index(field.first)]
-
+      @select = @tree[:select].flat_map do |field|
         if field.last == '*'
+          # Find the entity along the path
+          entity = longest_entity_path[@tree[:path].index(field.first)]
           entity.fields.values
         else
-          field = @model.find_field [entity, field.last.to_s]
+          field = find_field_with_prefix @tree[:path], field
 
           fail InvalidStatementException, 'Foreign keys cannot be selected' \
             if field.is_a? Fields::ForeignKeyField

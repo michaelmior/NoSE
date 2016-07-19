@@ -90,12 +90,11 @@ module NoSE
     include Parslet
 
     rule(:identifier)    { match('[A-z]').repeat(1).as(:identifier) }
-    rule(:field)         { identifier >> (str('.') >> identifier).repeat(1, 1) }
+    rule(:field)         { identifier >> (str('.') >> identifier).repeat(1) }
     rule(:fields)        { field >> (comma >> field).repeat }
     rule(:select_field)  {
-      field | (identifier >> str('.') >>
-      str('**').as(:identifier2)) | (identifier >> str('.') >>
-      str('*').as(:identifier2)) }
+      field.as_array(:field) | (identifier >> str('.') >>
+                                str('*').repeat(1, 2).as(:identifier2)) }
     rule(:select_fields) { select_field >> (comma >> select_field).repeat }
     rule(:path)          { identifier >> (str('.') >> identifier).repeat }
   end
@@ -187,8 +186,8 @@ module NoSE
   # Simple transformations to clean up the CQL parse tree
   class CQLT < Parslet::Transform
     rule(identifier: simple(:identifier)) { identifier }
-    rule(identifier: simple(:identifier),
-         identifier2: simple(:identifier2)) { [identifier, identifier2] }
+    rule(identifier: simple(:identifier), identifier2: simple(:identifier2)) {
+      [identifier.to_s, identifier2.to_s] }
     rule(field: sequence(:id)) { id.map(&:to_s) }
     rule(path: sequence(:id)) { id.map(&:to_s) }
     rule(str: simple(:string)) { string.to_s }
