@@ -5,7 +5,7 @@ module NoSE
   module Plans
     # Ongoing state of a query throughout the execution plan
     class QueryState
-      attr_accessor :fields, :eq, :range, :order_by, :path, :graph,
+      attr_accessor :fields, :eq, :range, :order_by, :graph,
                     :joins, :cardinality, :hash_cardinality, :given_fields
       attr_reader :query, :model
 
@@ -17,7 +17,6 @@ module NoSE
         @range = query.range_field
         @graph = query.graph
         @joins = query.materialize_view.graph.join_order(@eq)
-        @path = query.key_path.dup
         @order_by = query.order.dup
 
         # We never need to order by fields listed in equality predicates

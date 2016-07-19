@@ -178,7 +178,6 @@ module NoSE
 
         # Remove nodes which have been processed from the graph
         @state.graph.remove_nodes removed_nodes
-        @state.path = @state.graph.to_path(@state.joins.first)
       end
 
       # Update the cardinality of this step, applying a limit if possible
