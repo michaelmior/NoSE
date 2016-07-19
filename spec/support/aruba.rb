@@ -78,8 +78,10 @@ module NoSE::CLI
   end
 end
 
-Aruba::Processes::InProcess.main_class = NoSE::CLI::Runner
-Aruba.process = Aruba::Processes::InProcess
+Aruba.configure do |config|
+  config.main_class = NoSE::CLI::Runner
+  config.command_launcher = :in_process
+end
 
 # Monkey patch Aruba so it uses the correct
 # default value for dir_string in expand_path
@@ -101,6 +103,6 @@ RSpec.configure do |config|
 
   config.before(:each) do
     restore_env
-    clean_current_directory
+    setup_aruba
   end
 end

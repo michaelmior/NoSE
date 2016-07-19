@@ -21,7 +21,9 @@ module NoSE::CLI
       json = all_output
 
       # Save the JSON to a file and reformat
+      pwd = Dir.pwd
       FakeFS.activate!
+      FileUtils.mkdir_p File.expand_path('tmp/aruba', pwd)
 
       FileUtils.mkdir_p '/tmp'
       File.write '/tmp/x.json', json
@@ -54,7 +56,9 @@ module NoSE::CLI
 
     it 'can export environment variables' do
       config = { backend: { port: 9042, hosts: ['127.0.0.1'] } }
+      pwd = Dir.pwd
       FakeFS.activate!
+      FileUtils.mkdir_p File.expand_path('tmp/aruba', pwd)
 
       FileUtils.mkdir_p File.dirname(NoSECLI::TEST_CONFIG_FILE_NAME)
       File.open(NoSECLI::TEST_CONFIG_FILE_NAME, 'w') do |config_file|
