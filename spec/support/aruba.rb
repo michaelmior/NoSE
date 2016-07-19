@@ -78,14 +78,29 @@ module NoSE::CLI
   end
 end
 
-Aruba::InProcess.main_class = NoSE::CLI::Runner
-Aruba.process = Aruba::InProcess
+Aruba::Processes::InProcess.main_class = NoSE::CLI::Runner
+Aruba.process = Aruba::Processes::InProcess
+
+# Monkey patch Aruba so it uses the correct
+# default value for dir_string in expand_path
+
+module ArubaPatch
+  def expand_path(file_name, dir_string = FakeFS::FileSystem.current_dir.to_s)
+    super(file_name, dir_string)
+  end
+end
+
+module Aruba
+  module Api
+    prepend ArubaPatch
+  end
+end
 
 RSpec.configure do |config|
   config.include Aruba::Api
 
   config.before(:each) do
     restore_env
-    clean_current_dir
+    clean_current_directory
   end
 end
