@@ -16,12 +16,12 @@ module NoSE
       def load(indexes, config, show_progress = false, limit = nil,
                skip_existing = true)
         simple_indexes = indexes.select do |index|
-          index.path.length == 1 &&
+          index.graph.size == 1 &&
           !(skip_existing && !@backend.index_empty?(index))
         end
 
         simple_indexes = simple_indexes.group_by do |index|
-          index.path.first.parent
+          index.hash_fields.first.parent
         end
         simple_indexes.each do |entity, simple_index_list|
           filename = File.join config[:directory], "#{entity.name}.csv"

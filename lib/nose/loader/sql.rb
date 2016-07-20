@@ -52,7 +52,6 @@ module NoSE
       # Get all the fields selected by this index
       def index_sql_select(index)
         fields = index.hash_fields.to_a + index.order_fields + index.extra.to_a
-        fields << index.path.entities.last.id_field
 
         [fields, fields.map do |field|
           "#{field.parent.name}__#{field.name}___" \
@@ -64,8 +63,8 @@ module NoSE
       # for a query to fetch index data
       def index_sql_tables(index)
         # Create JOIN statements
-        tables = index.path.entities.map { |entity| entity.name.to_sym }
-        return [tables, []] if index.path.length == 1
+        tables = index.graph.entities.map { |entity| entity.name.to_sym }
+        return [tables, []] if index.graph.size == 1
 
         keys = index.path.each_cons(2).map do |_prev_key, key|
           is_many = key.relationship == :many
