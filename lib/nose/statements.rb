@@ -237,7 +237,7 @@ module NoSE
   # A CQL statement and its associated data
   class Statement
     attr_reader :from, :longest_entity_path, :key_path, :label, :graph,
-                :group, :text, :eq_fields, :range_field
+                :group, :text, :eq_fields, :range_field, :comment
 
     # Parse either a query or an update
     def self.parse(text, model, group: nil, label: label)
@@ -458,7 +458,8 @@ module NoSE
         @select == other.select &&
         @conditions == other.conditions &&
         @order == other.order &&
-        @limit == other.limit
+        @limit == other.limit &&
+        @comment == other.comment
     end
     alias eql? ==
 
@@ -521,7 +522,7 @@ module NoSE
     # Support queries must also have their statement and index checked
     def ==(other)
       other.is_a?(SupportQuery) && @statement == other.statement &&
-        @index == other.index
+        @index == other.index && @comment == other.comment
     end
     alias eql? ==
 
