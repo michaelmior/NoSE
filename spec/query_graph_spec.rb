@@ -3,6 +3,19 @@ module NoSE
     describe QueryGraph do
       include_context 'entities'
 
+      context 'when comparing with an isomorphic graph' do
+        let(:graph) { Graph.new [], [user, tweet, user['Tweets']] }
+        let(:graph2) { Graph.new [], [tweet, user, tweet['User']] }
+
+        it 'compares equal with an isomorphic graph' do
+          expect(graph).to eq graph2
+        end
+
+        it 'has the same unique edges' do
+          expect(graph.unique_edges).to eq graph2.unique_edges
+        end
+      end
+
       context 'when producing subgraphs' do
         it 'produces only itself for a single entity graph' do
           graph = Graph.new([user])
