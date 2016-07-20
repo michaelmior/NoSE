@@ -314,12 +314,6 @@ module NoSE
     end
     # :nocov:
 
-    # Compare statements as equal by their parse tree
-    def ==(other)
-      other.is_a?(Statement) && @tree == other.instance_variable_get(:@tree)
-    end
-    alias eql? ==
-
     def hash
       Zlib.crc32 @tree.to_s
     end
@@ -458,6 +452,16 @@ module NoSE
 
       query
     end
+
+    def ==(other)
+      other.is_a?(Query) &&
+        @graph == other.graph &&
+        @select == other.select &&
+        @conditions == other.conditions &&
+        @order == other.order &&
+        @limit == other.limit
+    end
+    alias eql? ==
 
     # The order entities should be joined according to the query graph
     # @return [Array<Entity>]
@@ -723,6 +727,15 @@ module NoSE
       update
     end
 
+    def ==(other)
+      other.is_a?(Update) &&
+        @graph == other.graph &&
+        entity == other.entity &&
+        @settings == other.settings &&
+        @conditions == other.conditions
+    end
+    alias eql? ==
+
     # Specifies that updates require insertion
     def requires_insert?(_index)
       true
@@ -789,6 +802,15 @@ module NoSE
 
       insert
     end
+
+    def ==(other)
+      other.is_a?(Insert) &&
+        @graph == other.graph &&
+        entity == other.entity &&
+        @settings == other.settings &&
+        @conditions == other.conditions
+    end
+    alias eql? ==
 
     # Determine if this insert modifies an index
     def modifies_index?(index)
@@ -923,6 +945,14 @@ module NoSE
       delete
     end
 
+    def ==(other)
+      other.is_a?(Delete) &&
+        @graph == other.graph &&
+        entity == other.entity &&
+        @conditions == other.conditions
+    end
+    alias eql? ==
+
     # Index contains the single entity to be deleted
     def modifies_index?(index)
       index.path.entities == [entity]
@@ -957,6 +987,15 @@ module NoSE
       "CONNECT #{source.name}(\"#{source_pk}\") TO " \
         "#{target.name}(\"#{target_pk}\")"
     end
+
+    def ==(other)
+      self.class == other.class &&
+        @graph == other.graph &&
+        @source == other.source &&
+        @target == other.target &&
+        @conditions == other.conditions
+    end
+    alias eql? ==
 
     # A connection modifies an index if the relationship is in the path
     def modifies_index?(index)
