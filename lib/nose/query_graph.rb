@@ -95,7 +95,7 @@ module NoSE
       alias eql? ==
 
       def hash
-        [@nodes, @edges].hash
+        [@nodes, unique_edges.map(&:canonical_params)].hash
       end
 
       # The total number of nodes in the graph
