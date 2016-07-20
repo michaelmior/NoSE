@@ -38,9 +38,9 @@ module NoSE
 
     # Populate the list of condition objects
     # @return [void]
-    def populate_conditions
-      conditions = @tree[:where].nil? ? [] : @tree[:where][:expression]
-      conditions = conditions.map { |condition| build_condition condition }
+    def populate_conditions(tree)
+      conditions = tree[:where].nil? ? [] : tree[:where][:expression]
+      conditions = conditions.map { |c| build_condition c, tree }
 
       @eq_fields = conditions.reject(&:range?).map(&:field).to_set
       @range_field = conditions.find(&:range?)
@@ -53,9 +53,8 @@ module NoSE
 
     # Construct a condition object from the parse tree
     # @return [void]
-    def build_condition(condition)
-      field = add_field_with_prefix @tree[:path],
-                                     condition[:field]
+    def build_condition(condition, tree)
+      field = add_field_with_prefix tree[:path], condition[:field]
       Condition.new field, condition[:op].to_sym,
                     condition_value(condition, field)
     end
@@ -419,8 +418,8 @@ module NoSE
     def initialize(statement, model, group: nil, label: label)
       super :query, statement, model, group: group, label: label
 
-      populate_conditions
-      populate_fields
+      populate_conditions @tree
+      populate_fields @tree
 
       if join_order.first != @key_path.entities.first
         @key_path = @key_path.reverse
@@ -484,14 +483,14 @@ module NoSE
 
     # Populate the fields selected by this query
     # @return [void]
-    def populate_fields
-      @select = @tree[:select].flat_map do |field|
+    def populate_fields(tree)
+      @select = tree[:select].flat_map do |field|
         if field.last == '*'
           # Find the entity along the path
-          entity = longest_entity_path[@tree[:path].index(field.first)]
+          entity = longest_entity_path[tree[:path].index(field.first)]
           entity.fields.values
         else
-          field = add_field_with_prefix @tree[:path], field
+          field = add_field_with_prefix tree[:path], field
 
           fail InvalidStatementException, 'Foreign keys cannot be selected' \
             if field.is_a? Fields::ForeignKeyField
@@ -500,10 +499,10 @@ module NoSE
         end
       end.to_set
 
-      return @order = [] if @tree[:order].nil?
-      @order = @tree[:order][:fields].each_slice(2).map do |field|
+      return @order = [] if tree[:order].nil?
+      @order = tree[:order][:fields].each_slice(2).map do |field|
         field = field.first if field.first.is_a?(Array)
-        add_field_with_prefix @tree[:path], field
+        add_field_with_prefix tree[:path], field
       end
     end
   end
@@ -572,8 +571,8 @@ module NoSE
 
     # Populate all the variable settings
     # @return [void]
-    def populate_settings
-      @settings = @tree[:settings].map do |setting|
+    def populate_settings(tree)
+      @settings = tree[:settings].map do |setting|
         field = entity[setting[:field].to_s]
         value = setting[:value]
 
@@ -710,8 +709,8 @@ module NoSE
     def initialize(statement, model, group: nil, label: label)
       super :update, statement, model, group: group, label: label
 
-      populate_conditions
-      populate_settings
+      populate_conditions @tree
+      populate_settings @tree
 
       freeze
     end
@@ -780,11 +779,11 @@ module NoSE
     def initialize(statement, model, group: nil, label: label)
       super :insert, statement, model, group: group, label: label
 
-      populate_settings
+      populate_settings @tree
       fail InvalidStatementException, 'Must insert primary key' \
         unless @settings.map(&:field).include?(entity.id_field)
 
-      populate_conditions
+      populate_conditions @tree
 
       freeze
     end
@@ -900,8 +899,8 @@ module NoSE
 
     # Populate conditions with the foreign key settings
     # @return [void]
-    def populate_conditions
-      connections = @tree[:connections] || []
+    def populate_conditions(tree)
+      connections = tree[:connections] || []
       connections = connections.map do |connection|
         field = entity[connection[:target].to_s]
         value = connection[:target_pk]
@@ -930,7 +929,7 @@ module NoSE
     def initialize(statement, model, group: nil, label: label)
       super :delete, statement, model, group: group, label: label
 
-      populate_conditions
+      populate_conditions @tree
 
       freeze
     end
@@ -1031,14 +1030,14 @@ module NoSE
 
     # Populate the keys and entities
     # @return [void]
-    def populate_keys
-      @source_pk = @tree[:source_pk]
-      @target = source.foreign_keys[@tree[:target].to_s]
-      @target_pk = @tree[:target_pk]
+    def populate_keys(tree)
+      @source_pk = tree[:source_pk]
+      @target = source.foreign_keys[tree[:target].to_s]
+      @target_pk = tree[:target_pk]
 
       # Remove keys from the tree so we match on equality comparisons
-      @tree.delete :source_pk
-      @tree.delete :target_pk
+      tree.delete :source_pk
+      tree.delete :target_pk
 
       validate_keys
 
@@ -1101,7 +1100,7 @@ module NoSE
       super :connect, statement, model, group: group, label: label
       fail InvalidStatementException, 'DISCONNECT parsed as CONNECT' \
         unless @text.split.first == 'CONNECT'
-      populate_keys
+      populate_keys @tree
       freeze
     end
 
@@ -1117,7 +1116,7 @@ module NoSE
       super :connect, statement, model, group: group, label: label
       fail InvalidStatementException, 'CONNECT parsed as DISCONNECT' \
         unless @text.split.first == 'DISCONNECT'
-      populate_keys
+      populate_keys @tree
       freeze
     end
 
