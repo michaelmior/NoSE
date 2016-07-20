@@ -19,7 +19,7 @@ module NoSE
       @graph = graph
       @path = graph.to_path(hash_fields.first.parent)
 
-      validate_path
+      validate_graph
 
       build_hash saved_key
     end
@@ -44,7 +44,7 @@ module NoSE
 
       "[magenta]#{key}[/] #{fields[0]} #{fields[1]} → #{fields[2]}" \
         " [yellow]$#{size}[/]" \
-        " [magenta]#{@path.map(&:name).join(', ')}[/]"
+        " [magenta]#{@graph.inspect}[/]"
     end
     # :nocov:
 
@@ -55,14 +55,14 @@ module NoSE
     end
     alias eql? ==
 
-    # Hash based on the fields, their keys, and the path
+    # Hash based on the fields, their keys, and the graph
     # @return [String]
     def hash_str
       @hash_str ||= [
         @hash_fields.map(&:id).sort,
         @order_fields.map(&:id),
         @extra.map(&:id).sort,
-        @path.map(&:id)
+        @graph.unique_edges.map(&:canonical_params)
       ].to_s
     end
 
@@ -120,25 +120,25 @@ module NoSE
         if @order_fields.empty? && @extra.empty?
     end
 
-    # Ensure an index and its fields correspond to a valid path
+    # Ensure an index and its fields correspond to a valid graph
     # @return [void]
-    def validate_path
-      validate_path_entities
-      validate_path_keys
+    def validate_graph
+      validate_graph_entities
+      validate_graph_keys
     end
 
-    # Ensure the path of the index is valid
+    # Ensure the graph of the index is valid
     # @return [void]
-    def validate_path_entities
+    def validate_graph_entities
       entities = @all_fields.map(&:parent).to_set
-      fail InvalidIndexException, 'path entities do match index' \
-        unless entities == @path.entities.to_set
+      fail InvalidIndexException, 'graph entities do match index' \
+        unless entities == @graph.entities.to_set
     end
 
     # We must have the primary keys of the all entities in the graph
     # @return [void]
-    def validate_path_keys
-      fail InvalidIndexException, 'missing path entity keys' \
+    def validate_graph_keys
+      fail InvalidIndexException, 'missing graph entity keys' \
         unless @graph.entities.map(&:id_field).to_set.subset? \
           (@hash_fields + @order_fields).to_set
     end
