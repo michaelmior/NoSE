@@ -283,7 +283,7 @@ module NoSE
 
         tree = planner.find_plans_for_query(query)
         max_steps = tree.max_by(&:length).length
-        expect(max_steps).to be >= query.longest_entity_path.length
+        expect(max_steps).to be >= query.key_path.length
       end
 
       it 'does not use limits for a single entity result set' do

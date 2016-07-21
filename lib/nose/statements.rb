@@ -236,7 +236,7 @@ module NoSE
 
   # A CQL statement and its associated data
   class Statement
-    attr_reader :from, :longest_entity_path, :key_path, :label, :graph,
+    attr_reader :from, :key_path, :label, :graph,
                 :group, :text, :eq_fields, :range_field, :comment
 
     # Parse either a query or an update
@@ -510,7 +510,7 @@ module NoSE
       @select = tree[:select].flat_map do |field|
         if field.last == '*'
           # Find the entity along the path
-          entity = longest_entity_path[tree[:path].index(field.first)]
+          entity = @longest_entity_path[tree[:path].index(field.first)]
           entity.fields.values
         else
           field = add_field_with_prefix tree[:path], field

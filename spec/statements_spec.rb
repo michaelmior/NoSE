@@ -8,8 +8,8 @@ module NoSE
       expect(statement.eq_fields).to match_array [user['City']]
     end
 
-    it 'can report the longest entity path' do
-      expect(statement.longest_entity_path).to match_array [tweet, user]
+    it 'finds entities along the path in the from clause' do
+      expect(statement.key_path.entities).to match_array [tweet, user]
     end
   end
 
