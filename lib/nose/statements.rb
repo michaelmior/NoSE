@@ -36,9 +36,9 @@ module NoSE
 
     private
 
-    # Populate the list of condition objects
-    # @return [void]
-    def populate_conditions(tree)
+    # Extract conditions from a parse tree
+    # @return [Hash]
+    def conditions_from_tree(tree)
       conditions = tree[:where].nil? ? [] : tree[:where][:expression]
       conditions = conditions.map { |c| build_condition c, tree }
 
@@ -46,7 +46,7 @@ module NoSE
       @range_field = conditions.find(&:range?)
       @range_field = @range_field.field unless @range_field.nil?
 
-      @conditions = Hash[conditions.map do |condition|
+      Hash[conditions.map do |condition|
         [condition.field.id, condition]
       end]
     end
@@ -275,13 +275,11 @@ module NoSE
       klass.parse tree, text, model, group: group, label: label
     end
 
-    def initialize(tree, text, model, group: nil, label: nil)
+    def initialize(text, model, group: nil, label: nil)
       @text = text
       @group = group
       @model = model
       @label = label
-
-      populate_from_tree tree
     end
 
     # Specifies if the statement modifies any data
@@ -426,9 +424,10 @@ module NoSE
     attr_reader :select, :order, :limit
 
     def initialize(tree, text, model, group: nil, label: nil, freeze: true)
-      super tree, text, model, group: group, label: label
+      super text, model, group: group, label: label
 
-      populate_conditions tree
+      populate_from_tree tree
+      @conditions = conditions_from_tree tree
       populate_fields tree
 
       if join_order.first != @key_path.entities.first
@@ -732,9 +731,10 @@ module NoSE
     alias entity from
 
     def initialize(tree, text, model, group: nil, label: nil)
-      super tree, text, model, group: group, label: label
+      super text, model, group: group, label: label
 
-      populate_conditions tree
+      populate_from_tree tree
+      @conditions = conditions_from_tree tree
       populate_settings tree
 
       freeze
@@ -808,13 +808,14 @@ module NoSE
     alias entity from
 
     def initialize(tree, text, model, group: nil, label: nil)
-      super tree, text, model, group: group, label: label
+      super text, model, group: group, label: label
 
+      populate_from_tree tree
       populate_settings tree
       fail InvalidStatementException, 'Must insert primary key' \
         unless @settings.map(&:field).include?(entity.id_field)
 
-      populate_conditions tree
+      @conditions = conditions_from_tree tree
 
       freeze
     end
@@ -934,9 +935,9 @@ module NoSE
         index.path.length == 1 && index.path.first.parent == entity
     end
 
-    # Populate conditions with the foreign key settings
-    # @return [void]
-    def populate_conditions(tree)
+    # Extract conditions from a parse tree
+    # @return [Hash]
+    def conditions_from_tree(tree)
       connections = tree[:connections] || []
       connections = connections.map do |connection|
         field = entity[connection[:target].to_s]
@@ -950,7 +951,7 @@ module NoSE
         Condition.new field, :'=', value
       end
 
-      @conditions = Hash[connections.map do |connection|
+      Hash[connections.map do |connection|
         [connection.field.id, connection]
       end]
     end
@@ -964,9 +965,10 @@ module NoSE
     alias entity from
 
     def initialize(tree, text, model, group: nil, label: nil)
-      super tree, text, model, group: group, label: label
+      super text, model, group: group, label: label
 
-      populate_conditions tree
+      populate_from_tree tree
+      @conditions = conditions_from_tree tree
 
       freeze
     end
@@ -1087,8 +1089,6 @@ module NoSE
       # This is needed later when planning updates
       @eq_fields = [@target.parent.id_field,
                     @target.entity.id_field]
-
-      populate_conditions
     end
 
     # The two key fields are provided with the connection
@@ -1109,7 +1109,7 @@ module NoSE
       fail TypeError unless target_type.nil? || target_pk.is_a?(type)
     end
 
-    # Populate the conditions
+    # Populate the list of condition objects
     # @return [void]
     def populate_conditions
       source_id = source.id_field
@@ -1140,10 +1140,14 @@ module NoSE
   # A representation of a connect in the workload
   class Connect < Connection
     def initialize(tree, text, model, group: nil, label: nil)
-      super tree, text, model, group: group, label: label
+      super text, model, group: group, label: label
+      populate_from_tree tree
       fail InvalidStatementException, 'DISCONNECT parsed as CONNECT' \
         unless text.split.first == 'CONNECT'
+
       populate_keys tree
+      populate_conditions
+
       freeze
     end
 
@@ -1162,10 +1166,14 @@ module NoSE
   # A representation of a disconnect in the workload
   class Disconnect < Connection
     def initialize(tree, text, model, group: nil, label: nil)
-      super tree, text, model, group: group, label: label
+      super text, model, group: group, label: label
+      populate_from_tree tree
       fail InvalidStatementException, 'CONNECT parsed as DISCONNECT' \
         unless text.split.first == 'DISCONNECT'
+
       populate_keys tree
+      populate_conditions
+
       freeze
     end
 
