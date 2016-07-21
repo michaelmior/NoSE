@@ -156,8 +156,9 @@ module NoSE::Backend
         { 'User_Username' => 'Bob' }
       ]
       step = NoSE::Plans::FilterPlanStep.new [user['Username']], nil
-      query = NoSE::Query.new 'SELECT User.* FROM User ' \
-                              'WHERE User.Username = "Bob"', workload.model
+      query = NoSE::Statement.parse 'SELECT User.* FROM User ' \
+                                    'WHERE User.Username = "Bob"',
+                                    workload.model
 
       step_class = BackendBase::FilterStatementStep
       prepared = step_class.new nil, [], {}, step, nil, nil
@@ -174,9 +175,9 @@ module NoSE::Backend
         { 'User_Username' => 'Bob' }
       ]
       step = NoSE::Plans::FilterPlanStep.new [], [user['Username']]
-      query = NoSE::Query.new 'SELECT User.* FROM User WHERE ' \
-                              'User.Username < "B" AND User.City = "New York"',
-                              workload.model
+      query = NoSE::Statement.parse 'SELECT User.* FROM User WHERE ' \
+                                    'User.Username < "B" AND ' \
+                                    'User.City = "New York"', workload.model
 
       step_class = BackendBase::FilterStatementStep
       prepared = step_class.new nil, [], {}, step, nil, nil

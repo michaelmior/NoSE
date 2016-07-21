@@ -237,10 +237,10 @@ module NoSE
   # A CQL statement and its associated data
   class Statement
     attr_reader :from, :longest_entity_path, :key_path, :label, :graph,
-                :group, :text, :eq_fields, :range_field, :comment
+                :group, :text, :eq_fields, :range_field, :comment, :hash
 
     # Parse either a query or an update
-    def self.parse(text, model, group: nil, label: nil)
+    def self.parse(text, model, group: nil, label: nil, support: false)
       case text.split.first
       when 'INSERT'
         klass = Insert
@@ -256,14 +256,12 @@ module NoSE
         klass = Query
       end
 
-      klass.new text, model, group: group, label: label
-    end
+      # Set the type of the statement
+      # (but CONNECT and DISCONNECT use the same parse rule)
+      type = klass.name.split('::').last.downcase.to_sym
+      type = :connect if type == :disconnect
 
-    def initialize(type, text, model, group: nil, label: nil)
-      @text = text
-      @group = group
-      @model = model
-      @label = label
+      klass = SupportQuery if support
 
       # If parsing fails, re-raise as our custom exception
       begin
@@ -274,8 +272,16 @@ module NoSE
         raise new_exc
       end
 
+      klass.parse tree, text, model, group: group, label: label
+    end
+
+    def initialize(tree, text, model, group: nil, label: nil)
+      @text = text
+      @group = group
+      @model = model
+      @label = label
+
       populate_from_tree tree
-      @tree = tree
     end
 
     # Specifies if the statement modifies any data
@@ -301,10 +307,6 @@ module NoSE
       "#{@text} [magenta]#{@longest_entity_path.map(&:name).join ', '}[/]"
     end
     # :nocov:
-
-    def hash
-      Zlib.crc32 @tree.to_s
-    end
 
     protected
 
@@ -371,6 +373,8 @@ module NoSE
       @from = @model[tree[:path].first.to_s]
       find_longest_path tree[:path]
       build_graph
+
+      @hash = Zlib.crc32 tree.to_s
     end
 
     # A helper to look up a field based on the path specified in the statement
@@ -421,11 +425,11 @@ module NoSE
 
     attr_reader :select, :order, :limit
 
-    def initialize(statement, model, group: nil, label: nil)
-      super :query, statement, model, group: group, label: label
+    def initialize(tree, text, model, group: nil, label: nil, freeze: true)
+      super tree, text, model, group: group, label: label
 
-      populate_conditions @tree
-      populate_fields @tree
+      populate_conditions tree
+      populate_fields tree
 
       if join_order.first != @key_path.entities.first
         @key_path = @key_path.reverse
@@ -434,13 +438,19 @@ module NoSE
       fail InvalidStatementException, 'must have an equality predicate' \
         if @conditions.empty? || @conditions.values.all?(&:is_range)
 
-      @limit = @tree[:limit].to_i if @tree[:limit]
+      @limit = tree[:limit].to_i if tree[:limit]
 
-      if @tree[:where]
-        @tree[:where][:expression].each { |condition| condition.delete :value }
+      if tree[:where]
+        tree[:where][:expression].each { |condition| condition.delete :value }
       end
 
-      freeze
+      freeze if freeze
+    end
+
+    # Build a new query from a provided parse tree
+    # @return [Query]
+    def self.parse(tree, text, model, group: nil, label: nil)
+      Query.new tree, text, model, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this query
@@ -518,11 +528,14 @@ module NoSE
   class SupportQuery < Query
     attr_reader :statement, :index
 
-    def initialize(query, model, statement, index)
-      @statement = statement
-      @index = index
+    def initialize(tree, text, model, group: nil, label: nil)
+      super tree, text, model, group: group, label: label, freeze: false
+    end
 
-      super query, model
+    # Build a new support from a provided parse tree
+    # @return [SupportQuery]
+    def self.parse(tree, text, model, group: nil, label: nil)
+      SupportQuery.new tree, text, model, group: group, label: label
     end
 
     # Support queries must also have their statement and index checked
@@ -642,7 +655,12 @@ module NoSE
       #     for now to keep each individual query unique
       query += " -- #{query.hash}"
 
-      SupportQuery.new query, @model, self, index
+      support_query = Statement.parse query, @model, support: true
+      support_query.instance_variable_set :@statement, self
+      support_query.instance_variable_set :@index, index
+      support_query.freeze
+
+      support_query
     end
 
     # Get the support query for updating a given
@@ -713,13 +731,19 @@ module NoSE
 
     alias entity from
 
-    def initialize(statement, model, group: nil, label: nil)
-      super :update, statement, model, group: group, label: label
+    def initialize(tree, text, model, group: nil, label: nil)
+      super tree, text, model, group: group, label: label
 
-      populate_conditions @tree
-      populate_settings @tree
+      populate_conditions tree
+      populate_settings tree
 
       freeze
+    end
+
+    # Build a new update from a provided parse tree
+    # @return [Update]
+    def self.parse(tree, text, model, group: nil, label: nil)
+      Update.new tree, text, model, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this update
@@ -783,16 +807,22 @@ module NoSE
 
     alias entity from
 
-    def initialize(statement, model, group: nil, label: nil)
-      super :insert, statement, model, group: group, label: label
+    def initialize(tree, text, model, group: nil, label: nil)
+      super tree, text, model, group: group, label: label
 
-      populate_settings @tree
+      populate_settings tree
       fail InvalidStatementException, 'Must insert primary key' \
         unless @settings.map(&:field).include?(entity.id_field)
 
-      populate_conditions @tree
+      populate_conditions tree
 
       freeze
+    end
+
+    # Build a new insert from a provided parse tree
+    # @return [Insert]
+    def self.parse(tree, text, model, group: nil, label: nil)
+      Insert.new tree, text, model, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this insert
@@ -933,12 +963,18 @@ module NoSE
 
     alias entity from
 
-    def initialize(statement, model, group: nil, label: nil)
-      super :delete, statement, model, group: group, label: label
+    def initialize(tree, text, model, group: nil, label: nil)
+      super tree, text, model, group: group, label: label
 
-      populate_conditions @tree
+      populate_conditions tree
 
       freeze
+    end
+
+    # Build a new delete from a provided parse tree
+    # @return [Delete]
+    def self.parse(tree, text, model, group: nil, label: nil)
+      Delete.new tree, text, model, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this delete
@@ -1103,12 +1139,18 @@ module NoSE
 
   # A representation of a connect in the workload
   class Connect < Connection
-    def initialize(statement, model, group: nil, label: nil)
-      super :connect, statement, model, group: group, label: label
+    def initialize(tree, text, model, group: nil, label: nil)
+      super tree, text, model, group: group, label: label
       fail InvalidStatementException, 'DISCONNECT parsed as CONNECT' \
-        unless @text.split.first == 'CONNECT'
-      populate_keys @tree
+        unless text.split.first == 'CONNECT'
+      populate_keys tree
       freeze
+    end
+
+    # Build a new query from a provided parse tree
+    # @return [Connect]
+    def self.parse(tree, text, model, group: nil, label: nil)
+      Connect.new tree, text, model, group: group, label: label
     end
 
     # Specifies that connections require insertion
@@ -1119,12 +1161,18 @@ module NoSE
 
   # A representation of a disconnect in the workload
   class Disconnect < Connection
-    def initialize(statement, model, group: nil, label: nil)
-      super :connect, statement, model, group: group, label: label
+    def initialize(tree, text, model, group: nil, label: nil)
+      super tree, text, model, group: group, label: label
       fail InvalidStatementException, 'CONNECT parsed as DISCONNECT' \
-        unless @text.split.first == 'DISCONNECT'
-      populate_keys @tree
+        unless text.split.first == 'DISCONNECT'
+      populate_keys tree
       freeze
+    end
+
+    # Build a new disconnect from a provided parse tree
+    # @return [Disconnect]
+    def self.parse(tree, text, model, group: nil, label: nil)
+      Disconnect.new tree, text, model, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this disconnection

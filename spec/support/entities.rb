@@ -40,8 +40,8 @@ module NoSE
     let(:user) { workload.model['User'] }
     let(:link) { workload.model['Link'] }
     let(:query) do
-      Query.new 'SELECT Link.URL FROM Link.Tweets.User ' \
-                'WHERE User.Username = ? LIMIT 5', workload.model
+      Statement.parse 'SELECT Link.URL FROM Link.Tweets.User ' \
+                      'WHERE User.Username = ? LIMIT 5', workload.model
     end
 
     let(:index) do

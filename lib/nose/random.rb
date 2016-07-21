@@ -169,7 +169,7 @@ module NoSE
       # Optionally add connections to other entities
       insert += random_connection(entity) if connect
 
-      Insert.new insert, @model
+      Statement.parse insert, @model
     end
 
     # Generate a random connection for an Insert
@@ -189,7 +189,7 @@ module NoSE
       update = "UPDATE #{from.first} FROM #{from.join '.'} SET #{settings} " +
                random_where_clause(path, condition_count)
 
-      Update.new update, @model
+      Statement.parse update, @model
     end
 
     # Get random settings for an update
@@ -213,7 +213,7 @@ module NoSE
       delete = "DELETE #{from.first} FROM #{from.join '.'} " +
                random_where_clause(path, 1)
 
-      Delete.new delete, @model
+      Statement.parse delete, @model
     end
 
     # Generate a new random query from entities in the model
@@ -225,7 +225,7 @@ module NoSE
       query = "SELECT #{select_fields} FROM #{from.join '.'} " +
               random_where_clause(path, condition_count)
 
-      Query.new query, @model
+      Statement.parse query, @model
     end
 
     # Get random fields to select for a Query

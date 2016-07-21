@@ -17,9 +17,9 @@ module NoSE
     include_context 'entities'
 
     let(:query) do
-      Query.new 'SELECT Tweet.TweetId FROM Tweet.User WHERE ' \
-                'Tweet.Timestamp > ? AND User.City = ? ' \
-                'ORDER BY Tweet.Timestamp LIMIT 5', workload.model
+      Statement.parse 'SELECT Tweet.TweetId FROM Tweet.User WHERE ' \
+                      'Tweet.Timestamp > ? AND User.City = ? ' \
+                      'ORDER BY Tweet.Timestamp LIMIT 5', workload.model
     end
 
     it_behaves_like 'a statement' do
@@ -39,64 +39,64 @@ module NoSE
     end
 
     it 'can select all fields' do
-      stmt = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Body = ?',
-                       workload.model
+      stmt = Statement.parse 'SELECT Tweet.* FROM Tweet WHERE Tweet.Body = ?',
+                             workload.model
       expect(stmt.select).to match_array tweet.fields.values
     end
 
     it 'compares equal regardless of constant values' do
-      stmt1 = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Retweets = 3',
-                        workload.model
-      stmt2 = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Retweets = 2',
-                        workload.model
+      stmt1 = Statement.parse 'SELECT Tweet.* FROM Tweet ' \
+                              'WHERE Tweet.Retweets = 3', workload.model
+      stmt2 = Statement.parse 'SELECT Tweet.* FROM Tweet ' \
+                              'WHERE Tweet.Retweets = 2', workload.model
 
       expect(stmt1).to eq stmt2
     end
 
     context 'when parsing literals' do
       it 'can find strings' do
-        stmt = Query.new 'SELECT User.* FROM User WHERE User.City = "NY"',
-                         workload.model
+        stmt = Statement.parse 'SELECT User.* FROM User ' \
+                               'WHERE User.City = "NY"', workload.model
         expect(stmt.conditions['User_City'].value).to eq 'NY'
       end
 
       it 'can find integers' do
-        stmt = Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Retweets = 3',
-                         workload.model
+        stmt = Statement.parse 'SELECT Tweet.* FROM Tweet ' \
+                               'WHERE Tweet.Retweets = 3', workload.model
         expect(stmt.conditions['Tweet_Retweets'].value).to eq 3
       end
 
       it 'fails if the value is the wrong type' do
         expect do
-          Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.Timestamp = 3',
-                    workload.model
+          Statement.parse 'SELECT Tweet.* FROM Tweet ' \
+                          'WHERE Tweet.Timestamp = 3', workload.model
         end.to raise_error TypeError
       end
     end
 
     it 'can select additional hash fields' do
-      query = Query.new 'SELECT User.** FROM User WHERE User.UserId = ?',
-                        workload.model
+      query = Statement.parse 'SELECT User.** FROM User WHERE User.UserId = ?',
+                              workload.model
       expect(query.select).to match_array [user['**']]
     end
 
     it 'fails if a field does not exist' do
       expect do
-        Query.new 'SELECT User.Banana FROM User WHERE User.City = ?',
-                  workload.model
+        Statement.parse 'SELECT User.Banana FROM User WHERE User.City = ?',
+                        workload.model
       end.to raise_error FieldNotFound
     end
 
     it 'does not allow predicates on foreign keys' do
       expect do
-        Query.new 'SELECT Tweet.* FROM Tweet WHERE Tweet.User = ?',
-                  workload.model
+        Statement.parse 'SELECT Tweet.* FROM Tweet WHERE Tweet.User = ?',
+                        workload.model
       end.to raise_error InvalidStatementException
     end
 
     it 'can have branching in the fields being selected' do
-      query = Query.new 'SELECT Tweet.Link.URL, Tweet.Body FROM Tweet ' \
-                        'WHERE Tweet.TweetId= ?', workload.model
+      query = Statement.parse 'SELECT Tweet.Link.URL, Tweet.Body FROM Tweet ' \
+                              'WHERE Tweet.TweetId= ?', workload.model
       graph = QueryGraph::Graph.from_path(
         [tweet.id_field, tweet['Link']]
       )
@@ -109,8 +109,8 @@ module NoSE
     include_context 'entities'
 
     let(:update) do
-      Update.new 'UPDATE Tweet FROM Tweet.User SET Body = "foo" WHERE ' \
-                 'Tweet.Timestamp > ? AND User.City = ?', workload.model
+      Statement.parse 'UPDATE Tweet FROM Tweet.User SET Body = "foo" WHERE ' \
+                      'Tweet.Timestamp > ? AND User.City = ?', workload.model
     end
 
     it_behaves_like 'a statement' do
@@ -128,8 +128,8 @@ module NoSE
     end
 
     it 'does not produce a support query for unaffected indexes' do
-      update = Update.new 'UPDATE User SET City = ? WHERE User.UserId = ?',
-                          workload.model
+      update = Statement.parse 'UPDATE User SET City = ? ' \
+                               'WHERE User.UserId = ?', workload.model
       index = NoSE::Index.new [tweet['TweetId']], [], [tweet['Timestamp']],
                               QueryGraph::Graph.from_path(
                                 [tweet.id_field]
@@ -138,8 +138,8 @@ module NoSE
     end
 
     it 'can generate support queries' do
-      update = Update.new 'UPDATE User SET City = ? WHERE User.UserId = ?',
-                          workload.model
+      update = Statement.parse 'UPDATE User SET City = ? WHERE ' \
+                               'User.UserId = ?', workload.model
       index = NoSE::Index.new [tweet['Timestamp']],
                               [tweet['TweetId'], user['UserId']],
                               [user['City']],
@@ -155,8 +155,8 @@ module NoSE
     end
 
     it 'does not select fields with update predicates in support queries' do
-      update = Update.new 'UPDATE User SET City = ? WHERE User.UserId = ?',
-                          workload.model
+      update = Statement.parse 'UPDATE User SET City = ? WHERE ' \
+                               'User.UserId = ?', workload.model
       index = NoSE::Index.new [user['Username'], user['UserId']], [],
                               [user['City']], QueryGraph::Graph.from_path(
                                 [user.id_field]
@@ -167,8 +167,8 @@ module NoSE
 
     it 'fails if the FROM clause does not start with the updated entity' do
       expect do
-        Update.new 'UPDATE User FROM Tweet.User SET City = ? ' \
-                   'WHERE User.UserId = ?', workload.model
+        Statement.parse 'UPDATE User FROM Tweet.User SET City = ? ' \
+                        'WHERE User.UserId = ?', workload.model
       end.to raise_error InvalidStatementException
     end
   end
@@ -177,9 +177,8 @@ module NoSE
     include_context 'entities'
 
     let(:insert) do
-      Insert.new 'INSERT INTO Tweet SET Body = "Test", TweetId = "1" ' \
-                 'AND CONNECT TO User("1"), Link("1")',
-                 workload.model
+      Statement.parse 'INSERT INTO Tweet SET Body = "Test", TweetId = "1" ' \
+                      'AND CONNECT TO User("1"), Link("1")', workload.model
     end
 
     it 'can be converted back to insert text' do
@@ -227,8 +226,8 @@ module NoSE
     include_context 'entities'
 
     let(:delete) do
-      Delete.new 'DELETE Tweet FROM Tweet.User WHERE ' \
-                 'Tweet.Timestamp > ? AND User.City = ?', workload.model
+      Statement.parse 'DELETE Tweet FROM Tweet.User WHERE ' \
+                      'Tweet.Timestamp > ? AND User.City = ?', workload.model
     end
 
     it_behaves_like 'a statement' do
@@ -247,7 +246,8 @@ module NoSE
       index = Index.new [user['UserId']], [tweet['TweetId']], [],
                         QueryGraph::Graph.from_path([user['UserId'],
                                                      user['Tweets']])
-      connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
+      connect = Statement.parse 'CONNECT Tweet("A") TO User("B")',
+                                workload.model
 
       expect(connect.modifies_index? index).to be true
     end
@@ -256,7 +256,8 @@ module NoSE
       index = Index.new [user['UserId']], [tweet['TweetId']], [],
                         QueryGraph::Graph.from_path([tweet['TweetId'],
                                                      tweet['User']])
-      connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
+      connect = Statement.parse 'CONNECT Tweet("A") TO User("B")',
+                                workload.model
 
       expect(connect.modifies_index? index).to be true
     end
@@ -266,7 +267,8 @@ module NoSE
                         QueryGraph::Graph.from_path(
                           [user['UserId'], user['Favourite']]
                         )
-      connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
+      connect = Statement.parse 'CONNECT Tweet("A") TO User("B")',
+                                workload.model
 
       expect(connect.modifies_index? index).to be false
     end
@@ -275,7 +277,8 @@ module NoSE
       index = Index.new [user['UserId']], [tweet['TweetId']], [user['City']],
                         QueryGraph::Graph.from_path([tweet['TweetId'],
                                                      tweet['User']])
-      connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
+      connect = Statement.parse 'CONNECT Tweet("A") TO User("B")',
+                                workload.model
 
       queries = connect.support_queries index
       expect(queries).to have(1).item
@@ -287,7 +290,8 @@ module NoSE
       index = Index.new [user['UserId']], [tweet['TweetId']], [],
                         QueryGraph::Graph.from_path([user['UserId'],
                                                      user['Favourite']])
-      connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
+      connect = Statement.parse 'CONNECT Tweet("A") TO User("B")',
+                                workload.model
 
       expect(connect.support_queries(index)).to be_empty
     end
@@ -296,8 +300,8 @@ module NoSE
       index = Index.new [user['UserId']], [tweet['TweetId']], [user['City']],
                         QueryGraph::Graph.from_path([user['UserId'],
                                                      user['Favourite']])
-      disconnect = Disconnect.new 'DISCONNECT Tweet("A") FROM User("B")',
-                                  workload.model
+      disconnect = Statement.parse 'DISCONNECT Tweet("A") FROM User("B")',
+                                   workload.model
 
       expect(disconnect.support_queries(index)).to be_empty
     end
@@ -307,12 +311,14 @@ module NoSE
     include_context 'entities'
 
     it 'can be converted back to connection text' do
-      connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
+      connect = Statement.parse 'CONNECT Tweet("A") TO User("B")',
+                                workload.model
       expect(connect.unparse).to eq connect.text
     end
 
     it 'can parse simple connect statements' do
-      connect = Connect.new 'CONNECT Tweet("A") TO User("B")', workload.model
+      connect = Statement.parse 'CONNECT Tweet("A") TO User("B")',
+                                workload.model
 
       expect(connect.source).to eq(tweet)
       expect(connect.source_pk).to eq('A')
@@ -321,7 +327,7 @@ module NoSE
     end
 
     it 'can parse parameterized connect statements' do
-      connect = Connect.new 'CONNECT Tweet(?) TO User(?)', workload.model
+      connect = Statement.parse 'CONNECT Tweet(?) TO User(?)', workload.model
 
       expect(connect.source).to eq(tweet)
       expect(connect.source_pk).to be_nil
@@ -334,14 +340,14 @@ module NoSE
     include_context 'entities'
 
     it 'can be converted back to disconnection text' do
-      disconnect = Disconnect.new 'DISCONNECT Tweet("A") FROM User("B")',
-                                  workload.model
+      disconnect = Statement.parse 'DISCONNECT Tweet("A") FROM User("B")',
+                                   workload.model
       expect(disconnect.unparse).to eq disconnect.text
     end
 
     it 'can parse simple disconnect statements' do
-      connect = Disconnect.new 'DISCONNECT Tweet("A") FROM User("B")',
-                               workload.model
+      connect = Statement.parse 'DISCONNECT Tweet("A") FROM User("B")',
+                                workload.model
 
       expect(connect.source).to eq(tweet)
       expect(connect.source_pk).to eq('A')
@@ -392,10 +398,10 @@ module NoSE
     end
 
     it 'can order on multiple fields' do
-      query = Query.new 'SELECT Tweet.TweetId FROM Tweet.User ' \
-                        'WHERE User.UserId = ? ' \
-                        'ORDER BY Tweet.Timestamp, Tweet.Retweets',
-                        workload.model
+      query = Statement.parse 'SELECT Tweet.TweetId FROM Tweet.User ' \
+                              'WHERE User.UserId = ? ' \
+                              'ORDER BY Tweet.Timestamp, Tweet.Retweets',
+                              workload.model
       expect(query.order).to match_array [tweet['Timestamp'],
                                           tweet['Retweets']]
     end

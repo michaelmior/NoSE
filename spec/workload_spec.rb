@@ -15,8 +15,8 @@ module NoSE
       end
 
       it 'automatically parses queries' do
-        valid_query = Query.new 'SELECT Foo.Id FROM Foo WHERE Foo.Id = ?',
-                                workload.model
+        valid_query = Statement.parse 'SELECT Foo.Id FROM Foo ' \
+                                      'WHERE Foo.Id = ?', workload.model
         workload.add_statement valid_query
 
         expect(workload.queries).to have(1).item
@@ -29,8 +29,8 @@ module NoSE
     end
 
     it 'can find statements with a given tag' do
-      query = Query.new 'SELECT Foo.Id FROM Foo WHERE Foo.Id = ? -- foo',
-        workload.model
+      query = Statement.parse 'SELECT Foo.Id FROM Foo WHERE Foo.Id = ? -- foo',
+                              workload.model
       workload.add_statement query
 
       expect(workload.find_with_tag 'foo').to eq(query)
@@ -64,11 +64,11 @@ module NoSE
     it 'can remove updates' do
       entity << Fields::IntegerField.new('Bar')
 
-      valid_query = Query.new 'SELECT Foo.Id FROM Foo WHERE Foo.Id = ?',
-                              workload.model
+      valid_query = Statement.parse 'SELECT Foo.Id FROM Foo WHERE Foo.Id = ?',
+                                    workload.model
       workload.add_statement valid_query
-      update = Update.new 'UPDATE Foo SET Bar = ? WHERE Foo.Id = ?',
-                          workload.model
+      update = Statement.parse 'UPDATE Foo SET Bar = ? WHERE Foo.Id = ?',
+                               workload.model
       workload.add_statement update
 
       workload.remove_updates

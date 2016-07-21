@@ -15,9 +15,9 @@ module NoSE
       end
 
       it 'produces a materialized view with sufficient space', solver: true do
-        query = NoSE::Query.new 'SELECT User.UserId FROM User ' \
-                                'WHERE User.City = ? ' \
-                                'ORDER BY User.Username', workload.model
+        query = NoSE::Statement.parse 'SELECT User.UserId FROM User ' \
+                                      'WHERE User.City = ? ' \
+                                      'ORDER BY User.Username', workload.model
         workload.add_statement query
 
         indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload.to_a
@@ -27,8 +27,8 @@ module NoSE
       end
 
       it 'can perform multiple lookups on a path segment', solver: true do
-        query = NoSE::Query.new 'SELECT User.Username FROM User ' \
-                                'WHERE User.City = ?', workload.model
+        query = NoSE::Statement.parse 'SELECT User.Username FROM User ' \
+                                      'WHERE User.City = ?', workload.model
         workload.add_statement query
 
         indexes = [

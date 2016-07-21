@@ -3,16 +3,17 @@ module NoSE
     include_context 'entities'
 
     let(:equality_query) do
-      Query.new 'SELECT Tweet.Body FROM Tweet WHERE Tweet.TweetId = ?',
-                workload.model
+      Statement.parse 'SELECT Tweet.Body FROM Tweet WHERE Tweet.TweetId = ?',
+                      workload.model
     end
     let(:combo_query) do
-      Query.new 'SELECT Tweet.Body FROM Tweet WHERE Tweet.Timestamp > ? ' \
-                'AND Tweet.TweetId = ?', workload.model
+      Statement.parse 'SELECT Tweet.Body FROM Tweet ' \
+                      'WHERE Tweet.Timestamp > ? ' \
+                      'AND Tweet.TweetId = ?', workload.model
     end
     let(:order_query) do
-      Query.new 'SELECT Tweet.Body FROM Tweet WHERE Tweet.TweetId = ? ' \
-                'ORDER BY Tweet.Timestamp', workload.model
+      Statement.parse 'SELECT Tweet.Body FROM Tweet WHERE Tweet.TweetId = ? ' \
+                      'ORDER BY Tweet.Timestamp', workload.model
     end
 
     before(:each) do
@@ -73,9 +74,9 @@ module NoSE
       end
 
       it 'includes only one entity in the hash fields' do
-        query = Query.new 'SELECT Tweet.TweetId FROM Tweet.User ' \
-                          'WHERE Tweet.Timestamp = ? AND User.City = ?',
-                          workload.model
+        query = Statement.parse 'SELECT Tweet.TweetId FROM Tweet.User ' \
+                                'WHERE Tweet.Timestamp = ? AND User.City = ?',
+                                workload.model
         index = query.materialize_view
         expect(index.hash_fields.map(&:parent).uniq).to have(1).item
       end

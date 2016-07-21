@@ -498,8 +498,8 @@ module NoSE
           query = OpenStruct.new group: fragment['group']
           state = nil
         else
-          query = Query.new fragment['query'], workload.model,
-                            group: fragment['group']
+          query = Statement.parse fragment['query'], workload.model,
+                                  group: fragment['group']
           state = Plans::QueryState.new query, workload
         end
 
