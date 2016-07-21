@@ -27,8 +27,8 @@ module NoSE
     end
 
     it 'produces an index for intermediate query steps' do
-      query = NoSE::Statement.parse 'SELECT Link.URL FROM Link.Tweets.User ' \
-                                    'WHERE User.Username = ?', workload.model
+      query = Statement.parse 'SELECT Link.URL FROM Link.Tweets.User ' \
+                              'WHERE User.Username = ?', workload.model
       indexes = enum.indexes_for_query query
       expect(indexes).to include \
         Index.new [user['UserId']], [tweet['TweetId']], [],

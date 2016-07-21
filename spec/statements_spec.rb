@@ -130,22 +130,22 @@ module NoSE
     it 'does not produce a support query for unaffected indexes' do
       update = Statement.parse 'UPDATE User SET City = ? ' \
                                'WHERE User.UserId = ?', workload.model
-      index = NoSE::Index.new [tweet['TweetId']], [], [tweet['Timestamp']],
-                              QueryGraph::Graph.from_path(
-                                [tweet.id_field]
-                              ), workload.model
+      index = Index.new [tweet['TweetId']], [], [tweet['Timestamp']],
+                        QueryGraph::Graph.from_path(
+                          [tweet.id_field]
+                        ), workload.model
       expect(update.support_queries index).to be_empty
     end
 
     it 'can generate support queries' do
       update = Statement.parse 'UPDATE User SET City = ? WHERE ' \
                                'User.UserId = ?', workload.model
-      index = NoSE::Index.new [tweet['Timestamp']],
-                              [tweet['TweetId'], user['UserId']],
-                              [user['City']],
-                              QueryGraph::Graph.from_path(
-                                [tweet.id_field, tweet['User']]
-                              ), workload.model
+      index = Index.new [tweet['Timestamp']],
+                        [tweet['TweetId'], user['UserId']],
+                        [user['City']],
+                        QueryGraph::Graph.from_path(
+                          [tweet.id_field, tweet['User']]
+                        ), workload.model
       query = update.support_queries(index).first
       expect(query.text).to start_with \
         'SELECT Tweet.Timestamp, Tweet.TweetId ' \
@@ -157,10 +157,10 @@ module NoSE
     it 'does not select fields with update predicates in support queries' do
       update = Statement.parse 'UPDATE User SET City = ? WHERE ' \
                                'User.UserId = ?', workload.model
-      index = NoSE::Index.new [user['Username'], user['UserId']], [],
-                              [user['City']], QueryGraph::Graph.from_path(
-                                [user.id_field]
-                              ), workload.model
+      index = Index.new [user['Username'], user['UserId']], [],
+                        [user['City']], QueryGraph::Graph.from_path(
+                          [user.id_field]
+                        ), workload.model
       expect(update.support_queries(index).first.text).to start_with \
         'SELECT User.Username FROM User WHERE User.UserId = ?'
     end

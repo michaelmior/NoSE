@@ -7,8 +7,8 @@ module NoSE
       it 'can look up fields by key' do
         index = tweet.simple_index
         planner = QueryPlanner.new workload.model, [index], cost_model
-        query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet ' \
-                                      'WHERE Tweet.TweetId = ?', workload.model
+        query = Statement.parse 'SELECT Tweet.Body FROM Tweet ' \
+                                'WHERE Tweet.TweetId = ?', workload.model
 
         tree = planner.find_plans_for_query query
         expect(tree.first).to eq([IndexLookupPlanStep.new(index)])
@@ -17,15 +17,14 @@ module NoSE
       end
 
       it 'does not use an index with the wrong key path' do
-        query = NoSE::Statement.parse 'SELECT User.Username FROM Tweet.User' \
-                                      ' WHERE Tweet.TweetId = ?',
-                                      workload.model
+        query = Statement.parse 'SELECT User.Username FROM Tweet.User' \
+                                ' WHERE Tweet.TweetId = ?', workload.model
         good_index = query.materialize_view
         bad_index = good_index.dup
-        path = NoSE::KeyPath.new [user.id_field, user['Favourite']]
+        path = KeyPath.new [user.id_field, user['Favourite']]
         bad_index.instance_variable_set :@path, path
         bad_index.instance_variable_set :@graph,
-                                        NoSE::QueryGraph::Graph.from_path(path)
+                                        QueryGraph::Graph.from_path(path)
 
         # With the correct path, this should work
         planner = QueryPlanner.new workload.model, [good_index], cost_model
@@ -38,17 +37,15 @@ module NoSE
       end
 
       it 'can perform an external sort if an index does not exist' do
-        index = NoSE::Index.new [user['City']],
-                                [user['UserId'], tweet['TweetId']],
-                                [tweet['Timestamp'], tweet['Body']],
-                                QueryGraph::Graph.from_path(
-                                  [user.id_field, user['Tweets']]
-                                )
+        index = Index.new [user['City']], [user['UserId'], tweet['TweetId']],
+                          [tweet['Timestamp'], tweet['Body']],
+                          QueryGraph::Graph.from_path(
+                            [user.id_field, user['Tweets']]
+                          )
         planner = QueryPlanner.new workload.model, [index], cost_model
-        query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
-                                      'WHERE User.City = ? ' \
-                                      'ORDER BY Tweet.Timestamp',
-                                      workload.model
+        query = Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
+                                'WHERE User.City = ? ORDER BY Tweet.Timestamp',
+                                workload.model
 
         tree = planner.find_plans_for_query query
         steps = [
@@ -61,19 +58,17 @@ module NoSE
       end
 
       it 'can sort if data on all entities has been fetched' do
-        index1 = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
-                                 [user['Username']],
-                                 QueryGraph::Graph.from_path(
-                                   [user.id_field, user['Tweets']]
-                                 )
-        index2 = NoSE::Index.new [tweet['TweetId']], [], [tweet['Body']],
-                                 QueryGraph::Graph.from_path(
-                                   [tweet.id_field]
-                                 )
+        index1 = Index.new [user['UserId']], [tweet['TweetId']],
+                           [user['Username']],
+                           QueryGraph::Graph.from_path(
+                             [user.id_field, user['Tweets']]
+                           )
+        index2 = Index.new [tweet['TweetId']], [], [tweet['Body']],
+                           QueryGraph::Graph.from_path([tweet.id_field])
         planner = QueryPlanner.new workload.model, [index1, index2], cost_model
-        query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
-                                      'WHERE User.UserId = ? ' \
-                                      'ORDER BY User.Username', workload.model
+        query = Statement.parse 'SELECT Tweet.Body FROM Tweet.User WHERE ' \
+                                'User.UserId = ? ORDER BY User.Username',
+                                workload.model
         expect(planner.min_plan(query)).to eq [
           IndexLookupPlanStep.new(index1),
           SortPlanStep.new([user['Username']]),
@@ -82,9 +77,8 @@ module NoSE
       end
 
       it 'can apply a limit directly' do
-        query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
-                                      'WHERE User.UserId = ? LIMIT 5',
-                                      workload.model
+        query = Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
+                                'WHERE User.UserId = ? LIMIT 5', workload.model
         index = query.materialize_view
         planner = QueryPlanner.new workload.model, [index], cost_model
 
@@ -95,15 +89,15 @@ module NoSE
       end
 
       it 'can perform an external sort followed by a limit' do
-        index = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
-                                [tweet['Timestamp'], tweet['Body']],
-                                QueryGraph::Graph.from_path(
-                                  [user.id_field, user['Tweets']]
-                                )
+        index = Index.new [user['UserId']], [tweet['TweetId']],
+                          [tweet['Timestamp'], tweet['Body']],
+                          QueryGraph::Graph.from_path(
+                            [user.id_field, user['Tweets']]
+                          )
         planner = QueryPlanner.new workload.model, [index], cost_model
-        query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
-                                      'WHERE User.UserId = ? ORDER BY ' \
-                                      'Tweet.Timestamp LIMIT 5', workload.model
+        query = Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
+                                'WHERE User.UserId = ? ORDER BY ' \
+                                'Tweet.Timestamp LIMIT 5', workload.model
 
         tree = planner.find_plans_for_query query
         steps = [
@@ -118,28 +112,28 @@ module NoSE
 
       it 'raises an exception if there is no plan' do
         planner = QueryPlanner.new workload.model, [], cost_model
-        query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet ' \
-                                      'WHERE Tweet.TweetId = ?', workload.model
+        query = Statement.parse 'SELECT Tweet.Body FROM Tweet ' \
+                                'WHERE Tweet.TweetId = ?', workload.model
         expect { planner.find_plans_for_query query }.to \
           raise_error NoPlanException
       end
 
       it 'can find multiple plans' do
-        index1 = NoSE::Index.new [user['UserId']],
-                                 [tweet['Timestamp'], tweet['TweetId']],
-                                 [tweet['Body']],
-                                 QueryGraph::Graph.from_path(
-                                   [user.id_field, user['Tweets']]
-                                 )
-        index2 = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
-                                 [tweet['Timestamp'], tweet['Body']],
-                                 QueryGraph::Graph.from_path(
-                                   [user.id_field, user['Tweets']]
-                                 )
+        index1 = Index.new [user['UserId']],
+                           [tweet['Timestamp'], tweet['TweetId']],
+                           [tweet['Body']],
+                           QueryGraph::Graph.from_path(
+                             [user.id_field, user['Tweets']]
+                           )
+        index2 = Index.new [user['UserId']], [tweet['TweetId']],
+                           [tweet['Timestamp'], tweet['Body']],
+                           QueryGraph::Graph.from_path(
+                             [user.id_field, user['Tweets']]
+                           )
         planner = QueryPlanner.new workload.model, [index1, index2], cost_model
-        query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
-                                      'WHERE User.UserId = ? ' \
-                                      'ORDER BY Tweet.Timestamp', workload.model
+        query = Statement.parse 'SELECT Tweet.Body FROM Tweet.User WHERE ' \
+                                'User.UserId = ? ORDER BY Tweet.Timestamp',
+                                workload.model
 
         tree = planner.find_plans_for_query query
         expect(tree.to_a).to match_array [
@@ -152,14 +146,14 @@ module NoSE
       end
 
       it 'knows which fields are available at a given step' do
-        index = NoSE::Index.new [tweet['TweetId']], [],
-                                [tweet['Body'], tweet['Timestamp']],
-                                QueryGraph::Graph.from_path(
-                                  [tweet.id_field]
-                                )
+        index = Index.new [tweet['TweetId']], [],
+                          [tweet['Body'], tweet['Timestamp']],
+                          QueryGraph::Graph.from_path(
+                            [tweet.id_field]
+                          )
         planner = QueryPlanner.new workload.model, [index], cost_model
-        query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet ' \
-                                      'WHERE Tweet.TweetId = ?', workload.model
+        query = Statement.parse 'SELECT Tweet.Body FROM Tweet ' \
+                                'WHERE Tweet.TweetId = ?', workload.model
 
         plan = planner.find_plans_for_query(query).first
         expect(plan.last.fields).to include(tweet['TweetId'], tweet['Body'],
@@ -167,15 +161,15 @@ module NoSE
       end
 
       it 'can apply external filtering' do
-        index = NoSE::Index.new [tweet['TweetId']], [],
-                                [tweet['Body'], tweet['Timestamp']],
-                                QueryGraph::Graph.from_path(
-                                  [tweet.id_field]
-                                )
+        index = Index.new [tweet['TweetId']], [],
+                          [tweet['Body'], tweet['Timestamp']],
+                          QueryGraph::Graph.from_path(
+                            [tweet.id_field]
+                          )
         planner = QueryPlanner.new workload.model, [index], cost_model
-        query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet WHERE ' \
-                                      'Tweet.TweetId = ? AND ' \
-                                      'Tweet.Timestamp > ?', workload.model
+        query = Statement.parse 'SELECT Tweet.Body FROM Tweet WHERE ' \
+                                'Tweet.TweetId = ? AND Tweet.Timestamp > ?',
+                                workload.model
 
         tree = planner.find_plans_for_query(query)
         expect(tree).to have(1).plan
@@ -185,16 +179,16 @@ module NoSE
 
       context 'when updating cardinality' do
         before(:each) do
-          simple_query = NoSE::Statement.parse 'SELECT Tweet.Body FROM ' \
-                                               'Tweet WHERE Tweet.TweetId = ?',
-                                               workload.model
+          simple_query = Statement.parse 'SELECT Tweet.Body FROM ' \
+                                         'Tweet WHERE Tweet.TweetId = ?',
+                                         workload.model
           @simple_state = QueryState.new simple_query, workload.model
 
           # Pretend we start with all tweets
           @simple_state.cardinality = tweet.count
 
-          query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
-                                        'WHERE User.UserId = ?', workload.model
+          query = Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
+                                  'WHERE User.UserId = ?', workload.model
           @state = QueryState.new query, workload.model
         end
 
@@ -220,11 +214,11 @@ module NoSE
         end
 
         it 'can update the cardinality when performing a lookup' do
-          index = NoSE::Index.new [user['UserId']], [tweet['TweetId']],
-                                  [tweet['Body']],
-                                  QueryGraph::Graph.from_path(
-                                    [user.id_field, user['Tweets']]
-                                  )
+          index = Index.new [user['UserId']], [tweet['TweetId']],
+                            [tweet['Body']],
+                            QueryGraph::Graph.from_path(
+                              [user.id_field, user['Tweets']]
+                            )
           step = IndexLookupPlanStep.new index, @state,
                                          RootPlanStep.new(@state)
           expect(step.state.cardinality).to eq 100
@@ -233,23 +227,23 @@ module NoSE
 
       it 'fails if required fields are not available' do
         indexes = [
-          NoSE::Index.new([user['Username']], [user['UserId']], [user['City']],
-                          QueryGraph::Graph.from_path([user.id_field])),
-          NoSE::Index.new([tweet['TweetId']], [], [tweet['Body']],
-                          QueryGraph::Graph.from_path([tweet.id_field]))
+          Index.new([user['Username']], [user['UserId']], [user['City']],
+                    QueryGraph::Graph.from_path([user.id_field])),
+          Index.new([tweet['TweetId']], [], [tweet['Body']],
+                    QueryGraph::Graph.from_path([tweet.id_field]))
         ]
         planner = QueryPlanner.new workload.model, indexes, cost_model
-        query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
-                                      'WHERE User.Username = ?', workload.model
+        query = Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
+                                'WHERE User.Username = ?', workload.model
         expect { planner.find_plans_for_query query }.to \
           raise_error NoPlanException
       end
 
       it 'can use materialized views which traverse multiple entities' do
-        query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
-                                      'WHERE User.Username = ?', workload.model
+        query = Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
+                                'WHERE User.Username = ?', workload.model
         workload.add_statement query
-        indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload
+        indexes = IndexEnumerator.new(workload).indexes_for_workload
 
         planner = QueryPlanner.new workload.model, indexes, cost_model
         plans = planner.find_plans_for_query(query)
@@ -259,17 +253,17 @@ module NoSE
       end
 
       it 'can use multiple indices for a query' do
-        query = NoSE::Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
-                                      'WHERE User.Username = ?', workload.model
+        query = Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
+                                'WHERE User.Username = ?', workload.model
         workload.add_statement query
 
         indexes = [
-          NoSE::Index.new([user['Username']],
-                          [user['UserId'], tweet['TweetId']], [],
-                          QueryGraph::Graph.from_path([user.id_field,
-                                                       user['Tweets']])),
-          NoSE::Index.new([tweet['TweetId']], [], [tweet['Body']],
-                          QueryGraph::Graph.from_path([tweet.id_field]))
+          Index.new([user['Username']],
+                    [user['UserId'], tweet['TweetId']], [],
+                    QueryGraph::Graph.from_path([user.id_field,
+                                                user['Tweets']])),
+          Index.new([tweet['TweetId']], [], [tweet['Body']],
+                    QueryGraph::Graph.from_path([tweet.id_field]))
         ]
 
         planner = QueryPlanner.new workload.model, indexes, cost_model
@@ -280,12 +274,11 @@ module NoSE
       end
 
       it 'can create plans which visit each entity' do
-        query = NoSE::Statement.parse 'SELECT Link.URL FROM ' \
-                                      'Link.Tweets.User WHERE ' \
-                                      'User.Username = ?', workload.model
+        query = Statement.parse 'SELECT Link.URL FROM Link.Tweets.User ' \
+                                'WHERE User.Username = ?', workload.model
         workload.add_statement query
 
-        indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload
+        indexes = IndexEnumerator.new(workload).indexes_for_workload
         planner = QueryPlanner.new workload.model, indexes, cost_model
 
         tree = planner.find_plans_for_query(query)
@@ -294,13 +287,12 @@ module NoSE
       end
 
       it 'does not use limits for a single entity result set' do
-        query = NoSE::Statement.parse 'SELECT User.* FROM User ' \
-                                      'WHERE User.UserId = ? ' \
-                                      'ORDER BY User.UserId LIMIT 10',
-                                      workload.model
+        query = Statement.parse 'SELECT User.* FROM User ' \
+                                'WHERE User.UserId = ? ' \
+                                'ORDER BY User.UserId LIMIT 10', workload.model
         workload.add_statement query
 
-        indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload
+        indexes = IndexEnumerator.new(workload).indexes_for_workload
         planner = QueryPlanner.new workload.model, indexes, cost_model
         plans = planner.find_plans_for_query query
 
@@ -308,19 +300,15 @@ module NoSE
       end
 
       it 'uses implicit sorting when the clustering key is filtered' do
-        query = NoSE::Statement.parse 'SELECT Tweets.Body FROM User.Tweets ' \
-                                      'WHERE User.UserId = ? AND ' \
-                                      'Tweets.Retweets = 0 ' \
-                                      'ORDER BY Tweets.Timestamp',
-                                      workload.model
-        index = NoSE::Index.new [user['UserId']],
-                                [tweet['Retweets'],
-                                 tweet['Timestamp'],
-                                 tweet['TweetId']],
-                                [tweet['Body']],
-                                QueryGraph::Graph.from_path(
-                                  [user.id_field, user['Tweets']]
-                                )
+        query = Statement.parse 'SELECT Tweets.Body FROM User.Tweets WHERE ' \
+                                'User.UserId = ? AND Tweets.Retweets = 0 ' \
+                                'ORDER BY Tweets.Timestamp', workload.model
+        index = Index.new [user['UserId']], [tweet['Retweets'],
+                          tweet['Timestamp'], tweet['TweetId']],
+                          [tweet['Body']],
+                          QueryGraph::Graph.from_path(
+                            [user.id_field, user['Tweets']]
+                          )
 
         planner = QueryPlanner.new workload.model, [index], cost_model
         plan = planner.min_plan query
@@ -334,19 +322,16 @@ module NoSE
       include_context 'entities'
 
       it 'can produce a simple plan for an update' do
-        update = NoSE::Statement.parse 'UPDATE User SET City = ? ' \
-                                       'WHERE User.UserId = ?', workload.model
-        index = NoSE::Index.new [tweet['Timestamp']],
-                                [tweet['TweetId'], user['UserId']],
-                                [user['City']],
-                                QueryGraph::Graph.from_path(
-                                  [tweet.id_field, tweet['User']]
-                                )
+        update = Statement.parse 'UPDATE User SET City = ? ' \
+                                 'WHERE User.UserId = ?', workload.model
+        index = Index.new [tweet['Timestamp']],
+                          [tweet['TweetId'], user['UserId']], [user['City']],
+                          QueryGraph::Graph.from_path(
+                            [tweet.id_field, tweet['User']]
+                          )
         workload.add_statement update
-        indexes = NoSE::IndexEnumerator.new(workload).indexes_for_workload \
-          [index]
-        planner = NoSE::Plans::QueryPlanner.new workload.model, indexes,
-                                                cost_model
+        indexes = IndexEnumerator.new(workload).indexes_for_workload [index]
+        planner = Plans::QueryPlanner.new workload.model, indexes, cost_model
 
         trees = update.support_queries(index).map do |query|
           planner.find_plans_for_query(query)
@@ -364,12 +349,10 @@ module NoSE
       end
 
       it 'can produce a plan with no support queries' do
-        update = NoSE::Statement.parse 'UPDATE User SET City = ? ' \
-                                       'WHERE User.UserId = ?', workload.model
-        index = NoSE::Index.new [user['UserId']], [], [user['City']],
-                                QueryGraph::Graph.from_path(
-                                  [user.id_field]
-                                )
+        update = Statement.parse 'UPDATE User SET City = ? ' \
+                                 'WHERE User.UserId = ?', workload.model
+        index = Index.new [user['UserId']], [], [user['City']],
+                          QueryGraph::Graph.from_path([user.id_field])
         planner = UpdatePlanner.new workload.model, [], cost_model
         plans = planner.find_plans_for_update update, [index]
         plans.each { |plan| plan.select_query_plans [index] }

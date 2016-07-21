@@ -25,10 +25,8 @@ module NoSE
       end
 
       it 'can ensure only enumerated indexes are used' do
-        index = NoSE::Index.new [tweet['TweetId']], [], [tweet['Body']],
-                                QueryGraph::Graph.from_path(
-                                  [tweet.id_field]
-                                )
+        index = Index.new [tweet['TweetId']], [], [tweet['Body']],
+                          QueryGraph::Graph.from_path([tweet.id_field])
 
         results.indexes = [index]
         expect { results.validate }.to \

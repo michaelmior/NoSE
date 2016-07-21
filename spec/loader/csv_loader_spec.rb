@@ -18,13 +18,11 @@ module NoSE
       end
 
       it 'can load data into a backend' do
-        backend = instance_spy NoSE::Backend::BackendBase
+        backend = instance_spy Backend::BackendBase
 
-        index = NoSE::Index.new [user['City']], [user['UserId']],
-                                [user['Username']],
-                                QueryGraph::Graph.from_path(
-                                  [user.id_field]
-                                )
+        index = Index.new [user['City']], [user['UserId']],
+                          [user['Username']],
+                          QueryGraph::Graph.from_path([user.id_field])
         loader = CsvLoader.new workload, backend
         loader.load([index], directory: '/tmp/csv')
 

@@ -27,10 +27,9 @@ module NoSE
       include_context 'entities'
 
       it 'serializes an index to a key' do
-        index = NoSE::Index.new [user['Username']], [user['UserId']], [],
-                                QueryGraph::Graph.from_path(
-                                  [user.id_field]
-                                ), 'IndexKey'
+        index = Index.new [user['Username']], [user['UserId']], [],
+                          QueryGraph::Graph.from_path([user.id_field]),
+                          'IndexKey'
         hash = IndexRepresenter.represent(index).to_hash
         expect(hash).to eq('key' => 'IndexKey')
       end
@@ -38,7 +37,7 @@ module NoSE
 
     describe EntityRepresenter do
       it 'serializes an empty entity' do
-        entity = NoSE::Entity.new('Foo') * 10
+        entity = Entity.new('Foo') * 10
         hash = EntityRepresenter.represent(entity).to_hash
         expect(hash).to eq('name' => 'Foo', 'count' => 10, 'fields' => [])
       end

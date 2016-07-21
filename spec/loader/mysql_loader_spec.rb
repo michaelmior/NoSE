@@ -48,16 +48,16 @@ module NoSE
         expect(entity.name).to eq 'Foo'
         expect(entity.fields).to have(6).items
 
-        expect(entity.fields.values[0]).to be_a NoSE::Fields::IDField
-        expect(entity.fields.values[1]).to be_a NoSE::Fields::IntegerField
-        expect(entity.fields.values[2]).to be_a NoSE::Fields::FloatField
-        expect(entity.fields.values[3]).to be_a NoSE::Fields::DateField
-        expect(entity.fields.values[4]).to be_a NoSE::Fields::StringField
-        expect(entity.fields.values[5]).to be_a NoSE::Fields::StringField
+        expect(entity.fields.values[0]).to be_a Fields::IDField
+        expect(entity.fields.values[1]).to be_a Fields::IntegerField
+        expect(entity.fields.values[2]).to be_a Fields::FloatField
+        expect(entity.fields.values[3]).to be_a Fields::DateField
+        expect(entity.fields.values[4]).to be_a Fields::StringField
+        expect(entity.fields.values[5]).to be_a Fields::StringField
       end
 
       context 'when loading into a backend', mysql: true do
-        let(:workload) { NoSE::Workload.load 'rubis' }
+        let(:workload) { Workload.load 'rubis' }
         let(:backend) do
           dummy = double('backend')
           expect(dummy).to receive(:index_empty?).and_return(true)
@@ -79,8 +79,8 @@ module NoSE
 
         it 'can load a simple ID index', mysql: true do
           user = workload.model['users']
-          index = NoSE::Index.new [user['id']], [], [user['nickname']],
-                                  QueryGraph::Graph.from_path([user['id']])
+          index = Index.new [user['id']], [], [user['nickname']],
+                            QueryGraph::Graph.from_path([user['id']])
           expect(backend).to receive(:index_insert_chunk).with(index, [
             {
               'users_id' => 2,
@@ -93,10 +93,10 @@ module NoSE
         it 'can load an index across multiple entities', mysql: true do
           user = workload.model['users']
           item = workload.model['items']
-          index = NoSE::Index.new [user['id']], [item['id']], [item['name']],
-                                  QueryGraph::Graph.from_path(
-                                    [user['id'], user['items_sold']]
-                                  )
+          index = Index.new [user['id']], [item['id']], [item['name']],
+                            QueryGraph::Graph.from_path(
+                              [user['id'], user['items_sold']]
+                            )
           expect(backend).to receive(:index_insert_chunk).with(index, [
             {
               'users_id' => 1,

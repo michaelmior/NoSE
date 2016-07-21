@@ -1,7 +1,7 @@
 module NoSE
   describe Schema do
     it 'can model a simple index' do
-      schema = NoSE::Schema.new do
+      schema = Schema.new do
         Model 'rubis'
 
         # rubocop:disable SingleSpaceBeforeFirstArg
@@ -23,7 +23,7 @@ module NoSE
     end
 
     it 'can model an index over multiple entities' do
-      schema = NoSE::Schema.new do
+      schema = Schema.new do
         Model 'rubis'
 
         # rubocop:disable SingleSpaceBeforeFirstArg
