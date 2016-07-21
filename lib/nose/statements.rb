@@ -240,7 +240,7 @@ module NoSE
                 :group, :text, :eq_fields, :range_field, :comment
 
     # Parse either a query or an update
-    def self.parse(text, model, group: nil, label: label)
+    def self.parse(text, model, group: nil, label: nil)
       case text.split.first
       when 'INSERT'
         klass = Insert
@@ -259,7 +259,7 @@ module NoSE
       klass.new text, model, group: group, label: label
     end
 
-    def initialize(type, text, model, group: nil, label: label)
+    def initialize(type, text, model, group: nil, label: nil)
       @group = group
       @label = label
       @text = text
@@ -415,7 +415,7 @@ module NoSE
 
     attr_reader :select, :order, :limit
 
-    def initialize(statement, model, group: nil, label: label)
+    def initialize(statement, model, group: nil, label: nil)
       super :query, statement, model, group: group, label: label
 
       populate_conditions @tree
@@ -707,7 +707,7 @@ module NoSE
 
     alias entity from
 
-    def initialize(statement, model, group: nil, label: label)
+    def initialize(statement, model, group: nil, label: nil)
       super :update, statement, model, group: group, label: label
 
       populate_conditions @tree
@@ -777,7 +777,7 @@ module NoSE
 
     alias entity from
 
-    def initialize(statement, model, group: nil, label: label)
+    def initialize(statement, model, group: nil, label: nil)
       super :insert, statement, model, group: group, label: label
 
       populate_settings @tree
@@ -927,7 +927,7 @@ module NoSE
 
     alias entity from
 
-    def initialize(statement, model, group: nil, label: label)
+    def initialize(statement, model, group: nil, label: nil)
       super :delete, statement, model, group: group, label: label
 
       populate_conditions @tree
@@ -1097,7 +1097,7 @@ module NoSE
 
   # A representation of a connect in the workload
   class Connect < Connection
-    def initialize(statement, model, group: nil, label: label)
+    def initialize(statement, model, group: nil, label: nil)
       super :connect, statement, model, group: group, label: label
       fail InvalidStatementException, 'DISCONNECT parsed as CONNECT' \
         unless @text.split.first == 'CONNECT'
@@ -1113,7 +1113,7 @@ module NoSE
 
   # A representation of a disconnect in the workload
   class Disconnect < Connection
-    def initialize(statement, model, group: nil, label: label)
+    def initialize(statement, model, group: nil, label: nil)
       super :connect, statement, model, group: group, label: label
       fail InvalidStatementException, 'CONNECT parsed as DISCONNECT' \
         unless @text.split.first == 'DISCONNECT'
