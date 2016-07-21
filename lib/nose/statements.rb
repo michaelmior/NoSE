@@ -427,7 +427,7 @@ module NoSE
 
       populate_from_tree tree
       @conditions = conditions_from_tree tree
-      @fields = fields_from_tree tree
+      @select = fields_from_tree tree
       @order = order_from_tree tree
 
       if join_order.first != @key_path.entities.first
@@ -507,7 +507,7 @@ module NoSE
     # Extract fields to be selected from a parse tree
     # @return [Set<Field>]
     def fields_from_tree(tree)
-      @select = tree[:select].flat_map do |field|
+      tree[:select].flat_map do |field|
         if field.last == '*'
           # Find the entity along the path
           entity = @longest_entity_path[tree[:path].index(field.first)]
