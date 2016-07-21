@@ -260,33 +260,22 @@ module NoSE
     end
 
     def initialize(type, text, model, group: nil, label: nil)
-      @group = group
-      @label = label
       @text = text
+      @group = group
+      @model = model
+      @label = label
 
       # If parsing fails, re-raise as our custom exception
       begin
-        @tree = CQLT.new.apply(CQLP.new.method(type).call.parse text)
+        tree = CQLT.new.apply(CQLP.new.method(type).call.parse(text))
       rescue Parslet::ParseFailed => exc
         new_exc = ParseFailed.new exc.cause.ascii_tree
         new_exc.set_backtrace exc.backtrace
         raise new_exc
       end
 
-      # TODO: Ignore comments, this is needed as a hack so otherwise identical
-      #       queries can be treated differently everywhere
-      # @tree.delete(:comment)
-      @comment = @tree[:comment]
-
-      @model = model
-      @tree[:path] ||= [@tree[:entity]]
-      fail InvalidStatementException,
-           "FROM clause must start with #{@tree[:entity]}" \
-           if @tree[:entity] && @tree[:path].first != @tree[:entity]
-
-      @from = model[@tree[:path].first.to_s]
-      find_longest_path @tree[:path]
-      build_graph
+      populate_from_tree tree
+      @tree = tree
     end
 
     # Specifies if the statement modifies any data
@@ -366,6 +355,23 @@ module NoSE
     end
 
     private
+
+    # Populate this statement based on values given in the parse tree
+    # @return [void]
+    def populate_from_tree(tree)
+      # TODO: Ignore comments, this is needed as a hack so otherwise identical
+      #       queries can be treated differently everywhere
+      # tree.delete(:comment)
+      @comment = tree[:comment]
+      tree[:path] ||= [tree[:entity]]
+      fail InvalidStatementException,
+           "FROM clause must start with #{tree[:entity]}" \
+           if tree[:entity] && tree[:path].first != tree[:entity]
+
+      @from = @model[tree[:path].first.to_s]
+      find_longest_path tree[:path]
+      build_graph
+    end
 
     # A helper to look up a field based on the path specified in the statement
     # @return [Fields::Field]
