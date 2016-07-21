@@ -593,10 +593,10 @@ module NoSE
 
     private
 
-    # Populate all the variable settings
-    # @return [void]
-    def populate_settings(tree)
-      @settings = tree[:settings].map do |setting|
+    # Extract settings from a parse tree
+    # @return [Array<FieldSetting>]
+    def settings_from_tree(tree)
+      tree[:settings].map do |setting|
         field = entity[setting[:field].to_s]
         value = setting[:value]
 
@@ -740,7 +740,7 @@ module NoSE
 
       populate_from_tree tree
       @conditions = conditions_from_tree tree
-      populate_settings tree
+      @settings = settings_from_tree tree
 
       freeze
     end
@@ -816,7 +816,7 @@ module NoSE
       super text, model, group: group, label: label
 
       populate_from_tree tree
-      populate_settings tree
+      @settings = settings_from_tree tree
       fail InvalidStatementException, 'Must insert primary key' \
         unless @settings.map(&:field).include?(entity.id_field)
 
