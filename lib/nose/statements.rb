@@ -237,7 +237,7 @@ module NoSE
   # A CQL statement and its associated data
   class Statement
     attr_reader :from, :longest_entity_path, :key_path, :label, :graph,
-                :group, :text, :eq_fields, :range_field, :comment, :hash
+                :group, :text, :eq_fields, :range_field, :comment
 
     # Parse either a query or an update
     def self.parse(text, model, group: nil, label: nil, support: false)
@@ -371,8 +371,6 @@ module NoSE
       @from = @model[tree[:path].first.to_s]
       find_longest_path tree[:path]
       build_graph
-
-      @hash = Zlib.crc32 tree.to_s
     end
 
     # A helper to look up a field based on the path specified in the statement
@@ -444,7 +442,10 @@ module NoSE
         tree[:where][:expression].each { |condition| condition.delete :value }
       end
 
-      freeze if freeze
+      if freeze
+        freeze
+        hash
+      end
     end
 
     # Build a new query from a provided parse tree
@@ -478,6 +479,10 @@ module NoSE
         @comment == other.comment
     end
     alias eql? ==
+
+    def hash
+      @hash ||= [@graph, @select, @conditions, @order, @limit, @comment].hash
+    end
 
     # The order entities should be joined according to the query graph
     # @return [Array<Entity>]
@@ -550,7 +555,7 @@ module NoSE
     alias eql? ==
 
     def hash
-      Zlib.crc32_combine super, @index.hash, @index.hash_str.length
+      @hash ||= Zlib.crc32_combine super, @index.hash, @index.hash_str.length
     end
 
     # :nocov:
@@ -662,6 +667,7 @@ module NoSE
       support_query = Statement.parse query, @model, support: true
       support_query.instance_variable_set :@statement, self
       support_query.instance_variable_set :@index, index
+      support_query.hash
       support_query.freeze
 
       support_query
@@ -742,6 +748,7 @@ module NoSE
       @conditions = conditions_from_tree tree
       @settings = settings_from_tree tree
 
+      hash
       freeze
     end
 
@@ -770,6 +777,10 @@ module NoSE
         @conditions == other.conditions
     end
     alias eql? ==
+
+    def hash
+      @hash ||= [@graph, entity, @settings, @conditions].hash
+    end
 
     # Specifies that updates require insertion
     def requires_insert?(_index)
@@ -822,6 +833,7 @@ module NoSE
 
       @conditions = conditions_from_tree tree
 
+      hash
       freeze
     end
 
@@ -853,6 +865,10 @@ module NoSE
         @conditions == other.conditions
     end
     alias eql? ==
+
+    def hash
+      @hash ||= [@graph, entity, @settings, @conditions].hash
+    end
 
     # Determine if this insert modifies an index
     def modifies_index?(index)
@@ -975,6 +991,7 @@ module NoSE
       populate_from_tree tree
       @conditions = conditions_from_tree tree
 
+      hash
       freeze
     end
 
@@ -1001,6 +1018,10 @@ module NoSE
         @conditions == other.conditions
     end
     alias eql? ==
+
+    def hash
+      @hash ||= [@graph, entity, @conditions]
+    end
 
     # Index contains the single entity to be deleted
     def modifies_index?(index)
@@ -1045,6 +1066,10 @@ module NoSE
         @conditions == other.conditions
     end
     alias eql? ==
+
+    def hash
+      @hash ||= [@graph, @source, @target, @conditions].hash
+    end
 
     # A connection modifies an index if the relationship is in the path
     def modifies_index?(index)
@@ -1153,6 +1178,7 @@ module NoSE
       populate_keys tree
       populate_conditions
 
+      hash
       freeze
     end
 
@@ -1179,6 +1205,7 @@ module NoSE
       populate_keys tree
       populate_conditions
 
+      hash
       freeze
     end
 
