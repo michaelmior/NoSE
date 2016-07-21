@@ -278,7 +278,16 @@ module NoSE
            "FROM clause must start with #{tree[:entity]}" \
            if tree[:entity] && tree[:path].first != tree[:entity]
 
-      klass.parse tree, text, model, group: group, label: label
+      statement = klass.parse tree, text, model, group: group, label: label
+      statement.instance_variable_set :@comment, tree[:comment]
+
+      # Support queries need to populate extra values before finalizing
+      unless support
+        statement.hash
+        statement.freeze
+      end
+
+      statement
     end
 
     def initialize(text, model, group: nil, label: nil)
@@ -368,7 +377,6 @@ module NoSE
       # TODO: Ignore comments, this is needed as a hack so otherwise identical
       #       queries can be treated differently everywhere
       # tree.delete(:comment)
-      @comment = tree[:comment]
       @from = @model[tree[:path].first.to_s]
       find_longest_path tree[:path]
       build_graph
@@ -422,7 +430,7 @@ module NoSE
 
     attr_reader :select, :order, :limit
 
-    def initialize(tree, text, model, group: nil, label: nil, freeze: true)
+    def initialize(tree, text, model, group: nil, label: nil)
       super text, model, group: group, label: label
 
       populate_from_tree tree
@@ -441,11 +449,6 @@ module NoSE
 
       if tree[:where]
         tree[:where][:expression].each { |condition| condition.delete :value }
-      end
-
-      if freeze
-        freeze
-        hash
       end
     end
 
@@ -539,7 +542,7 @@ module NoSE
     attr_reader :statement, :index
 
     def initialize(tree, text, model, group: nil, label: nil)
-      super tree, text, model, group: group, label: label, freeze: false
+      super tree, text, model, group: group, label: label
     end
 
     # Build a new support from a provided parse tree
@@ -748,9 +751,6 @@ module NoSE
       populate_from_tree tree
       @conditions = conditions_from_tree tree
       @settings = settings_from_tree tree
-
-      hash
-      freeze
     end
 
     # Build a new update from a provided parse tree
@@ -833,9 +833,6 @@ module NoSE
         unless @settings.map(&:field).include?(entity.id_field)
 
       @conditions = conditions_from_tree tree
-
-      hash
-      freeze
     end
 
     # Build a new insert from a provided parse tree
@@ -991,9 +988,6 @@ module NoSE
 
       populate_from_tree tree
       @conditions = conditions_from_tree tree
-
-      hash
-      freeze
     end
 
     # Build a new delete from a provided parse tree
@@ -1178,9 +1172,6 @@ module NoSE
 
       populate_keys tree
       populate_conditions
-
-      hash
-      freeze
     end
 
     # Build a new query from a provided parse tree
@@ -1205,9 +1196,6 @@ module NoSE
 
       populate_keys tree
       populate_conditions
-
-      hash
-      freeze
     end
 
     # Build a new disconnect from a provided parse tree
