@@ -428,7 +428,8 @@ module NoSE
 
       populate_from_tree tree
       @conditions = conditions_from_tree tree
-      populate_fields tree
+      @fields = fields_from_tree tree
+      @order = order_from_tree tree
 
       if join_order.first != @key_path.entities.first
         @key_path = @key_path.reverse
@@ -497,9 +498,9 @@ module NoSE
 
     private
 
-    # Populate the fields selected by this query
-    # @return [void]
-    def populate_fields(tree)
+    # Extract fields to be selected from a parse tree
+    # @return [Set<Field>]
+    def fields_from_tree(tree)
       @select = tree[:select].flat_map do |field|
         if field.last == '*'
           # Find the entity along the path
@@ -514,9 +515,13 @@ module NoSE
           field
         end
       end.to_set
+    end
 
-      return @order = [] if tree[:order].nil?
-      @order = tree[:order][:fields].each_slice(2).map do |field|
+    # Extract ordering fields from a parse tree
+    # @return [Array<Field>]
+    def order_from_tree(tree)
+      return [] if tree[:order].nil?
+      tree[:order][:fields].each_slice(2).map do |field|
         field = field.first if field.first.is_a?(Array)
         add_field_with_prefix tree[:path], field
       end
