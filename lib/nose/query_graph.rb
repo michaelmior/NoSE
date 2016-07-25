@@ -90,7 +90,7 @@ module NoSE
       # Graphs are equal if they have the same nodes and edges
       def ==(other)
         return false unless other.is_a? Graph
-        @nodes == other.nodes && @edges == other.instance_variable_get(:@edges)
+        @nodes == other.nodes && unique_edges == other.unique_edges
       end
       alias eql? ==
 
@@ -245,11 +245,9 @@ module NoSE
       # @reutrn [Array<Edge>]
       def unique_edges
         all_edges = @edges.values.reduce(&:union).to_a
-        ordered_nodes = @nodes.to_a
-        all_edges.sort_by! { |e| ordered_nodes.index e.to.entity }
         all_edges.uniq!(&:canonical_params)
 
-        all_edges
+        all_edges.to_set
       end
 
       # Produce an enumerator which yields all subgraphs of this graph
