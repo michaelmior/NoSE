@@ -158,7 +158,6 @@ module NoSE
       # fields, leave the last one so we can perform a separate ID lookup
       # @return [void]
       def strip_graph
-        # require 'pry'; binding.pry
         hash_entity = @index.hash_fields.first.parent
         @state.graph = Marshal.load(Marshal.dump(@state.graph))
         required_fields = @state.fields_for_graph(@index.graph, hash_entity,
