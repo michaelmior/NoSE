@@ -151,7 +151,8 @@ module NoSE
 
         order_choices.each do |order|
           # Append the primary key of the entities in the graph if needed
-          order += graph.entities.map(&:id_field) - (index + order)
+          order += graph.entities.sort_by(&:name).map(&:id_field) -
+                   (index + order)
 
           # Partition into the ordering portion
           index.partitions.each do |index_prefix, order_prefix|
@@ -177,7 +178,7 @@ module NoSE
     # @return [Index]
     def generate_index(hash, order, extra, graph)
       begin
-        index = Index.new hash, order, extra, graph
+        index = Index.new hash, order.uniq, extra, graph
         @logger.debug { "Enumerated #{index.inspect}" }
       rescue InvalidIndexException, InvalidPathException
         # This combination of fields is not valid, that's ok
