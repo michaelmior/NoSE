@@ -62,7 +62,7 @@ module NoSE
         @hash_fields.map(&:id).sort,
         @order_fields.map(&:id),
         @extra.map(&:id).sort,
-        @graph.unique_edges.map(&:canonical_params)
+        @graph.unique_edges.map(&:canonical_params).sort!
       ].to_s
     end
 
