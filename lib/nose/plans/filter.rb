@@ -23,7 +23,7 @@ module NoSE
       end
 
       def hash
-        Zlib.crc32 [@eq.map(&:id), @range.nil? ? nil : @range.id].to_s
+        [@eq.map(&:id), @range.nil? ? nil : @range.id].hash
       end
 
       # :nocov:

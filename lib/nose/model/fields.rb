@@ -34,7 +34,7 @@ module NoSE
       # Hash by entity and name
       # @return [Fixnum]
       def hash
-        @hash ||= Zlib.crc32 id
+        @hash ||= id.hash
       end
 
       # :nocov:

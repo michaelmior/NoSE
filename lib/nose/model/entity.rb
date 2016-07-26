@@ -35,7 +35,7 @@ module NoSE
     # The hash is based on the name of the entity and its fields
     # @return [Fixnum]
     def hash
-      @hash ||= Zlib.crc32 @name
+      @hash ||= @name.hash
     end
 
     # Get the key fields for the entity

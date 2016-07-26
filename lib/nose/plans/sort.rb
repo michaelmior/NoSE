@@ -24,7 +24,7 @@ module NoSE
       alias eql? ==
 
       def hash
-        Zlib.crc32 @sort_fields.map(&:id).to_s
+        @sort_fields.map(&:id).hash
       end
 
       # Check if an external sort can used (if a sort is the last step)
