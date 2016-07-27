@@ -278,11 +278,12 @@ module NoSE
            "FROM clause must start with #{tree[:entity]}" \
            if tree[:entity] && tree[:path].first != tree[:entity]
 
-      from = model[tree[:path].first.to_s]
-      key_path = find_longest_path tree[:path], from
-      graph = QueryGraph::Graph.from_path(key_path)
+      params = {}
+      params[:from] = model[tree[:path].first.to_s]
+      params[:key_path] = find_longest_path tree[:path], params[:from]
+      params[:graph] = QueryGraph::Graph.from_path(params[:key_path])
 
-      statement = klass.parse tree, from, key_path, graph, text, model,
+      statement = klass.parse tree, params, text, model,
                               group: group, label: label
       statement.instance_variable_set :@comment, tree[:comment]
 
@@ -313,11 +314,11 @@ module NoSE
     end
     private_class_method :find_longest_path
 
-    def initialize(from, key_path, graph, text, model, group: nil, label: nil)
-      @from = from
-      @key_path = key_path
+    def initialize(params, text, model, group: nil, label: nil)
+      @from = params[:from]
+      @key_path = params[:key_path]
       @longest_entity_path = @key_path.entities
-      @graph = graph
+      @graph = params[:graph]
       @text = text
       @group = group
       @model = model
@@ -423,9 +424,8 @@ module NoSE
 
     attr_reader :select, :order, :limit
 
-    def initialize(tree, from, key_path, graph, text, model,
-                   group: nil, label: nil)
-      super from, key_path, graph, text, model, group: group, label: label
+    def initialize(tree, params, text, model, group: nil, label: nil)
+      super params, text, model, group: group, label: label
 
       @conditions = conditions_from_tree tree
       @select = fields_from_tree tree
@@ -447,10 +447,8 @@ module NoSE
 
     # Build a new query from a provided parse tree
     # @return [Query]
-    def self.parse(tree, from, key_path, graph, text, model,
-                   group: nil, label: nil)
-      Query.new tree, from, key_path, graph, text, model,
-                group: group, label: label
+    def self.parse(tree, params, text, model, group: nil, label: nil)
+      Query.new tree, params, text, model, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this query
@@ -538,10 +536,8 @@ module NoSE
 
     # Build a new support from a provided parse tree
     # @return [SupportQuery]
-    def self.parse(tree, from, key_path, graph, text, model,
-                   group: nil, label: nil)
-      SupportQuery.new tree, from, key_path, graph, text, model,
-                       group: group, label: label
+    def self.parse(tree, params, text, model, group: nil, label: nil)
+      SupportQuery.new tree, params, text, model, group: group, label: label
     end
 
     # Support queries must also have their statement and index checked
@@ -738,9 +734,8 @@ module NoSE
 
     alias entity from
 
-    def initialize(tree, from, key_path, graph, text, model,
-                   group: nil, label: nil)
-      super from, key_path, graph, text, model, group: group, label: label
+    def initialize(tree, params, text, model, group: nil, label: nil)
+      super params, text, model, group: group, label: label
 
       @conditions = conditions_from_tree tree
       @settings = settings_from_tree tree
@@ -748,10 +743,8 @@ module NoSE
 
     # Build a new update from a provided parse tree
     # @return [Update]
-    def self.parse(tree, from, key_path, graph, text, model,
-                   group: nil, label: nil)
-      Update.new tree, from, key_path, graph, text, model,
-                 group: group, label: label
+    def self.parse(tree, params, text, model, group: nil, label: nil)
+      Update.new tree, params, text, model, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this update
@@ -819,9 +812,8 @@ module NoSE
 
     alias entity from
 
-    def initialize(tree, from, key_path, graph, text, model,
-                   group: nil, label: nil)
-      super from, key_path, graph, text, model, group: group, label: label
+    def initialize(tree, params, text, model, group: nil, label: nil)
+      super params, text, model, group: group, label: label
 
       @settings = settings_from_tree tree
       fail InvalidStatementException, 'Must insert primary key' \
@@ -832,10 +824,8 @@ module NoSE
 
     # Build a new insert from a provided parse tree
     # @return [Insert]
-    def self.parse(tree, from, key_path, graph, text, model,
-                   group: nil, label: nil)
-      Insert.new tree, from, key_path, graph, text, model,
-                  group: group, label: label
+    def self.parse(tree, params, text, model, group: nil, label: nil)
+      Insert.new tree, params, text, model, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this insert
@@ -980,19 +970,16 @@ module NoSE
 
     alias entity from
 
-    def initialize(tree, from, key_path, graph, text, model,
-                   group: nil, label: nil)
-      super from, key_path, graph, text, model, group: group, label: label
+    def initialize(tree, params, text, model, group: nil, label: nil)
+      super params, text, model, group: group, label: label
 
       @conditions = conditions_from_tree tree
     end
 
     # Build a new delete from a provided parse tree
     # @return [Delete]
-    def self.parse(tree, from, key_path, graph, text, model,
-                   group: nil, label: nil)
-      Delete.new tree, from, key_path, graph, text, model,
-                 group: group, label: label
+    def self.parse(tree, params, text, model, group: nil, label: nil)
+      Delete.new tree, params, text, model, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this delete
@@ -1163,10 +1150,8 @@ module NoSE
 
   # A representation of a connect in the workload
   class Connect < Connection
-    def initialize(tree, from, key_path, graph, text, model,
-                   group: nil, label: nil)
-      super from, key_path, graph, text, model,
-            group: group, label: label
+    def initialize(tree, params, text, model, group: nil, label: nil)
+      super params, text, model, group: group, label: label
       fail InvalidStatementException, 'DISCONNECT parsed as CONNECT' \
         unless text.split.first == 'CONNECT'
 
@@ -1176,10 +1161,8 @@ module NoSE
 
     # Build a new query from a provided parse tree
     # @return [Connect]
-    def self.parse(tree, from, key_path, graph, text, model,
-                   group: nil, label: nil)
-      Connect.new tree, from, key_path, graph, text, model,
-                  group: group, label: label
+    def self.parse(tree, params, text, model, group: nil, label: nil)
+      Connect.new tree, params, text, model, group: group, label: label
     end
 
     # Specifies that connections require insertion
@@ -1190,10 +1173,8 @@ module NoSE
 
   # A representation of a disconnect in the workload
   class Disconnect < Connection
-    def initialize(tree, from, key_path, graph, text, model,
-                   group: nil, label: nil)
-      super from, key_path, graph, text, model,
-            group: group, label: label
+    def initialize(tree, params, text, model, group: nil, label: nil)
+      super params, text, model, group: group, label: label
       fail InvalidStatementException, 'CONNECT parsed as DISCONNECT' \
         unless text.split.first == 'DISCONNECT'
 
@@ -1203,10 +1184,8 @@ module NoSE
 
     # Build a new disconnect from a provided parse tree
     # @return [Disconnect]
-    def self.parse(tree, from, key_path, graph, text, model,
-                   group: nil, label: nil)
-      Disconnect.new tree, from, key_path, graph, text, model,
-                     group: group, label: label
+    def self.parse(tree, params, text, model, group: nil, label: nil)
+      Disconnect.new tree, params, text, model, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this disconnection
