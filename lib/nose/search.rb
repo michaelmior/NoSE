@@ -214,6 +214,15 @@ module NoSE
             if current_cost != cost
               index = index_step.index
               puts "Index #{index.key} does not have equivalent cost"
+              puts "Current cost: #{current_cost}, discovered cost: #{cost}"
+
+              puts "\nCurrent steps"
+              query_costs[index_step.index].first.each { |s| p s }
+
+              puts "\nDiscovered steps"
+              steps.each { |s| p s }
+              puts
+
               puts '======================================='
               tree.each do |plan|
                 next unless plan.indexes.include?(index_step.index)
@@ -224,6 +233,9 @@ module NoSE
                 puts "#{format('%.3f', plan.cost).rjust(7)} total"
                 puts '======================================='
               end
+
+              puts
+              p tree
 
               fail
             end
