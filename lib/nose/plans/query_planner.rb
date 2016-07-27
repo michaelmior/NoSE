@@ -290,19 +290,16 @@ module NoSE
 
       # Find possible query plans for a query starting at the given step
       # @return [void]
-      def find_plans_for_step(step, indexes_by_joins, used_indexes = Set.new,
-                              prune: true)
+      def find_plans_for_step(step, indexes_by_joins, prune: true)
         return if step.state.answered?
 
-        steps = find_steps_for_state step, step.state,
-                                     indexes_by_joins, used_indexes
+        steps = find_steps_for_state step, step.state, indexes_by_joins
 
         if steps.length > 0
           step.children = steps
           steps.each { |new_step| new_step.calculate_cost @cost_model }
-          new_used = used_indexes.clone
           steps.each do |child_step|
-            find_plans_for_step child_step, indexes_by_joins, new_used
+            find_plans_for_step child_step, indexes_by_joins
 
             # Remove this step if finding a plan from here failed
             if child_step.children.length == 0 && !child_step.state.answered?
@@ -334,18 +331,18 @@ module NoSE
 
       # Get a list of possible next steps for a query in the given state
       # @return [Array<PlanStep>]
-      def find_steps_for_state(parent, state, indexes_by_joins, used_indexes)
+      def find_steps_for_state(parent, state, indexes_by_joins)
         steps = find_nonindexed_steps parent, state
         return steps unless steps.empty?
 
         # Don't allow indices to be used multiple times
         indexes = (indexes_by_joins[state.joins.first] || Set.new).to_set
+        used_indexes = parent.parent_steps.indexes.to_set
         (indexes - used_indexes).each do |index|
           new_step = IndexLookupPlanStep.apply parent, index, state
           next if new_step.nil?
 
           new_step.add_fields_from_index index
-          used_indexes << index
           steps.push new_step
         end
 
