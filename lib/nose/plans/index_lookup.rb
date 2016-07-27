@@ -84,6 +84,10 @@ module NoSE
       def self.invalid_parent_index?(state, index, parent_index)
         return false if parent_index.nil?
 
+        # We don't do multiple lookups by ID for the same entity set
+        return true if parent_index.identity? &&
+                       index.graph == parent_index.graph
+
         # If the last step gave an ID, we must use it
         # XXX This doesn't cover all cases
         last_parent_entity = state.joins.reverse.find do |entity|
