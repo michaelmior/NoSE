@@ -13,7 +13,9 @@ module NoSE
       def genworkload(name)
         loader_class = get_class 'loader', options
         workload = loader_class.new.workload options[:loader]
-        workload.output_rb "./workloads/#{name}.rb"
+        File.open("./workloads/#{name}.rb", 'w') do |file|
+          file.write workload.source_code
+        end
       end
     end
   end

@@ -117,18 +117,18 @@ module NoSE
       true
     end
 
-    # Write the workload
-    # @return [void]
-    def output_rb(filename)
+    # Produce the source code used to define this workload
+    # @return [String]
+    def source_code
+      return @source_code unless @source_code.nil?
+
       ns = OpenStruct.new(workload: self)
       tmpl = File.read File.join(File.dirname(__FILE__),
                                  '../../templates/workload.erb')
-      out = ERB.new(tmpl, nil, '>').result(ns.instance_eval { binding })
-      File.open(filename, 'w') { |file| file.write out }
+      tmpl = ERB.new(tmpl, nil, '>')
+      @source_code = tmpl.result(ns.instance_eval { binding })
     end
   end
-
-  private
 
   # A helper class for DSL creation to avoid messing with {Workload}
   class WorkloadDSL

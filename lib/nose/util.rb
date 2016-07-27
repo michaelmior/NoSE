@@ -256,14 +256,16 @@ module NoSE
 
   # Add loading of class instances from the filesystem
   module Loader
+    attr_reader :source_code
+
     # Load a class with the given name from a directory specified
     # by the LOAD_PATH class constant
     # @return [Object] an instance of the class which included this module
     def load(name)
       path = const_get(:LOAD_PATH)
       filename = File.expand_path "../../../#{path}/#{name}.rb", __FILE__
-      contents = File.read(filename)
-      binding.eval contents, filename
+      @source_code = File.read(filename)
+      binding.eval @source_code, filename
     end
   end
 end
