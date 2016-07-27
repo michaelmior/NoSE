@@ -125,7 +125,9 @@ module NoSE
         cost = @queries.reduce(MIPPeR::LinExpr.new) do |expr, query|
           expr.add(@indexes.reduce(MIPPeR::LinExpr.new) do |subexpr, index|
             subexpr.add total_query_cost(@data[:costs][query][index],
-                                         @query_vars[index][query])
+                                         @query_vars[index][query],
+                                         @sort_costs[query][index],
+                                         @sort_vars[query][index])
           end)
         end
 
@@ -160,8 +162,11 @@ module NoSE
       def setup_model
         # Set up solver environment
         @model = MIPPeR::CbcModel.new
+
         add_variables
+        prepare_sort_costs
         @model.update
+
         add_constraints
         define_objective
         @model.update
@@ -216,6 +221,32 @@ module NoSE
         end
       end
 
+      # Prepare variables and constraints to account for the cost of sorting
+      # @return [void]
+      def prepare_sort_costs
+        @sort_costs = {}
+        @sort_vars = {}
+        @data[:costs].each do |query, index_costs|
+          @sort_costs[query] = {}
+          @sort_vars[query] = {}
+
+          index_costs.each do |index, (steps, _)|
+            next unless steps.last.is_a?(Plans::SortPlanStep) &&
+                        steps.last.state.answered?
+
+            @sort_costs[query][index] ||= steps.last.cost
+            q = @queries.index query
+            @sort_vars[query][index] ||= MIPPeR::Variable.new 0, 1, 0, :binary,
+                                                              "s#{q}"
+            name = "q#{q}_#{index.key}_sort"
+            constr = MIPPeR::Constraint.new @sort_vars[query][index] * 1.0 +
+                                            @query_vars[index][query] * -1.0,
+                                            :>=, 0, name
+            @model << constr
+          end
+        end
+      end
+
       # Add all necessary constraints to the model
       # @return [void]
       def add_constraints
@@ -247,11 +278,14 @@ module NoSE
 
       # Get the total cost of the query for the objective function
       # @return [MIPPeR::LinExpr]
-      def total_query_cost(cost, query_var)
+      def total_query_cost(cost, query_var, sort_cost, sort_var)
         return MIPPeR::LinExpr.new if cost.nil?
         query_cost = cost.last * 1.0
 
-        query_var * query_cost
+        cost_expr = query_var * query_cost
+        cost_expr += sort_var * sort_cost unless sort_cost.nil?
+
+        cost_expr
       end
     end
 

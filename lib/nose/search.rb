@@ -207,6 +207,10 @@ module NoSE
           # Calculate the cost for just these steps in the plan
           cost = steps.sum_by(&:cost) * weight
 
+          # Don't count the cost for sorting at the end
+          cost -= steps.last.cost * weight \
+            if steps.last.is_a?(Plans::SortPlanStep)
+
           if query_costs.key? index_step.index
             current_cost = query_costs[index_step.index].last
 
