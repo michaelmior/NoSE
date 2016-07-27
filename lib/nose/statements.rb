@@ -38,9 +38,9 @@ module NoSE
 
     # Extract conditions from a parse tree
     # @return [Hash]
-    def conditions_from_tree(tree)
+    def conditions_from_tree(tree, params)
       conditions = tree[:where].nil? ? [] : tree[:where][:expression]
-      conditions = conditions.map { |c| build_condition c, tree }
+      conditions = conditions.map { |c| build_condition c, tree, params }
 
       @eq_fields = conditions.reject(&:range?).map(&:field).to_set
       @range_field = conditions.find(&:range?)
@@ -53,8 +53,8 @@ module NoSE
 
     # Construct a condition object from the parse tree
     # @return [void]
-    def build_condition(condition, tree)
-      field = add_field_with_prefix tree[:path], condition[:field]
+    def build_condition(condition, tree, params)
+      field = add_field_with_prefix tree[:path], condition[:field], params
       Condition.new field, condition[:op].to_sym,
                     condition_value(condition, field)
     end
@@ -236,7 +236,7 @@ module NoSE
 
   # A CQL statement and its associated data
   class Statement
-    attr_reader :from, :key_path, :label, :graph,
+    attr_reader :entity, :key_path, :label, :graph,
                 :group, :text, :eq_fields, :range_field, :comment
 
     # Parse either a query or an update
@@ -278,13 +278,12 @@ module NoSE
            "FROM clause must start with #{tree[:entity]}" \
            if tree[:entity] && tree[:path].first != tree[:entity]
 
-      params = {}
-      params[:from] = model[tree[:path].first.to_s]
-      params[:key_path] = find_longest_path tree[:path], params[:from]
+      params = {model: model}
+      params[:entity] = model[tree[:path].first.to_s]
+      params[:key_path] = find_longest_path tree[:path], params[:entity]
       params[:graph] = QueryGraph::Graph.from_path(params[:key_path])
 
-      statement = klass.parse tree, params, text, model,
-                              group: group, label: label
+      statement = klass.parse tree, params, text, group: group, label: label
       statement.instance_variable_set :@comment, tree[:comment]
 
       # Support queries need to populate extra values before finalizing
@@ -314,14 +313,14 @@ module NoSE
     end
     private_class_method :find_longest_path
 
-    def initialize(params, text, model, group: nil, label: nil)
-      @from = params[:from]
+    def initialize(params, text, group: nil, label: nil)
+      @entity = params[:entity]
       @key_path = params[:key_path]
       @longest_entity_path = @key_path.entities
       @graph = params[:graph]
+      @model = params[:model]
       @text = text
       @group = group
-      @model = model
       @label = label
     end
 
@@ -401,7 +400,7 @@ module NoSE
 
     # A helper to look up a field based on the path specified in the statement
     # @return [Fields::Field]
-    def add_field_with_prefix(path, field)
+    def add_field_with_prefix(path, field, params)
       field_path = field.map(&:to_s)
       prefix_index = path.index(field_path.first)
       field_path = path[0..prefix_index - 1] + field_path \
@@ -410,11 +409,11 @@ module NoSE
 
       # Expand the graph to include any keys which were found
       field_path[0..-2].prefixes.drop(1).each do |key_path|
-        key = @model.find_field key_path
-        @graph.add_edge key.parent, key.entity, key
+        key = params[:model].find_field key_path
+        params[:graph].add_edge key.parent, key.entity, key
       end
 
-      @model.find_field field_path
+      params[:model].find_field field_path
     end
   end
 
@@ -424,12 +423,12 @@ module NoSE
 
     attr_reader :select, :order, :limit
 
-    def initialize(tree, params, text, model, group: nil, label: nil)
-      super params, text, model, group: group, label: label
+    def initialize(tree, params, text, group: nil, label: nil)
+      super params, text, group: group, label: label
 
-      @conditions = conditions_from_tree tree
-      @select = fields_from_tree tree
-      @order = order_from_tree tree
+      @conditions = conditions_from_tree tree, params
+      @select = fields_from_tree tree, params
+      @order = order_from_tree tree, params
 
       if join_order.first != @key_path.entities.first
         @key_path = @key_path.reverse
@@ -447,8 +446,8 @@ module NoSE
 
     # Build a new query from a provided parse tree
     # @return [Query]
-    def self.parse(tree, params, text, model, group: nil, label: nil)
-      Query.new tree, params, text, model, group: group, label: label
+    def self.parse(tree, params, text, group: nil, label: nil)
+      Query.new tree, params, text, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this query
@@ -502,14 +501,14 @@ module NoSE
 
     # Extract fields to be selected from a parse tree
     # @return [Set<Field>]
-    def fields_from_tree(tree)
+    def fields_from_tree(tree, params)
       tree[:select].flat_map do |field|
         if field.last == '*'
           # Find the entity along the path
-          entity = @longest_entity_path[tree[:path].index(field.first)]
+          entity = params[:key_path].entities[tree[:path].index(field.first)]
           entity.fields.values
         else
-          field = add_field_with_prefix tree[:path], field
+          field = add_field_with_prefix tree[:path], field, params
 
           fail InvalidStatementException, 'Foreign keys cannot be selected' \
             if field.is_a? Fields::ForeignKeyField
@@ -521,11 +520,11 @@ module NoSE
 
     # Extract ordering fields from a parse tree
     # @return [Array<Field>]
-    def order_from_tree(tree)
+    def order_from_tree(tree, params)
       return [] if tree[:order].nil?
       tree[:order][:fields].each_slice(2).map do |field|
         field = field.first if field.first.is_a?(Array)
-        add_field_with_prefix tree[:path], field
+        add_field_with_prefix tree[:path], field, params
       end
     end
   end
@@ -536,8 +535,8 @@ module NoSE
 
     # Build a new support from a provided parse tree
     # @return [SupportQuery]
-    def self.parse(tree, params, text, model, group: nil, label: nil)
-      SupportQuery.new tree, params, text, model, group: group, label: label
+    def self.parse(tree, params, text, group: nil, label: nil)
+      SupportQuery.new tree, params, text, group: group, label: label
     end
 
     # Support queries must also have their statement and index checked
@@ -593,9 +592,9 @@ module NoSE
 
     # Extract settings from a parse tree
     # @return [Array<FieldSetting>]
-    def settings_from_tree(tree)
+    def settings_from_tree(tree, params)
       tree[:settings].map do |setting|
-        field = entity[setting[:field].to_s]
+        field = params[:entity][setting[:field].to_s]
         value = setting[:value]
 
         type = field.class.const_get 'TYPE'
@@ -732,19 +731,17 @@ module NoSE
     include StatementSettings
     include StatementSupportQuery
 
-    alias entity from
+    def initialize(tree, params, text, group: nil, label: nil)
+      super params, text, group: group, label: label
 
-    def initialize(tree, params, text, model, group: nil, label: nil)
-      super params, text, model, group: group, label: label
-
-      @conditions = conditions_from_tree tree
-      @settings = settings_from_tree tree
+      @conditions = conditions_from_tree tree, params
+      @settings = settings_from_tree tree, params
     end
 
     # Build a new update from a provided parse tree
     # @return [Update]
-    def self.parse(tree, params, text, model, group: nil, label: nil)
-      Update.new tree, params, text, model, group: group, label: label
+    def self.parse(tree, params, text, group: nil, label: nil)
+      Update.new tree, params, text, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this update
@@ -810,22 +807,20 @@ module NoSE
     include StatementSettings
     include StatementSupportQuery
 
-    alias entity from
+    def initialize(tree, params, text, group: nil, label: nil)
+      super params, text, group: group, label: label
 
-    def initialize(tree, params, text, model, group: nil, label: nil)
-      super params, text, model, group: group, label: label
-
-      @settings = settings_from_tree tree
+      @settings = settings_from_tree tree, params
       fail InvalidStatementException, 'Must insert primary key' \
         unless @settings.map(&:field).include?(entity.id_field)
 
-      @conditions = conditions_from_tree tree
+      @conditions = conditions_from_tree tree, params
     end
 
     # Build a new insert from a provided parse tree
     # @return [Insert]
-    def self.parse(tree, params, text, model, group: nil, label: nil)
-      Insert.new tree, params, text, model, group: group, label: label
+    def self.parse(tree, params, text, group: nil, label: nil)
+      Insert.new tree, params, text, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this insert
@@ -943,7 +938,7 @@ module NoSE
 
     # Extract conditions from a parse tree
     # @return [Hash]
-    def conditions_from_tree(tree)
+    def conditions_from_tree(tree, params)
       connections = tree[:connections] || []
       connections = connections.map do |connection|
         field = entity[connection[:target].to_s]
@@ -968,18 +963,16 @@ module NoSE
     include StatementConditions
     include StatementSupportQuery
 
-    alias entity from
+    def initialize(tree, params, text, group: nil, label: nil)
+      super params, text, group: group, label: label
 
-    def initialize(tree, params, text, model, group: nil, label: nil)
-      super params, text, model, group: group, label: label
-
-      @conditions = conditions_from_tree tree
+      @conditions = conditions_from_tree tree, params
     end
 
     # Build a new delete from a provided parse tree
     # @return [Delete]
-    def self.parse(tree, params, text, model, group: nil, label: nil)
-      Delete.new tree, params, text, model, group: group, label: label
+    def self.parse(tree, params, text, group: nil, label: nil)
+      Delete.new tree, params, text, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this delete
@@ -1030,7 +1023,7 @@ module NoSE
     include StatementSupportQuery
 
     attr_reader :source_pk, :target, :target_pk, :conditions
-    alias source from
+    alias source entity
 
     # Produce the SQL text corresponding to this connection
     # @return [String]
@@ -1150,8 +1143,8 @@ module NoSE
 
   # A representation of a connect in the workload
   class Connect < Connection
-    def initialize(tree, params, text, model, group: nil, label: nil)
-      super params, text, model, group: group, label: label
+    def initialize(tree, params, text, group: nil, label: nil)
+      super params, text, group: group, label: label
       fail InvalidStatementException, 'DISCONNECT parsed as CONNECT' \
         unless text.split.first == 'CONNECT'
 
@@ -1161,8 +1154,8 @@ module NoSE
 
     # Build a new query from a provided parse tree
     # @return [Connect]
-    def self.parse(tree, params, text, model, group: nil, label: nil)
-      Connect.new tree, params, text, model, group: group, label: label
+    def self.parse(tree, params, text, group: nil, label: nil)
+      Connect.new tree, params, text, group: group, label: label
     end
 
     # Specifies that connections require insertion
@@ -1173,8 +1166,8 @@ module NoSE
 
   # A representation of a disconnect in the workload
   class Disconnect < Connection
-    def initialize(tree, params, text, model, group: nil, label: nil)
-      super params, text, model, group: group, label: label
+    def initialize(tree, params, text, group: nil, label: nil)
+      super params, text, group: group, label: label
       fail InvalidStatementException, 'CONNECT parsed as DISCONNECT' \
         unless text.split.first == 'DISCONNECT'
 
@@ -1184,8 +1177,8 @@ module NoSE
 
     # Build a new disconnect from a provided parse tree
     # @return [Disconnect]
-    def self.parse(tree, params, text, model, group: nil, label: nil)
-      Disconnect.new tree, params, text, model, group: group, label: label
+    def self.parse(tree, params, text, group: nil, label: nil)
+      Disconnect.new tree, params, text, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this disconnection
