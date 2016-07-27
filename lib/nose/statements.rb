@@ -420,7 +420,7 @@ module NoSE
     # Construct the graph for this statement
     def build_graph
       # For now, construct the graph from the path
-      @graph = QueryGraph::Graph.from_path(@key_path.reverse)
+      @graph = QueryGraph::Graph.from_path(@key_path)
     end
   end
 
