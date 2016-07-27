@@ -34,48 +34,59 @@ module NoSE
   module StatementConditions
     attr_reader :conditions
 
-    private
-
-    # Extract conditions from a parse tree
-    # @return [Hash]
-    def conditions_from_tree(tree, params)
-      conditions = tree[:where].nil? ? [] : tree[:where][:expression]
-      conditions = conditions.map { |c| build_condition c, tree, params }
-
-      @eq_fields = conditions.reject(&:range?).map(&:field).to_set
-      @range_field = conditions.find(&:range?)
-      @range_field = @range_field.field unless @range_field.nil?
-
-      Hash[conditions.map do |condition|
-        [condition.field.id, condition]
-      end]
-    end
-
-    # Construct a condition object from the parse tree
     # @return [void]
-    def build_condition(condition, tree, params)
-      field = add_field_with_prefix tree[:path], condition[:field], params
-      Condition.new field, condition[:op].to_sym,
-                    condition_value(condition, field)
+    def populate_conditions(params)
+      @conditions = params[:conditions]
+      @eq_fields = conditions.each_value.reject(&:range?).map(&:field).to_set
+      @range_field = conditions.each_value.find(&:range?)
+      @range_field = @range_field.field unless @range_field.nil?
     end
 
-    # Get the value of a condition from the parse tree
-    # @return [Object]
-    def condition_value(condition, field)
-      value = condition[:value]
+    def self.included(base)
+      base.extend ClassMethods
+    end
 
-      # Convert the value to the correct type
-      type = field.class.const_get 'TYPE'
-      value = field.class.value_from_string(value.to_s) \
-        unless type.nil? || value.nil?
+    # Add methods to the class for populating conditions
+    module ClassMethods
+      private
 
-      # Don't allow predicates on foreign keys
-      fail InvalidStatementException, 'Predicates cannot use foreign keys' \
-        if field.is_a? Fields::ForeignKeyField
+      # Extract conditions from a parse tree
+      # @return [Hash]
+      def conditions_from_tree(tree, params)
+        conditions = tree[:where].nil? ? [] : tree[:where][:expression]
+        conditions = conditions.map { |c| build_condition c, tree, params }
 
-      condition.delete :value
+        params[:conditions] = Hash[conditions.map do |condition|
+          [condition.field.id, condition]
+        end]
+      end
 
-      value
+      # Construct a condition object from the parse tree
+      # @return [void]
+      def build_condition(condition, tree, params)
+        field = add_field_with_prefix tree[:path], condition[:field], params
+        Condition.new field, condition[:op].to_sym,
+                      condition_value(condition, field)
+      end
+
+      # Get the value of a condition from the parse tree
+      # @return [Object]
+      def condition_value(condition, field)
+        value = condition[:value]
+
+        # Convert the value to the correct type
+        type = field.class.const_get 'TYPE'
+        value = field.class.value_from_string(value.to_s) \
+          unless type.nil? || value.nil?
+
+        # Don't allow predicates on foreign keys
+        fail InvalidStatementException, 'Predicates cannot use foreign keys' \
+          if field.is_a? Fields::ForeignKeyField
+
+        condition.delete :value
+
+        value
+      end
     end
   end
 
@@ -313,6 +324,25 @@ module NoSE
     end
     private_class_method :find_longest_path
 
+    # A helper to look up a field based on the path specified in the statement
+    # @return [Fields::Field]
+    def self.add_field_with_prefix(path, field, params)
+      field_path = field.map(&:to_s)
+      prefix_index = path.index(field_path.first)
+      field_path = path[0..prefix_index - 1] + field_path \
+        unless prefix_index == 0
+      field_path.map!(&:to_s)
+
+      # Expand the graph to include any keys which were found
+      field_path[0..-2].prefixes.drop(1).each do |key_path|
+        key = params[:model].find_field key_path
+        params[:graph].add_edge key.parent, key.entity, key
+      end
+
+      params[:model].find_field field_path
+    end
+    private_class_method :add_field_with_prefix
+
     def initialize(params, text, group: nil, label: nil)
       @entity = params[:entity]
       @key_path = params[:key_path]
@@ -395,26 +425,6 @@ module NoSE
         "#{condition.field} #{condition.operator} #{value}"
       end.join(' AND ')
     end
-
-    private
-
-    # A helper to look up a field based on the path specified in the statement
-    # @return [Fields::Field]
-    def add_field_with_prefix(path, field, params)
-      field_path = field.map(&:to_s)
-      prefix_index = path.index(field_path.first)
-      field_path = path[0..prefix_index - 1] + field_path \
-        unless prefix_index == 0
-      field_path.map!(&:to_s)
-
-      # Expand the graph to include any keys which were found
-      field_path[0..-2].prefixes.drop(1).each do |key_path|
-        key = params[:model].find_field key_path
-        params[:graph].add_edge key.parent, key.entity, key
-      end
-
-      params[:model].find_field field_path
-    end
   end
 
   # A representation of a query in the workload
@@ -426,9 +436,9 @@ module NoSE
     def initialize(tree, params, text, group: nil, label: nil)
       super params, text, group: group, label: label
 
-      @conditions = conditions_from_tree tree, params
-      @select = fields_from_tree tree, params
-      @order = order_from_tree tree, params
+      populate_conditions params
+      @select = params[:select]
+      @order = params[:order]
 
       if join_order.first != @key_path.entities.first
         @key_path = @key_path.reverse
@@ -437,16 +447,17 @@ module NoSE
       fail InvalidStatementException, 'must have an equality predicate' \
         if @conditions.empty? || @conditions.values.all?(&:is_range)
 
-      @limit = tree[:limit].to_i if tree[:limit]
-
-      if tree[:where]
-        tree[:where][:expression].each { |condition| condition.delete :value }
-      end
+      @limit = params[:limit]
     end
 
     # Build a new query from a provided parse tree
     # @return [Query]
     def self.parse(tree, params, text, group: nil, label: nil)
+      conditions_from_tree tree, params
+      fields_from_tree tree, params
+      order_from_tree tree, params
+      params[:limit] = tree[:limit].to_i if tree[:limit]
+
       Query.new tree, params, text, group: group, label: label
     end
 
@@ -501,8 +512,8 @@ module NoSE
 
     # Extract fields to be selected from a parse tree
     # @return [Set<Field>]
-    def fields_from_tree(tree, params)
-      tree[:select].flat_map do |field|
+    def self.fields_from_tree(tree, params)
+      params[:select] = tree[:select].flat_map do |field|
         if field.last == '*'
           # Find the entity along the path
           entity = params[:key_path].entities[tree[:path].index(field.first)]
@@ -520,9 +531,10 @@ module NoSE
 
     # Extract ordering fields from a parse tree
     # @return [Array<Field>]
-    def order_from_tree(tree, params)
-      return [] if tree[:order].nil?
-      tree[:order][:fields].each_slice(2).map do |field|
+    def self.order_from_tree(tree, params)
+      return params[:order] = [] if tree[:order].nil?
+
+      params[:order] = tree[:order][:fields].each_slice(2).map do |field|
         field = field.first if field.first.is_a?(Array)
         add_field_with_prefix tree[:path], field, params
       end
@@ -536,6 +548,11 @@ module NoSE
     # Build a new support from a provided parse tree
     # @return [SupportQuery]
     def self.parse(tree, params, text, group: nil, label: nil)
+      conditions_from_tree tree, params
+      fields_from_tree tree, params
+      order_from_tree tree, params
+      params[:limit] = tree[:limit].to_i if tree[:limit]
+
       SupportQuery.new tree, params, text, group: group, label: label
     end
 
@@ -588,21 +605,28 @@ module NoSE
   module StatementSettings
     attr_reader :settings
 
-    private
+    def self.included(base)
+      base.extend ClassMethods
+    end
 
-    # Extract settings from a parse tree
-    # @return [Array<FieldSetting>]
-    def settings_from_tree(tree, params)
-      tree[:settings].map do |setting|
-        field = params[:entity][setting[:field].to_s]
-        value = setting[:value]
+    # Add methods to the class for populating settings
+    module ClassMethods
+      private
 
-        type = field.class.const_get 'TYPE'
-        value = field.class.value_from_string(value.to_s) \
-          unless type.nil? || value.nil?
+      # Extract settings from a parse tree
+      # @return [Array<FieldSetting>]
+      def settings_from_tree(tree, params)
+        params[:settings] = tree[:settings].map do |setting|
+          field = params[:entity][setting[:field].to_s]
+          value = setting[:value]
 
-        setting.delete :value
-        FieldSetting.new field, value
+          type = field.class.const_get 'TYPE'
+          value = field.class.value_from_string(value.to_s) \
+            unless type.nil? || value.nil?
+
+          setting.delete :value
+          FieldSetting.new field, value
+        end
       end
     end
   end
@@ -734,13 +758,16 @@ module NoSE
     def initialize(tree, params, text, group: nil, label: nil)
       super params, text, group: group, label: label
 
-      @conditions = conditions_from_tree tree, params
-      @settings = settings_from_tree tree, params
+      populate_conditions params
+      @settings = params[:settings]
     end
 
     # Build a new update from a provided parse tree
     # @return [Update]
     def self.parse(tree, params, text, group: nil, label: nil)
+      conditions_from_tree tree, params
+      settings_from_tree tree, params
+
       Update.new tree, params, text, group: group, label: label
     end
 
@@ -810,18 +837,43 @@ module NoSE
     def initialize(tree, params, text, group: nil, label: nil)
       super params, text, group: group, label: label
 
-      @settings = settings_from_tree tree, params
+      @settings = params[:settings]
       fail InvalidStatementException, 'Must insert primary key' \
         unless @settings.map(&:field).include?(entity.id_field)
 
-      @conditions = conditions_from_tree tree, params
+      populate_conditions params
     end
 
     # Build a new insert from a provided parse tree
     # @return [Insert]
     def self.parse(tree, params, text, group: nil, label: nil)
+      settings_from_tree tree, params
+      conditions_from_tree tree, params
+
       Insert.new tree, params, text, group: group, label: label
     end
+
+    # Extract conditions from a parse tree
+    # @return [Hash]
+    def self.conditions_from_tree(tree, params)
+      connections = tree[:connections] || []
+      connections = connections.map do |connection|
+        field = params[:entity][connection[:target].to_s]
+        value = connection[:target_pk]
+
+        type = field.class.const_get 'TYPE'
+        value = field.class.value_from_string(value.to_s) \
+          unless type.nil? || value.nil?
+
+        connection.delete :value
+        Condition.new field, :'=', value
+      end
+
+      params[:conditions] = Hash[connections.map do |connection|
+        [connection.field.id, connection]
+      end]
+    end
+    private_class_method :conditions_from_tree
 
     # Produce the SQL text corresponding to this insert
     # @return [String]
@@ -935,27 +987,6 @@ module NoSE
       !(@settings.map(&:field).to_set & index.all_fields).empty? &&
         index.path.length == 1 && index.path.first.parent == entity
     end
-
-    # Extract conditions from a parse tree
-    # @return [Hash]
-    def conditions_from_tree(tree, params)
-      connections = tree[:connections] || []
-      connections = connections.map do |connection|
-        field = entity[connection[:target].to_s]
-        value = connection[:target_pk]
-
-        type = field.class.const_get 'TYPE'
-        value = field.class.value_from_string(value.to_s) \
-          unless type.nil? || value.nil?
-
-        connection.delete :value
-        Condition.new field, :'=', value
-      end
-
-      Hash[connections.map do |connection|
-        [connection.field.id, connection]
-      end]
-    end
   end
 
   # A representation of a delete in the workload
@@ -966,12 +997,14 @@ module NoSE
     def initialize(tree, params, text, group: nil, label: nil)
       super params, text, group: group, label: label
 
-      @conditions = conditions_from_tree tree, params
+      populate_conditions params
     end
 
     # Build a new delete from a provided parse tree
     # @return [Delete]
     def self.parse(tree, params, text, group: nil, label: nil)
+      conditions_from_tree tree, params
+
       Delete.new tree, params, text, group: group, label: label
     end
 
@@ -1025,6 +1058,13 @@ module NoSE
     attr_reader :source_pk, :target, :target_pk, :conditions
     alias source entity
 
+    # @return[void]
+    def self.keys_from_tree(tree, params)
+      params[:source_pk] = tree[:source_pk]
+      params[:target] = params[:entity].foreign_keys[tree[:target].to_s]
+      params[:target_pk] = tree[:target_pk]
+    end
+
     # Produce the SQL text corresponding to this connection
     # @return [String]
     def unparse
@@ -1077,24 +1117,6 @@ module NoSE
 
     protected
 
-    # Populate the keys and entities
-    # @return [void]
-    def populate_keys(tree)
-      @source_pk = tree[:source_pk]
-      @target = source.foreign_keys[tree[:target].to_s]
-      @target_pk = tree[:target_pk]
-
-      # Remove keys from the tree so we match on equality comparisons
-      tree.delete :source_pk
-      tree.delete :target_pk
-
-      validate_keys
-
-      # This is needed later when planning updates
-      @eq_fields = [@target.parent.id_field,
-                    @target.entity.id_field]
-    end
-
     # The two key fields are provided with the connection
     def given_fields
       [@target.parent.id_field, @target.entity.id_field]
@@ -1115,7 +1137,17 @@ module NoSE
 
     # Populate the list of condition objects
     # @return [void]
-    def populate_conditions
+    def populate_conditions(params)
+      @source_pk = params[:source_pk]
+      @target = params[:target]
+      @target_pk = params[:target_pk]
+
+      validate_keys
+
+      # This is needed later when planning updates
+      @eq_fields = [@target.parent.id_field,
+                    @target.entity.id_field]
+
       source_id = source.id_field
       target_id = @target.entity.id_field
       @conditions = {
@@ -1148,13 +1180,14 @@ module NoSE
       fail InvalidStatementException, 'DISCONNECT parsed as CONNECT' \
         unless text.split.first == 'CONNECT'
 
-      populate_keys tree
-      populate_conditions
+      populate_conditions params
     end
 
     # Build a new query from a provided parse tree
     # @return [Connect]
     def self.parse(tree, params, text, group: nil, label: nil)
+      keys_from_tree tree, params
+
       Connect.new tree, params, text, group: group, label: label
     end
 
@@ -1171,13 +1204,14 @@ module NoSE
       fail InvalidStatementException, 'CONNECT parsed as DISCONNECT' \
         unless text.split.first == 'DISCONNECT'
 
-      populate_keys tree
-      populate_conditions
+      populate_conditions params
     end
 
     # Build a new disconnect from a provided parse tree
     # @return [Disconnect]
     def self.parse(tree, params, text, group: nil, label: nil)
+      keys_from_tree tree, params
+
       Disconnect.new tree, params, text, group: group, label: label
     end
 
