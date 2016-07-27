@@ -50,7 +50,7 @@ module NoSE
       indexes.uniq!
 
       @logger.debug do
-        "Indexes for workload:\n" + indexes.each_with_index.map do |index, i|
+        "Indexes for workload:\n" + indexes.map.with_index do |index, i|
           "#{i} #{index.inspect}"
         end.join("\n")
       end

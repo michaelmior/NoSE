@@ -86,7 +86,7 @@ module NoSE
         tables, keys = index_sql_tables index
 
         query = client[tables.first]
-        keys.each_with_index.map do |key, i|
+        keys.map.with_index do |key, i|
           query = query.join tables[i + 1], key
         end
 

@@ -39,7 +39,7 @@ module NoSE
         data.each do |datum|
           g.data datum.first['label'], datum.map { |row| row['mean'] }
         end
-        g.labels = Hash[data.first.each_with_index.map do |row, n|
+        g.labels = Hash[data.first.map.with_index do |row, n|
           [n, row['group']]
         end]
 
