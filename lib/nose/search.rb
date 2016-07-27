@@ -211,7 +211,7 @@ module NoSE
             current_cost = query_costs[index_step.index].last
 
             # We must always have the same cost
-            if current_cost != cost
+            if (current_cost - cost).abs >= 10E-6
               index = index_step.index
               puts "Index #{index.key} does not have equivalent cost"
               puts "Current cost: #{current_cost}, discovered cost: #{cost}"
