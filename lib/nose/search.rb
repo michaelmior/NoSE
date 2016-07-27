@@ -208,8 +208,8 @@ module NoSE
           cost = steps.sum_by(&:cost) * weight
 
           # Don't count the cost for sorting at the end
-          cost -= steps.last.cost * weight \
-            if steps.last.is_a?(Plans::SortPlanStep)
+          sort_step = steps.find { |s| s.is_a? Plans::SortPlanStep }
+          cost -= sort_step.cost * weight unless sort_step.nil?
 
           if query_costs.key? index_step.index
             current_cost = query_costs[index_step.index].last

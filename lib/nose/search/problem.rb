@@ -231,10 +231,10 @@ module NoSE
           @sort_vars[query] = {}
 
           index_costs.each do |index, (steps, _)|
-            next unless steps.last.is_a?(Plans::SortPlanStep) &&
-                        steps.last.state.answered?
+            sort_step = steps.find { |s| s.is_a?(Plans::SortPlanStep) }
+            next if sort_step.nil?
 
-            @sort_costs[query][index] ||= steps.last.cost
+            @sort_costs[query][index] ||= sort_step.cost
             q = @queries.index query
             @sort_vars[query][index] ||= MIPPeR::Variable.new 0, 1, 0, :binary,
                                                               "s#{q}"
