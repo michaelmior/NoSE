@@ -278,7 +278,12 @@ module NoSE
            "FROM clause must start with #{tree[:entity]}" \
            if tree[:entity] && tree[:path].first != tree[:entity]
 
-      statement = klass.parse tree, text, model, group: group, label: label
+      from = model[tree[:path].first.to_s]
+      key_path = find_longest_path tree[:path], from
+      graph = QueryGraph::Graph.from_path(key_path)
+
+      statement = klass.parse tree, from, key_path, graph, text, model,
+                              group: group, label: label
       statement.instance_variable_set :@comment, tree[:comment]
 
       # Support queries need to populate extra values before finalizing
@@ -290,7 +295,29 @@ module NoSE
       statement
     end
 
-    def initialize(text, model, group: nil, label: nil)
+    # Calculate the longest path of entities traversed by the statement
+    # @return [KeyPath]
+    def self.find_longest_path(path_entities, from)
+      path = path_entities.map(&:to_s)[1..-1]
+      longest_entity_path = [from]
+      keys = [from.id_field]
+
+      path.each do |key|
+        # Search through foreign keys
+        last_entity = longest_entity_path.last
+        longest_entity_path << last_entity[key].entity
+        keys << last_entity[key]
+      end
+
+      KeyPath.new(keys)
+    end
+    private_class_method :find_longest_path
+
+    def initialize(from, key_path, graph, text, model, group: nil, label: nil)
+      @from = from
+      @key_path = key_path
+      @longest_entity_path = @key_path.entities
+      @graph = graph
       @text = text
       @group = group
       @model = model
@@ -371,17 +398,6 @@ module NoSE
 
     private
 
-    # Populate this statement based on values given in the parse tree
-    # @return [void]
-    def populate_from_tree(tree)
-      # TODO: Ignore comments, this is needed as a hack so otherwise identical
-      #       queries can be treated differently everywhere
-      # tree.delete(:comment)
-      @from = @model[tree[:path].first.to_s]
-      find_longest_path tree[:path]
-      build_graph
-    end
-
     # A helper to look up a field based on the path specified in the statement
     # @return [Fields::Field]
     def add_field_with_prefix(path, field)
@@ -399,29 +415,6 @@ module NoSE
 
       @model.find_field field_path
     end
-
-    # Calculate the longest path of entities traversed by the statement
-    # @return [KeyPath]
-    def find_longest_path(path_entities)
-      path = path_entities.map(&:to_s)[1..-1]
-      @longest_entity_path = [@from]
-      keys = [@from.id_field]
-
-      path.each do |key|
-        # Search through foreign keys
-        last_entity = @longest_entity_path.last
-        @longest_entity_path << last_entity[key].entity
-        keys << last_entity[key]
-      end
-
-      @key_path = KeyPath.new(keys)
-    end
-
-    # Construct the graph for this statement
-    def build_graph
-      # For now, construct the graph from the path
-      @graph = QueryGraph::Graph.from_path(@key_path)
-    end
   end
 
   # A representation of a query in the workload
@@ -430,10 +423,10 @@ module NoSE
 
     attr_reader :select, :order, :limit
 
-    def initialize(tree, text, model, group: nil, label: nil)
-      super text, model, group: group, label: label
+    def initialize(tree, from, key_path, graph, text, model,
+                   group: nil, label: nil)
+      super from, key_path, graph, text, model, group: group, label: label
 
-      populate_from_tree tree
       @conditions = conditions_from_tree tree
       @select = fields_from_tree tree
       @order = order_from_tree tree
@@ -454,8 +447,10 @@ module NoSE
 
     # Build a new query from a provided parse tree
     # @return [Query]
-    def self.parse(tree, text, model, group: nil, label: nil)
-      Query.new tree, text, model, group: group, label: label
+    def self.parse(tree, from, key_path, graph, text, model,
+                   group: nil, label: nil)
+      Query.new tree, from, key_path, graph, text, model,
+                group: group, label: label
     end
 
     # Produce the SQL text corresponding to this query
@@ -541,14 +536,12 @@ module NoSE
   class SupportQuery < Query
     attr_reader :statement, :index
 
-    def initialize(tree, text, model, group: nil, label: nil)
-      super tree, text, model, group: group, label: label
-    end
-
     # Build a new support from a provided parse tree
     # @return [SupportQuery]
-    def self.parse(tree, text, model, group: nil, label: nil)
-      SupportQuery.new tree, text, model, group: group, label: label
+    def self.parse(tree, from, key_path, graph, text, model,
+                   group: nil, label: nil)
+      SupportQuery.new tree, from, key_path, graph, text, model,
+                       group: group, label: label
     end
 
     # Support queries must also have their statement and index checked
@@ -745,18 +738,20 @@ module NoSE
 
     alias entity from
 
-    def initialize(tree, text, model, group: nil, label: nil)
-      super text, model, group: group, label: label
+    def initialize(tree, from, key_path, graph, text, model,
+                   group: nil, label: nil)
+      super from, key_path, graph, text, model, group: group, label: label
 
-      populate_from_tree tree
       @conditions = conditions_from_tree tree
       @settings = settings_from_tree tree
     end
 
     # Build a new update from a provided parse tree
     # @return [Update]
-    def self.parse(tree, text, model, group: nil, label: nil)
-      Update.new tree, text, model, group: group, label: label
+    def self.parse(tree, from, key_path, graph, text, model,
+                   group: nil, label: nil)
+      Update.new tree, from, key_path, graph, text, model,
+                 group: group, label: label
     end
 
     # Produce the SQL text corresponding to this update
@@ -824,10 +819,10 @@ module NoSE
 
     alias entity from
 
-    def initialize(tree, text, model, group: nil, label: nil)
-      super text, model, group: group, label: label
+    def initialize(tree, from, key_path, graph, text, model,
+                   group: nil, label: nil)
+      super from, key_path, graph, text, model, group: group, label: label
 
-      populate_from_tree tree
       @settings = settings_from_tree tree
       fail InvalidStatementException, 'Must insert primary key' \
         unless @settings.map(&:field).include?(entity.id_field)
@@ -837,8 +832,10 @@ module NoSE
 
     # Build a new insert from a provided parse tree
     # @return [Insert]
-    def self.parse(tree, text, model, group: nil, label: nil)
-      Insert.new tree, text, model, group: group, label: label
+    def self.parse(tree, from, key_path, graph, text, model,
+                   group: nil, label: nil)
+      Insert.new tree, from, key_path, graph, text, model,
+                  group: group, label: label
     end
 
     # Produce the SQL text corresponding to this insert
@@ -983,17 +980,19 @@ module NoSE
 
     alias entity from
 
-    def initialize(tree, text, model, group: nil, label: nil)
-      super text, model, group: group, label: label
+    def initialize(tree, from, key_path, graph, text, model,
+                   group: nil, label: nil)
+      super from, key_path, graph, text, model, group: group, label: label
 
-      populate_from_tree tree
       @conditions = conditions_from_tree tree
     end
 
     # Build a new delete from a provided parse tree
     # @return [Delete]
-    def self.parse(tree, text, model, group: nil, label: nil)
-      Delete.new tree, text, model, group: group, label: label
+    def self.parse(tree, from, key_path, graph, text, model,
+                   group: nil, label: nil)
+      Delete.new tree, from, key_path, graph, text, model,
+                 group: group, label: label
     end
 
     # Produce the SQL text corresponding to this delete
@@ -1164,9 +1163,10 @@ module NoSE
 
   # A representation of a connect in the workload
   class Connect < Connection
-    def initialize(tree, text, model, group: nil, label: nil)
-      super text, model, group: group, label: label
-      populate_from_tree tree
+    def initialize(tree, from, key_path, graph, text, model,
+                   group: nil, label: nil)
+      super from, key_path, graph, text, model,
+            group: group, label: label
       fail InvalidStatementException, 'DISCONNECT parsed as CONNECT' \
         unless text.split.first == 'CONNECT'
 
@@ -1176,8 +1176,10 @@ module NoSE
 
     # Build a new query from a provided parse tree
     # @return [Connect]
-    def self.parse(tree, text, model, group: nil, label: nil)
-      Connect.new tree, text, model, group: group, label: label
+    def self.parse(tree, from, key_path, graph, text, model,
+                   group: nil, label: nil)
+      Connect.new tree, from, key_path, graph, text, model,
+                  group: group, label: label
     end
 
     # Specifies that connections require insertion
@@ -1188,9 +1190,10 @@ module NoSE
 
   # A representation of a disconnect in the workload
   class Disconnect < Connection
-    def initialize(tree, text, model, group: nil, label: nil)
-      super text, model, group: group, label: label
-      populate_from_tree tree
+    def initialize(tree, from, key_path, graph, text, model,
+                   group: nil, label: nil)
+      super from, key_path, graph, text, model,
+            group: group, label: label
       fail InvalidStatementException, 'CONNECT parsed as DISCONNECT' \
         unless text.split.first == 'DISCONNECT'
 
@@ -1200,8 +1203,10 @@ module NoSE
 
     # Build a new disconnect from a provided parse tree
     # @return [Disconnect]
-    def self.parse(tree, text, model, group: nil, label: nil)
-      Disconnect.new tree, text, model, group: group, label: label
+    def self.parse(tree, from, key_path, graph, text, model,
+                   group: nil, label: nil)
+      Disconnect.new tree, from, key_path, graph, text, model,
+                     group: group, label: label
     end
 
     # Produce the SQL text corresponding to this disconnection
