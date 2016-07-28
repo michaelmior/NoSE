@@ -147,7 +147,7 @@ module NoSE
                           [tweet.id_field, tweet['User']]
                         ), workload.model
       query = update.support_queries(index).first
-      expect(query.text).to start_with \
+      expect(query.unparse).to start_with \
         'SELECT Tweet.Timestamp, Tweet.TweetId ' \
         'FROM Tweet.User WHERE User.UserId = ?'
       expect(query.statement).to eq(update)
@@ -161,7 +161,7 @@ module NoSE
                         [user['City']], QueryGraph::Graph.from_path(
                           [user.id_field]
                         ), workload.model
-      expect(update.support_queries(index).first.text).to start_with \
+      expect(update.support_queries(index).first.unparse).to start_with \
         'SELECT User.Username FROM User WHERE User.UserId = ?'
     end
 

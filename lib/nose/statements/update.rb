@@ -59,6 +59,8 @@ module NoSE
     # Get the support queries for updating an index
     # @return [Array<SupportQuery>]
     def support_queries(index)
+      return [] unless modifies_index? index
+
       # Get the updated fields and check if an update is necessary
       set_fields = settings.map(&:field).to_set
 
@@ -66,8 +68,35 @@ module NoSE
       updated_key = !(set_fields &
                       (index.hash_fields + index.order_fields)).empty?
 
-      updated_fields = set_fields & index.all_fields
-      [support_query_for_fields(index, updated_fields, updated_key)].compact
+      params = {}
+      params[:select] = if updated_key
+                          index.all_fields
+                        else
+                          index.hash_fields + index.order_fields
+                        end
+      params[:select].subtract set_fields
+      params[:select].subtract @conditions.each_value.map(&:field)
+      return [] if params[:select].empty?
+
+      params[:graph] = Marshal.load(Marshal.dump(index.graph))
+      params[:graph].remove_nodes params[:graph].entities -
+                                  params[:select].map(&:parent).to_set
+
+      params[:key_path] = params[:graph].longest_path
+      params[:entity] = params[:key_path].first.parent
+
+      params[:conditions] = @conditions.select do |_, c|
+        params[:graph].entities.include? c.field.parent
+      end
+
+      support_query = SupportQuery.new params, nil, group: @group
+      support_query.instance_variable_set :@statement, self
+      support_query.instance_variable_set :@index, index
+      support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
+      support_query.hash
+      support_query.freeze
+
+      [support_query]
     end
 
     # The condition fields are provided with the update
