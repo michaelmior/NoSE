@@ -78,16 +78,19 @@ module NoSE
       params[:select].subtract @conditions.each_value.map(&:field)
       return [] if params[:select].empty?
 
+      graph_entities = params[:select].map(&:parent).to_set
+      params[:conditions] = @conditions.select do |_, c|
+        index.graph.entities.include? c.field.parent
+      end
+      graph_entities += params[:conditions].each_value.map do |c|
+        c.field.parent
+      end.to_set
+
       params[:graph] = Marshal.load(Marshal.dump(index.graph))
-      params[:graph].remove_nodes params[:graph].entities -
-                                  params[:select].map(&:parent).to_set
+      params[:graph].remove_nodes params[:graph].entities - graph_entities
 
       params[:key_path] = params[:graph].longest_path
       params[:entity] = params[:key_path].first.parent
-
-      params[:conditions] = @conditions.select do |_, c|
-        params[:graph].entities.include? c.field.parent
-      end
 
       support_query = SupportQuery.new params, nil, group: @group
       support_query.instance_variable_set :@statement, self
