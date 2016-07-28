@@ -71,7 +71,7 @@ module NoSE
       end
 
       # Enumerate indexes for each support query
-      queries.uniq!(&:text)
+      queries.uniq!
       queries.flat_map do |query|
         indexes_for_query(query).to_a
       end

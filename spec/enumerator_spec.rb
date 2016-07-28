@@ -87,8 +87,10 @@ module NoSE
       indexes = enum.indexes_for_workload
 
       expect(indexes.to_a).to include \
-        Index.new [user['City']], [user['UserId']], [user['Username']],
-                  QueryGraph::Graph.from_path([user.id_field])
+        Index.new [user['City']], [tweet['TweetId'], user['UserId']],
+                  [tweet['Body']],
+                  QueryGraph::Graph.from_path([user.id_field,
+                                               user['Tweets']])
     end
   end
 end
