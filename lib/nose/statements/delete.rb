@@ -4,7 +4,7 @@ module NoSE
     include StatementConditions
     include StatementSupportQuery
 
-    def initialize(tree, params, text, group: nil, label: nil)
+    def initialize(params, text, group: nil, label: nil)
       super params, text, group: group, label: label
 
       populate_conditions params
@@ -15,7 +15,7 @@ module NoSE
     def self.parse(tree, params, text, group: nil, label: nil)
       conditions_from_tree tree, params
 
-      Delete.new tree, params, text, group: group, label: label
+      Delete.new params, text, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this delete

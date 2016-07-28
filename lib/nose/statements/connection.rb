@@ -123,7 +123,7 @@ module NoSE
 
   # A representation of a connect in the workload
   class Connect < Connection
-    def initialize(tree, params, text, group: nil, label: nil)
+    def initialize(params, text, group: nil, label: nil)
       super params, text, group: group, label: label
       fail InvalidStatementException, 'DISCONNECT parsed as CONNECT' \
         unless text.split.first == 'CONNECT'
@@ -136,7 +136,7 @@ module NoSE
     def self.parse(tree, params, text, group: nil, label: nil)
       keys_from_tree tree, params
 
-      Connect.new tree, params, text, group: group, label: label
+      Connect.new params, text, group: group, label: label
     end
 
     # Specifies that connections require insertion
@@ -147,7 +147,7 @@ module NoSE
 
   # A representation of a disconnect in the workload
   class Disconnect < Connection
-    def initialize(tree, params, text, group: nil, label: nil)
+    def initialize(params, text, group: nil, label: nil)
       super params, text, group: group, label: label
       fail InvalidStatementException, 'CONNECT parsed as DISCONNECT' \
         unless text.split.first == 'DISCONNECT'
@@ -160,7 +160,7 @@ module NoSE
     def self.parse(tree, params, text, group: nil, label: nil)
       keys_from_tree tree, params
 
-      Disconnect.new tree, params, text, group: group, label: label
+      Disconnect.new params, text, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this disconnection

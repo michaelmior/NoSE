@@ -5,7 +5,7 @@ module NoSE
     include StatementSettings
     include StatementSupportQuery
 
-    def initialize(tree, params, text, group: nil, label: nil)
+    def initialize(params, text, group: nil, label: nil)
       super params, text, group: group, label: label
 
       @settings = params[:settings]
@@ -21,7 +21,7 @@ module NoSE
       settings_from_tree tree, params
       conditions_from_tree tree, params
 
-      Insert.new tree, params, text, group: group, label: label
+      Insert.new params, text, group: group, label: label
     end
 
     # Extract conditions from a parse tree

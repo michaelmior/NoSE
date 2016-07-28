@@ -5,7 +5,7 @@ module NoSE
     include StatementSettings
     include StatementSupportQuery
 
-    def initialize(tree, params, text, group: nil, label: nil)
+    def initialize(params, text, group: nil, label: nil)
       super params, text, group: group, label: label
 
       populate_conditions params
@@ -18,7 +18,7 @@ module NoSE
       conditions_from_tree tree, params
       settings_from_tree tree, params
 
-      Update.new tree, params, text, group: group, label: label
+      Update.new params, text, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this update

@@ -5,7 +5,7 @@ module NoSE
 
     attr_reader :select, :order, :limit
 
-    def initialize(tree, params, text, group: nil, label: nil)
+    def initialize(params, text, group: nil, label: nil)
       super params, text, group: group, label: label
 
       populate_conditions params
@@ -30,7 +30,7 @@ module NoSE
       order_from_tree tree, params
       params[:limit] = tree[:limit].to_i if tree[:limit]
 
-      Query.new tree, params, text, group: group, label: label
+      Query.new params, text, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this query
@@ -125,7 +125,7 @@ module NoSE
       order_from_tree tree, params
       params[:limit] = tree[:limit].to_i if tree[:limit]
 
-      SupportQuery.new tree, params, text, group: group, label: label
+      SupportQuery.new params, text, group: group, label: label
     end
 
     # Support queries must also have their statement and index checked
