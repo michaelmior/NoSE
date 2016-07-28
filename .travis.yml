@@ -25,10 +25,7 @@ script:
   - sed -i '/^--tag/d' .rspec
   - bundle exec rspec
 addons:
-  apt:
-    packages:
-      - mysql-server-5.6
-      - mysql-client-core-5.6
-      - mysql-client-5.6
+  services:
+    - mysql
   code_climate:
     repo_token: 6bb85eb10136dfdb11e56bf53a9679510ca99c3c0f2495c06d6a3cb9670b9954
