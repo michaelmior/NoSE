@@ -57,7 +57,7 @@ module NoSE
                         @conditions.each_value.map(&:field).to_set
       return [] if params[:select].empty?
 
-      params[:graph] = Marshal.load(Marshal.dump(@graph))
+      params[:graph] = Marshal.load(Marshal.dump(index.graph))
       params[:graph].remove_nodes params[:graph].entities -
                                   params[:select].map(&:parent).to_set
 

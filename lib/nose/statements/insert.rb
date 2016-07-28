@@ -126,7 +126,7 @@ module NoSE
       return [] if params[:select].empty?
 
       # Make a copy of the graph with only entities we need to select from
-      params[:graph] = Marshal.load(Marshal.dump(@graph))
+      params[:graph] = Marshal.load(Marshal.dump(index.graph))
       @conditions.each_value do |c|
         params[:graph].add_edge c.field.parent, c.field.entity, c.field
       end
