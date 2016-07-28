@@ -113,6 +113,8 @@ module NoSE
       # Produce an array of entities in the desired join order
       # @return [Array<Entity>]
       def join_order(eq_fields)
+        return [@nodes.first.entity] if @nodes.size == 1
+
         # Start with a leaf entity which has an equality predicate
         # and the lowest overall count of all such entities
         entities = @nodes.map(&:entity).to_set
@@ -332,6 +334,8 @@ module NoSE
       # Produce a path through the graph of maximum length
       # @return [KeyPath]
       def longest_path
+        return KeyPath.new [@nodes.first.entity.id_field] if @nodes.size == 1
+
         longest_path = []
         @nodes.each do |node|
           next unless leaf_entity?(node.entity)
