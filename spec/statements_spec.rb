@@ -293,8 +293,8 @@ module NoSE
 
       queries = connect.support_queries index
       expect(queries).to have(1).item
-      expect(queries.first.text).to start_with \
-        'SELECT User.City FROM User WHERE User.UserId = ?'
+      expect(queries.first.unparse).to start_with \
+        'SELECT User.City FROM User WHERE User.UserId = B'
     end
 
     it 'does not require support queries if all fields are given' do

@@ -42,25 +42,30 @@ module NoSE
     def support_queries(index)
       return [] unless modifies_index?(index)
 
-      # Get the key in the correct order
-      reversed = !index.path.include?(@target)
-      foreign_key = @target
-      foreign_key = @target.reverse if reversed
+      params = {}
+      params[:select] = index.all_fields -
+                        @conditions.each_value.map(&:field).to_set
+      return [] if params[:select].empty?
 
-      # Get the two path components
-      entity_index = index.path.entities.index foreign_key.parent
-      path1 = index.path[0..entity_index]
-      path2 = index.path[entity_index + 1..-1].reverse
+      params[:graph] = Marshal.load(Marshal.dump(index.graph))
+      params[:graph].remove_nodes params[:graph].entities -
+                                  params[:select].map(&:parent).to_set
 
-      # Construct the two where clauses
-      where1 = support_query_condition_for_path path1, reversed
-      where2 = support_query_condition_for_path path2, !reversed
+      params[:key_path] = params[:graph].longest_path
+      params[:entity] = params[:key_path].first.parent
 
-      # Get the actual support queries
-      [
-        support_query_for_path(index, path1, where1, requires_insert?(index)),
-        support_query_for_path(index, path2, where2, requires_insert?(index))
-      ].compact
+      params[:conditions] = @conditions.select do |_, c|
+        params[:graph].entities.include? c.field.parent
+      end
+
+      support_query = SupportQuery.new params, nil, group: @group
+      support_query.instance_variable_set :@statement, self
+      support_query.instance_variable_set :@index, index
+      support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
+      support_query.hash
+      support_query.freeze
+
+      [support_query]
     end
 
     protected
