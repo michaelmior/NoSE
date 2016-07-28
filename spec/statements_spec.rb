@@ -237,6 +237,17 @@ module NoSE
     it 'can be converted back to delete text' do
       expect(delete.unparse).to eq delete.text
     end
+
+    it 'can generate support queries' do
+      index = Index.new [user['UserId']], [tweet['TweetId']], [tweet['Body']],
+                        QueryGraph::Graph.from_path([tweet['TweetId'],
+                                                     tweet['User']])
+      queries = delete.support_queries index
+      expect(queries).to have(1).item
+      expect(queries.first.unparse).to start_with \
+        'SELECT User.UserId, Tweet.TweetId FROM Tweet.User ' \
+        'WHERE Tweet.Timestamp > ? AND User.City = ?'
+    end
   end
 
   describe Connection do

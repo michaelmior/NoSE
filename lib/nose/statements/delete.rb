@@ -37,7 +37,7 @@ module NoSE
     alias eql? ==
 
     def hash
-      @hash ||= [@graph, entity, @conditions]
+      @hash ||= [@graph, entity, @conditions].hash
     end
 
     # Index contains the single entity to be deleted
@@ -52,7 +52,30 @@ module NoSE
 
     # Get the support queries for deleting from an index
     def support_queries(index)
-      [support_query_for_fields(index, entity.fields)].compact
+      params = {}
+      params[:select] = (index.hash_fields + index.order_fields.to_set) -
+                        @conditions.each_value.map(&:field).to_set
+      return [] if params[:select].empty?
+
+      params[:graph] = Marshal.load(Marshal.dump(@graph))
+      params[:graph].remove_nodes params[:graph].entities -
+                                  params[:select].map(&:parent).to_set
+
+      params[:key_path] = params[:graph].longest_path
+      params[:entity] = params[:key_path].first.parent
+
+      params[:conditions] = @conditions.select do |_, c|
+        params[:graph].entities.include? c.field.parent
+      end
+
+      support_query = SupportQuery.new params, nil, group: @group
+      support_query.instance_variable_set :@statement, self
+      support_query.instance_variable_set :@index, index
+      support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
+      support_query.hash
+      support_query.freeze
+
+      [support_query]
     end
 
     # The condition fields are provided with the deletion
