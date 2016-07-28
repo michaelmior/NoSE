@@ -10,7 +10,7 @@ module NoSE
 
       populate_conditions params
       @select = params[:select]
-      @order = params[:order]
+      @order = params[:order] || []
 
       if join_order.first != @key_path.entities.first
         @key_path = @key_path.reverse

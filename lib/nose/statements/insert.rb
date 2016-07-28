@@ -117,30 +117,43 @@ module NoSE
       return [] unless modifies_index?(index) &&
                        !modifies_single_entity_index?(index)
 
-      # Get the two path components
-      entity_index = index.path.entities.index entity
-      path1 = index.path[0..entity_index - 1]
-      path2 = index.path[entity_index + 1..-1]
+      params = {}
+      params[:select] = index.all_fields -
+                        @settings.map(&:field).to_set -
+                        @conditions.each_value.map do |condition|
+                          condition.field.entity.id_field
+                        end.to_set
+      return [] if params[:select].empty?
 
-      # Group the connection keys into one of the two paths
-      keys1 = []
-      keys2 = []
-      @conditions.each_value.map(&:field).each do |key|
-        key = key.entity.id_field
-
-        keys1 << key if path1.include?(key)
-        keys2 << key if path2.include?(key)
+      # Make a copy of the graph with only entities we need to select from
+      params[:graph] = Marshal.load(Marshal.dump(@graph))
+      @conditions.each_value do |c|
+        params[:graph].add_edge c.field.parent, c.field.entity, c.field
       end
+      params[:graph].remove_nodes params[:graph].entities -
+                                  params[:select].map(&:parent).to_set
 
-      # Construct the two where clauses
-      where1 = support_query_condition_for_path keys1, path1
-      where2 = support_query_condition_for_path keys2, path2
+      params[:key_path] = params[:graph].longest_path
+      params[:entity] = params[:key_path].first.parent
 
-      # Get the actual support queries
-      [
-        support_query_for_path(index, path1, where1, requires_insert?(index)),
-        support_query_for_path(index, path2, where2, requires_insert?(index))
-      ].compact
+      # Build conditions by traversing the foreign keys
+      conditions = @conditions.each_value.map do |c|
+        next unless params[:graph].entities.include? c.field.entity
+
+        Condition.new c.field.entity.id_field, c.operator, c.value
+      end.compact
+      params[:conditions] = Hash[conditions.map do |condition|
+        [condition.field.id, condition]
+      end]
+
+      support_query = SupportQuery.new params, nil, group: @group
+      support_query.instance_variable_set :@statement, self
+      support_query.instance_variable_set :@index, index
+      support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
+      support_query.hash
+      support_query.freeze
+
+      [support_query]
     end
 
     # The settings fields are provided with the insertion

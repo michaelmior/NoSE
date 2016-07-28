@@ -217,8 +217,8 @@ module NoSE
                         )
       queries = insert.support_queries index
       expect(queries).to have(1).item
-      expect(queries.first.text).to start_with \
-        'SELECT User.Username FROM User WHERE User.UserId = ?'
+      expect(queries.first.unparse).to start_with \
+        'SELECT User.Username FROM User WHERE User.UserId = 1'
     end
   end
 
