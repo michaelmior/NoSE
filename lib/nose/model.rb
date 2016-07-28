@@ -7,8 +7,8 @@ module NoSE
   # A conceptual data model of a set of entities
   class Model
     # The subdirectory models are loaded from
-    LOAD_PATH = 'models'
-    extend Loader
+    LOAD_PATH = 'models'.freeze
+    include Loader
 
     attr_reader :entities
 
