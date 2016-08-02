@@ -43,6 +43,7 @@ module NoSE
       return [] unless modifies_index?(index)
 
       select = index.all_fields - @conditions.each_value.map(&:field).to_set
+      return [] if select.empty?
 
       index.graph.split(entity).map do |graph|
         params = { graph: graph }

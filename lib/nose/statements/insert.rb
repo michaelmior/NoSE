@@ -79,13 +79,13 @@ module NoSE
       return false if index.path.length == 1
       return false unless index.path.entities.include? entity
 
-      # Check if the index crosses any of the connection keys
+      # Check if the index crosses all of the connection keys
       keys = @conditions.each_value.map(&:field)
       keys += keys.map(&:reverse)
 
-      # We must be connecting on some component of the path
+      # We must be connecting on all components of the path
       # if the index is going to be modified by this insertion
-      keys.count { |key| index.path.include?(key) } > 0
+      keys.all? { |key| index.path.include?(key) }
     end
 
     # Specifies that inserts require insertion
@@ -106,6 +106,7 @@ module NoSE
                @conditions.each_value.map do |condition|
                  condition.field.entity.id_field
                end.to_set
+      return [] if select.empty?
 
       index.graph.split(entity).map do |graph|
         params = { graph: graph }
