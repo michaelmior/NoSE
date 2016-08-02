@@ -8,7 +8,7 @@ NoSE::Workload.new do
   # http://rubis.ow2.org/results/SB-BMP/Browsing/JBoss-SB-BMP-Br-1500/perf.html#run_stat
   DefaultMix :browsing
 
-  Group 'BrowseCategories', browsing: 4.44 + 3.21, bidding: 7.65 + 5.39, write_heavy: 7.65 + 5.39 do
+  Group 'BrowseCategories', browsing: 4.44, bidding: 7.65, write_heavy: 7.65 do
     Q 'SELECT users.nickname, users.password FROM users WHERE users.id = ? -- 1'
     # XXX Must have at least one equality predicate
     Q 'SELECT categories.id, categories.name FROM categories WHERE ' \
@@ -27,21 +27,13 @@ NoSE::Workload.new do
     Q 'SELECT bids.* FROM items.bids WHERE items.id = ? -- 6'
   end
 
-  Group 'SearchItemsByCategory', browsing: 27.77 + 8.26,
-                                 bidding: 15.94 + 6.34,
-                                 write_heavy: 15.94 + 6.34 do
+  Group 'SearchItemsByCategory', browsing: 27.77,
+                                 bidding: 15.94,
+                                 write_heavy: 15.94 do
     Q 'SELECT items.id, items.name, items.initial_price, items.max_bid, ' \
       'items.nb_of_bids, items.end_date FROM items.category WHERE ' \
       'category.id = ? AND items.end_date >= ? LIMIT 25 -- 7'
   end
-
-  # XXX Not currently supported
-  # # SearchItemsByRegion
-  # Q 'SELECT id, name, initial_price, max_bid, nb_of_bids, end_date FROM ' \
-  #   'items.users WHERE users.region = ? AND items.category = ? AND ' \
-  #   'items.end_date >= ?', 0.06
-  # # BrowseRegions
-  # Q 'SELECT id, name FROM regions', (0.03 + 0.02)
 
   Group 'ViewUserInfo', browsing: 4.41, bidding: 2.48, write_heavy: 2.48 do
     # XXX Not including region name below
@@ -113,6 +105,21 @@ NoSE::Workload.new do
       'items.end_date >=? -- 33'
     Q 'SELECT items.* FROM items.bids.user WHERE user.id=? AND ' \
       'items.end_date>=? -- 34'
+  end
+
+  Group 'SearchItemsByRegion', browsing: 8.26,
+                               bidding: 6.34,
+                               write_heavy: 6.34 do
+    Q 'SELECT items.id, items.name, items.initial_price, items.max_bid, ' \
+      'items.nb_of_bids, items.end_date FROM ' \
+      'items.seller WHERE seller.region.id = ? AND items.category.id = ? ' \
+      'AND items.end_date >= ? -- 35'
+  end
+
+  Group 'BrowseRegions', browsing: 3.21, bidding: 5.39, write_heavy: 5.39 do
+    # XXX Must have at least one equality predicate
+    Q 'SELECT regions.id, regions.name FROM regions ' \
+      'WHERE regions.dummy = 1 -- 36'
   end
 end
 
