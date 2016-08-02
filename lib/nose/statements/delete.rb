@@ -52,33 +52,35 @@ module NoSE
 
     # Get the support queries for deleting from an index
     def support_queries(index)
-      params = {}
-      params[:select] = (index.hash_fields + index.order_fields.to_set) -
-                        @conditions.each_value.map(&:field).to_set
-      return [] if params[:select].empty?
+      return [] unless modifies_index? index
+      select = (index.hash_fields + index.order_fields.to_set) -
+               @conditions.each_value.map(&:field).to_set
+      return [] if select.empty?
 
-      graph_entities = params[:select].map(&:parent).to_set
-      params[:conditions] = @conditions.select do |_, c|
-        index.graph.entities.include? c.field.parent
-      end
-      graph_entities += params[:conditions].each_value.map do |c|
-        c.field.parent
-      end.to_set
+      graphs = index.graph.size > 1 ? index.graph.split(entity, true) : []
+      graphs << QueryGraph::Graph.new([entity])
+      graphs.map do |graph|
+        params = { graph: graph }
+        params[:select] = select.select do |field|
+          next false if graph.size > 1 && graph.entities.first == entity
+          graph.entities.include? field.parent
+        end.to_set
+        next if params[:select].empty?
 
-      params[:graph] = Marshal.load(Marshal.dump(index.graph))
-      params[:graph].remove_nodes params[:graph].entities - graph_entities
+        params[:conditions] = @conditions.select do |_, c|
+          index.graph.entities.include? c.field.parent
+        end
 
-      params[:key_path] = params[:graph].longest_path
-      params[:entity] = params[:key_path].first.parent
+        params[:key_path] = params[:graph].longest_path
+        params[:entity] = params[:key_path].first.parent
 
-      support_query = SupportQuery.new params, nil, group: @group
-      support_query.instance_variable_set :@statement, self
-      support_query.instance_variable_set :@index, index
-      support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
-      support_query.hash
-      support_query.freeze
-
-      [support_query]
+        support_query = SupportQuery.new params, nil, group: @group
+        support_query.instance_variable_set :@statement, self
+        support_query.instance_variable_set :@index, index
+        support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
+        support_query.hash
+        support_query.freeze
+      end.compact
     end
 
     # The condition fields are provided with the deletion
