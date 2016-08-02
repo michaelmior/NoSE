@@ -42,30 +42,29 @@ module NoSE
     def support_queries(index)
       return [] unless modifies_index?(index)
 
-      params = {}
-      params[:select] = index.all_fields -
-                        @conditions.each_value.map(&:field).to_set
-      return [] if params[:select].empty?
+      select = index.all_fields - @conditions.each_value.map(&:field).to_set
 
-      params[:graph] = Marshal.load(Marshal.dump(index.graph))
-      params[:graph].remove_nodes params[:graph].entities -
-                                  params[:select].map(&:parent).to_set
+      index.graph.split(entity).map do |graph|
+        params = { graph: graph }
+        params[:select] = select.select do |field|
+          graph.entities.include? field.parent
+        end
+        next if params[:select].empty?
 
-      params[:key_path] = params[:graph].longest_path
-      params[:entity] = params[:key_path].first.parent
+        params[:key_path] = params[:graph].longest_path
+        params[:entity] = params[:key_path].first.parent
 
-      params[:conditions] = @conditions.select do |_, c|
-        params[:graph].entities.include? c.field.parent
-      end
+        params[:conditions] = @conditions.select do |_, c|
+          params[:graph].entities.include? c.field.parent
+        end
 
-      support_query = SupportQuery.new params, nil, group: @group
-      support_query.instance_variable_set :@statement, self
-      support_query.instance_variable_set :@index, index
-      support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
-      support_query.hash
-      support_query.freeze
-
-      [support_query]
+        support_query = SupportQuery.new params, nil, group: @group
+        support_query.instance_variable_set :@statement, self
+        support_query.instance_variable_set :@index, index
+        support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
+        support_query.hash
+        support_query.freeze
+      end.compact
     end
 
     protected

@@ -100,43 +100,40 @@ module NoSE
       return [] unless modifies_index?(index) &&
                        !modifies_single_entity_index?(index)
 
-      params = {}
-      params[:select] = index.all_fields -
-                        @settings.map(&:field).to_set -
-                        @conditions.each_value.map do |condition|
-                          condition.field.entity.id_field
-                        end.to_set
-      return [] if params[:select].empty?
+      # Get all fields which need to be selected by support queries
+      select = index.all_fields -
+               @settings.map(&:field).to_set -
+               @conditions.each_value.map do |condition|
+                 condition.field.entity.id_field
+               end.to_set
 
-      # Make a copy of the graph with only entities we need to select from
-      params[:graph] = Marshal.load(Marshal.dump(index.graph))
-      @conditions.each_value do |c|
-        params[:graph].add_edge c.field.parent, c.field.entity, c.field
-      end
-      params[:graph].remove_nodes params[:graph].entities -
-                                  params[:select].map(&:parent).to_set
+      index.graph.split(entity).map do |graph|
+        params = { graph: graph }
+        params[:select] = select.select do |field|
+          graph.entities.include? field.parent
+        end
+        next if params[:select].empty?
 
-      params[:key_path] = params[:graph].longest_path
-      params[:entity] = params[:key_path].first.parent
+        params[:key_path] = params[:graph].longest_path
+        params[:entity] = params[:key_path].first.parent
 
-      # Build conditions by traversing the foreign keys
-      conditions = @conditions.each_value.map do |c|
-        next unless params[:graph].entities.include? c.field.entity
+        # Build conditions by traversing the foreign keys
+        conditions = @conditions.each_value.map do |c|
+          next unless params[:graph].entities.include? c.field.entity
 
-        Condition.new c.field.entity.id_field, c.operator, c.value
+          Condition.new c.field.entity.id_field, c.operator, c.value
+        end.compact
+        params[:conditions] = Hash[conditions.map do |condition|
+          [condition.field.id, condition]
+        end]
+
+        support_query = SupportQuery.new params, nil, group: @group
+        support_query.instance_variable_set :@statement, self
+        support_query.instance_variable_set :@index, index
+        support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
+        support_query.hash
+        support_query.freeze
       end.compact
-      params[:conditions] = Hash[conditions.map do |condition|
-        [condition.field.id, condition]
-      end]
-
-      support_query = SupportQuery.new params, nil, group: @group
-      support_query.instance_variable_set :@statement, self
-      support_query.instance_variable_set :@index, index
-      support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
-      support_query.hash
-      support_query.freeze
-
-      [support_query]
     end
 
     # The settings fields are provided with the insertion
