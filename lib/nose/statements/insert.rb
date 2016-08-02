@@ -93,23 +93,6 @@ module NoSE
       true
     end
 
-    # Get the where clause for a support query over the given path
-    # @return [String]
-    def support_query_condition_for_path(keys, path)
-      'WHERE ' + path.entries.map do |key|
-        if keys.include?(key) ||
-           (key.is_a?(Fields::ForeignKeyField) &&
-            path.entities.include?(key.entity))
-          # Find the ID for this entity in the path and include a predicate
-          id = key.entity.id_field
-          "#{path.find_field_parent(id).name}.#{id.name} = ?"
-        elsif path.entities.map { |e| e.id_field }.include?(key)
-          # Include the key for the entity being inserted
-          "#{path.find_field_parent(key).name}.#{key.name} = ?"
-        end
-      end.compact.join(' AND ')
-    end
-
     # Support queries are required for index insertion with connection
     # to select attributes of the other related entities
     # @return [Array<SupportQuery>]
