@@ -120,7 +120,7 @@ module NoSE
 
         # Build conditions by traversing the foreign keys
         conditions = @conditions.each_value.map do |c|
-          next unless params[:graph].entities.include? c.field.entity
+          next unless graph.entities.include? c.field.entity
 
           Condition.new c.field.entity.id_field, c.operator, c.value
         end.compact

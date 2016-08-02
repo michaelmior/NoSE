@@ -80,13 +80,13 @@ module NoSE
       graphs.map do |graph|
         params = { graph: graph }
         params[:select] = select.select do |field|
-          next false if graph.size > 1 && graph.entities.first == entity
+          next false if graph.size > 1 && field.parent == entity
           graph.entities.include? field.parent
         end.to_set
         next if params[:select].empty?
 
         params[:conditions] = @conditions.select do |_, c|
-          index.graph.entities.include? c.field.parent
+          graph.entities.include? c.field.parent
         end
 
         params[:key_path] = params[:graph].longest_path

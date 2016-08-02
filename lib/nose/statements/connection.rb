@@ -56,7 +56,7 @@ module NoSE
         params[:entity] = params[:key_path].first.parent
 
         params[:conditions] = @conditions.select do |_, c|
-          params[:graph].entities.include? c.field.parent
+          graph.entities.include? c.field.parent
         end
 
         support_query = SupportQuery.new params, nil, group: @group
