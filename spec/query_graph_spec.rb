@@ -83,6 +83,15 @@ module NoSE
                           [tweet, link, tweet['Link']]
         expect(graph.longest_path.entities).to eq([user, tweet, link])
       end
+
+      it 'can split graphs at a given entity' do
+        graph = Graph.new [], [user, tweet, user['Tweets']],
+                          [tweet, link, tweet['Link']]
+        expect(graph.split(tweet)).to eq [
+          Graph.new([user]),
+          Graph.new([link])
+        ]
+      end
     end
   end
 end

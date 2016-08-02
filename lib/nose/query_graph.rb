@@ -366,6 +366,24 @@ module NoSE
         graph.output(**{ format => filename })
       end
 
+      # Split this graph into multiple graphs by removing
+      # the node corresponding to the given entity
+      # return [Array<Graph>]
+      def split(entity)
+        # Find the node corresponding to the entity to remove
+        remove_nodes = [@nodes.find { |n| n.entity == entity }]
+
+        # For each edge from this entity, build a new graph with
+        # the entity removed and explore the different paths
+        @edges[remove_nodes.first].map do |edge|
+          new_graph = Marshal.load(Marshal.dump(self))
+          new_graph.remove_nodes remove_nodes
+          new_graph.prune edge.to
+
+          new_graph
+        end
+      end
+
       private
 
       def longest_path_visit(node, visited_nodes, edges, longest_path)
