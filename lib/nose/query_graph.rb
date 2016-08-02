@@ -366,17 +366,19 @@ module NoSE
         graph.output(**{ format => filename })
       end
 
-      # Split this graph into multiple graphs by removing
-      # the node corresponding to the given entity
+      # Split this graph into multiple graphs at the given
+      # entity, optionally removing the corresponding node
       # return [Array<Graph>]
-      def split(entity)
+      def split(entity, keep = false)
         # Find the node corresponding to the entity to remove
-        remove_nodes = [@nodes.find { |n| n.entity == entity }]
+        remove_node = @nodes.find { |n| n.entity == entity }
 
         # For each edge from this entity, build a new graph with
         # the entity removed and explore the different paths
-        @edges[remove_nodes.first].map do |edge|
+        @edges[remove_node].map do |edge|
           new_graph = Marshal.load(Marshal.dump(self))
+          remove_nodes = (@edges[remove_node] - [edge]).map(&:to)
+          remove_nodes << remove_node unless keep
           new_graph.remove_nodes remove_nodes
           new_graph.prune edge.to
 
