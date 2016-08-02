@@ -38,20 +38,19 @@ module NoSE::CLI
     end
 
     it 'can search with no limits', solver: true do
-      run_simple 'nose search rubis --mix=bidding --format=json'
+      run_simple 'nose search ebay --format=json'
       expect { JSON.parse last_command_stopped.stdout }.to_not raise_error
     end
 
     it 'can search with a limit', solver: true do
-      run_simple 'nose search rubis --mix=bidding ' \
-                 '--format=json --max-space=1000000000000'
+      run_simple 'nose search ebay --format=json --max-space=1000000000000'
       expect do
         JSON.parse last_command_stopped.stdout
       end.to_not raise_error
     end
 
     it 'fails with not enough space', solver: true do
-      run 'nose search rubis --max-space=1'
+      run 'nose search ebay --max-space=1'
       expect(last_command_stopped.exit_status).to eq(1)
     end
 
