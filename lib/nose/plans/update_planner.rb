@@ -220,14 +220,15 @@ module NoSE
         update_steps << DeletePlanStep.new(index, state) \
           if statement.requires_delete?(index)
 
-        fields = if statement.is_a?(Connect)
-                   statement.conditions.each_value.map(&:field)
-                 elsif statement.requires_insert?(index)
-                   statement.settings.map(&:field)
-                 end
+        if statement.requires_insert?(index)
+          fields = if statement.is_a?(Connect)
+                     statement.conditions.each_value.map(&:field)
+                   else
+                     statement.settings.map(&:field)
+                   end
 
-        update_steps << InsertPlanStep.new(index, state, fields) \
-          if statement.requires_insert?(index)
+          update_steps << InsertPlanStep.new(index, state, fields)
+        end
 
         update_steps
       end
