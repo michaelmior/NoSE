@@ -97,30 +97,7 @@ module NoSE
 
       support_queries << support_query unless params[:select].empty?
 
-      graphs = index.graph.size > 1 ? index.graph.split(entity, true) : []
-      support_queries += graphs.map do |graph|
-        params = { graph: graph }
-        params[:select] = select.select do |field|
-          field.parent != entity && graph.entities.include?(field.parent)
-        end.to_set
-        next if params[:select].empty?
-
-        params[:conditions] = {
-          entity.id_field.id => Condition.new(entity.id_field, :'=', nil)
-        }
-
-        params[:key_path] = params[:graph].longest_path
-        params[:entity] = params[:key_path].first.parent
-
-        support_query = SupportQuery.new params, nil, group: @group
-        support_query.instance_variable_set :@statement, self
-        support_query.instance_variable_set :@index, index
-        support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
-        support_query.hash
-        support_query.freeze
-      end.compact
-
-      support_queries
+      support_queries + support_queries_for_entity(index, select)
     end
 
     # The condition fields are provided with the update
