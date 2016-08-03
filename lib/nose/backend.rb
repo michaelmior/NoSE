@@ -442,6 +442,8 @@ module NoSE
       # Execute all the support queries
       # @return [Array<Hash>]
       def support_results(settings)
+        # TODO Use primary keys from first query for subsequent
+        #      queries in the case of UPDATE or DELETE
         support = @support_plans.map do |query_plan|
           query_plan.execute settings
         end
