@@ -386,6 +386,12 @@ module NoSE
         end
       end
 
+      # Produce the keys for all edges leaving the given entity
+      # @return [Array<Fields::ForeignKeyField>]
+      def keys_from_entity(entity)
+        edges_for_entity(entity).map(&:key)
+      end
+
       private
 
       def longest_path_visit(node, visited_nodes, edges, longest_path)

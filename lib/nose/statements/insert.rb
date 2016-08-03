@@ -76,16 +76,12 @@ module NoSE
     # Determine if this insert modifies an index
     def modifies_index?(index)
       return true if modifies_single_entity_index?(index)
-      return false if index.path.length == 1
-      return false unless index.path.entities.include? entity
+      return false if index.graph.size == 1
+      return false unless index.graph.entities.include? entity
 
       # Check if the index crosses all of the connection keys
       keys = @conditions.each_value.map(&:field)
-      keys += keys.map(&:reverse)
-
-      # We must be connecting on all components of the path
-      # if the index is going to be modified by this insertion
-      keys.all? { |key| index.path.include?(key) }
+      index.graph.keys_from_entity(entity).all? { |k| keys.include? k }
     end
 
     # Specifies that inserts require insertion
