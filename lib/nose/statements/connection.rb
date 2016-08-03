@@ -6,6 +6,22 @@ module NoSE
     attr_reader :source_pk, :target, :target_pk, :conditions
     alias source entity
 
+    def initialize(params, text, group: nil, label: nil)
+      super params, text, group: group, label: label
+      fail InvalidStatementException, 'Incorrect connection initialization' \
+        unless text.split.first == self.class.name.split('::').last.upcase
+
+      populate_conditions params
+    end
+
+    # Build a new disconnect from a provided parse tree
+    # @return [Connection]
+    def self.parse(tree, params, text, group: nil, label: nil)
+      keys_from_tree tree, params
+
+      new params, text, group: group, label: label
+    end
+
     # @return[void]
     def self.keys_from_tree(tree, params)
       params[:source_pk] = tree[:source_pk]
@@ -128,22 +144,6 @@ module NoSE
 
   # A representation of a connect in the workload
   class Connect < Connection
-    def initialize(params, text, group: nil, label: nil)
-      super params, text, group: group, label: label
-      fail InvalidStatementException, 'DISCONNECT parsed as CONNECT' \
-        unless text.split.first == 'CONNECT'
-
-      populate_conditions params
-    end
-
-    # Build a new query from a provided parse tree
-    # @return [Connect]
-    def self.parse(tree, params, text, group: nil, label: nil)
-      keys_from_tree tree, params
-
-      Connect.new params, text, group: group, label: label
-    end
-
     # Specifies that connections require insertion
     def requires_insert?(_index)
       true
@@ -152,22 +152,6 @@ module NoSE
 
   # A representation of a disconnect in the workload
   class Disconnect < Connection
-    def initialize(params, text, group: nil, label: nil)
-      super params, text, group: group, label: label
-      fail InvalidStatementException, 'CONNECT parsed as DISCONNECT' \
-        unless text.split.first == 'DISCONNECT'
-
-      populate_conditions params
-    end
-
-    # Build a new disconnect from a provided parse tree
-    # @return [Disconnect]
-    def self.parse(tree, params, text, group: nil, label: nil)
-      keys_from_tree tree, params
-
-      Disconnect.new params, text, group: group, label: label
-    end
-
     # Produce the SQL text corresponding to this disconnection
     # @return [String]
     def unparse
