@@ -59,27 +59,18 @@ module NoSE
 
       support_queries = []
 
+      # Build a support query which gets the IDs of the entities being deleted
       graph = Marshal.load(Marshal.dump(@graph))
-      params = { graph: graph }
-      params[:select] = select.select do |field|
+      support_fields = select.select do |field|
         field.parent == entity
       end.to_set
-      params[:select] << entity.id_field \
+      support_fields << entity.id_field \
         unless @conditions.each_value.map(&:field).include? entity.id_field
-      params[:conditions] = Hash[@conditions.map { |k, v| [k.dup, v.dup] }]
-      params[:key_path] = params[:graph].longest_path
-      params[:entity] = params[:key_path].first.parent
+      conditions = Hash[@conditions.map { |k, v| [k.dup, v.dup] }]
 
-      support_query = SupportQuery.new params, nil, group: @group
-      support_query.instance_variable_set :@statement, self
-      support_query.instance_variable_set :@index, index
-      support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
-      support_query.hash
-      support_query.freeze
-
-      support_queries << support_query unless params[:select].empty?
-
-      support_queries + support_queries_for_entity(index, select)
+      support_queries << build_support_query(index, graph, support_fields,
+                                             conditions)
+      support_queries.compact + support_queries_for_entity(index, select)
     end
 
     # The condition fields are provided with the deletion

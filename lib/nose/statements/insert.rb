@@ -105,14 +105,9 @@ module NoSE
       return [] if select.empty?
 
       index.graph.split(entity).map do |graph|
-        params = { graph: graph }
-        params[:select] = select.select do |field|
+        support_fields = select.select do |field|
           graph.entities.include? field.parent
         end
-        next if params[:select].empty?
-
-        params[:key_path] = params[:graph].longest_path
-        params[:entity] = params[:key_path].first.parent
 
         # Build conditions by traversing the foreign keys
         conditions = @conditions.each_value.map do |c|
@@ -120,16 +115,11 @@ module NoSE
 
           Condition.new c.field.entity.id_field, c.operator, c.value
         end.compact
-        params[:conditions] = Hash[conditions.map do |condition|
+        conditions = Hash[conditions.map do |condition|
           [condition.field.id, condition]
         end]
 
-        support_query = SupportQuery.new params, nil, group: @group
-        support_query.instance_variable_set :@statement, self
-        support_query.instance_variable_set :@index, index
-        support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
-        support_query.hash
-        support_query.freeze
+        build_support_query index, graph, support_fields, conditions
       end.compact
     end
 
