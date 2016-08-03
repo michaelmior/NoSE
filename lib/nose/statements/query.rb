@@ -30,7 +30,7 @@ module NoSE
       order_from_tree tree, params
       params[:limit] = tree[:limit].to_i if tree[:limit]
 
-      Query.new params, text, group: group, label: label
+      new params, text, group: group, label: label
     end
 
     # Produce the SQL text corresponding to this query
@@ -116,17 +116,6 @@ module NoSE
   # A query required to support an update
   class SupportQuery < Query
     attr_reader :statement, :index
-
-    # Build a new support from a provided parse tree
-    # @return [SupportQuery]
-    def self.parse(tree, params, text, group: nil, label: nil)
-      conditions_from_tree tree, params
-      fields_from_tree tree, params
-      order_from_tree tree, params
-      params[:limit] = tree[:limit].to_i if tree[:limit]
-
-      SupportQuery.new params, text, group: group, label: label
-    end
 
     # Support queries must also have their statement and index checked
     def ==(other)
