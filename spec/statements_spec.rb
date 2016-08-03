@@ -239,14 +239,19 @@ module NoSE
     end
 
     it 'can generate support queries' do
+      delete = Statement.parse 'DELETE Tweet FROM Tweet.User WHERE ' \
+                               'Tweet.Timestamp = ? AND User.City = ?',
+                               workload.model
       index = Index.new [user['UserId']], [tweet['TweetId']], [tweet['Body']],
                         QueryGraph::Graph.from_path([tweet['TweetId'],
                                                      tweet['User']])
       queries = delete.support_queries index
-      expect(queries).to have(1).item
+      expect(queries).to have(2).items
       expect(queries.first.unparse).to start_with \
-        'SELECT User.UserId, Tweet.TweetId FROM Tweet.User ' \
-        'WHERE Tweet.Timestamp > ? AND User.City = ?'
+        'SELECT Tweet.TweetId FROM Tweet.User WHERE Tweet.Timestamp = ? ' \
+        'AND User.City = ?'
+      expect(queries.last.unparse).to start_with \
+        'SELECT User.UserId FROM User.Tweets WHERE Tweet.TweetId = ?'
     end
   end
 

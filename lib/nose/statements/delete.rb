@@ -57,19 +57,38 @@ module NoSE
                @conditions.each_value.map(&:field).to_set
       return [] if select.empty?
 
+      support_queries = []
+
+      graph = Marshal.load(Marshal.dump(@graph))
+      params = { graph: graph }
+      params[:select] = [entity.id_field] + select.select do |field|
+                                              field.parent == entity
+                                            end
+      params[:select].uniq!
+      params[:conditions] = Hash[@conditions.map { |k, v| [k.dup, v.dup] }]
+      params[:key_path] = params[:graph].longest_path
+      params[:entity] = params[:key_path].first.parent
+
+      support_query = SupportQuery.new params, nil, group: @group
+      support_query.instance_variable_set :@statement, self
+      support_query.instance_variable_set :@index, index
+      support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
+      support_query.hash
+      support_query.freeze
+
+      support_queries << support_query
+
       graphs = index.graph.size > 1 ? index.graph.split(entity, true) : []
-      graphs << QueryGraph::Graph.new([entity])
-      graphs.map do |graph|
-        params = { graph: graph }
+      support_queries += graphs.map do |split_graph|
+        params = { graph: split_graph }
         params[:select] = select.select do |field|
-          next false if graph.size > 1 && field.parent == entity
-          graph.entities.include? field.parent
+          field.parent != entity && graph.entities.include?(field.parent)
         end.to_set
         next if params[:select].empty?
 
-        params[:conditions] = @conditions.select do |_, c|
-          graph.entities.include? c.field.parent
-        end
+        params[:conditions] = {
+          entity.id_field.id => Condition.new(entity.id_field, :'=', nil)
+        }
 
         params[:key_path] = params[:graph].longest_path
         params[:entity] = params[:key_path].first.parent
@@ -81,6 +100,8 @@ module NoSE
         support_query.hash
         support_query.freeze
       end.compact
+
+      support_queries
     end
 
     # The condition fields are provided with the deletion
