@@ -61,10 +61,11 @@ module NoSE
 
       graph = Marshal.load(Marshal.dump(@graph))
       params = { graph: graph }
-      params[:select] = [entity.id_field] + select.select do |field|
-                                              field.parent == entity
-                                            end
-      params[:select].uniq!
+      params[:select] = select.select do |field|
+        field.parent == entity
+      end.to_set
+      params[:select] << entity.id_field \
+        unless @conditions.each_value.map(&:field).include? entity.id_field
       params[:conditions] = Hash[@conditions.map { |k, v| [k.dup, v.dup] }]
       params[:key_path] = params[:graph].longest_path
       params[:entity] = params[:key_path].first.parent
@@ -76,7 +77,7 @@ module NoSE
       support_query.hash
       support_query.freeze
 
-      support_queries << support_query
+      support_queries << support_query unless params[:select].empty?
 
       graphs = index.graph.size > 1 ? index.graph.split(entity, true) : []
       support_queries += graphs.map do |split_graph|
