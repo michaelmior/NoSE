@@ -444,6 +444,7 @@ module NoSE
       def support_results(settings)
         # TODO Use primary keys from first query for subsequent
         #      queries in the case of UPDATE or DELETE
+        #      (or from settings if it contains the key)
         support = @support_plans.map do |query_plan|
           query_plan.execute settings
         end
