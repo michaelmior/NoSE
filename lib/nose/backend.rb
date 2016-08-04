@@ -456,7 +456,7 @@ module NoSE
         else
           # Execute the first support query to get a list of IDs
           first_query = @support_plans.first.query
-          id = first_query.entity.id_field
+          id = @statement.entity.id_field
           select_key = first_query.select.include? id
           ids = @support_plans.first.execute settings
           conditions = ids.map do |row|
