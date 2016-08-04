@@ -77,8 +77,10 @@ module NoSE
         if statement.is_a? Query
           prepare_query statement, statement.all_fields,
                         statement.conditions, plans
+        elsif statement.is_a? Delete
+          prepare_update statement, [], plans
         else
-          prepare_update statement, update.settings, plans
+          prepare_update statement, statement.settings, plans
         end
       end
 
@@ -107,7 +109,6 @@ module NoSE
 
           steps = []
           add_delete_step(plan, steps) if delete
-          return PreparedUpdate.new update, [], steps if delete && !insert
           add_insert_step(plan, steps, update_settings) if insert
 
           PreparedUpdate.new update, prepare_support_plans(plan), steps
@@ -390,15 +391,8 @@ module NoSE
         # Execute all the support queries
         settings = initial_update_settings update_settings, update_conditions
 
-        if !@delete_step.nil? && @insert_step.nil?
-          # Populate the data to remove for deletions
-          support = [Hash[update_conditions.map do |field_id, condition|
-            [field_id, condition.value]
-          end]]
-        else
-          # Execute the support queries for this update
-          support = support_results update_conditions
-        end
+        # Execute the support queries for this update
+        support = support_results update_conditions
 
         # Perform the deletion
         @delete_step.process support unless support.empty? || @delete_step.nil?
@@ -448,7 +442,7 @@ module NoSE
         end
 
         # Combine the results from multiple support queries
-        if support.empty?
+        unless support.empty?
           support = support.first.product(*support[1..-1])
           support.map! { |results| results.reduce(&:merge) }
         end

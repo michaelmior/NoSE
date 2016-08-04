@@ -6,11 +6,20 @@ module NoSE
       include_context 'dummy_cost_model'
       include_context 'entities'
 
+      let(:tweets_by_user) do
+        Index.new [user['UserId']], [tweet['TweetId']],
+                  [tweet['Timestamp']],
+                  QueryGraph::Graph.from_path([user.id_field, user['Tweets']]),
+                  'TweetsByUser'
+      end
+
       let(:index_data) do
+        tweets_and_users = users.product(tweets).map { |h| h.reduce(&:merge) }
         {
           user.simple_index.key => users,
           tweet.simple_index.key => tweets,
-          index.key => users.product(tweets).map { |h| h.reduce(&:merge) }
+          index.key => tweets_and_users,
+          tweets_by_user.key => tweets_and_users
         }
       end
 
@@ -86,6 +95,33 @@ module NoSE
         )
 
         expect(result).to eq index_data[index.key]
+      end
+
+      it 'can prepare a delete' do
+        delete = Statement.parse 'DELETE User FROM User ' \
+                                 'WHERE User.UserId = ?', workload.model
+        workload.add_statement delete
+        indexes = [user.simple_index, tweet.simple_index,
+                   index, tweets_by_user]
+        planner = Plans::QueryPlanner.new workload.model, indexes, cost_model
+
+        trees = delete.support_queries(index).map do |query|
+          planner.find_plans_for_query(query)
+        end
+        planner = Plans::UpdatePlanner.new workload.model, trees, cost_model
+        plans = planner.find_plans_for_update delete, indexes
+        plans.each { |plan| plan.select_query_plans indexes }
+        plans.select! { |plan| plan.index == index }
+
+        prepared = backend.prepare(delete, plans).first
+
+        prepared.execute(
+          [],
+          'User_UserId' => Condition.new(user['UserId'], :'=',
+                                         users.first['User_UserId'])
+        )
+
+        expect(index_data['TweetIndex']).to be_empty
       end
     end
   end

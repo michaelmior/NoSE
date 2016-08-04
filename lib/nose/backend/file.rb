@@ -113,11 +113,15 @@ module NoSE
 
           # Loop through all rows to find the matching ones
           rows = @client[@index.key]
-          selected_rows = condition_list.flat_map do |condition|
+          selected = condition_list.flat_map do |condition|
             rows.select { |row| row_matches? row, condition }
           end.compact
 
-          selected_rows[0..(@step.limit.nil? ? -1 : @step.limit)]
+          # Apply the limit and only return selected fields
+          field_ids = Set.new @step.fields.map(&:id).to_set
+          selected[0..(@step.limit.nil? ? -1 : @step.limit)].map do |row|
+            row.select { |k, _| field_ids.include? k }
+          end
         end
       end
 
