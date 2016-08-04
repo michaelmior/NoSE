@@ -75,13 +75,11 @@ module NoSE
       # Prepare a statement to be executed with the given plans
       def prepare(statement, plans = [])
         if statement.is_a? Query
-          prepared = prepare_query statement, statement.all_fields,
-                                   statement.conditions, plans
+          prepare_query statement, statement.all_fields,
+                        statement.conditions, plans
         else
-          prepared = prepare_update statement, update.settings, plans
+          prepare_update statement, update.settings, plans
         end
-
-        prepared
       end
 
       # Execute a query with the stored plans
