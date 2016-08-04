@@ -27,7 +27,7 @@ module NoSE
           :total_indexes,
           :solve
         ],
-        MIPPeR::Model => [
+        MIPPeR::CbcModel => [
           :add_constraints,
           :add_variables,
           :update,
