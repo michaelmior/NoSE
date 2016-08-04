@@ -34,12 +34,19 @@ module NoSE
                   'TweetsByUser'
       end
 
+      let(:users_by_name) do
+        Index.new [user['Username']], [user['UserId']], [],
+                  QueryGraph::Graph.from_path([user.id_field]),
+                  'UsersByName'
+      end
+
       let(:index_data) do
         tweets_and_users = users.product(tweets).map { |h| h.reduce(&:merge) }
         {
           user.simple_index.key => users,
           tweet.simple_index.key => tweets,
           index.key => tweets_and_users,
+          users_by_name.key => users,
           tweets_by_user.key => tweets_and_users
         }
       end
@@ -118,21 +125,40 @@ module NoSE
         expect(result).to eq index_data[index.key]
       end
 
-      it 'can perform a delete' do
-        delete = Statement.parse 'DELETE User FROM User ' \
-                                 'WHERE User.UserId = ?', workload.model
-        indexes = [user.simple_index, tweet.simple_index,
-                   index, tweets_by_user]
+      context 'when performing deletes' do
+        it 'can delete by ID' do
+          delete = Statement.parse 'DELETE User FROM User ' \
+                                   'WHERE User.UserId = ?', workload.model
+          indexes = [user.simple_index, tweet.simple_index,
+                     index, tweets_by_user]
 
-        prepared = prepare_update_for_backend delete, index, indexes
+          prepared = prepare_update_for_backend delete, index, indexes
 
-        prepared.execute(
-          [],
-          'User_UserId' => Condition.new(user['UserId'], :'=',
-                                         users.first['User_UserId'])
-        )
+          prepared.execute(
+            [],
+            'User_UserId' => Condition.new(user['UserId'], :'=',
+                                           users.first['User_UserId'])
+          )
 
-        expect(index_data['TweetIndex']).to be_empty
+          expect(index_data['TweetIndex']).to be_empty
+        end
+
+        it 'can delete by other attributes' do
+          delete = Statement.parse 'DELETE User FROM User ' \
+                                   'WHERE User.Username = ?', workload.model
+          indexes = [user.simple_index, tweet.simple_index,
+                     index, users_by_name, tweets_by_user]
+
+          prepared = prepare_update_for_backend delete, index, indexes
+
+          prepared.execute(
+            [],
+            'User_Username' => Condition.new(user['Username'], :'=',
+                                             users.first['User_Username'])
+          )
+
+          expect(index_data['TweetIndex']).to be_empty
+        end
       end
     end
   end

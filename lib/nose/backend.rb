@@ -438,17 +438,46 @@ module NoSE
       # Execute all the support queries
       # @return [Array<Hash>]
       def support_results(settings)
-        # TODO Use primary keys from first query for subsequent
-        #      queries in the case of UPDATE or DELETE
-        #      (or from settings if it contains the key)
-        support = @support_plans.map do |query_plan|
-          query_plan.execute settings
-        end
+        # Get a hash of values used in settings
+        setting_values = Hash[settings.map { |k, v| [k, v.value] }]
 
-        # Combine the results from multiple support queries
-        unless support.empty?
-          support = support.first.product(*support[1..-1])
-          support.map! { |results| results.reduce(&:merge) }
+        if @support_plans.empty?
+          support = @support_plans.map do |plan|
+            plan.execute settings
+          end
+
+          # Combine the results from multiple support queries
+          unless support.empty?
+            support = support.first.product(*support[1..-1])
+            support.map! do |results|
+              results.reduce(&:merge!).merge!(setting_values)
+            end
+          end
+        else
+          # Execute the first support query to get a list of IDs
+          first_query = @support_plans.first.query
+          id = first_query.entity.id_field
+          select_key = first_query.select.include? id
+          ids = @support_plans.first.execute settings
+          conditions = ids.map do |row|
+            { id.id => Condition.new(id, :'=', row[id.id]) }
+          end
+
+          # Execute the support queries for each ID
+          support = conditions.map do |condition|
+            results = @support_plans[(select_key ? 1 : 0)..-1].map do |plan|
+              plan.execute condition
+            end
+
+            # Combine the results of the different support queries
+            results[0].product(*results[1..-1]).map do |result|
+              row = result.reduce(&:merge!)
+              row[id.id] = condition.values.first.value
+              row.merge!(setting_values)
+
+              row
+            end
+          end
         end
 
         support
