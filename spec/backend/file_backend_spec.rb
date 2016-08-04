@@ -122,7 +122,7 @@ module NoSE
                                            users.first['User_Username'])
         )
 
-        expect(result).to eq index_data[index.key]
+        expect(result).to eq [{ 'Tweet_Body' => tweets.first['Tweet_Body'] }]
       end
 
       context 'when performing deletes' do
