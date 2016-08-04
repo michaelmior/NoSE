@@ -143,6 +143,22 @@ module NoSE
           expect(index_data['TweetIndex']).to be_empty
         end
 
+        it 'does not delete if the ID does not match' do
+          delete = Statement.parse 'DELETE User FROM User ' \
+                                   'WHERE User.UserId = ?', workload.model
+          indexes = [user.simple_index, tweet.simple_index,
+                     index, tweets_by_user]
+
+          prepared = prepare_update_for_backend delete, index, indexes
+
+          prepared.execute(
+            [],
+            'User_UserId' => Condition.new(user['UserId'], :'=', 'NOT_HERE')
+          )
+
+          expect(index_data['TweetIndex']).to have(1).item
+        end
+
         it 'can delete by other attributes' do
           delete = Statement.parse 'DELETE User FROM User ' \
                                    'WHERE User.Username = ?', workload.model
