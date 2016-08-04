@@ -366,6 +366,10 @@ module NoSE
           break if results.empty?
         end
 
+        # Only return fields selected by the query
+        select_ids = @query.select.map(&:id).to_set
+        results.map { |row| row.select! { |k, _| select_ids.include? k } }
+
         results
       end
     end
