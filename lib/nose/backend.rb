@@ -458,13 +458,24 @@ module NoSE
           first_query = @support_plans.first.query
           id = @statement.entity.id_field
           select_key = first_query.select.include? id
-          ids = @support_plans.first.execute settings
-          conditions = ids.map do |row|
-            { id.id => Condition.new(id, :'=', row[id.id]) }
+
+          # Select any fields from the entity being modified if required
+          entity_fields = @support_plans.first.execute settings \
+            if first_query.graph.size == 1 && \
+               first_query.graph.entities.first == @statement.entity
+
+          if select_key
+            # Pull the IDs from the first support query
+            conditions = entity_fields.map do |row|
+              { id.id => Condition.new(id, :'=', row[id.id]) }
+            end
+          else
+            # Use the ID specified in the statement conditions
+            conditions = [settings]
           end
 
           # Execute the support queries for each ID
-          support = conditions.map do |condition|
+          support = conditions.each_with_index.flat_map do |condition, i|
             results = @support_plans[(select_key ? 1 : 0)..-1].map do |plan|
               plan.execute condition
             end
@@ -472,7 +483,7 @@ module NoSE
             # Combine the results of the different support queries
             results[0].product(*results[1..-1]).map do |result|
               row = result.reduce(&:merge!)
-              row[id.id] = condition.values.first.value
+              row.merge!(entity_fields[i]) unless entity_fields.nil?
               row.merge!(setting_values)
 
               row
