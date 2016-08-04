@@ -194,6 +194,30 @@ module NoSE
 
         expect(index_data['TweetIndex']).to be_empty
       end
+
+      it 'can execute connections' do
+        connect = Statement.parse 'CONNECT Tweet(?) TO User(?)', workload.model
+        indexes = [user.simple_index, tweet.simple_index, index]
+
+        new_tweet = {
+          'Tweet_Timestamp' => Time.now,
+          'Tweet_TweetId'   => 'c7e110d9-73bb-4542-8de8-e0ac856c1b6c',
+          'Tweet_Body'      => 'This is another test'
+        }
+        index_data[tweet.simple_index.key].push new_tweet
+
+        prepared = prepare_update_for_backend connect, index, indexes
+
+        prepared.execute(
+          [],
+          'User_UserId' => Condition.new(user['UserId'], :'=',
+                                         users.first['User_UserId']),
+          'Tweet_TweetId' => Condition.new(tweet['TweetId'], :'=',
+                                           new_tweet['Tweet_TweetId'])
+        )
+
+        expect(index_data['TweetIndex']).to have(2).items
+      end
     end
   end
 end

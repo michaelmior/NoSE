@@ -79,8 +79,13 @@ module NoSE
                         statement.conditions, plans
         elsif statement.is_a? Delete
           prepare_update statement, [], plans
-        elsif statement.is_a? Connection
+        elsif statement.is_a? Disconnect
           prepare_update statement, statement.conditions, plans
+        elsif statement.is_a? Connection
+          settings = statement.entity.fields.values.map do |field|
+            FieldSetting.new field, nil
+          end
+          prepare_update statement, settings, plans
         else
           prepare_update statement, statement.settings, plans
         end
