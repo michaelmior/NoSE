@@ -6,6 +6,27 @@ module NoSE
       include_context 'dummy_cost_model'
       include_context 'entities'
 
+      # Prepare an update to modify an index with a given
+      # set of indexes which are usable for support queries
+      # @return [PreparedUpdate]
+      def prepare_update_for_backend(statement, index, all_indexes)
+        # Plan all the support queries
+        planner = Plans::QueryPlanner.new workload.model, all_indexes,
+                                          cost_model
+        trees = statement.support_queries(index).map do |query|
+          planner.find_plans_for_query(query)
+        end
+
+        # Plan the update
+        planner = Plans::UpdatePlanner.new workload.model, trees, cost_model
+        plans = planner.find_plans_for_update statement, all_indexes
+        plans.each { |plan| plan.select_query_plans all_indexes }
+        plans.select! { |plan| plan.index == index }
+
+        # Prepare the statement
+        backend.prepare(statement, plans).first
+      end
+
       let(:tweets_by_user) do
         Index.new [user['UserId']], [tweet['TweetId']],
                   [tweet['Timestamp']],
@@ -100,20 +121,10 @@ module NoSE
       it 'can prepare a delete' do
         delete = Statement.parse 'DELETE User FROM User ' \
                                  'WHERE User.UserId = ?', workload.model
-        workload.add_statement delete
         indexes = [user.simple_index, tweet.simple_index,
                    index, tweets_by_user]
-        planner = Plans::QueryPlanner.new workload.model, indexes, cost_model
 
-        trees = delete.support_queries(index).map do |query|
-          planner.find_plans_for_query(query)
-        end
-        planner = Plans::UpdatePlanner.new workload.model, trees, cost_model
-        plans = planner.find_plans_for_update delete, indexes
-        plans.each { |plan| plan.select_query_plans indexes }
-        plans.select! { |plan| plan.index == index }
-
-        prepared = backend.prepare(delete, plans).first
+        prepared = prepare_update_for_backend delete, index, indexes
 
         prepared.execute(
           [],
