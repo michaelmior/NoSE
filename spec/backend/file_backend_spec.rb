@@ -8,18 +8,31 @@ module NoSE
 
       let(:index_data) do
         {
-          'User_Username'   => 'Bob',
-          'Tweet_Timestamp' => Time.now,
-          'User_UserId'     => '18a9a155-c9c7-43b5-9ab0-5967c49f56e9',
-          'Tweet_TweetId'   => 'e2dee9ee-5297-4f91-a3f7-9dd169008407',
-          'Tweet_Body'      => 'This is a test'
+          user.simple_index.key => [{
+            'User_UserId'   => '18a9a155-c9c7-43b5-9ab0-5967c49f56e9',
+            'User_Username' => 'Bob'
+          }],
+
+          tweet.simple_index.key => [{
+            'Tweet_Timestamp' => Time.now,
+            'Tweet_TweetId'   => 'e2dee9ee-5297-4f91-a3f7-9dd169008407',
+            'Tweet_Body'      => 'This is a test'
+          }],
+
+          index.key => [{
+            'User_Username'   => 'Bob',
+            'Tweet_Timestamp' => Time.now,
+            'User_UserId'     => '18a9a155-c9c7-43b5-9ab0-5967c49f56e9',
+            'Tweet_TweetId'   => 'e2dee9ee-5297-4f91-a3f7-9dd169008407',
+            'Tweet_Body'      => 'This is a test'
+          }]
         }
       end
 
       let(:backend) do
         backend = FileBackend.new workload, [index], [], [], {}
 
-        backend.instance_variable_set :@index_data, index.key => [index_data]
+        backend.instance_variable_set :@index_data, index_data
 
         backend
       end
@@ -86,7 +99,7 @@ module NoSE
           'User_Username' => Condition.new(user['Username'], :'=', 'Bob')
         )
 
-        expect(result).to eq [index_data]
+        expect(result).to eq index_data[index.key]
       end
     end
   end
