@@ -118,7 +118,7 @@ module NoSE
         expect(result).to eq index_data[index.key]
       end
 
-      it 'can prepare a delete' do
+      it 'can perform a delete' do
         delete = Statement.parse 'DELETE User FROM User ' \
                                  'WHERE User.UserId = ?', workload.model
         indexes = [user.simple_index, tweet.simple_index,
