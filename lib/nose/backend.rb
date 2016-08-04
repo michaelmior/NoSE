@@ -358,9 +358,11 @@ module NoSE
         @steps.each do |step|
           if step.is_a?(BackendBase::IndexLookupStatementStep)
             field_ids = step.index.all_fields.map(&:id)
-            conditions = conditions.select { |key| field_ids.include? key }
+            field_conds = conditions.select { |key| field_ids.include? key }
+          else
+            field_conds = conds
           end
-          results = step.process conditions, results
+          results = step.process field_conds, results
 
           # The query can't return any results at this point, so we're done
           break if results.empty?
