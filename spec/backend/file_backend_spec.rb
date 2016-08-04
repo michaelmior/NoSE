@@ -8,24 +8,9 @@ module NoSE
 
       let(:index_data) do
         {
-          user.simple_index.key => [{
-            'User_UserId'   => '18a9a155-c9c7-43b5-9ab0-5967c49f56e9',
-            'User_Username' => 'Bob'
-          }],
-
-          tweet.simple_index.key => [{
-            'Tweet_Timestamp' => Time.now,
-            'Tweet_TweetId'   => 'e2dee9ee-5297-4f91-a3f7-9dd169008407',
-            'Tweet_Body'      => 'This is a test'
-          }],
-
-          index.key => [{
-            'User_Username'   => 'Bob',
-            'Tweet_Timestamp' => Time.now,
-            'User_UserId'     => '18a9a155-c9c7-43b5-9ab0-5967c49f56e9',
-            'Tweet_TweetId'   => 'e2dee9ee-5297-4f91-a3f7-9dd169008407',
-            'Tweet_Body'      => 'This is a test'
-          }]
+          user.simple_index.key => users,
+          tweet.simple_index.key => tweets,
+          index.key => users.product(tweets).map { |h| h.reduce(&:merge) }
         }
       end
 
@@ -56,7 +41,9 @@ module NoSE
 
         # Execute the planned query
         step = planner.min_plan(query).first
-        index_data = { index.key => [{ 'User_Username' => 'Bob' }] }
+        index_data = { index.key => [{
+          'User_Username' => users.first['User_Username']
+        }] }
         step_class = FileBackend::IndexLookupStatementStep
         prepared = step_class.new index_data, query.all_fields,
                                   query.conditions, step, nil, step.parent
@@ -68,22 +55,20 @@ module NoSE
 
       it 'can insert into an index' do
         index = link.simple_index
-        values = [{
-          'Link_LinkId' => nil,
-          'Link_URL' => 'http://www.example.com/'
-        }]
+        links.first['Link_LinkId'] = nil
 
         index_data = { index.key => [] }
         step_class = FileBackend::InsertStatementStep
         prepared = step_class.new index_data, index,
                                   [link['LinkId'], link['URL']]
-        prepared.process values
+        prepared.process links
 
         # Validate the inserted data
         data = index_data[index.key]
         expect(data).to have(1).item
-        expect(data[0]).to have_key 'Link_LinkId'
-        expect(data[0]['Link_URL']).to eq values[0]['Link_URL']
+        expect(data.first).to have_key 'Link_LinkId'
+        expect(data.first['Link_LinkId']).not_to be_nil
+        expect(data.first['Link_URL']).to eq links.first['Link_URL']
       end
 
       it 'can prepare a query' do
@@ -96,7 +81,8 @@ module NoSE
           FileBackend::IndexLookupStatementStep
 
         result = prepared.execute(
-          'User_Username' => Condition.new(user['Username'], :'=', 'Bob')
+          'User_Username' => Condition.new(user['Username'], :'=',
+                                           users.first['User_Username'])
         )
 
         expect(result).to eq index_data[index.key]

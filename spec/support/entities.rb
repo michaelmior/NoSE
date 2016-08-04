@@ -51,5 +51,27 @@ module NoSE
                 QueryGraph::Graph.from_path([user.id_field, user['Tweets']]),
                 'TweetIndex'
     end
+
+    let(:users) do
+      [{
+        'User_UserId'   => '18a9a155-c9c7-43b5-9ab0-5967c49f56e9',
+        'User_Username' => 'Bob'
+      }]
+    end
+
+    let(:tweets) do
+      [{
+        'Tweet_Timestamp' => Time.now,
+        'Tweet_TweetId'   => 'e2dee9ee-5297-4f91-a3f7-9dd169008407',
+        'Tweet_Body'      => 'This is a test'
+      }]
+    end
+
+    let(:links) do
+      [{
+        'Link_LinkId' => '4a5339d8-e619-4ad5-a1be-c0bbceb1cdab',
+        'Link_URL' => 'http://www.example.com/'
+      }]
+    end
   end
 end
