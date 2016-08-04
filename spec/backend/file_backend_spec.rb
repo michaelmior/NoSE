@@ -176,6 +176,24 @@ module NoSE
           expect(index_data['TweetIndex']).to be_empty
         end
       end
+
+      it 'can execute disconnections' do
+        disconnect = Statement.parse 'DISCONNECT Tweet(?) FROM User(?)',
+                                     workload.model
+        indexes = [user.simple_index, tweet.simple_index, index]
+
+        prepared = prepare_update_for_backend disconnect, index, indexes
+
+        prepared.execute(
+          [],
+          'User_UserId' => Condition.new(user['UserId'], :'=',
+                                         users.first['User_UserId']),
+          'Tweet_TweetId' => Condition.new(tweet['TweetId'], :'=',
+                                           tweets.first['Tweet_TweetId'])
+        )
+
+        expect(index_data['TweetIndex']).to be_empty
+      end
     end
   end
 end

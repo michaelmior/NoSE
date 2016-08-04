@@ -64,7 +64,7 @@ module NoSE
       index.graph.split(entity).map do |graph|
         support_fields = select.select do |field|
           graph.entities.include? field.parent
-        end
+        end.to_set
         conditions = @conditions.select do |_, c|
           graph.entities.include? c.field.parent
         end

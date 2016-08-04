@@ -79,6 +79,8 @@ module NoSE
                         statement.conditions, plans
         elsif statement.is_a? Delete
           prepare_update statement, [], plans
+        elsif statement.is_a? Connection
+          prepare_update statement, statement.conditions, plans
         else
           prepare_update statement, statement.settings, plans
         end
