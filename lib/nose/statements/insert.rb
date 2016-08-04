@@ -107,7 +107,7 @@ module NoSE
       index.graph.split(entity).map do |graph|
         support_fields = select.select do |field|
           graph.entities.include? field.parent
-        end
+        end.to_set
 
         # Build conditions by traversing the foreign keys
         conditions = @conditions.each_value.map do |c|
