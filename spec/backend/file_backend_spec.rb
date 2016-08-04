@@ -6,7 +6,29 @@ module NoSE
       include_context 'dummy_cost_model'
       include_context 'entities'
 
-      let(:backend) { FileBackend.new workload, [index], [], [], {} }
+      let(:index_data) do
+        {
+          'User_Username'   => 'Bob',
+          'Tweet_Timestamp' => Time.now,
+          'User_UserId'     => '18a9a155-c9c7-43b5-9ab0-5967c49f56e9',
+          'Tweet_TweetId'   => 'e2dee9ee-5297-4f91-a3f7-9dd169008407',
+          'Tweet_Body'      => 'This is a test'
+        }
+      end
+
+      let(:backend) do
+        backend = FileBackend.new workload, [index], [], [], {}
+
+        backend.instance_variable_set :@index_data, index.key => [index_data]
+
+        backend
+      end
+
+      let(:query) do
+        Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
+                        'WHERE User.Username = "Bob" ' \
+                        'ORDER BY Tweet.Timestamp LIMIT 10', workload.model
+      end
 
       it 'uses index descriptions for ddl' do
         expect(backend.indexes_ddl).to match_array [
@@ -16,10 +38,6 @@ module NoSE
 
       it 'can look up results based on a query plan' do
         # Materialize a view for the given query
-        query = Statement.parse 'SELECT Tweet.Body FROM Tweet.User ' \
-                                'WHERE User.Username = "Bob" ' \
-                                'ORDER BY Tweet.Timestamp LIMIT 10',
-                                workload.model
         index = query.materialize_view
         planner = Plans::QueryPlanner.new workload.model, [index], cost_model
 
@@ -53,6 +71,22 @@ module NoSE
         expect(data).to have(1).item
         expect(data[0]).to have_key 'Link_LinkId'
         expect(data[0]['Link_URL']).to eq values[0]['Link_URL']
+      end
+
+      it 'can prepare a query' do
+        planner = Plans::QueryPlanner.new workload.model, [index], cost_model
+        plan = planner.min_plan(query)
+        prepared = backend.prepare query, [plan]
+
+        expect(prepared.steps).to have(1).item
+        expect(prepared.steps.first).to be_a \
+          FileBackend::IndexLookupStatementStep
+
+        result = prepared.execute(
+          'User_Username' => Condition.new(user['Username'], :'=', 'Bob')
+        )
+
+        expect(result).to eq [index_data]
       end
     end
   end
