@@ -92,7 +92,6 @@ module NoSE
           @state.range = nil
           @state.cardinality *= 0.1
         end
-        @state.cardinality = @state.cardinality.ceil
       end
     end
   end
