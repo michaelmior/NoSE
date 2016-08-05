@@ -217,6 +217,7 @@ module NoSE
             # We must always have the same cost
             if (current_cost - cost).abs >= 10E-6
               index = index_step.index
+              p query
               puts "Index #{index.key} does not have equivalent cost"
               puts "Current cost: #{current_cost}, discovered cost: #{cost}"
 
@@ -228,7 +229,7 @@ module NoSE
               puts
 
               puts '======================================='
-              tree.each do |plan|
+              tree.sort_by(&:cost).each do |plan|
                 next unless plan.indexes.include?(index_step.index)
                 plan.each do |step|
                   print(format('%.3f', step.cost).rjust(7) + ' ')
