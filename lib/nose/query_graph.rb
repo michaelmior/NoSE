@@ -394,6 +394,10 @@ module NoSE
 
       private
 
+      # Helper to find the longest path in the graph starting at a given
+      # node and not exploring nodes which have been visited
+      # We keep track of the visited edges and update the longest path
+      # @return [Array<Edge>]
       def longest_path_visit(node, visited_nodes, edges, longest_path)
         # Find new edges we may want to traverse
         new_edges = @edges[node].reject { |e| visited_nodes.include? e.to }
