@@ -129,11 +129,30 @@ module NoSE
       class InsertStatementStep < BackendBase::InsertStatementStep
         # Add new rows to the index
         def process(results)
+          key_ids = (@index.hash_fields + @index.order_fields).map(&:id).to_set
+
           results.each do |row|
+            # Pick out primary key fields we can use to match
+            conditions = row.select do |field_id|
+              key_ids.include? field_id
+            end
+
+            # If we have all the primary keys, check for a match
+            if conditions.length == key_ids.length
+              # Try to find a row with this ID and update it
+              matching_row = @client[index.key].find do |index_row|
+                index_row.merge(conditions) == index_row
+              end
+
+              unless matching_row.nil?
+                matching_row.merge! row
+                next
+              end
+            end
+
             # Populate IDs as needed
-            @index.all_fields.each do |field|
-              next unless field.is_a?(Fields::IDField)
-              row[field.id] = SecureRandom.uuid if row[field.id].nil?
+            key_ids.each do |key_id|
+              row[key_id] = SecureRandom.uuid if row[key_id].nil?
             end
 
             @client[index.key] << row

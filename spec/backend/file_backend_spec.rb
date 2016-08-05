@@ -218,6 +218,24 @@ module NoSE
 
         expect(index_data['TweetIndex']).to have(2).items
       end
+
+      it 'can execute updates' do
+        update = Statement.parse 'UPDATE User SET Username = ? ' \
+                                 'WHERE User.UserId = ?', workload.model
+        indexes = [user.simple_index]
+
+        prepared = prepare_update_for_backend update,
+                                              user.simple_index, indexes
+
+        prepared.execute(
+          [FieldSetting.new(user['Username'], 'Alice')],
+
+          'User_UserId' => Condition.new(user['UserId'], :'=',
+                                         users.first['User_UserId'])
+        )
+
+        expect(index_data['User'].first['User_Username']).to eq 'Alice'
+      end
     end
   end
 end

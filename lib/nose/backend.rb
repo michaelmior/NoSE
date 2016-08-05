@@ -411,6 +411,22 @@ module NoSE
         @delete_step.process support unless support.empty? || @delete_step.nil?
         return if @insert_step.nil?
 
+        # Get the fields which should be used from the original statement
+        # If we deleted old entries, then we just need the primary key
+        # attributes of the index, otherwise we need everything
+        index = @insert_step.index
+        include_fields = if @delete_step.nil?
+                           index.hash_fields + index.order_fields
+                         else
+                           index.all_fields
+                         end
+
+        # Add fields from the original statement
+        update_conditions.each_value do |condition|
+          next unless include_fields.include? condition.field
+          settings.merge! condition.field.id => condition.value
+        end
+
         if support.empty?
           support = [settings]
         else
