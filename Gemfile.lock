@@ -143,6 +143,7 @@ PLATFORMS
 DEPENDENCIES
   ansi-to-html
   aruba
+  binding_of_caller
   cassandra-driver
   codeclimate-test-reporter
   descriptive_statistics

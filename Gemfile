@@ -36,6 +36,7 @@ end
 group :development do
   gem 'pry'
   gem 'pry-rescue'
+  gem 'binding_of_caller'
 end
 
 platform :ruby do
