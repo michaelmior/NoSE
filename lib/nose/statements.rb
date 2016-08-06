@@ -517,6 +517,7 @@ module NoSE
       support_query.instance_variable_set :@statement, self
       support_query.instance_variable_set :@index, index
       support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
+      support_query.instance_variable_set :@text, support_query.unparse
       support_query.hash
       support_query.freeze
     end
