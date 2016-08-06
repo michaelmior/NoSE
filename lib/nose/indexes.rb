@@ -151,7 +151,7 @@ module NoSE
       # XXX This only works if foreign keys span all possible keys
       #     Take the maximum possible count at each join and multiply
       @entries = @graph.entities.map(&:count).max
-      @per_hash_count = (@entries * 1.0 / @hash_count).round
+      @per_hash_count = (@entries * 1.0 / @hash_count)
 
       @entry_size = @all_fields.sum_by(&:size)
       @size = @entries * @entry_size
