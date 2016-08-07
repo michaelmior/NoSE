@@ -163,7 +163,7 @@ module NoSE
       # @return [void]
       def strip_graph
         hash_entity = @index.hash_fields.first.parent
-        @state.graph = Marshal.load(Marshal.dump(@state.graph))
+        @state.graph = @state.graph.dup
         required_fields = @state.fields_for_graph(@index.graph, hash_entity,
                                                   select: true).to_set
         if required_fields.subset?(@index.all_fields) &&

@@ -110,6 +110,20 @@ module NoSE
         @nodes.empty?
       end
 
+      # Duplicate graphs ensuring that edges are correctly copied
+      # @return [Graph]
+      def dup
+        new_graph = super
+
+        new_graph.instance_variable_set :@nodes, @nodes.dup
+        new_edges = Hash[@edges.map do |k, v|
+          [k, v.dup]
+        end]
+        new_graph.instance_variable_set :@edges, new_edges
+
+        new_graph
+      end
+
       # Produce an array of entities in the desired join order
       # @return [Array<Entity>]
       def join_order(eq_fields)
@@ -376,7 +390,7 @@ module NoSE
         # For each edge from this entity, build a new graph with
         # the entity removed and explore the different paths
         @edges[remove_node].map do |edge|
-          new_graph = Marshal.load(Marshal.dump(self))
+          new_graph = self.dup
           remove_nodes = (@edges[remove_node] - [edge]).map(&:to)
           remove_nodes << remove_node unless keep
           new_graph.remove_nodes remove_nodes

@@ -60,7 +60,7 @@ module NoSE
       support_queries = []
 
       # Build a support query which gets the IDs of the entities being deleted
-      graph = Marshal.load(Marshal.dump(@graph))
+      graph = @graph.dup
       support_fields = select.select do |field|
         field.parent == entity
       end.to_set

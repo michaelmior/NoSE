@@ -77,7 +77,7 @@ module NoSE
 
       support_queries = []
 
-      graph = Marshal.load(Marshal.dump(@graph))
+      graph = @graph.dup
       support_fields = select.select do |field|
         field.parent == entity
       end.to_set
