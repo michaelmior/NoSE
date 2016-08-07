@@ -1,5 +1,11 @@
-require 'binding_of_caller'
-require 'pry'
+# rubocop:disable Lint/HandleExceptions
+begin
+  require 'binding_of_caller'
+  require 'pry'
+rescue LoadError
+  # Ignore in case we are not in development mode
+end
+# rubocop:enable Lint/HandleExceptions
 
 module NoSE
   # Various helpful debugging snippets
