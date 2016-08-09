@@ -243,7 +243,7 @@ module NoSE
                       backend = nil)
         # Get an SVG diagram of the model
         tmpfile = Tempfile.new %w(model svg)
-        result.workload.model.output :svg, tmpfile.path, false
+        result.workload.model.output :svg, tmpfile.path, true
         svg = File.open(tmpfile.path).read
 
         enumerated &&= result.enumerated_indexes
