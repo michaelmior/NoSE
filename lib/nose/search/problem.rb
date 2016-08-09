@@ -236,8 +236,9 @@ module NoSE
 
             @sort_costs[query][index] ||= sort_step.cost
             q = @queries.index query
-            @sort_vars[query][index] ||= MIPPeR::Variable.new 0, 1, 0, :binary,
-                                                              "s#{q}"
+            sort_var = MIPPeR::Variable.new 0, 1, 0, :binary, "s#{q}"
+            @sort_vars[query][index] ||= sort_var
+            @model << sort_var
             name = "q#{q}_#{index.key}_sort"
             constr = MIPPeR::Constraint.new @sort_vars[query][index] * 1.0 +
                                             @query_vars[index][query] * -1.0,
