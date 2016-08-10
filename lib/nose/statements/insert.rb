@@ -136,7 +136,7 @@ module NoSE
     # @return [Boolean]
     def modifies_single_entity_index?(index)
       !(@settings.map(&:field).to_set & index.all_fields).empty? &&
-        index.path.length == 1 && index.path.first.parent == entity
+        index.graph.size == 1 && index.graph.entities.first == entity
     end
   end
 end
