@@ -58,6 +58,7 @@
     <% plans.each do |plan| %>
       <% unless plan.query.label.nil? %><strong><%= plan.query.label %></strong><% end %>
       <pre><code class="lang-sql"><%= Ansi::To::Html.new(plan.query.inspect).to_html %></code></pre>
+      <strong>Cost: <%= plan.cost %></strong>
 
       <% if plan.steps.length > 1 %>
         <ol>
@@ -75,9 +76,11 @@
     <% update_plans.group_by(&:statement).each do |statement, plans| %>
       <% unless statement.label.nil? %><strong><%= statement.label %></strong><% end %>
       <pre><code class="lang-sql"><%= statement.text %></code></pre>
+      <strong>Total cost: <%= plans.map(&:cost).inject(0, &:+) %></strong>
 
       <% plans.each do |plan| %>
         <h4><%= plan.index.key %></h4>
+        <strong>Cost: <%= plan.cost %></strong>
 
         <% unless plan.query_plans.empty? %>
           <h5>Support queries</h5>
