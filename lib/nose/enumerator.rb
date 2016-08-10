@@ -180,7 +180,7 @@ module NoSE
       begin
         index = Index.new hash, order.uniq, extra, graph
         @logger.debug { "Enumerated #{index.inspect}" }
-      rescue InvalidIndexException, InvalidPathException
+      rescue InvalidIndexException
         # This combination of fields is not valid, that's ok
         index = nil
       end

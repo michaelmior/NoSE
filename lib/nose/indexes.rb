@@ -17,7 +17,8 @@ module NoSE
       validate_hash_fields
 
       @graph = graph
-      @path = graph.to_path(hash_fields.first.parent)
+      @path = graph.longest_path
+      @path = nil unless @path.length == graph.size
 
       validate_graph
 

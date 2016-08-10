@@ -437,9 +437,9 @@ module NoSE
         pair.nil? ? Set.new : pair.last
       end
     end
-  end
 
-  # Thrown when trying to convert a graph which is not a path
-  class InvalidPathException < StandardError
+    # Thrown when trying to convert a graph which is not a path
+    class InvalidPathException < StandardError
+    end
   end
 end
