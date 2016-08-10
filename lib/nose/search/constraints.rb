@@ -91,7 +91,10 @@ module NoSE
 
           # Join each step in the query graph
           index_var = problem.query_vars[index][query]
-          entities.each_cons(2) do |entity, next_entity|
+          index_entities = index.graph.entities.sort_by do |entity|
+            entities.index entity
+          end
+          index_entities.each_cons(2) do |entity, next_entity|
             # Make sure the constraints go in the correct direction
             if query_constraints.key?([entity, next_entity])
               query_constraints[[entity, next_entity]] += index_var
