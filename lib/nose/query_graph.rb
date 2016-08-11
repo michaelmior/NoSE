@@ -132,9 +132,11 @@ module NoSE
         # Start with a leaf entity which has an equality predicate
         # and the lowest overall count of all such entities
         entities = @nodes.map(&:entity).to_set
-        join_order = [entities.select do |entity|
-          leaf_entity?(entity) && eq_fields.map(&:parent).include?(entity)
-        end.min_by(&:count)]
+        leaf_entities = entities.select { |e| leaf_entity?(e) }
+        join_order = [leaf_entities.select do |entity|
+          eq_fields.map(&:parent).include?(entity)
+        end.min_by(&:count)].compact
+        join_order = [leaf_entities.min_by(&:count)] if join_order.empty?
         entities.delete join_order.first
 
         # Keep going until we have joined all entities
