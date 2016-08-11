@@ -23,5 +23,22 @@ module NoSE
       binding.pry if current_keys == index_keys
       # rubocop:enable Lint/Debugger
     end
+
+    # Export entities in a model as global
+    # variales for easier access when debugging
+    # @return [void]
+    def self.export_model(model)
+      model.entities.each do |name, entity|
+        # rubocop:disable Lint/Eval
+        eval("$#{name} = entity")
+        # rubocop:enable Lint/Eval
+
+        entity.fields.merge(entity.foreign_keys).each do |field_name, field|
+          entity.define_singleton_method field_name.to_sym, -> { field }
+        end
+      end
+
+      nil
+    end
   end
 end
