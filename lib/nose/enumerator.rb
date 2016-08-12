@@ -120,18 +120,13 @@ module NoSE
     # Get fields which should be included in an index for the given graph
     # @return [Array<Array>]
     def extra_choices(graph, select, eq, range, join_order)
-      first_join = join_order.detect { |e| graph.entities.include? e }
-      filter_choices = eq[first_join] + range[first_join]
-      choices = [[]]
+      choices = eq.values + range.values << select.to_a
 
-      # Include any fields which might be selected
-      select_fields = select.select do |field|
-        graph.entities.include? field.parent
+      choices.each do |choice|
+        choice.select { |field| graph.entities.include?(field.parent) }
       end
 
-      choices << select_fields unless select_fields.empty?
-      choices << filter_choices unless filter_choices.empty?
-      choices
+      choices.reject(&:empty?) << []
     end
 
     # Get all possible indices which jump a given piece of a query graph
@@ -139,10 +134,14 @@ module NoSE
     def indexes_for_graph(graph, select, eq, range, join_order)
       eq_choices = eq_choices graph, eq
       range_fields = graph.entities.map { |entity| range[entity] }.reduce(&:+)
+      range_fields.uniq!
       order_choices = range_fields.prefixes.flat_map do |fields|
         fields.permutation.to_a
       end.uniq << []
       extra_choices = extra_choices graph, select, eq, range, join_order
+      extra_choices = 1.upto(extra_choices.length).flat_map do |n|
+        extra_choices.combination(n).map(&:flatten).map(&:uniq)
+      end.uniq
 
       # Generate all possible indices based on the field choices
       choices = eq_choices.product(extra_choices)
