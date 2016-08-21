@@ -3,7 +3,7 @@
 NoSE::Plans::ExecutionPlans.new do
   Schema 'rubis_expert'
 
-  Group 'BrowseCategories', browsing: 4.44 + 3.21, bidding: 7.65 + 5.39, write_heavy: 7.65 + 5.39 do
+  Group 'BrowseCategories', browsing: 4.44, bidding: 7.65, write_heavy: 7.65 do
     Plan 'Authentication' do
       Select users.password
       Param  users.id, :==
@@ -45,7 +45,9 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'SearchItemsByCategory', browsing: 27.77 + 8.26, bidding: 15.94 + 6.34, write_heavy: 15.94 + 6.34 do
+  Group 'SearchItemsByCategory', browsing: 27.77,
+                                 bidding: 15.94,
+                                 write_heavy: 15.94 do
     Plan 'ItemList' do
       Select items['*']
       Param  categories.id, :==
@@ -57,9 +59,15 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  # XXX Not currently supported
-  # # SearchItemsByRegion
-  # # BrowseRegions
+  Group 'SearchItemsByRegion', browsing: 8.26,
+                               bidding: 6.34,
+                               write_heavy: 6.34 do
+    # TODO Add plans
+  end
+
+  Group 'BrowseRegions', browsing: 3.21, bidding: 5.39, write_heavy: 5.39 do
+    # TODO Add plans
+  end
 
   Group 'ViewUserInfo', browsing: 4.41, bidding: 2.48, write_heavy: 2.48 do
     Plan 'UserData' do
@@ -132,13 +140,12 @@ NoSE::Plans::ExecutionPlans.new do
       Insert 'user_data'
     end
 
-    # XXX Not used since we don't implement browse regions
-    # Plan 'AddToRegion' do
-    #   Param  users.id, :==
-    #   Param  users.nickname, :==
-    #   Param  regions.id, :==
-    #   Insert 'users_by_region'
-    # end
+    Plan 'AddToRegion' do
+      Param  users.id, :==
+      Param  users.nickname, :==
+      Param  regions.id, :==
+      Insert 'users_by_region'
+    end
   end
 
   Group 'BuyNow', bidding: 1.16, write_heavy: 1.16 do
