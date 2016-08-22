@@ -16,7 +16,7 @@ users.name_firstName('firstname')
      .random_number('rating', {min: -50, max: 200})
      .finance_amount('balance')
      .date_past('creation_date')
-     .random_number('region', {min: 1, max: 50});
+     .random_number('region', {min: 1, max: regions.count});
 
 var items = (new Table('items', 2000000));
 items.lorem_words('name')
@@ -29,30 +29,30 @@ items.lorem_words('name')
      .finance_amount('max_bid')
      .date_past('start_date')
      .date_past('end_date')
-     .random_number('seller', {min: 1, max: 200000})
-     .random_number('category', {min: 1, max: 500});
+     .random_number('seller', {min: 1, max: users.count})
+     .random_number('category', {min: 1, max: categories.count});
 
 var bids = (new Table('bids', 20000000));
 bids.random_number('qty', {min: 1, max: 5})
     .finance_amount('bid')
     .finance_amount('max_bid')
     .date_past('date')
-    .random_number('user', {min: 1, max: 200000})
-    .random_number('item', {min: 1, max: 2000000});
+    .random_number('user', {min: 1, max: users.count})
+    .random_number('item', {min: 1, max: items.count});
 
 var comments = (new Table('comments', 10000000));
 comments.random_number('rating', {min: -5, max: 5})
         .date_past('date')
         .lorem_sentences('comment')
-        .random_number('from_user', {min: 1, max: 200000})
-        .random_number('to_user', {min: 1, max: 200000})
-        .random_number('item', {min: 1, max: 2000000});
+        .random_number('from_user', {min: 1, max: users.count})
+        .random_number('to_user', {min: 1, max: users.count})
+        .random_number('item', {min: 1, max: items.count});
 
 var buy_now = (new Table('buynow', 2000000));
 buy_now.random_number('qty', {min: 1, max: 3})
        .date_past('date')
-       .random_number('buyer', {min: 1, max: 200000})
-       .random_number('item', {min: 1, max: 2000000});
+       .random_number('buyer', {min: 1, max: users.count})
+       .random_number('item', {min: 1, max: users.count});
 
 insert([
   categories,
