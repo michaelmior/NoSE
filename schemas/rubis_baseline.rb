@@ -57,8 +57,8 @@ NoSE::Schema.new do
 
   Index 'items_by_region' do
     Hash    regions.id
-    Ordered items.end_date, items.id, users.id
-    Path    regions.id, regions.users, users.items_sold
+    Ordered categories.id, items.end_date, items.id, users.id
+    Path    regions.id, regions.users, users.items_sold, items.category
   end
 
   Index 'comments_by_user' do

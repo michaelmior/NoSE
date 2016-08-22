@@ -68,10 +68,12 @@ NoSE::Plans::ExecutionPlans.new do
                                write_heavy: 6.34 do
     Plan 'ItemList' do
       Select items['*']
-      Param  region.id, :==
+      Param  regions.id, :==
+      Param  categories.id, :==
       Param  items.end_date, :>=
       Lookup 'items_by_region',
-             [region.id, :==],
+             [regions.id, :==],
+             [categories.id, :==],
              [items.end_date, :>=], limit: 25
       Lookup 'items', [items.id, :==]
     end
@@ -130,6 +132,22 @@ NoSE::Plans::ExecutionPlans.new do
       Param  items.end_date, :==
       Param  categories.id, :==
       Insert 'items_by_category'
+    end
+
+    Plan 'AddToRegion' do
+      Support do
+        Plan 'GetRegion' do
+          Select regions.id
+          Param  users.id, :==
+          Lookup 'users', [users.id, :==]
+        end
+      end
+
+      Param  items.id, :==
+      Param  items.end_date, :==
+      Param  regions.id, :==
+      Param  categories.id, :==
+      Insert 'items_by_region'
     end
   end
 
