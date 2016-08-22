@@ -37,6 +37,12 @@ NoSE::Schema.new do
     Path    categories.id
   end
 
+  Index 'all_regions' do
+    Hash    regions.dummy
+    Ordered regions.id
+    Path    regions.id
+  end
+
   Index 'bids_by_item' do
     Hash    items.id
     Ordered bids.id
@@ -47,6 +53,12 @@ NoSE::Schema.new do
     Hash    categories.id
     Ordered items.end_date, items.id
     Path    categories.id, categories.items
+  end
+
+  Index 'items_by_region' do
+    Hash    regions.id
+    Ordered items.end_date, items.id, users.id
+    Path    regions.id, regions.users, users.items_sold
   end
 
   Index 'comments_by_user' do
