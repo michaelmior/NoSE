@@ -15,7 +15,7 @@ module NoSE
                        desc: 'print the DDL, but do not execute'
       option :skip_existing, type: :boolean, default: false, aliases: '-s',
                              desc: 'ignore indexes which already exist'
-      option :drop_existing, type: :boolean, default: false, aliases: '-d',
+      option :drop_existing, type: :boolean, default: false,
                              desc: 'drop existing indexes before recreation'
 
       def create(*plan_files)
