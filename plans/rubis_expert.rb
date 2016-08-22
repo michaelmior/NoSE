@@ -62,11 +62,32 @@ NoSE::Plans::ExecutionPlans.new do
   Group 'SearchItemsByRegion', browsing: 8.26,
                                bidding: 6.34,
                                write_heavy: 6.34 do
-    # TODO Add plans
+    Plan 'UserList' do
+      Select users.id
+      Param regions.id
+      Lookup 'users_by_region',
+             [regions.id, :==]
+    end
+
+    Plan 'ItemList' do
+      Select items['*']
+      Param  categories.id, :==
+      Param  items.end_date, :>=
+      Lookup 'items_by_category',
+             [categories.id, :==],
+             # limit multiplied by 5 since we have to filter by region
+             [items.end_date, :>=], limit: 25 * 5
+      Lookup 'items', [items.id, :==]
+    end
   end
 
   Group 'BrowseRegions', browsing: 3.21, bidding: 5.39, write_heavy: 5.39 do
-    # TODO Add plans
+    Plan 'Regions' do
+      Select regions['*']
+      Param  regions.dummy, :==, 1
+      Lookup 'all_regions', [regions.dummy, :==]
+      Lookup 'regions', [regions.id, :==]
+    end
   end
 
   Group 'ViewUserInfo', browsing: 4.41, bidding: 2.48, write_heavy: 2.48 do
