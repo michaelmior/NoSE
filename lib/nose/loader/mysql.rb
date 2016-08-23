@@ -86,7 +86,7 @@ module NoSE
         result_chunk = []
         results.each do |result|
           result_chunk.push result
-          next if result_chunk.length < 100
+          next if result_chunk.length < 1000
 
           @backend.index_insert_chunk index, result_chunk
           result_chunk = []
