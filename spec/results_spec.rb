@@ -3,7 +3,7 @@ module NoSE
     describe Results do
       include_context 'entities'
 
-      let (:problem) do
+      let(:problem) do
         OpenStruct.new(
           objective_type: Objective::COST,
           query_vars: []

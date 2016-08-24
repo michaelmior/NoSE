@@ -32,7 +32,8 @@ module NoSE
             'User_UserId' => '1',
             'User_Username' => 'Alice',
             'User_City' => 'Chicago'
-          }])
+          }]
+        )
       end
     end
   end

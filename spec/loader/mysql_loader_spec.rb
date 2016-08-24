@@ -31,14 +31,16 @@ module NoSE
           {
             'SHOW TABLES' => EachArray.new([['Foo']]),
             'SELECT COUNT(*) FROM Foo' => [{ 'COUNT()*)' => 10 }],
-            'DESCRIBE Foo' => EachArray.new([
-              ['FooId', 'int(10) unsigned', 'NO', 'PRI', 'NULL', ''],
-              ['Bar', 'int(10) unsigned', 'NO', '', 'NULL', ''],
-              ['Baz', 'float', 'NO', '', 'NULL', ''],
-              ['Quux', 'datetime', 'NO', '', 'NULL', ''],
-              ['Corge', 'text', 'NO', '', 'NULL', ''],
-              ['Garply', 'varchar(10)', 'NO', '', 'NULL', '']
-            ])
+            'DESCRIBE Foo' => EachArray.new(
+              [
+                ['FooId', 'int(10) unsigned', 'NO', 'PRI', 'NULL', ''],
+                ['Bar', 'int(10) unsigned', 'NO', '', 'NULL', ''],
+                ['Baz', 'float', 'NO', '', 'NULL', ''],
+                ['Quux', 'datetime', 'NO', '', 'NULL', ''],
+                ['Corge', 'text', 'NO', '', 'NULL', ''],
+                ['Garply', 'varchar(10)', 'NO', '', 'NULL', '']
+              ]
+            )
           }, 3)
 
         workload = loader.workload({})
@@ -81,12 +83,14 @@ module NoSE
           user = workload.model['users']
           index = Index.new [user['id']], [], [user['nickname']],
                             QueryGraph::Graph.from_path([user['id']])
-          expect(backend).to receive(:index_insert_chunk).with(index, [
-            {
-              'users_id' => 2,
-              'users_nickname' => '08ec962a-fc56-40a3-9e07-1fca0520253c'
-            }
-          ])
+          expect(backend).to receive(:index_insert_chunk).with(
+            index, [
+              {
+                'users_id' => 2,
+                'users_nickname' => '08ec962a-fc56-40a3-9e07-1fca0520253c'
+              }
+            ]
+          )
           loader.load([index], config, false, 1)
         end
 
@@ -97,13 +101,15 @@ module NoSE
                             QueryGraph::Graph.from_path(
                               [user['id'], user['items_sold']]
                             )
-          expect(backend).to receive(:index_insert_chunk).with(index, [
-            {
-              'users_id' => 1,
-              'items_id' => 45,
-              'items_name' => 'repellat alias consequatur'
-            }
-          ])
+          expect(backend).to receive(:index_insert_chunk).with(
+            index, [
+              {
+                'users_id' => 1,
+                'items_id' => 45,
+                'items_name' => 'repellat alias consequatur'
+              }
+            ]
+          )
           loader.load([index], config, false, 1)
         end
       end

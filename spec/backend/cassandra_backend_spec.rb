@@ -70,7 +70,5 @@ module NoSE
         prepared.process values
       end
     end
-
   end
 end
-

@@ -111,7 +111,7 @@ module NoSE
       it 'cannot have hash fields involving multiple entities' do
         expect do
           Index.new [tweet['Body'], user['City']],
-                    [tweet.id_field,  user.id_field], [],
+                    [tweet.id_field, user.id_field], [],
                     QueryGraph::Graph.from_path([tweet.id_field,
                                                  tweet['User']])
         end.to raise_error InvalidIndexException
