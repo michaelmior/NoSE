@@ -41,7 +41,8 @@ module NoSE
                 ['Garply', 'varchar(10)', 'NO', '', 'NULL', '']
               ]
             )
-          }, 3)
+          }, 3
+        )
 
         workload = loader.workload({})
         expect(workload.model.entities).to have(1).item
