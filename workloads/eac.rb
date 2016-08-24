@@ -5,40 +5,39 @@ NoSE::Workload.new do
 
   # Server session exists
   Q 'SELECT Server.ServerID FROM Server WHERE ' \
-    'Server.ServerID = ?', 1_000
+    'Server.ServerID = ?', 3
 
   # Get sessions by GUID
   Q 'SELECT Session.SessionID, player.PlayerID FROM ' \
-    'Session.player WHERE player.PlayerID = ?', 1_000
+    'Session.player WHERE player.PlayerID = ?', 3
 
   # Get player session
-  Q 'SELECT states.PosX, states.PosY, states.PosZ, states.Airborne, ' \
+  Q 'SELECT states.PosX, states.PosY, states.PosZ, ' \
     'states.ServerTimestamp FROM ' \
     'Server.sessions.states WHERE Server.ServerID = ? AND ' \
-    'sessions.player.PlayerID = ? ORDER BY states.ServerTimestamp', 10_000
+    'sessions.player.PlayerID = ? ORDER BY states.ServerTimestamp', 6
 
   # Get new data
-  Q 'SELECT states.PosX, states.PosY, states.PosZ, states.Airborne, ' \
+  Q 'SELECT states.PosX, states.PosY, states.PosZ, ' \
     'states.ServerTimestamp, sessions.player.PlayerID FROM ' \
     'Server.sessions.states WHERE sessions.player.IsAdmin = 0 AND ' \
     'Server.ServerID = ? AND states.ServerTimestamp > ? AND ' \
-    'states.ServerTimestamp <= ? ORDER BY states.ServerTimestamp', 10_000
+    'states.ServerTimestamp <= ? ORDER BY states.ServerTimestamp', 6
 
   # Get server information
   Q 'SELECT Server.ServerName, Server.ServerIP FROM ' \
-    'Server WHERE Server.ServerID = ?', 100
+    'Server WHERE Server.ServerID = ?', 2
 
   # Add new player
   Q 'INSERT INTO Player SET PlayerID=?, PlayerName=?, PlayerFlags=?, ' \
-    'IsAdmin=?', 10
+    'IsAdmin=?', 4
 
   # Record new state
   Q 'INSERT INTO PlayerState SET StateID=?, PosX=?, PosY=?, PosZ=?, ' \
-    'Airborne=?, ClientTimestamp=?, ServerTimestamp=? AND ' \
-    'CONNECT TO session(?)', 100_000
+    'ClientTimestamp=?, ServerTimestamp=? AND CONNECT TO session(?)', 71
 
   Q 'INSERT INTO Session SET SessionID=?, TimeStarted=?, TimeEnded=? ' \
-    'AND CONNECT TO server(?), player(?)', 10
+    'AND CONNECT TO server(?), player(?)', 4
 
   Q 'INSERT INTO Server SET ServerID=?, ServerIP=?, ' \
     'ServerName=?', 1
