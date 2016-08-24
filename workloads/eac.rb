@@ -8,7 +8,7 @@ NoSE::Workload.new do
     'Server.ServerID = ?', 3
 
   # Get sessions by GUID
-  Q 'SELECT Session.SessionID, player.PlayerID FROM ' \
+  Q 'SELECT Session.SessionID FROM ' \
     'Session.player WHERE player.PlayerID = ?', 3
 
   # Get player session
