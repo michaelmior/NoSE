@@ -188,6 +188,16 @@ module NoSE
         !@edges.key?(node) || @edges[node].size <= 1
       end
 
+      # Produce a path in the graph between two nodes
+      # @return [KeyPath]
+      def path_between(node1, node2)
+        node1 = find_entity_node node1
+        node2 = find_entity_node node2
+        keys = path_between_visit [node1.entity.id_field], [node1], node2
+
+        KeyPath.new keys
+      end
+
       # Find the node which corresponds to a given entity
       def find_entity_node(entity)
         @nodes.find { |n| n.entity == entity }
@@ -386,6 +396,9 @@ module NoSE
       # entity, optionally removing the corresponding node
       # return [Array<Graph>]
       def split(entity, keep = false)
+        # Simple case with one node
+        return keep ? [dup] : [] if size == 1
+
         # Find the node corresponding to the entity to remove
         remove_node = @nodes.find { |n| n.entity == entity }
 
@@ -437,6 +450,19 @@ module NoSE
       def edges_for_entity(entity)
         pair = @edges.find { |n, _| n.entity == entity }
         pair.nil? ? Set.new : pair.last
+      end
+
+      # Helper for path_between to recursively visit nodes in the graph
+      # @return [void]
+      def path_between_visit(keys, nodes, end_node)
+        return keys if nodes.last == end_node
+        return nil unless @edges.key? nodes.last
+
+        @edges[nodes.last].lazy.map do |edge|
+          next if nodes.include? edge.to
+          path_between_visit keys.dup << edge.key,
+                             nodes.dup << edge.to, end_node
+        end.reject(&:nil?).first
       end
     end
 

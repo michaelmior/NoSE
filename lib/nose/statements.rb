@@ -190,10 +190,9 @@ module NoSE
       @entities ||= @keys.map(&:entity)
     end
 
-    # Find where the path intersects the given
-    # entity and splice in the target path
+    # Split the path where it intersects the given entity
     # @return [KeyPath]
-    def splice(target, entity)
+    def split(entity)
       if first.parent == entity
         query_keys = KeyPath.new([entity.id_field])
       else
@@ -204,7 +203,13 @@ module NoSE
         end
         query_keys = KeyPath.new(query_keys)
       end
-      query_keys + target
+    end
+
+    # Find where the path intersects the given
+    # entity and splice in the target path
+    # @return [KeyPath]
+    def splice(target, entity)
+      split(entity) + target
     end
 
     # Find the parent of a given field
@@ -295,7 +300,7 @@ module NoSE
       params[:graph] = QueryGraph::Graph.from_path(params[:key_path])
 
       statement = klass.parse tree, params, text, group: group, label: label
-      statement.instance_variable_set :@comment, tree[:comment]
+      statement.instance_variable_set :@comment, tree[:comment].to_s
 
       # Support queries need to populate extra values before finalizing
       unless support
@@ -395,13 +400,18 @@ module NoSE
       end
     end
 
-    # Generate a string which can be used
-    # in the "FROM" clause of a statement
+    # Generate a string which can be used in the "FROM" clause
+    # of a statement or optionally to specify a field
     # @return [String]
-    def from_path(path)
+    def from_path(path, field = nil)
       from = path.first.parent.name
       from += '.' + path.entries[1..-1].map(&:name).join('.') \
         if path.length > 1
+
+      unless field.nil?
+        from += '.' unless from.empty?
+        from += field.name
+      end
 
       from
     end
@@ -419,10 +429,10 @@ module NoSE
     # Produce a string which can be used
     # as the WHERE clause in a statement
     # @return [String]
-    def where_clause
+    def where_clause(field_namer = :to_s.to_proc)
       ' WHERE ' + @conditions.values.map do |condition|
         value = condition.value.nil? ? '?' : condition.value
-        "#{condition.field} #{condition.operator} #{value}"
+        "#{field_namer.call condition.field} #{condition.operator} #{value}"
       end.join(' AND ')
     end
   end

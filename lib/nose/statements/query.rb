@@ -36,11 +36,13 @@ module NoSE
     # Produce the SQL text corresponding to this query
     # @return [String]
     def unparse
-      query = 'SELECT ' + @select.map(&:to_s).join(', ')
-      query += " FROM #{from_path @key_path.reverse}"
-      query += where_clause
+      field_namer = -> (f) { field_path f }
 
-      query += ' ORDER BY ' + @order.map(&:to_s).join(', ') \
+      query = 'SELECT ' + @select.map(&field_namer).join(', ')
+      query += " FROM #{from_path @graph.longest_path}"
+      query += where_clause field_namer
+
+      query += ' ORDER BY ' + @order.map(&field_namer).join(', ') \
         unless @order.empty?
       query += " LIMIT #{@limit}" unless @limit.nil?
       query += " -- #{@comment}" unless @comment.nil?
@@ -80,8 +82,6 @@ module NoSE
       (@select + @conditions.each_value.map(&:field) + @order).to_set
     end
 
-    private
-
     # Extract fields to be selected from a parse tree
     # @return [Set<Field>]
     def self.fields_from_tree(tree, params)
@@ -100,6 +100,7 @@ module NoSE
         end
       end.to_set
     end
+    private_class_method :fields_from_tree
 
     # Extract ordering fields from a parse tree
     # @return [Array<Field>]
@@ -110,6 +111,17 @@ module NoSE
         field = field.first if field.first.is_a?(Array)
         add_field_with_prefix tree[:path], field, params
       end
+    end
+    private_class_method :order_from_tree
+
+    private
+
+    def field_path(field)
+      path = @graph.path_between @graph.longest_path.entities.first,
+                                 field.parent
+      path = path.drop_while { |k| @graph.longest_path.include? k } << path[-1]
+
+      from_path path, field
     end
   end
 

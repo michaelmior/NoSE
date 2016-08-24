@@ -27,7 +27,7 @@ module NoSE
     end
 
     it 'can be converted back to query text' do
-      expect(query.unparse).to eq query.text
+      expect(query.unparse).to start_with query.text
     end
 
     it 'knows its limits' do
@@ -251,7 +251,7 @@ module NoSE
         'SELECT Tweet.TweetId FROM Tweet.User WHERE Tweet.Timestamp = ? ' \
         'AND User.City = ?'
       expect(queries.last.unparse).to start_with \
-        'SELECT User.UserId FROM User.Tweets WHERE Tweet.TweetId = ?'
+        'SELECT User.UserId FROM Tweet.User WHERE Tweet.TweetId = ?'
     end
   end
 
