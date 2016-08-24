@@ -50,12 +50,12 @@ module NoSE
                    ") VALUES (#{(['?'] * fields.length).join ', '})"
         prepared = client.prepare prepared
 
-        futures = []
-        chunk.each do |row|
-          index_row = index_row(row, fields)
-          futures.push client.execute_async(prepared, arguments: index_row)
-        end
-        futures.each(&:join)
+        client.execute(client.batch do |batch|
+          chunk.each do |row|
+            index_row = index_row(row, fields)
+            batch.add prepared, arguments: index_row
+          end
+        end)
       end
 
       # Check if the given index is empty
