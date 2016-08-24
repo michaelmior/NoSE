@@ -403,8 +403,23 @@ module NoSE
     # Generate a string which can be used in the "FROM" clause
     # of a statement or optionally to specify a field
     # @return [String]
-    def from_path(path, field = nil)
-      from = path.first.parent.name
+    def from_path(path, prefix_path = nil, field = nil)
+      if prefix_path.nil?
+        from = path.first.parent.name
+      else
+        # Find where the two paths intersect to get the first path component
+        first_key = prefix_path.entries.find do |key|
+          path.entities.include?(key.parent) || \
+            key.is_a?(Fields::ForeignKeyField) && \
+            path.entities.include?(key.entity)
+        end
+        from = if first_key.primary_key?
+                 first_key.parent.name
+               else
+                 first_key.name
+               end
+      end
+
       from += '.' + path.entries[1..-1].map(&:name).join('.') \
         if path.length > 1
 

@@ -120,8 +120,9 @@ module NoSE
       path = @graph.path_between @graph.longest_path.entities.first,
                                  field.parent
       path = path.drop_while { |k| @graph.longest_path.include? k } << path[-1]
+      path = KeyPath.new(path) unless path.is_a?(KeyPath)
 
-      from_path path, field
+      from_path path, @graph.longest_path, field
     end
   end
 

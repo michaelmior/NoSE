@@ -57,6 +57,28 @@ module NoSE
       property :parent, exec_context: :decorator
     end
 
+    # Represents a graph by its nodes and edges
+    class GraphRepresenter < Representable::Decorator
+      include Representable::Hash
+      include Representable::JSON
+      include Representable::YAML
+      include Representable::Uncached
+
+      def nodes
+        represented.nodes.map { |n| n.entity.name }
+      end
+
+      property :nodes, exec_context: :decorator
+
+      def edges
+        represented.unique_edges.map do |edge|
+          FieldRepresenter.represent(edge.key).to_hash
+        end
+      end
+
+      property :edges, exec_context: :decorator
+    end
+
     # Reconstruct indexes with fields from an existing workload
     class IndexBuilder
       include Uber::Callable
@@ -67,12 +89,17 @@ module NoSE
 
         # Pull the fields from each entity
         f = lambda do |fields|
-          fragment[fields].map { |dict| model[dict['parent']][dict['name']] }
+          fields.map { |dict| model[dict['parent']][dict['name']] }
         end
 
-        Index.new f.call('hash_fields'), f.call('order_fields'),
-                  f.call('extra'),
-                  QueryGraph::Graph.from_path(f.call('path')), fragment['key']
+        graph_entities = fragment['graph']['nodes'].map { |n| model[n] }
+        graph_keys = f.call(fragment['graph']['edges'])
+        graph = QueryGraph::Graph.new graph_entities
+        graph_keys.each { |k| graph.add_edge k.parent, k.entity, k }
+
+        Index.new f.call(fragment['hash_fields']),
+                  f.call(fragment['order_fields']),
+                  f.call(fragment['extra']), graph, fragment['key']
       end
     end
 
@@ -91,8 +118,8 @@ module NoSE
       collection :hash_fields, decorator: FieldRepresenter
       collection :order_fields, decorator: FieldRepresenter
       collection :extra, decorator: FieldRepresenter
-      collection :path, decorator: FieldRepresenter
 
+      property :graph, decorator: GraphRepresenter
       property :entries
       property :entry_size
       property :size
