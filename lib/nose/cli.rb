@@ -10,7 +10,7 @@ module NoSE
     # A command-line interface to running the advisor tool
     class NoSECLI < Thor
       # The path to the configuration file in the working directory
-      CONFIG_FILE_NAME = 'nose.yml'
+      CONFIG_FILE_NAME = 'nose.yml'.freeze
 
       check_unknown_options!
 
@@ -51,7 +51,7 @@ module NoSE
       end
 
       # Check if the user has created a configuration file
-        # @return [void]
+      # @return [void]
       def check_config_file(interactive)
         return if File.file?(CONFIG_FILE_NAME)
 
@@ -108,9 +108,9 @@ module NoSE
       def search_result(workload, cost_model, max_space = Float::INFINITY,
                         objective = Search::Objective::COST)
         enumerated_indexes = IndexEnumerator.new(workload) \
-                             .indexes_for_workload.to_a
+                                            .indexes_for_workload.to_a
         Search::Search.new(workload, cost_model, objective) \
-          .search_overlap enumerated_indexes, max_space
+                      .search_overlap enumerated_indexes, max_space
       end
 
       # Load results of a previous search operation
@@ -120,8 +120,8 @@ module NoSE
           Search::Results.new
         json = File.read(plan_file)
         result = representer.from_json(json)
-        result.workload.mix = mix.to_sym unless mix.nil? || \
-          (mix == 'default' && result.workload.mix != :default)
+        result.workload.mix = mix.to_sym unless \
+          mix.nil? || (mix == 'default' && result.workload.mix != :default)
 
         result
       end
@@ -177,11 +177,11 @@ module NoSE
         end
 
         update_plans.group_by(&:statement).each do |statement, plans|
-          if weights.key?(statement)
-            weight = weights[statement]
-          else
-            weight =  weights[statement.group][mix]
-          end
+          weight = if weights.key?(statement)
+                     weights[statement]
+                   else
+                     weights[statement.group][mix]
+                   end
           total_cost = plans.sum_by(&:cost)
 
           file.puts "GROUP #{statement.group}" unless statement.group.nil?
@@ -209,7 +209,8 @@ module NoSE
 
       # Output the results of advising as text
       # @return [void]
-      def output_txt(result, file = $stdout, enumerated = false, backend = nil)
+      def output_txt(result, file = $stdout, enumerated = false,
+                     _backend = nil)
         if enumerated
           header = "Enumerated indexes\n" + '━' * 50
           output_indexes_txt header, result.enumerated_indexes, file
@@ -305,7 +306,7 @@ module NoSE
       # Enable forcing the colour or no colour for output
       # We just lie to Formatador about whether or not $stdout is a tty
       # @return [void]
-      def force_colour(colour=true)
+      def force_colour(colour = true)
         stdout_metaclass = class << $stdout; self; end
         method = colour ? ->() { true } : ->() { false }
         stdout_metaclass.send(:define_method, :tty?, &method)
