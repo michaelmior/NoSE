@@ -3,7 +3,10 @@
 NoSE::Plans::ExecutionPlans.new do
   Schema 'rubis_baseline'
 
-  Group 'BrowseCategories', browsing: 4.44, bidding: 7.65, write_heavy: 7.65 do
+  Group 'BrowseCategories', browsing: 4.44,
+                            bidding: 7.65,
+                            write_medium: 7.65,
+                            write_heavy: 7.65 do
     Plan 'Authentication' do
       Select users.password
       Param  users.id, :==
@@ -18,7 +21,10 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'ViewBidHistory', browsing: 2.38, bidding: 1.54, write_heavy: 1.54 do
+  Group 'ViewBidHistory', browsing: 2.38,
+                          bidding: 1.54,
+                          write_medium: 1.54,
+                          write_heavy: 1.54 do
     Plan 'ItemName' do
       Select items.name
       Param  items.id, :==
@@ -34,7 +40,10 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'ViewItem', browsing: 22.95, bidding: 14.17, write_heavy: 14.17 do
+  Group 'ViewItem', browsing: 22.95,
+                    bidding: 14.17,
+                    write_medium: 14.17,
+                    write_heavy: 14.17 do
     Plan 'ItemData' do
       Select items['*']
       Param  items.id, :==
@@ -51,6 +60,7 @@ NoSE::Plans::ExecutionPlans.new do
 
   Group 'SearchItemsByCategory', browsing: 27.77,
                                  bidding: 15.94,
+                                 write_medium: 15.94,
                                  write_heavy: 15.94 do
     Plan 'ItemList' do
       Select items['*']
@@ -65,6 +75,7 @@ NoSE::Plans::ExecutionPlans.new do
 
   Group 'SearchItemsByRegion', browsing: 8.26,
                                bidding: 6.34,
+                               write_medium: 6.34,
                                write_heavy: 6.34 do
     Plan 'ItemList' do
       Select items['*']
@@ -79,7 +90,10 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'BrowseRegions', browsing: 3.21, bidding: 5.39, write_heavy: 5.39 do
+  Group 'BrowseRegions', browsing: 3.21,
+                         bidding: 5.39,
+                         write_medium: 5.39,
+                         write_heavy: 5.39 do
     Plan 'Regions' do
       Select regions['*']
       Param  regions.dummy, :==, 1
@@ -88,7 +102,10 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'ViewUserInfo', browsing: 4.41, bidding: 2.48, write_heavy: 2.48 do
+  Group 'ViewUserInfo', browsing: 4.41,
+                        bidding: 2.48,
+                        write_medium: 2.48,
+                        write_heavy: 2.48 do
     Plan 'UserData' do
       Select users['*'], regions.id, regions.name
       Param  users.id, :==
@@ -104,7 +121,9 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'RegisterItem', bidding: 0.53, write_heavy: 0.53 * 100 do
+  Group 'RegisterItem', bidding: 0.53,
+                        write_medium: 0.53 * 10,
+                        write_heavy: 0.53 * 100 do
     Plan 'InsertItem' do
       Param  items.id, :==
       Param  items.name, :==
@@ -152,7 +171,9 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'RegisterUser', bidding: 1.07, write_heavy: 1.07 * 100 do
+  Group 'RegisterUser', bidding: 1.07,
+                        write_medium: 1.07 * 10,
+                        write_heavy: 1.07 * 100 do
     Plan 'AddUser' do
       Support do
         Plan 'GetRegionName' do
@@ -183,7 +204,9 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'BuyNow', bidding: 1.16, write_heavy: 1.16 do
+  Group 'BuyNow', bidding: 1.16,
+                  write_medium: 1.16,
+                  write_heavy: 1.16 do
     Plan 'Authentication' do
       Select users.password
       Param  users.id, :==
@@ -197,7 +220,9 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'StoreBuyNow', bidding: 1.10, write_heavy: 1.10 * 100 do
+  Group 'StoreBuyNow', bidding: 1.10,
+                       write_medium: 1.10 * 10,
+                       write_heavy: 1.10 * 100 do
     Plan 'ReduceQuantity' do
       Support do
         Plan 'OldQuantity' do
@@ -248,7 +273,9 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'StoreBid', bidding: 3.74, write_heavy: 3.74 * 100 do
+  Group 'StoreBid', bidding: 3.74,
+                    write_medium: 3.74 * 10,
+                    write_heavy: 3.74 * 100 do
     Plan 'AddBid' do
       Support do
         Plan 'GetMaxBid' do
@@ -286,7 +313,9 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'PutComment', bidding: 0.46, write_heavy: 0.46 do
+  Group 'PutComment', bidding: 0.46,
+                      write_medium: 0.46,
+                      write_heavy: 0.46 do
     Plan 'Authentication' do
       Select users.password
       Param  users.id, :==
@@ -306,7 +335,9 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'StoreComment', bidding: 0.45, write_heavy: 0.45 * 100 do
+  Group 'StoreComment', bidding: 0.45,
+                        write_medium: 0.45 * 10,
+                        write_heavy: 0.45 * 100 do
     Plan 'UpdateRating' do
       Support do
         Plan 'GetRating' do
@@ -336,7 +367,9 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'AboutMe', bidding: 1.71, write_heavy: 1.71 do
+  Group 'AboutMe', bidding: 1.71,
+                   write_medium: 1.71,
+                   write_heavy: 1.71 do
     Plan 'UserData' do
       Select users['*']
       Param  users.id, :==
