@@ -300,8 +300,8 @@ module NoSE
           #       Example:
           #
           #         SELECT * FROM cf WHERE id=? AND col1=? ORDER by col1, col2
-          ' ORDER BY ' + @step.order_by.map(&:id).join(', ') \
-            unless @step.order_by.empty?
+          return '' if @step.order_by.empty?
+          ' ORDER BY ' + @step.order_by.map(&:id).join(', ')
         end
 
         # Lookup values from an index selecting the given
