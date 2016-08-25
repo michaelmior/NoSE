@@ -32,7 +32,6 @@ module NoSE
             result = Hash[result.map { |k, v| [k.to_s, v] }]
             result_chunk.push result
             if result_chunk.length >= 100
-              exit
               @backend.index_insert_chunk index, result_chunk
               result_chunk = []
             end
