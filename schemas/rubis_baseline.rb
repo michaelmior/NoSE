@@ -10,6 +10,13 @@ NoSE::Schema.new do
   SimpleIndex 'items'
   SimpleIndex 'comments'
 
+  Index 'users_by_region' do
+    Hash    regions.id
+    Ordered users.id
+    Extra   users.nickname
+    Path    regions.id, regions.users
+  end
+
   Index 'users' do
     Hash    users.id
     Ordered regions.id

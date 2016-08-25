@@ -143,6 +143,7 @@ NoSE::Plans::ExecutionPlans.new do
         end
       end
 
+      Param  users.id, :==
       Param  items.id, :==
       Param  items.end_date, :==
       Param  regions.id, :==
