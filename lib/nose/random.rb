@@ -222,21 +222,45 @@ module NoSE
     # Generate a new random query from entities in the model
     # @return [Query]
     def random_query(path_length = 3, selected_fields = 2, condition_count = 2)
-      path = random_path(path_length)
-      select_fields = random_select(path, selected_fields)
-      from = [path.first.parent.name] + path.entries[1..-1].map(&:name)
-      query = "SELECT #{select_fields} FROM #{from.join '.'} " +
-              random_where_clause(path, condition_count)
+      path = random_path path_length
+      graph = QueryGraph::Graph.from_path path
 
-      Statement.parse query, @model
+      conditions = [
+        Condition.new(path.entities.first.fields.values.sample, :'=', nil)
+      ]
+      condition_count -= 1
+      conditions += random_where_conditions(path, condition_count).map do |f|
+        Condition.new(f, :'=', nil)
+      end
+
+      conditions = Hash[conditions.map do |condition|
+        [condition.field.id, condition]
+      end]
+
+      params = {
+        select: random_select(path, selected_fields),
+        model: @model,
+        graph: graph,
+        key_path: graph.longest_path,
+        entity: graph.longest_path.first.parent,
+        conditions: conditions
+      }
+
+      query = Query.new params, nil
+      query.hash
+
+      query
     end
 
     # Get random fields to select for a Query
-    # @return [String]
+    # @return [Set<Fields::Field>]
     def random_select(path, selected_fields)
-      path.entities.first.fields.values.sample(selected_fields).map do |field|
-        path.entities.first.name + '.' + field.name
-      end.join ', '
+      fields = Set.new
+      while fields.length < selected_fields
+        fields.add path.entities.sample.fields.values.sample
+      end
+
+      fields
     end
 
     # Produce a random statement according to a given set of weights
@@ -307,8 +331,8 @@ module NoSE
       end.join ' AND '}"
     end
 
-    # Produce a random set of conditions for a where clause
-    # @return [String]
+    # Produce a random set of fields for a where clause
+    # @return [Array<Fields::Field>]
     def random_where_conditions(path, count)
       1.upto(count).map do
         field = path.entities.sample.fields.values.sample
