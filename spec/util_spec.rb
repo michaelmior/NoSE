@@ -16,6 +16,14 @@ describe Enumerable do
       [[1, 2], [3, 4]],
       [[1, 2, 3], [4]]]
   end
+
+  it 'can compute the product based on a block' do
+    expect([-1, 1].sum_by(&:abs)).to eq(2)
+  end
+
+  it 'can compute the product based on a block' do
+    expect([-1, 1].product_by(&:abs)).to eq(1)
+  end
 end
 
 describe Integer do

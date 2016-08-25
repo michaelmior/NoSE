@@ -130,9 +130,9 @@ module NoSE
       private
 
       # Handle an individual query
-      def process_query(query, &block)
+      def process_query(query)
         # Execute the query on the backend
-        result = block.call self, query
+        result = yield self, query
         return if result.nil?
 
         # Return the list of fields in the result
