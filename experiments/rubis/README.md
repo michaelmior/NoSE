@@ -78,4 +78,9 @@ for ssdir in $(find /ssd1/mmior/cassandra/data/rubis_big/ -wholename '*/snapshot
     sudo ln "$ssdir/$file" "$ssdir/../../$file"
   done
 done
+
+# Refresh column families
+for cf in $(cqlsh 10.0.0.2 -k rubis -f <(echo 'DESCRIBE COLUMNFAMILIES') | tr ' ' '\n' | grep -Ev '^$'); do
+  nodetool refresh rubis $cf
+done
 ```
