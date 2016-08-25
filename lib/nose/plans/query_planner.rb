@@ -237,18 +237,7 @@ module NoSE
         state.freeze
         tree = QueryPlanTree.new state, @cost_model
 
-        # Limit indices to those which cross the query path
-        indexes = @indexes.clone.select do |index|
-          index.graph.entities.to_set.subset?(query.graph.entities.to_set)
-        end
-
-        indexes_by_joins = Hash.new { |h, k| h[k] = Set.new }
-        indexes.each do |index|
-          first_entity = state.joins.find do |entity|
-            index.graph.entities.include?(entity)
-          end
-          indexes_by_joins[first_entity].add index
-        end
+        indexes_by_joins = indexes_for_query(query, state.joins)
         find_plans_for_step tree.root, indexes_by_joins
 
         if tree.root.children.empty?
@@ -269,6 +258,25 @@ module NoSE
       end
 
       private
+
+      # Produce indexes possibly useful for this query
+      # grouped by the first entity they join on
+      # @return [Hash]
+      def indexes_for_query(query, joins)
+        indexes_by_joins = Hash.new { |h, k| h[k] = Set.new }
+        @indexes.each do |index|
+          # Limit indices to those which cross the query path
+          next unless index.graph.entities.to_set.subset? \
+            query.graph.entities.to_set
+
+          first_entity = joins.find do |entity|
+            index.graph.entities.include?(entity)
+          end
+          indexes_by_joins[first_entity].add index
+        end
+
+        indexes_by_joins
+      end
 
       # Remove plans ending with this step in the tree
       # @return[Boolean] true if pruning resulted in an empty tree
