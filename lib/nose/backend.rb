@@ -375,9 +375,12 @@ module NoSE
           break if results.empty?
         end
 
-        # Only return fields selected by the query
-        select_ids = @query.select.map(&:id).to_set
-        results.map { |row| row.select! { |k, _| select_ids.include? k } }
+        # Only return fields selected by the query if one is given
+        # (we have no query to refer to for manually-defined plans)
+        unless @query.nil?
+          select_ids = @query.select.map(&:id).to_set
+          results.map { |row| row.select! { |k, _| select_ids.include? k } }
+        end
 
         results
       end
@@ -481,13 +484,20 @@ module NoSE
         else
           # Execute the first support query to get a list of IDs
           first_query = @support_plans.first.query
-          id = @statement.entity.id_field
-          select_key = first_query.select.include? id
 
-          # Select any fields from the entity being modified if required
-          entity_fields = @support_plans.first.execute settings \
-            if first_query.graph.size == 1 && \
-               first_query.graph.entities.first == @statement.entity
+          # We may not have a statement if this is manually defined
+          if @statement.nil?
+            select_key = false
+            entity_fields = nil
+          else
+            id = @statement.entity.id_field
+            select_key = first_query.select.include? id
+
+            # Select any fields from the entity being modified if required
+            entity_fields = @support_plans.first.execute settings \
+              if first_query.graph.size == 1 && \
+                first_query.graph.entities.first == @statement.entity
+          end
 
           if select_key
             # Pull the IDs from the first support query
