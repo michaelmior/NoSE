@@ -35,10 +35,7 @@ module NoSE
 
       def benchmark(plan_file)
         label = File.basename plan_file, '.*'
-        result = load_results plan_file
-
-        # Set the mix if specified, otherwise use the mix from PLAN_FILE
-        result.workload.mix = options[:mix].to_sym unless options[:mix].nil?
+        result = load_results plan_file, options[:mix]
 
         backend = get_backend(options, result)
 

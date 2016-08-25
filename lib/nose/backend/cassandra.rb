@@ -184,7 +184,16 @@ module NoSE
 
               value
             end
-            @client.execute(@prepared, arguments: values)
+
+            begin
+              @client.execute(@prepared, arguments: values)
+            rescue Cassandra::Errors::InvalidError
+              # We hit a value which does not actually need to be
+              # inserted based on the data since some foreign
+              # key in the graph corresponding to this column
+              # family does not exist
+              nil
+            end
           end
         end
 
