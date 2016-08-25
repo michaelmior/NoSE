@@ -1,5 +1,3 @@
-# rubocop:disable all
-
 NoSE::Workload.new do
   Model 'rubis'
 
@@ -157,5 +155,3 @@ NoSE::Workload.new do
       'WHERE regions.dummy = 1 -- 36'
   end
 end
-
-# rubocop:enable all

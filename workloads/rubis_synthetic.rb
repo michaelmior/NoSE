@@ -1,5 +1,3 @@
-# rubocop:disable all
-
 NoSE::Workload.new do
   Model 'rubis'
 
@@ -82,5 +80,3 @@ NoSE::Workload.new do
   Q 'CONNECT comments(?) TO from_user(?)'
   Q 'CONNECT comments(?) TO item(?)'
 end
-
-# rubocop:enable all

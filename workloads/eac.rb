@@ -1,5 +1,3 @@
-# rubocop:disable all
-
 NoSE::Workload.new do
   Model 'eac'
 
@@ -42,5 +40,3 @@ NoSE::Workload.new do
   Q 'INSERT INTO Server SET ServerID=?, ServerIP=?, ' \
     'ServerName=?', 1
 end
-
-# rubocop:enable all
