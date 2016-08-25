@@ -42,7 +42,7 @@ module NoSE
           true
         end
         expect(client).to receive(:execute) \
-          .with(backend_query, 'Bob').and_return(results)
+          .with(backend_query, arguments: ['Bob']).and_return(results)
 
         step_class = CassandraBackend::IndexLookupStatementStep
         prepared = step_class.new client, query.all_fields, query.conditions,
@@ -62,8 +62,8 @@ module NoSE
         expect(client).to receive(:prepare).with(backend_insert) \
           .and_return(backend_insert)
         expect(client).to receive(:execute) \
-          .with(backend_insert, kind_of(Cassandra::Uuid),
-                'http://www.example.com/')
+          .with(backend_insert, arguments: [kind_of(Cassandra::Uuid),
+                'http://www.example.com/'])
 
         step_class = CassandraBackend::InsertStatementStep
         prepared = step_class.new client, index, [link['LinkId'], link['URL']]

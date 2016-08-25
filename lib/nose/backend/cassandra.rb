@@ -184,7 +184,7 @@ module NoSE
 
               value
             end
-            @client.execute(@prepared, *values)
+            @client.execute(@prepared, arguments: values)
           end
         end
 
@@ -218,7 +218,7 @@ module NoSE
           # Delete each row from the index
           results.each do |result|
             values = delete_values result
-            @client.execute(@prepared, *values)
+            @client.execute(@prepared, arguments: values)
           end
         end
 
@@ -327,7 +327,7 @@ module NoSE
 
         # Get the necessary pages of results for a given list of values
         def fetch_query_pages(values, new_result, result)
-          new_results = @client.execute(@prepared, *values)
+          new_results = @client.execute(@prepared, arguments: values)
           loop do
             # Add the previous results to each row
             rows = new_results.map { |row| result.merge row }
