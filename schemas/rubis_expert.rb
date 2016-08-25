@@ -86,6 +86,13 @@ NoSE::Schema.new do
     Path    categories.id
   end
 
+  Index 'region_list' do
+    Hash    regions.dummy
+    Ordered regions.id
+    Extra   regions.name
+    Path    regions.id
+  end
+
   Index 'regions' do
     Hash    regions.id
     Extra   regions.name

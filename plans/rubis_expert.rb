@@ -64,7 +64,7 @@ NoSE::Plans::ExecutionPlans.new do
                                write_heavy: 6.34 do
     Plan 'UserList' do
       Select users.id
-      Param regions.id
+      Param regions.id, :==
       Lookup 'users_by_region',
              [regions.id, :==]
     end
@@ -77,7 +77,7 @@ NoSE::Plans::ExecutionPlans.new do
              [categories.id, :==],
              # limit multiplied by 5 since we have to filter by region
              [items.end_date, :>=], limit: 25 * 5
-      Lookup 'items', [items.id, :==]
+      Lookup 'items_with_category', [items.id, :==]
     end
   end
 
@@ -85,7 +85,7 @@ NoSE::Plans::ExecutionPlans.new do
     Plan 'Regions' do
       Select regions['*']
       Param  regions.dummy, :==, 1
-      Lookup 'all_regions', [regions.dummy, :==]
+      Lookup 'region_list', [regions.dummy, :==]
       Lookup 'regions', [regions.id, :==]
     end
   end
