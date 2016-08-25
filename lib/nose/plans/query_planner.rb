@@ -295,23 +295,21 @@ module NoSE
 
         steps = find_steps_for_state step, step.state, indexes_by_joins
 
-        if steps.length > 0
+        if !steps.empty?
           step.children = steps
           steps.each { |new_step| new_step.calculate_cost @cost_model }
           steps.each do |child_step|
             find_plans_for_step child_step, indexes_by_joins
 
             # Remove this step if finding a plan from here failed
-            if child_step.children.length == 0 && !child_step.state.answered?
+            if child_step.children.empty? && !child_step.state.answered?
               step.children.delete child_step
             end
           end
+        elsif prune
+          return if step.is_a?(RootPlanStep) || prune_plan(step.parent)
         else
-          if prune
-            return if step.is_a?(RootPlanStep) || prune_plan(step.parent)
-          else
-            step.children = [PrunedPlanStep.new]
-          end
+          step.children = [PrunedPlanStep.new]
         end
       end
 
