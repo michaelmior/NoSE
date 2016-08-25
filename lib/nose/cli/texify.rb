@@ -55,7 +55,7 @@ module NoSE
             puts texify_plan_steps plan.steps
           else
             puts texify_plan_steps plan.query_plans.flat_map(&:to_a) + \
-              plan.update_steps
+                                   plan.update_steps
           end
 
           puts ' \\\\'
@@ -119,7 +119,7 @@ module NoSE
       # Produce the LaTeX for a given index field
       # @return [String]
       def texify_field(field, underline = false, italic = false)
-        tex = "#{tex_escape field.to_s}"
+        tex = tex_escape field.to_s
         tex = "\\textit{#{tex}}" if italic
         tex = "\\underline{#{tex}}" if underline
 

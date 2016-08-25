@@ -41,11 +41,11 @@ module NoSE
 
     # Probabilities of selecting various field types
     FIELD_TYPES = [
-      [Fields::IntegerField, 0.45],
-      [Fields::StringField,  0.35],
-      [Fields::DateField,    0.1],
-      [Fields::FloatField,   0.1]
-    ]
+      [Fields::IntegerField, 0.45].freeze,
+      [Fields::StringField,  0.35].freeze,
+      [Fields::DateField,    0.1].freeze,
+      [Fields::FloatField,   0.1].freeze
+    ].freeze
 
     # Select random fields for each entity
     # @return [void]
@@ -83,10 +83,12 @@ module NoSE
 
           from_field = Fields::ForeignKeyField.new(
             'FK' + @entities[to_node].name + 'ID',
-            @entities[to_node])
+            @entities[to_node]
+          )
           to_field = Fields::ForeignKeyField.new(
             'FK' + @entities[from_node].name + 'ID',
-            @entities[from_node])
+            @entities[from_node]
+          )
 
           from_field.reverse = to_field
           to_field.reverse = from_field
@@ -142,7 +144,8 @@ module NoSE
     end
 
     # Random names of variables combined to create random names
-    VARIABLE_NAMES = %w(Foo Bar Baz Quux Corge Grault Garply Waldo Fred Plugh)
+    VARIABLE_NAMES = %w(Foo Bar Baz Quux Corge Grault
+                        Garply Waldo Fred Plugh).freeze
 
     # Generate a random name for an attribute
     # @return [String]

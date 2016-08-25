@@ -136,7 +136,7 @@ module NoSE
         return if result.nil?
 
         # Return the list of fields in the result
-        field_names = result.size > 0 ? result.first.keys : []
+        field_names = result.empty? ? [] : result.first.keys
         write_fields result, field_names
         write_rows result, field_names
       end

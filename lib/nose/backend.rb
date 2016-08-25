@@ -185,7 +185,7 @@ module NoSE
           #       filtering and sorting and use only those + query.select
           select += @next_step.index.hash_fields \
             unless @next_step.nil? ||
-              !@next_step.is_a?(Plans::IndexLookupPlanStep)
+                   !@next_step.is_a?(Plans::IndexLookupPlanStep)
           select &= @step.index.all_fields
 
           select
@@ -194,7 +194,7 @@ module NoSE
 
       # Insert data into an index on the backend
       class InsertStatementStep < StatementStep
-        def initialize(client, index, fields)
+        def initialize(client, index, _fields)
           @client = client
           @index = index
         end
@@ -496,7 +496,7 @@ module NoSE
             # Select any fields from the entity being modified if required
             entity_fields = @support_plans.first.execute settings \
               if first_query.graph.size == 1 && \
-                first_query.graph.entities.first == @statement.entity
+                 first_query.graph.entities.first == @statement.entity
           end
 
           if select_key

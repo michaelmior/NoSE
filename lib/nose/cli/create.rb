@@ -25,9 +25,7 @@ module NoSE
           # Produce the DDL and execute unless the dry run option was given
           backend.indexes_ddl(!options[:dry_run], options[:skip_existing],
                               options[:drop_existing]) \
-            .each do |ddl|
-              puts ddl
-            end
+                 .each { |ddl| puts ddl }
         end
       end
     end

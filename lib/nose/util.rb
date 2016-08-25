@@ -150,7 +150,7 @@ module Subtype
     # @return [Array<String>]
     def name_array(cls)
       cls.name.sub('ID', 'Id').split('::').last.split(/(?=[A-Z]+)/) \
-        .map(&:downcase)
+         .map(&:downcase)
     end
   end
 end
@@ -193,12 +193,12 @@ class Object
     return each_with_object({}) do |(k, v), memo|
       memo[k.to_sym] = v.deep_symbolize_keys
       memo
-    end if self.is_a? Hash
+    end if is_a? Hash
 
     return each_with_object([]) do |v, memo|
       memo << v.deep_symbolize_keys
       memo
-    end if self.is_a? Array
+    end if is_a? Array
 
     self
   end

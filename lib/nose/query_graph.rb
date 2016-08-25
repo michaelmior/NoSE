@@ -405,7 +405,7 @@ module NoSE
         # For each edge from this entity, build a new graph with
         # the entity removed and explore the different paths
         @edges[remove_node].map do |edge|
-          new_graph = self.dup
+          new_graph = dup
           remove_nodes = (@edges[remove_node] - [edge]).map(&:to)
           remove_nodes << remove_node unless keep
           new_graph.remove_nodes remove_nodes

@@ -63,11 +63,8 @@ module NoSE
     # Shortcut for {#count=}
     # @return [Entity]
     def *(other)
-      if other.is_a? Integer
-        @count = other
-      else
-        fail TypeError, 'count must be an integer'
-      end
+      fail TypeError, 'count must be an integer' unless other.is_a? Integer
+      @count = other
 
       self
     end
@@ -87,7 +84,7 @@ module NoSE
 
     # Generate a hash with random values for fields in the entity
     # @return [Hash]
-    def random_entity(prefix_entity=true)
+    def random_entity(prefix_entity = true)
       Hash[@fields.map do |name, field|
         key = name
         key = "#{@name}_#{name}" if prefix_entity

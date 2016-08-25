@@ -10,7 +10,8 @@ module Representable
     # Create a simple binding which does not use caching
     def representable_map(options, format)
       Representable::Binding::Map.new(
-        representable_bindings_for(format, options))
+        representable_bindings_for(format, options)
+      )
     end
   end
 end

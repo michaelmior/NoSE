@@ -270,7 +270,7 @@ module NoSE
             next unless update.modifies_index?(index)
 
             min_cost.add @index_vars[index] *
-              @data[:update_costs][update][index]
+                         @data[:update_costs][update][index]
           end
         end
 

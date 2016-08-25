@@ -17,7 +17,7 @@ module NoSE
                skip_existing = true)
         simple_indexes = indexes.select do |index|
           index.graph.size == 1 &&
-          !(skip_existing && !@backend.index_empty?(index))
+            !(skip_existing && !@backend.index_empty?(index))
         end
 
         simple_indexes = simple_indexes.group_by do |index|
@@ -30,7 +30,7 @@ module NoSE
 
           if show_progress
             @logger.info "Loading simple indexes for #{entity.name}"
-            @logger.info "#{simple_index_list.map(&:key).join ', '}"
+            @logger.info simple_index_list.map(&:key).join(', ')
 
             Formatador.new.redisplay_progressbar 0, total_rows
             progress = Formatador::ProgressBar.new total_rows,

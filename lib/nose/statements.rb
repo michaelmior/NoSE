@@ -217,7 +217,7 @@ module NoSE
     def find_field_parent(field)
       parent = find do |key|
         field.parent == key.parent ||
-        (key.is_a?(Fields::ForeignKeyField) && field.parent == key.entity)
+          (key.is_a?(Fields::ForeignKeyField) && field.parent == key.entity)
       end
 
       # This field is not on this portion of the path, so skip
@@ -257,20 +257,20 @@ module NoSE
 
     # Parse either a query or an update
     def self.parse(text, model, group: nil, label: nil, support: false)
-      case text.split.first
-      when 'INSERT'
-        klass = Insert
-      when 'DELETE'
-        klass = Delete
-      when 'UPDATE'
-        klass = Update
-      when 'CONNECT'
-        klass = Connect
-      when 'DISCONNECT'
-        klass = Disconnect
-      else # SELECT
-        klass = Query
-      end
+      klass = case text.split.first
+              when 'INSERT'
+                Insert
+              when 'DELETE'
+                Delete
+              when 'UPDATE'
+                Update
+              when 'CONNECT'
+                Connect
+              when 'DISCONNECT'
+                Disconnect
+              else # SELECT
+                Query
+              end
 
       # Set the type of the statement
       # (but CONNECT and DISCONNECT use the same parse rule)
@@ -294,7 +294,7 @@ module NoSE
            "FROM clause must start with #{tree[:entity]}" \
            if tree[:entity] && tree[:path].first != tree[:entity]
 
-      params = {model: model}
+      params = { model: model }
       params[:entity] = model[tree[:path].first.to_s]
       params[:key_path] = find_longest_path tree[:path], params[:entity]
       params[:graph] = QueryGraph::Graph.from_path(params[:key_path])
@@ -335,7 +335,7 @@ module NoSE
       field_path = field.map(&:to_s)
       prefix_index = path.index(field_path.first)
       field_path = path[0..prefix_index - 1] + field_path \
-        unless prefix_index == 0
+        unless prefix_index.zero?
       field_path.map!(&:to_s)
 
       # Expand the graph to include any keys which were found
@@ -411,7 +411,7 @@ module NoSE
         first_key = prefix_path.entries.find do |key|
           path.entities.include?(key.parent) || \
             key.is_a?(Fields::ForeignKeyField) && \
-            path.entities.include?(key.entity)
+              path.entities.include?(key.entity)
         end
         from = if first_key.primary_key?
                  first_key.parent.name

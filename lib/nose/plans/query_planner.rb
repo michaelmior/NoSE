@@ -112,16 +112,16 @@ module NoSE
       def each
         nodes = [@root]
 
-        while nodes.length > 0
+        until nodes.empty?
           node = nodes.pop
-          if node.children.length > 0
-            nodes.concat node.children.to_a
-          else
+          if node.children.empty?
             # This is just an extra check to make absolutely
             # sure we never consider invalid statement plans
             fail unless node.state.answered?
 
             yield node.parent_steps @cost_model
+          else
+            nodes.concat node.children.to_a
           end
         end
       end
@@ -129,7 +129,7 @@ module NoSE
       # Return the total number of plans for this statement
       # @return [Integer]
       def size
-        to_a.count
+        to_a.size
       end
 
       # :nocov:

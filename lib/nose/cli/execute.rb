@@ -77,7 +77,7 @@ module NoSE
           if options[:totals]
             total_measurement = Measurements::Measurement.new nil, 'TOTAL'
             total_measurement << group_table.map(&:weighted_mean) \
-              .inject(0, &:+)
+                                 .inject(0, &:+)
             group_table << total_measurement
           end
 

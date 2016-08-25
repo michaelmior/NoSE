@@ -52,12 +52,18 @@ module NoSE
         return if result.nil?
 
         # Output the results in the specified format
-        file = options[:output].nil? ? $stdout :
-                                       File.open(options[:output], 'w')
+        file = if options[:output].nil?
+                 $stdout
+               else
+                 File.open(options[:output], 'w')
+               end
+
         begin
-          backend = get_backend options, result rescue nil
+          backend = get_backend options, result
           send(('output_' + options[:format]).to_sym,
                result, file, options[:enumerated], backend)
+        rescue
+          nil
         ensure
           file.close unless options[:output].nil?
         end

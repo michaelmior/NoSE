@@ -23,7 +23,7 @@ module NoSE
             @logger.info "Skipping index #{index.inspect}" if show_progress
             next
           end
-          @logger.info "#{index.inspect}" if show_progress
+          @logger.info index.inspect if show_progress
 
           query, fields = index_sql client, index, limit
 

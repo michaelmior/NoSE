@@ -86,12 +86,11 @@ module NoSE
       def update_state
         @state.eq -= @eq
         @state.cardinality *= @eq.map { |field| 1.0 / field.cardinality } \
-                              .inject(1.0, &:*)
+                                 .inject(1.0, &:*)
+        return unless @range
 
-        if @range
-          @state.range = nil
-          @state.cardinality *= 0.1
-        end
+        @state.range = nil
+        @state.cardinality *= 0.1
       end
     end
   end

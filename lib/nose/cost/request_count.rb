@@ -9,8 +9,11 @@ module NoSE
       def index_lookup_cost(step)
         # We always start with a single lookup, then the number
         # of lookups is determined by the cardinality at the preceding step
-        step.parent.is_a?(Plans::RootPlanStep) ? \
-          1 : step.state.cardinality
+        if step.parent.is_a?(Plans::RootPlanStep)
+          1
+        else
+          step.state.cardinality
+        end
       end
 
       # Cost estimate as number of entities deleted
