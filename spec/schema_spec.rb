@@ -4,13 +4,11 @@ module NoSE
       schema = Schema.new do
         Model 'rubis'
 
-        # rubocop:disable SingleSpaceBeforeFirstArg
         Index 'users_by_id' do
           Hash  users.id
           Extra users['*']
           Path  users.id
         end
-        # rubocop:enable SingleSpaceBeforeFirstArg
       end
 
       model = schema.model
@@ -26,14 +24,12 @@ module NoSE
       schema = Schema.new do
         Model 'rubis'
 
-        # rubocop:disable SingleSpaceBeforeFirstArg
         Index 'user_region' do
           Hash    users.id
           Ordered regions.id
           Extra   regions.name
           Path    users.id, users.region
         end
-        # rubocop:enable SingleSpaceBeforeFirstArg
       end
 
       model = schema.model

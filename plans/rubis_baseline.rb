@@ -1,5 +1,3 @@
-# rubocop:disable SingleSpaceBeforeFirstArg
-
 NoSE::Plans::ExecutionPlans.new do
   Schema 'rubis_baseline'
 
@@ -410,5 +408,3 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 end
-
-# rubocop:enable SingleSpaceBeforeFirstArg

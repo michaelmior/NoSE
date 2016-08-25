@@ -1,7 +1,5 @@
 require_relative '../lib/nose.rb'
 
-# rubocop:disable SingleSpaceBeforeFirstArg
-
 NoSE::Schema.new do
   Model 'rubis'
 
@@ -92,5 +90,3 @@ NoSE::Schema.new do
     Path    users.id, users.bids
   end
 end
-
-# rubocop:enable SingleSpaceBeforeFirstArg

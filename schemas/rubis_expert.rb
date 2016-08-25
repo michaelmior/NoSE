@@ -1,7 +1,5 @@
 require_relative '../lib/nose.rb'
 
-# rubocop:disable SingleSpaceBeforeFirstArg
-
 NoSE::Schema.new do
   Model 'rubis'
 
@@ -54,10 +52,10 @@ NoSE::Schema.new do
   end
 
   Index 'items_with_category' do
-    Hash  items.id
+    Hash    items.id
     Ordered categories.id
-    Extra items['*']
-    Path  items.id, items.category
+    Extra   items['*']
+    Path    items.id, items.category
   end
 
   Index 'items_data' do
@@ -99,5 +97,3 @@ NoSE::Schema.new do
     Path    regions.id
   end
 end
-
-# rubocop:enable SingleSpaceBeforeFirstArg
