@@ -53,3 +53,29 @@ This step may take several hours to complete.
 
 Since the experiments are destructive (i.e. they modify data in the database), it's a good idea to [take a snapshot](https://docs.datastax.com/en/cassandra/2.0/cassandra/operations/ops_backup_restore_c.html) before continuing.
 Finally, experiments can be run using `nose execute` for a manually-defined schema or `nose benchmark` for a schema generated with `nose search`.
+
+## Running multiple experiments
+
+As mentioned above, experiments are destructive since updates modify the populated data.
+The easiest way to run multiple experiments is to take a snapshot after populating the data but before running the first experiment.
+
+    nodetool snapshot rubis -t SNAPSHOT_NAME
+
+The script below will restore the snapshot at which point you will be ready to run another experiment.
+Be sure to replace `SCHEMA` and `SNAPSHOT_NAME` with the appropriate values.
+
+```bash
+# Drop and recreate all tables
+for cf in $(cqlsh 10.0.0.2 -k rubis -f <(echo 'DESCRIBE COLUMNFAMILIES') | tr ' ' '\n' | grep -Ev '^$'); do
+  cqlsh 10.0.0.2 -k rubis -f <(echo "DROP TABLE $cf;")
+done
+
+bundle exec nose create SCHEMA
+
+# Restore snapshot
+for ssdir in $(find /ssd1/mmior/cassandra/data/rubis_big/ -wholename '*/snapshots/SNAPSHOT_NAME' -type d); do
+  for file in $(find "$ssdir/" -type f | rev | cut -d/ -f1 | rev); do
+    sudo ln "$ssdir/$file" "$ssdir/../../$file"
+  done
+done
+```
