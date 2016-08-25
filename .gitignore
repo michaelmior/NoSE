@@ -31,7 +31,7 @@
 
 ## Configuration files
 *.yml
-!.codeclimate.yml
+!.scrutinizer.yml
 !.travis.yml
 !.rubocop.yml
 

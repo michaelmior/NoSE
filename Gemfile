@@ -26,7 +26,7 @@ end
 
 group :test do
   gem 'aruba', require: false
-  gem 'codeclimate-test-reporter', require: false
+  gem 'scrutinizer-ocular', require: false
   gem 'fakefs', require: 'fakefs/safe'
   gem 'rspec'
   gem 'rspec-collection_matchers'
