@@ -21,10 +21,19 @@ module NoSE
         labels = data.map { |datum| datum.first['label'] }
         puts((['Group'] + labels).join "\t")
 
+        # Make sure we collect all rows, keeping the total last
+        groups = data.map { |d| d.map { |r| r['group'] } }.flatten.uniq
+        groups.delete 'TOTAL'
+        groups << 'TOTAL' if options[:total]
+
         # Output the mean for each schema
-        1.upto(data.first.count) do |n|
-          print data.first[n - 1]['group'] + "\t"
-          puts(data.map { |datum| datum[n - 1]['mean'] }.join "\t")
+        groups.each do |group|
+          print group + "\t"
+          data.each do |datum|
+            row = datum.find { |r| r['group'] == group }
+            print((row.nil? ? '' : row['mean'].to_s) + "\t")
+          end
+          puts
         end
       end
     end
