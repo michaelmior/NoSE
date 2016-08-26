@@ -250,7 +250,7 @@ NoSE::Plans::ExecutionPlans.new do
     end
   end
 
-  Group 'PutBid', bidding: 5.40, write_heavy: 5.40 do
+  Group 'PutBid', bidding: 5.40, write_medium: 5.40, write_heavy: 5.40 do
     Plan 'Authentication' do
       Select users.password
       Param  users.id, :==
