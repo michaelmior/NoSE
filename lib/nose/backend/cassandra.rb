@@ -344,7 +344,7 @@ module NoSE
             # XXX Ignore null values in results for now
             # fail if rows.any? { |row| row.values.any?(&:nil?) }
 
-            new_result += rows
+            new_result.concat rows
             break if new_results.last_page? ||
                      (!@step.limit.nil? && result.length >= @step.limit)
             new_results = new_results.next_page
