@@ -3,6 +3,6 @@
   "version": "0.0.1",
   "license": "MIT",
   "dependencies": {
-    "mysql-faker": "0.0.4"
+    "mysql-faker": "0.0.5"
   }
 }
