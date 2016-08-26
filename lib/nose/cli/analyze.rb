@@ -66,18 +66,21 @@ module NoSE
             {
               'label' => grouped_rows.first['label'],
               'group' => group,
-              'weight' => group,
+              'weight' => grouped_rows.first['weight'].to_f,
               'mean' => mean
             }
           end
 
           # Add an additional row for the total
           if total
+            total_weight = rows.map { |row| row['weight'] }.inject(0, &:+)
             rows << {
               'label' => rows.first['label'],
               'group' => 'TOTAL',
               'weight' => 1.0,
-              'mean' => rows.inject(0) { |sum, row| sum + row['mean'].to_f }
+              'mean' => rows.inject(0) do |sum, row|
+                sum + row['mean'] * row['weight'] / total_weight
+              end
             }
           end
 
