@@ -367,7 +367,7 @@ module NoSE
             field_ids = step.index.all_fields.map(&:id)
             field_conds = conditions.select { |key| field_ids.include? key }
           else
-            field_conds = conds
+            field_conds = conditions
           end
           results = step.process field_conds, results
 
