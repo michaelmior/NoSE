@@ -7,8 +7,8 @@ Random.srand seed
 
 require_relative '../lib/nose'
 
-# Uncomment the line below to enable timing
-# NoSE::Timer.enable
+# Comment the line below to disable timing
+NoSE::Timer.enable
 
 factor = ARGV[0].to_i
 
