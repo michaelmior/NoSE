@@ -2,8 +2,10 @@ require 'scrutinizer/ocular'
 
 SimpleCov.formatters = [
   SimpleCov::Formatter::HTMLFormatter,
-  Scrutinizer::Ocular::UploadFormatter
 ]
+
+SimpleCov.formatters << Scrutinizer::Ocular::UploadFormatter \
+  if Scrutinizer::Ocular.should_run?
 
 SimpleCov.start do
   add_filter '/spec/'
