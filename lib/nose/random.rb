@@ -8,8 +8,8 @@ module NoSE
     def initialize(params = {})
       @beta = params.fetch :beta, 0.5
       @nodes_nb = params.fetch :nodes_nb, 10
-      @node_degree = params.fetch :node_degree, 3
-      @field_count = RandomGaussian.new params.fetch(:num_fields, 5), 1
+      @node_degree = params.fetch :node_degree, 2
+      @field_count = RandomGaussian.new params.fetch(:num_fields, 3), 1
       @neighbours = Array.new(@nodes_nb) { Set.new }
 
       create_entities
@@ -221,7 +221,8 @@ module NoSE
 
     # Generate a new random query from entities in the model
     # @return [Query]
-    def random_query(path_length = 3, selected_fields = 2, condition_count = 2)
+    def random_query(path_length = 3, selected_fields = 2, condition_count = 2,
+                     order = false)
       path = random_path path_length
       graph = QueryGraph::Graph.from_path path
 
@@ -229,8 +230,9 @@ module NoSE
         Condition.new(path.entities.first.fields.values.sample, :'=', nil)
       ]
       condition_count -= 1
-      conditions += random_where_conditions(path, condition_count).map do |f|
-        Condition.new(f, :'=', nil)
+      conditions += random_where_conditions(path, condition_count,
+                                            conditions.map(&:field).to_set).map do |field|
+        Condition.new(field, :'>', nil)
       end
 
       conditions = Hash[conditions.map do |condition|
@@ -243,7 +245,8 @@ module NoSE
         graph: graph,
         key_path: graph.longest_path,
         entity: graph.longest_path.first.parent,
-        conditions: conditions
+        conditions: conditions,
+        order: order ? [graph.entities.to_a.sample.fields.values.sample] : []
       }
 
       query = Query.new params, nil
@@ -333,10 +336,10 @@ module NoSE
 
     # Produce a random set of fields for a where clause
     # @return [Array<Fields::Field>]
-    def random_where_conditions(path, count)
+    def random_where_conditions(path, count, exclude = Set.new)
       1.upto(count).map do
         field = path.entities.sample.fields.values.sample
-        next nil if field.name == '**'
+        next nil if field.name == '**' || exclude.include?(field)
 
         field
       end.compact
