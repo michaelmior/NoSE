@@ -1,6 +1,6 @@
 module NoSE
   describe Network do
-    subject(:network) { Network.new }
+    subject(:network) { WattsStrogatzNetwork.new }
 
     it 'has a default of 10 entities' do
       expect(network.entities).to have(10).items

@@ -13,7 +13,7 @@ NoSE::Timer.enable
 factor = ARGV[0].to_i
 
 # Create a random workload generator
-network = NoSE::Network.new(nodes_nb: 7 * factor)
+network = NoSE::WattsStrogatzNetwork.new(nodes_nb: 7 * factor)
 workload = NoSE::Workload.new
 network.entities.each { |entity| workload << entity }
 sgen = NoSE::StatementGenerator.new workload.model

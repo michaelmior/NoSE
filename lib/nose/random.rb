@@ -6,17 +6,9 @@ module NoSE
     attr_reader :entities
 
     def initialize(params = {})
-      @beta = params.fetch :beta, 0.5
       @nodes_nb = params.fetch :nodes_nb, 10
-      @node_degree = params.fetch :node_degree, 2
       @field_count = RandomGaussian.new params.fetch(:num_fields, 3), 1
       @neighbours = Array.new(@nodes_nb) { Set.new }
-
-      create_entities
-      pick_fields
-      build_initial_links
-      rewire_links
-      add_foreign_keys
     end
 
     # :nocov:
@@ -27,16 +19,16 @@ module NoSE
     end
     # :nocov:
 
-    private
+    protected
 
-    # Create random entities to use in the model
-    # @return [void]
-    def create_entities
-      @nodes = 0..(@nodes_nb - 1)
+    # Create a random entity to use in the model
+    # @return [Entity]
+    def create_entity(node)
       num_entities = RandomGaussian.new 10_000, 100
-      @entities = @nodes.map do |node|
-        Entity.new('E' + random_name(node)) * num_entities.rand
-      end
+      entity = Entity.new('E' + random_name(node)) * num_entities.rand
+      pick_fields entity
+
+      entity
     end
 
     # Probabilities of selecting various field types
@@ -47,14 +39,12 @@ module NoSE
       [Fields::FloatField,   0.1].freeze
     ].freeze
 
-    # Select random fields for each entity
+    # Select random fields for an entity
     # @return [void]
-    def pick_fields
-      @nodes.each do |node|
-        @entities[node] << Fields::IDField.new(@entities[node].name + 'ID')
-        0.upto(@field_count.rand).each do |field_index|
-          @entities[node] << random_field(field_index)
-        end
+    def pick_fields(entity)
+      entity << Fields::IDField.new(entity.name + 'ID')
+      0.upto(@field_count.rand).each do |field_index|
+        entity << random_field(field_index)
       end
     end
 
@@ -106,35 +96,11 @@ module NoSE
       @neighbours[other_node] << node
     end
 
-    # Set up the initial links between all nodes
-    # @return [void]
-    def build_initial_links
-      @nodes.each do |node|
-        (@node_degree / 2).times do |i|
-          add_link node, (node + i + 1) % @nodes_nb
-        end
-      end
-    end
-
     # Remove a link between two nodes
     # @return [void]
     def remove_link(node, other_node)
       @neighbours[node].delete other_node
       @neighbours[other_node].delete node
-    end
-
-    # Rewire all links between nodes
-    # @return [void]
-    def rewire_links
-      (@node_degree / 2).times do |i|
-        @nodes.each do |node|
-          next unless rand < @beta
-
-          neighbour = (node + i + 1) % @nodes_nb
-          remove_link node, neighbour
-          add_link node, new_neighbour(node, neighbour)
-        end
-      end
     end
 
     # Find a new neighbour for a node
@@ -408,3 +374,5 @@ class RandomGaussian
     [x, y]
   end
 end
+
+require_relative 'random/watts_strogatz'
