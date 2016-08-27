@@ -63,6 +63,8 @@ module NoSE
     def add_foreign_keys
       @neighbours.each_with_index do |other_nodes, node|
         other_nodes.each do |other_node|
+          @neighbours[other_node].delete node
+
           if rand > 0.5
             from_node = node
             to_node = other_node
