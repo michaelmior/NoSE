@@ -2,13 +2,22 @@
 
 # Get and print the seed which is used
 seed = ::Random.new_seed
-puts "SEED #{seed}"
+$stderr.puts "SEED #{seed}"
 ::Random.srand seed
 
 require_relative '../lib/nose'
 
-# Comment the line below to disable timing
-NoSE::Timer.enable
+# Record times for the longest running sets of methods
+times = {
+  indexes_for_workload: 0,
+  query_costs: 0,
+  update_costs: 0,
+  setup_model: 0,
+  solve: 0
+}
+NoSE::Timer.enable do |cls, method, time|
+  times[method] = time if times.key? method
+end
 
 factor = ARGV[0].to_i
 
@@ -35,21 +44,21 @@ sgen = NoSE::Random::StatementGenerator.new workload.model
                         3,
                         conditions,
                         rand > 0.9
-  puts q.unparse
+  $stderr.puts q.unparse
   workload.add_statement q, 10
 end
 
 # Add random updates
 1.upto(3 * factor).each do
   u = sgen.random_update 1, 2, 1
-  puts u.text
+  $stderr.puts u.text
   workload.add_statement u
 end
 
 # Add random inserts
 1.upto(5 * factor).each do
   i = sgen.random_insert
-  puts i.text
+  $stderr.puts i.text
   workload.add_statement i
 end
 
@@ -66,7 +75,15 @@ search = NoSE::Search::Search.new(workload,
                                   NoSE::Cost::RequestCountCost.new)
 search.search_overlap(indexes)
 elapsed = Time.now.utc - start
-puts "TOTAL: #{elapsed}"
+
+# Output the timing values
+total = 0
+times[:costs] = times.delete(:query_costs) + times.delete(:update_costs)
+times.each do |key, time|
+  puts "#{key},#{time}"
+  total += time
+end
+puts "other,#{elapsed - total}"
 
 # Uncomment the lines below to save profile output
 # (along with the lines above to enable profiling)
