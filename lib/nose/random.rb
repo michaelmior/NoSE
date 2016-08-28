@@ -377,4 +377,5 @@ class RandomGaussian
   end
 end
 
+require_relative 'random/barbasi_albert'
 require_relative 'random/watts_strogatz'

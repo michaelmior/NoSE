@@ -1,7 +1,5 @@
 module NoSE
-  describe Network do
-    subject(:network) { WattsStrogatzNetwork.new }
-
+  shared_examples 'a network' do
     it 'has a default of 10 entities' do
       expect(network.entities).to have(10).items
     end
@@ -22,6 +20,16 @@ module NoSE
         connected
       end)
     end
+  end
+
+  describe BarbasiAlbertNetwork do
+    let(:network) { BarbasiAlbertNetwork.new }
+    it_behaves_like 'a network'
+  end
+
+  describe WattsStrogatzNetwork do
+    let(:network) { BarbasiAlbertNetwork.new }
+    it_behaves_like 'a network'
   end
 
   describe StatementGenerator do
