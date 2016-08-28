@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
 # Get and print the seed which is used
-seed = Random.new_seed
+seed = ::Random.new_seed
 puts "SEED #{seed}"
-Random.srand seed
+::Random.srand seed
 
 require_relative '../lib/nose'
 
@@ -13,10 +13,10 @@ NoSE::Timer.enable
 factor = ARGV[0].to_i
 
 # Create a random workload generator
-network = NoSE::WattsStrogatzNetwork.new(nodes_nb: 7 * factor)
+network = NoSE::Random::WattsStrogatzNetwork.new(nodes_nb: 7 * factor)
 workload = NoSE::Workload.new
 network.entities.each { |entity| workload << entity }
-sgen = NoSE::StatementGenerator.new workload.model
+sgen = NoSE::Random::StatementGenerator.new workload.model
 
 # Add random queries
 1.upto(30 * factor).each do |i|
