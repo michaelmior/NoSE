@@ -47,6 +47,9 @@ module NoSE
             result = old_method.bind(self).call(*args)
             elapsed = Time.now.utc - start
 
+            # Allow a block to be called with the timing results
+            yield cls, method, elapsed if block_given?
+
             $stderr.puts "#{cls}##{method}\tEND\t#{elapsed}"
 
             result
