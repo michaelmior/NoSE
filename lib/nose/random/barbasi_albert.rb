@@ -23,16 +23,20 @@ module NoSE
         add_link 0, 1
         return if @nodes_nb == 2
 
+        @entities << create_entity(2)
+        add_link 2, 0
+        add_link 2, 1
+        return if @nodes_nb == 3
+
         # Add and connect more entities as needed
-        edges = 2
-        2.upto(@nodes_nb - 1).each do |node|
+        3.upto(@nodes_nb - 1).each do |node|
           @entities << create_entity(node)
           pick = Pickup.new(0.upto(node - 1).to_a,
-                            weight_func: ->(x) { x },
-                            uniq: true) { |n| @neighbours[n].size }
+                            key_func: ->(n) { n },
+                            weight_func: ->(n) { @neighbours[n].size },
+                            uniq: true)
           pick.pick(2).each do |node2|
             add_link node, node2
-            edges += 2
           end
         end
       end
