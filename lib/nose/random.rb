@@ -33,12 +33,12 @@ module NoSE
       end
 
       # Probabilities of selecting various field types
-      FIELD_TYPES = [
-        [Fields::IntegerField, 0.45].freeze,
-        [Fields::StringField,  0.35].freeze,
-        [Fields::DateField,    0.1].freeze,
-        [Fields::FloatField,   0.1].freeze
-      ].freeze
+      FIELD_TYPES = {
+        Fields::IntegerField => 45,
+        Fields::StringField =>  35,
+        Fields::DateField =>    10,
+        Fields::FloatField =>   10
+      }.freeze
 
       # Select random fields for an entity
       # @return [void]
@@ -52,11 +52,7 @@ module NoSE
       # Generate a random field to add to an entity
       # @return [Fields::Field]
       def random_field(field_index)
-        type_rand = rand
-        FIELD_TYPES.find do |_, threshold|
-          type_rand -= threshold
-          type_rand <= threshold
-        end[0].send(:new, 'F' + random_name(field_index))
+        Pickup.new(FIELD_TYPES).pick.send(:new, 'F' + random_name(field_index))
       end
 
       # Add foreign key relationships for neighbouring nodes
@@ -244,7 +240,7 @@ module NoSE
       def random_statement(weights = { query: 80, insert: 10, update: 5,
                                        delete: 5 })
         pick = Pickup.new(weights)
-        type = pick.pick(1)
+        type = pick.pick
         send(('random_' + type.to_s).to_sym)
       end
 
