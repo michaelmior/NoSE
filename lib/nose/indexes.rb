@@ -16,6 +16,11 @@ module NoSE
 
       validate_hash_fields
 
+      # Store whether this index is an identity
+      @identity = @hash_fields == [
+        @hash_fields.first.parent.id_field
+      ].to_set && graph.nodes.size == 1
+
       @graph = graph
       @path = graph.longest_path
       @path = nil unless @path.length == graph.size
@@ -23,6 +28,12 @@ module NoSE
       validate_graph
 
       build_hash saved_key
+    end
+
+    # Check if this index maps from the primary key to fields from one entity
+    # @return [Boolean]
+    def identity?
+      @identity
     end
 
     # A simple key which uniquely identifies the index
@@ -69,20 +80,6 @@ module NoSE
 
     def hash
       @hash ||= Zlib.crc32 hash_str
-    end
-
-    # Check if this index is a mapping from the key of the given entity
-    # @see Entity#id_field
-    # @return [Boolean]
-    def identity_for?(entity)
-      @hash_fields == [entity.id_field].to_set && @graph.nodes.size == 1
-    end
-
-    # Check if this index maps from the primary
-    # key to fields from  a single index
-    # @return [Boolean]
-    def identity?
-      identity_for?(@hash_fields.first.parent)
     end
 
     # Check if the index contains a given field

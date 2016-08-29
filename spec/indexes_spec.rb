@@ -85,7 +85,7 @@ module NoSE
     it 'can tell if it maps identities for a field' do
       index = Index.new [tweet['TweetId']], [], [tweet['Body']],
                         QueryGraph::Graph.from_path([tweet.id_field])
-      expect(index.identity_for? tweet).to be true
+      expect(index.identity?).to be true
     end
 
     it 'can be created to map entity fields by id' do
