@@ -154,11 +154,13 @@ module NoSE
 
       # Generate a new random update of entities in the model
       # @return [Update]
-      def random_update(path_length = 1, updated_fields = 2, condition_count = 1)
+      def random_update(path_length = 1, updated_fields = 2,
+                        condition_count = 1)
         path = random_path(path_length)
         settings = random_settings path, updated_fields
         from = [path.first.parent.name] + path.entries[1..-1].map(&:name)
-        update = "UPDATE #{from.first} FROM #{from.join '.'} SET #{settings} " +
+        update = "UPDATE #{from.first} FROM #{from.join '.'} " \
+                 "SET #{settings} " +
                  random_where_clause(path, condition_count)
 
         Statement.parse update, @model
@@ -190,8 +192,8 @@ module NoSE
 
       # Generate a new random query from entities in the model
       # @return [Query]
-      def random_query(path_length = 3, selected_fields = 2, condition_count = 2,
-                       order = false)
+      def random_query(path_length = 3, selected_fields = 2,
+                       condition_count = 2, order = false)
         path = random_path path_length
         graph = QueryGraph::Graph.from_path path
 
@@ -199,8 +201,10 @@ module NoSE
           Condition.new(path.entities.first.fields.values.sample, :'=', nil)
         ]
         condition_count -= 1
-        conditions += random_where_conditions(path, condition_count,
-                                              conditions.map(&:field).to_set).map do |field|
+
+        new_fields = random_where_conditions(path, condition_count,
+                                             conditions.map(&:field).to_set)
+        conditions += new_fields.map do |field|
           Condition.new(field, :'>', nil)
         end
 
