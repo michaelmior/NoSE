@@ -120,6 +120,7 @@ module NoSE
           [k, v.dup]
         end]
         new_graph.instance_variable_set :@edges, new_edges
+        new_graph.instance_variable_set :@unique_edges, nil
 
         new_graph
       end
@@ -231,6 +232,8 @@ module NoSE
         @edges[node1].add Edge.new(node1, node2, key)
         @edges[node2] = Set.new unless @edges.key? node2
         @edges[node2].add Edge.new(node2, node1, key.reverse)
+
+        @unique_edges = nil
       end
 
       # Prune nodes not reachable from a given starting node
@@ -267,15 +270,20 @@ module NoSE
         end
         @edges.reject! { |_, edges| edges.empty? }
         @nodes -= nodes.to_set
+
+        @unique_edges = nil
       end
 
       # Construct a list of all unique edges in the graph
       # @reutrn [Array<Edge>]
       def unique_edges
+        # We memoize this calculation so check if it has already been computed
+        return @unique_edges unless @unique_edges.nil?
+
         all_edges = @edges.values.reduce(&:union).to_a
         all_edges.uniq!(&:canonical_params)
 
-        all_edges.to_set
+        @unique_edges = all_edges.to_set
       end
 
       # Produce an enumerator which yields all subgraphs of this graph
