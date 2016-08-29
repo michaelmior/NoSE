@@ -247,7 +247,13 @@ module NoSE
       # Return a random path through the entity graph
       # @return [KeyPath]
       def random_path(max_length)
-        path = [@model.entities.values.sample.id_field]
+        # Pick the start of path weighted based on
+        # the number of deges from each entity
+        pick = Pickup.new(Hash[@model.entities.each_value.map do |entity|
+          [entity, entity.foreign_keys.length]
+        end])
+        path = [pick.pick.id_field]
+
         while path.length < max_length
           # Find a list of keys to entities we have not seen before
           last_entity = path.last.entity
