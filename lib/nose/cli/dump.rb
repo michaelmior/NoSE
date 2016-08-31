@@ -9,8 +9,6 @@ module NoSE
       long_desc <<-LONGDESC
         `nose dump` will output results in the same format as `nose search`,
         but for manually defined execution plans in the `plans` subdirectory.
-
-        Note: This does not currently include update plans
       LONGDESC
 
       shared_option :format
