@@ -143,7 +143,7 @@ NoSE::Workload.new do
     Q 'SELECT items.id, items.name, items.initial_price, items.max_bid, ' \
       'items.nb_of_bids, items.end_date FROM ' \
       'items.seller WHERE seller.region.id = ? AND items.category.id = ? ' \
-      'AND items.end_date >= ? -- 35'
+      'AND items.end_date >= ? LIMIT 25 -- 35'
   end
 
   Group 'BrowseRegions', browsing: 3.21,
