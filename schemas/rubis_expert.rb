@@ -58,12 +58,6 @@ NoSE::Schema.new do
     Path    items.id, items.category
   end
 
-  Index 'items_data' do
-    Hash  items.id
-    Extra items['*']
-    Path  items.id
-  end
-
   Index 'item_bids' do
     Hash    items.id
     Ordered bids.id, users.id
