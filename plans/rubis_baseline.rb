@@ -1,6 +1,8 @@
 NoSE::Plans::ExecutionPlans.new do
   Schema 'rubis_baseline'
 
+  DefaultMix :browsing
+
   Group 'BrowseCategories', browsing: 4.44,
                             bidding: 7.65,
                             write_medium: 7.65,

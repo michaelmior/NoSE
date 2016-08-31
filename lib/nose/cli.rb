@@ -155,13 +155,14 @@ module NoSE
       def output_plans_txt(plans, file, indent, weights)
         plans.each do |plan|
           weight = (plan.weight || weights[plan.query || plan.name])
+          next if weight.nil?
           cost = plan.cost * weight
 
           file.puts "GROUP #{plan.group}" unless plan.group.nil?
 
           weight = " * #{weight} = #{cost}"
           file.puts '  ' * (indent - 1) + plan.query.label \
-            unless plan.query.label.nil?
+            unless plan.query.nil? || plan.query.label.nil?
           file.puts '  ' * (indent - 1) + plan.query.inspect + weight
           plan.each { |step| file.puts '  ' * indent + step.inspect }
           file.puts
@@ -179,9 +180,13 @@ module NoSE
         update_plans.group_by(&:statement).each do |statement, plans|
           weight = if weights.key?(statement)
                      weights[statement]
+                   elsif weights.key?(statement.group)
+                     weights[statement.group]
                    else
                      weights[statement.group][mix]
                    end
+          next if weight.nil?
+
           total_cost = plans.sum_by(&:cost)
 
           file.puts "GROUP #{statement.group}" unless statement.group.nil?

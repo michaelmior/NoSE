@@ -50,9 +50,11 @@ module NoSE
         end
 
         results.cost_model = cost_model
-        results.weights = plans.weights
+        results.weights = Hash[plans.weights.map { |g, w| [g, w[plans.mix]] }]
         results.total_size = results.indexes.sum_by(&:size)
         results.total_cost = plans.groups.values.flatten(1).sum_by do |plan|
+          next 0 if plan.weight.nil?
+
           plan.cost * plan.weight
         end
 

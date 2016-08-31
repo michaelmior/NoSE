@@ -70,6 +70,12 @@ module NoSE
         NoSE::DSL.mixin_fields @schema.model.entities, ExecutionPlans
       end
 
+      # Set the default mix for these plans
+      # @return [void]
+      def DefaultMix(mix)
+        self.mix = mix
+      end
+
       # Define a group of query execution plans
       # @return [void]
       def Group(name, weight = 1.0, **mixes, &block)
