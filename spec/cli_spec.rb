@@ -83,6 +83,25 @@ module NoSE
           end.to_not raise_error
         end
 
+        it 'can start a console with predefined plan values' do
+          FileUtils.mkdir_p File.dirname(NoSECLI::TEST_CONFIG_FILE_NAME)
+          File.open(NoSECLI::TEST_CONFIG_FILE_NAME, 'w') do |config_file|
+            config_file.write({ backend: { name: 'file' } }.to_yaml)
+          end
+
+          expect(TOPLEVEL_BINDING).to receive(:pry)
+          run_simple 'nose console /tmp/x.json'
+
+          expect(TOPLEVEL_BINDING.local_variable_get(:workload)).to \
+            be_a Workload
+          expect(TOPLEVEL_BINDING.local_variable_get(:model)).to \
+            be_a Model
+          expect(TOPLEVEL_BINDING.local_variable_get(:backend)).to \
+            be_a Backend::FileBackend
+          expect(TOPLEVEL_BINDING.local_variable_get(:indexes).first).to \
+            be_a Index
+        end
+
         after(:each) { FakeFS.deactivate! }
       end
     end
