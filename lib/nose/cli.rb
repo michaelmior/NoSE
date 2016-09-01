@@ -115,7 +115,7 @@ module NoSE
 
       # Load results of a previous search operation
       # @return [Search::Results]
-      def load_results(plan_file, mix)
+      def load_results(plan_file, mix = 'default')
         representer = Serialize::SearchResultRepresenter.represent \
           Search::Results.new
         json = File.read(plan_file)
