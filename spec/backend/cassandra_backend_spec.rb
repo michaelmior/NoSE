@@ -69,6 +69,20 @@ module NoSE
         prepared = step_class.new client, index, [link['LinkId'], link['URL']]
         prepared.process values
       end
+
+      it 'can delete from an index' do
+        client = double('client')
+        index = link.simple_index
+        backend_delete = "DELETE FROM #{index.key} WHERE Link_LinkId = ?"
+        expect(client).to receive(:prepare).with(backend_delete) \
+          .and_return(backend_delete)
+        expect(client).to receive(:execute) \
+          .with(backend_delete, arguments: [kind_of(Cassandra::Uuid)])
+
+        step_class = CassandraBackend::DeleteStatementStep
+        prepared = step_class.new client, index
+        prepared.process [links.first['Link_LinkId']]
+      end
     end
   end
 end
