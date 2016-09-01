@@ -72,6 +72,11 @@ module NoSE
 
           FileUtils.mkdir_p '/tmp'
           File.write '/tmp/x.json', json
+
+          FileUtils.mkdir_p File.dirname(NoSECLI::TEST_CONFIG_FILE_NAME)
+          File.open(NoSECLI::TEST_CONFIG_FILE_NAME, 'w') do |config_file|
+            config_file.write({ backend: { name: 'file' } }.to_yaml)
+          end
         end
 
         it 'can convert to latex' do
@@ -90,11 +95,6 @@ module NoSE
         end
 
         it 'can start a console with predefined plan values' do
-          FileUtils.mkdir_p File.dirname(NoSECLI::TEST_CONFIG_FILE_NAME)
-          File.open(NoSECLI::TEST_CONFIG_FILE_NAME, 'w') do |config_file|
-            config_file.write({ backend: { name: 'file' } }.to_yaml)
-          end
-
           expect(TOPLEVEL_BINDING).to receive(:pry)
           run_simple 'nose console /tmp/x.json'
 
