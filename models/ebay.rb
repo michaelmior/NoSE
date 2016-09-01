@@ -6,22 +6,22 @@
 NoSE::Model.new do
   # Define entities along with the size and cardinality of their fields
   # as well as an estimated number of each entity
-  Entity 'Users' do
+  (Entity 'Users' do
     ID     'UserID'
     String 'Name', 50
     String 'Email', 50
-  end
+  end) * 100
 
-  Entity 'Items' do
+  (Entity 'Items' do
     ID     'ItemID'
     String 'Title', 50
     String 'Desc', 200
-  end
+  end) * 1_000
 
-  Entity 'Likes' do
+  (Entity 'Likes' do
     ID         'LikeID'
     Date       'LikedAt'
-  end
+  end) * 10_000
 
   HasOne 'User',    'Likes',
          'Likes' => 'Users'

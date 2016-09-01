@@ -108,6 +108,12 @@ module NoSE
             be_a Index
         end
 
+        it 'can recalculate costs' do
+          run_simple 'nose recost /tmp/x.json entity_count'
+          json = JSON.parse last_command_stopped.stdout
+          expect(json['plans'].last['cost']).to eq(10)
+        end
+
         after(:each) { FakeFS.deactivate! }
       end
     end
