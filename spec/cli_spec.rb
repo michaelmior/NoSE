@@ -16,28 +16,6 @@ module NoSE
         run_simple 'nose graph rubis /tmp/rubis.png'
       end
 
-      it 'can reformat output', solver: true do
-        # Run a simple search and output as JSON
-        run_simple 'nose search ebay --format=json'
-        json = last_command_stopped.stdout
-
-        # Save the JSON to a file and reformat
-        pwd = Dir.pwd
-        FakeFS.activate!
-        FileUtils.mkdir_p File.expand_path('tmp/aruba', pwd)
-
-        FileUtils.mkdir_p '/tmp'
-        File.write '/tmp/x.json', json
-        run_simple 'nose reformat --format=yml /tmp/x.json'
-
-        FakeFS.deactivate!
-
-        # Try parsing the reformat output
-        expect do
-          YAML.load last_command_stopped.stdout
-        end.to_not raise_error
-      end
-
       it 'can search with no limits', solver: true do
         run_simple 'nose search ebay --format=json'
         expect { JSON.parse last_command_stopped.stdout }.to_not raise_error
@@ -77,7 +55,7 @@ module NoSE
           "INTERACTIVE=\"true\""
       end
 
-      context 'after producing search output' do
+      context 'after producing search output', solver: true do
         before(:each) do
           run_simple 'nose search ebay --format=json'
           json = last_command_stopped.stdout
@@ -94,6 +72,15 @@ module NoSE
           run_simple 'nose texify /tmp/x.json'
           expect(last_command_stopped.stdout).to \
             start_with('\documentclass{article}')
+        end
+
+        it 'can reformat output' do
+          run_simple 'nose reformat --format=yml /tmp/x.json'
+
+          # Try parsing the reformat output
+          expect do
+            YAML.load last_command_stopped.stdout
+          end.to_not raise_error
         end
 
         after(:each) { FakeFS.deactivate! }
