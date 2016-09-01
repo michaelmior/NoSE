@@ -14,7 +14,15 @@ module NoSE
 
       def texify(plan_file)
         # Load the indexes from the file
-        result = load_results plan_file, options[:mix]
+        result, = load_plans plan_file, options
+
+        # If these are manually generated plans, load them separately
+        if result.plans.nil?
+          plans = Plans::ExecutionPlans.load(plan_file) \
+                  .groups.values.flatten(1)
+          result.plans = plans.select { |p| p.update_steps.empty? }
+          result.update_plans = plans.reject { |p| p.update_steps.empty? }
+        end
 
         # Print document header
         puts "\\documentclass{article}\n\\begin{document}\n\\begin{flushleft}"
@@ -52,7 +60,9 @@ module NoSE
         puts "\\textbf{#{group}} \\\\" unless group.empty?
 
         grouped_plans.each do |plan|
-          if plan.is_a? Plans::QueryPlan
+          if plan.is_a?(Plans::QueryPlan) ||
+             (plan.is_a?(Plans::QueryExecutionPlan) &&
+              plan.update_steps.empty?)
             puts texify_plan_steps plan.steps
           else
             puts texify_plan_steps plan.query_plans.flat_map(&:to_a) + \
