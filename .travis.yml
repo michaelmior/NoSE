@@ -17,7 +17,8 @@ rvm:
   - 2.3.1
   - 2.2.5
   - 2.1.9
-  - jruby-9.0.5.0
+  # Temoprarily disabled until we get this working since it slows down tests
+  # - jruby-9.0.5.0
 matrix:
   allow_failures:
     - rvm: jruby-9.0.5.0
