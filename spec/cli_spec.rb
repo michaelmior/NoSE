@@ -55,6 +55,12 @@ module NoSE
           "INTERACTIVE=\"true\""
       end
 
+      it 'can produce random plans for a statement in a workload' do
+        run_simple 'nose random_plans ebay 1 --format=json'
+        json = JSON.parse last_command_stopped.stdout
+        expect(json['plans']).to have(1).item
+      end
+
       context 'after producing search output', solver: true do
         before(:each) do
           run_simple 'nose search ebay --format=json'

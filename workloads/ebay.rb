@@ -5,7 +5,7 @@ NoSE::Workload.new do
   Model 'ebay'
 
   # Define queries and their relative weights
-  Q 'SELECT Users.* FROM Users WHERE Users.UserID = ?'
+  Q 'SELECT Users.* FROM Users WHERE Users.UserID = ? -- 1'
   Q 'SELECT Items.* FROM Items WHERE Items.ItemID = ?'
   Q 'SELECT Users.* FROM Users.Likes.Item WHERE Item.ItemID = ? ORDER BY Likes.LikedAt'
   Q 'SELECT Items.* FROM Items.Likes.User WHERE User.UserID = ? ORDER BY Likes.LikedAt'
