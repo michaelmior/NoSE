@@ -41,14 +41,15 @@ module NoSE
         puts '\\bigskip\\textbf{Plans} \\\\\\bigskip'
 
         plans.group_by(&:group).each do |group, grouped_plans|
-          texify_plan_group tex_escape(group), grouped_plans
+          group = group.nil? ? '' : tex_escape(group)
+          texify_plan_group group, grouped_plans
         end
       end
 
       # Print the LaTeX from a group of query plans
       # @return [void]
       def texify_plan_group(group, grouped_plans)
-        puts "\\textbf{#{group}} \\\\"
+        puts "\\textbf{#{group}} \\\\" unless group.empty?
 
         grouped_plans.each do |plan|
           if plan.is_a? Plans::QueryPlan

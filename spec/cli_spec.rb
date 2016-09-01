@@ -76,6 +76,28 @@ module NoSE
           "PARALLEL=\"false\"\n" \
           "INTERACTIVE=\"true\""
       end
+
+      context 'after producing search output' do
+        before(:each) do
+          run_simple 'nose search ebay --format=json'
+          json = last_command_stopped.stdout
+
+          pwd = Dir.pwd
+          FakeFS.activate!
+          FileUtils.mkdir_p File.expand_path('tmp/aruba', pwd)
+
+          FileUtils.mkdir_p '/tmp'
+          File.write '/tmp/x.json', json
+        end
+
+        it 'can convert to latex' do
+          run_simple 'nose texify /tmp/x.json'
+          expect(last_command_stopped.stdout).to \
+            start_with('\documentclass{article}')
+        end
+
+        after(:each) { FakeFS.deactivate! }
+      end
     end
   end
 end
