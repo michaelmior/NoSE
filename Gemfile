@@ -11,6 +11,7 @@ gem 'parallel'
 gem 'parslet'
 gem 'pg'
 gem 'pickup'
+gem 'pry'
 gem 'rake', require: false
 gem 'representable'
 gem 'ruby-graphviz'
@@ -34,7 +35,6 @@ group :test do
 end
 
 group :development do
-  gem 'pry'
   gem 'pry-rescue'
   gem 'binding_of_caller'
 end
