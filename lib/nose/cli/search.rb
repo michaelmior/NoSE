@@ -38,19 +38,17 @@ module NoSE
         cost_model = get_class_from_config options, 'cost', :cost_model
 
         # Execute the advisor
-        objective = case options[:objective]
-                    when 'cost'
-                      Search::Objective::COST
-                    when 'space'
-                      Search::Objective::SPACE
-                    when 'indexes'
-                      Search::Objective::INDEXES
-                    end
-
+        objective = Search::Objective.const_get options[:objective].upcase
         result = search_result workload, cost_model, options[:max_space],
                                objective
-        return if result.nil?
+        output_search_result result, options unless result.nil?
+      end
 
+      private
+
+      # Output results from the search procedure
+      # @return [void]
+      def output_search_result(result, options)
         # Output the results in the specified format
         file = if options[:output].nil?
                  $stdout
