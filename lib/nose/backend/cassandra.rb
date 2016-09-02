@@ -63,7 +63,7 @@ module NoSE
       # Check if the given index is empty
       def index_empty?(index)
         query = "SELECT COUNT(*) FROM \"#{index.key}\" LIMIT 1"
-        client.execute(query).first.values.first == 0
+        client.execute(query).first.values.first.zero?
       end
 
       # Check if a given index exists in the target database
@@ -71,7 +71,7 @@ module NoSE
         query = 'SELECT COUNT(*) FROM system.schema_columnfamilies ' \
                 "WHERE keyspace_name='#{@keyspace}' AND " \
                 "columnfamily_name='#{index.key}';"
-        client.execute(query).first.values.first > 0
+        !client.execute(query).first.values.first.zero?
       end
 
       # Check if a given index exists in the target database
@@ -174,11 +174,11 @@ module NoSE
 
               # If this is an ID, generate or construct a UUID object
               if cur_field.is_a?(Fields::IDField)
-                if value.nil?
-                  value = @generator.uuid
-                else
-                  value = Cassandra::Uuid.new(value.to_i)
-                end
+                value = if value.nil?
+                          @generator.uuid
+                        else
+                          Cassandra::Uuid.new(value.to_i)
+                        end
               end
 
               # XXX Useful to test that we never insert null values

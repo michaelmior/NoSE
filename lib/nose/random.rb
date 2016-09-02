@@ -366,14 +366,6 @@ module NoSE
       end
     end
 
-    private
-
-    # Clamp the value to the given minimum
-    def clamp(value)
-      value = value.to_i if @integer
-      [@min, value].max unless @min.nil?
-    end
-
     # Return a random number for the given distribution
     # @return [Array<Fixnum>]
     def self.gaussian(mean, stddev)
@@ -383,6 +375,14 @@ module NoSE
       x = mean + scale * Math.cos(theta)
       y = mean + scale * Math.sin(theta)
       [x, y]
+    end
+
+    private
+
+    # Clamp the value to the given minimum
+    def clamp(value)
+      value = value.to_i if @integer
+      [@min, value].max unless @min.nil?
     end
   end
 end

@@ -8,11 +8,11 @@ module NoSE
         super
 
         # Try to load data from file or start fresh
-        if !config[:file].nil? && File.file?(config[:file])
-          @index_data = Marshal.load File.open(config[:file])
-        else
-          @index_data = {}
-        end
+        @index_data = if !config[:file].nil? && File.file?(config[:file])
+                        Marshal.load File.open(config[:file])
+                      else
+                        {}
+                      end
 
         # Ensure the data is saved when we exit
         ObjectSpace.define_finalizer self, self.class.finalize(@index_data,

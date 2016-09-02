@@ -78,7 +78,6 @@ module NoSE
       end
 
       # Print the LaTeX from a set of plan steps
-      # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
       # @return [void]
       def texify_plan_steps(steps)
         steps.map do |step|
@@ -98,7 +97,6 @@ module NoSE
           end
         end.join(', ')
       end
-      # rubocop:enable
 
       # Print all LaTeX for a given index
       # @return [void]

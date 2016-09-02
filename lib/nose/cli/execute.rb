@@ -185,13 +185,13 @@ module NoSE
             # First check for IDs given as part of the query otherwise
             # get the backend to generate a random ID or take a random value
             condition = condition_list[i - 1][field.id]
-            if !condition.nil? && field.is_a?(Fields::IDField)
-              value = condition.value
-            elsif field.is_a?(Fields::IDField)
-              value = backend.generate_id
-            else
-              value = field.random_value
-            end
+            value = if !condition.nil? && field.is_a?(Fields::IDField)
+                      condition.value
+                    elsif field.is_a?(Fields::IDField)
+                      backend.generate_id
+                    else
+                      field.random_value
+                    end
 
             FieldSetting.new(field, value)
           end

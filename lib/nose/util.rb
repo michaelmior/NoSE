@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-# rubocop:disable Documentation
 
 require 'date'
 require 'formatador'
@@ -92,10 +91,10 @@ module Supertype
     # @return [Class] the concrete class with the given subtype name
     def subtype_class(name)
       class_name = self.name.split('::')[0..-2]
-      class_name << (name.split('_').map do |name_part|
+      class_name << name.split('_').map do |name_part|
         name_part = name_part[0].upcase + name_part[1..-1]
         name_part.sub 'Id', 'ID'
-      end.join)
+      end.join
       class_name[-1] = class_name[-1] + self.name.split('::').last
 
       class_name.reduce(Object) do |mod, name_part|
@@ -296,5 +295,3 @@ class Time
     DateTime.new(year, month, day, hour, min, seconds, offset)
   end
 end
-
-# rubocop:enable Documentation

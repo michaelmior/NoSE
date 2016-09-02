@@ -29,7 +29,7 @@ module NoSE
       range.default_proc = ->(*) { [] }
 
       query.graph.subgraphs.flat_map do |graph|
-        indexes_for_graph graph, query.select, eq, range, query.join_order
+        indexes_for_graph graph, query.select, eq, range
       end.uniq << query.materialize_view
     end
 
@@ -133,7 +133,7 @@ module NoSE
 
     # Get all possible indices which jump a given piece of a query graph
     # @return [Array<Index>]
-    def indexes_for_graph(graph, select, eq, range, join_order)
+    def indexes_for_graph(graph, select, eq, range)
       eq_choices = eq_choices graph, eq
       range_fields = graph.entities.map { |entity| range[entity] }.reduce(&:+)
       range_fields.uniq!
