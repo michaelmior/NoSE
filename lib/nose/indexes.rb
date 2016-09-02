@@ -50,6 +50,16 @@ module NoSE
       @all_fields.find { |field| field.id == field_id }
     end
 
+    # Produce an index with the same fields but keyed by entities in the graph
+    def to_id_graph
+      all_ids = @graph.entities.map(&:id_field)
+      hash_fields = [all_ids.first]
+      order_fields = all_ids[1..-1]
+      extra = @all_fields - hash_fields - order_fields
+
+      Index.new hash_fields, order_fields, extra, @graph, saved_key: key
+    end
+
     # :nocov:
     def to_color
       fields = [@hash_fields, @order_fields, @extra].map do |field_group|

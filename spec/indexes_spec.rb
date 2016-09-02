@@ -133,5 +133,27 @@ module NoSE
         end.to raise_error InvalidIndexException
       end
     end
+
+    context 'when reducing to an ID graph' do
+      it 'moves non-ID fields to extra data' do
+        index = Index.new [user['City']], [user['UserId']], [],
+                          QueryGraph::Graph.from_path([user.id_field])
+        id_graph = index.to_id_graph
+
+        expect(id_graph.hash_fields).to match_array [user['UserId']]
+        expect(id_graph.order_fields).to be_empty
+        expect(id_graph.extra).to match_array [user['City']]
+      end
+
+      it 'does not change indexes which are already ID paths' do
+        index = Index.new [user['UserId']], [tweet['TweetId']],
+                          [tweet['Body']], QueryGraph::Graph.from_path(
+                            [user.id_field, user['Tweets']]
+                          )
+        id_graph = index.to_id_graph
+
+        expect(id_graph).to eq(index)
+      end
+    end
   end
 end
