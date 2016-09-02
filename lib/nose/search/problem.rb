@@ -46,37 +46,18 @@ module NoSE
         return unless @status.nil?
 
         # Run the optimization
-        # @model.write '/tmp/search.lp'
         @model.optimize
-
-        # Ensure we found a valid solution
         @status = model.status
-        if @status != :optimized
-          fail NoSolutionException.new @status
-        elsif @objective_type != Objective::INDEXES && previous_type.nil?
-          previous_type = @objective_type
-          @objective_value = @model.objective_value
+        fail NoSolutionException, @status if @status != :optimized
 
-          # Pin the objective value and optimize again to minimize index usage
-          @obj_var.lower_bound = @objective_value
-          @obj_var.upper_bound = @objective_value
-          @objective_type = Objective::INDEXES
-          define_objective 'objective_indexes'
+        # Store the objective value
+        @objective_value = @obj_var.value
 
-          @status = nil
-          solve previous_type
+        if @objective_type != Objective::INDEXES && previous_type.nil?
+          solve_next Objective::INDEXES
           return
         elsif !previous_type.nil? && previous_type != Objective::SPACE
-          @objective_value = @obj_var.value
-
-          # Pin the objective value and optimize again to minimize index usage
-          @obj_var.lower_bound = @objective_value
-          @obj_var.upper_bound = @objective_value
-          @objective_type = Objective::SPACE
-          define_objective 'objective_space'
-
-          @status = nil
-          solve Objective::SPACE
+          solve_next Objective::SPACE
           return
         elsif @objective_value.nil?
           @objective_value = @model.objective_value
@@ -145,6 +126,24 @@ module NoSE
       end
 
       private
+
+      # Pin the current objective value and set a new objective
+      # @return [void]
+      def solve_next(objective_type)
+        @obj_var.lower_bound = @objective_value
+        @obj_var.upper_bound = @objective_value
+
+        if objective_type == Objective::INDEXES
+          @objective_type = Objective::INDEXES
+          define_objective 'objective_indexes'
+        elsif objective_type == Objective::SPACE
+          @objective_type = Objective::SPACE
+          define_objective 'objective_space'
+        end
+
+        @status = nil
+        solve objective_type
+      end
 
       # Write a model to a temporary file and log the file name
       # @return [void]
