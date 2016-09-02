@@ -35,15 +35,15 @@ module NoSE
 
     # Produce all possible indices for a given workload
     # @return [Set<Index>]
-    def indexes_for_workload(additional_indexes = [])
+    def indexes_for_workload(additional_indexes = [], by_id_graph = false)
       queries = @workload.queries
       indexes = Parallel.map(queries) do |query|
         indexes_for_query(query).to_a
       end.inject(additional_indexes, &:+)
 
       # Add indexes generated for support queries
-      supporting = support_indexes indexes
-      supporting += support_indexes supporting
+      supporting = support_indexes indexes, by_id_graph
+      supporting += support_indexes supporting, by_id_graph
       indexes += supporting
 
       # Deduplicate indexes, combine them and deduplicate again
@@ -64,7 +64,11 @@ module NoSE
 
     # Produce the indexes necessary for support queries for these indexes
     # @return [Array<Index>]
-    def support_indexes(indexes)
+    def support_indexes(indexes, by_id_graph)
+      # If indexes are grouped by ID graph, convert them before updating
+      # since other updates will be managed automatically by index maintenance
+      indexes = indexes.map(&:to_id_graph).uniq if by_id_graph
+
       # Collect all possible support queries
       queries = indexes.flat_map do |index|
         @workload.updates.flat_map do |update|

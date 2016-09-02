@@ -88,6 +88,8 @@ module NoSE
         result = Results.new self
         result.enumerated_indexes = indexes
         result.indexes = selected_indexes
+
+        # TODO: Update for indexes grouped by ID path
         result.total_size = selected_indexes.sum_by(&:size)
         result.total_cost = @objective_value
 
@@ -97,6 +99,7 @@ module NoSE
       # Get the size of all indexes in the workload
       # @return [MIPPeR::LinExpr]
       def total_size
+        # TODO: Update for indexes grouped by ID path
         @indexes.map do |index|
           @index_vars[index] * (index.size * 1.0)
         end.reduce(&:+)
@@ -210,6 +213,22 @@ module NoSE
         @query_vars = {}
         @indexes.each do |index|
           @index_vars[index] = MIPPeR::Variable.new 0, 1, 0, :binary, index.key
+
+          # If needed when grouping by ID path, add an extra
+          # variable for the base index based on the ID path
+          if @data[:by_id_path]
+            id_path = index.to_id_path
+            if id_path != index
+              @index_vars[id_path] = MIPPeR::Variable.new 0, 1, 0, :binary,
+                                                          id_path.key
+              name = "ID_#{id_path.key}_#{index.key}"
+              constr = MIPPeR::Constraint.new @index_vars[id_path] * 1.0 + \
+                                              @index_vars[index] * -1.0,
+                                              :<=, 0, name
+              @model << constr
+            end
+          end
+
           @model << @index_vars[index]
 
           @query_vars[index] = {}
@@ -268,6 +287,7 @@ module NoSE
       def add_update_costs(min_cost)
         @updates.each do |update|
           @indexes.each do |index|
+            index = index.to_id_graph if data[:by_id_graph]
             next unless update.modifies_index?(index)
 
             min_cost.add @index_vars[index] *

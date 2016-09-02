@@ -30,6 +30,10 @@ module NoSE
       option :objective, type: :string, default: 'cost',
                          enum: %w(cost space indexes),
                          desc: 'the objective function to use in the ILP'
+      option :by_id_graph, type: :boolean, default: false,
+                           desc: 'whether to group generated indexes in' \
+                                 'graphs by ID',
+                           aliases: '-i'
 
       def search(name)
         # Get the workload and cost model
@@ -42,7 +46,7 @@ module NoSE
         # Execute the advisor
         objective = Search::Objective.const_get options[:objective].upcase
         result = search_result workload, cost_model, options[:max_space],
-                               objective
+                               objective, options[:by_id_graph]
         output_search_result result, options unless result.nil?
       end
 

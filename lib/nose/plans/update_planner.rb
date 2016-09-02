@@ -160,11 +160,12 @@ module NoSE
 
     # A planner for update statements in the workload
     class UpdatePlanner
-      def initialize(model, trees, cost_model)
+      def initialize(model, trees, cost_model, by_id_graph = false)
         @logger = Logging.logger['nose::update_planner']
 
         @model = model
         @cost_model = cost_model
+        @by_id_graph = by_id_graph
 
         # Remove anything not a support query then group by statement and index
         @query_plans = trees.select do |tree|
@@ -173,7 +174,10 @@ module NoSE
         @query_plans = @query_plans.group_by { |tree| tree.query.statement }
         @query_plans.each do |plan_stmt, plan_trees|
           @query_plans[plan_stmt] = plan_trees.group_by do |tree|
-            tree.query.index
+            index = tree.query.index
+            index = index.to_id_path if @by_id_path
+
+            index
           end
         end
       end
@@ -181,6 +185,8 @@ module NoSE
       # Find the necessary update plans for a given set of indexes
       # @return [Array<UpdatePlan>]
       def find_plans_for_update(statement, indexes)
+        indexes = indexes.map(&:to_id_graph).to_set if @by_id_graph
+
         indexes.map do |index|
           next unless statement.modifies_index?(index)
 
