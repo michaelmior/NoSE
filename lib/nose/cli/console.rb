@@ -19,14 +19,7 @@ module NoSE
       def console(plan_file)
         # Load the results from the plan file and define each as a variable
         result = load_results plan_file
-
-        exposed = result.instance_variables.map do |var|
-          var[1..-1].to_sym
-        end & result.methods
-
-        exposed.each do |name|
-          TOPLEVEL_BINDING.local_variable_set name, result.method(name).call
-        end
+        expose_result result
 
         # Also extract the model as a variable
         TOPLEVEL_BINDING.local_variable_set :model, result.workload.model
@@ -37,6 +30,20 @@ module NoSE
                                             get_backend(options, result)
 
         TOPLEVEL_BINDING.pry
+      end
+
+      private
+
+      # Expose the properties of the results object for use in the console
+      # @return [void]
+      def expose_result(result)
+        exposed = result.instance_variables.map do |var|
+          var[1..-1].to_sym
+        end & result.methods
+
+        exposed.each do |name|
+          TOPLEVEL_BINDING.local_variable_set name, result.method(name).call
+        end
       end
     end
   end

@@ -16,7 +16,16 @@ module NoSE
         result1 = load_results plan1
         result2 = load_results plan2
 
-        puts Formatador.parse("[blue]#{plan1}\n" + '━' * 50 + '[/]')
+        output_diff plan1, result1, result2
+        output_diff plan2, result2, result1
+      end
+
+      private
+
+      # Output differing plans between two sets of results
+      # @return [void]
+      def output_diff(plan_name, result1, result2)
+        puts Formatador.parse("[blue]#{plan_name}\n" + '━' * 50 + '[/]')
         plans1 = result1.plans.reject { |p| result2.plans.include?(p) }
         output_plans_txt plans1, $stdout, 1, result1.workload.statement_weights
         plans1 = result1.update_plans.reject do |plan|
@@ -24,15 +33,6 @@ module NoSE
         end
         output_update_plans_txt plans1, $stdout,
                                 result1.workload.statement_weights
-
-        puts Formatador.parse("[blue]#{plan2}\n" + '━' * 50 + '[/]')
-        plans2 = result2.plans.reject { |p| result1.plans.include?(p) }
-        output_plans_txt plans2, $stdout, 1, result2.workload.statement_weights
-        plans2 = result2.update_plans.reject do |plan|
-          result1.update_plans.include? plan
-        end
-        output_update_plans_txt plans2, $stdout,
-                                result2.workload.statement_weights
       end
     end
   end

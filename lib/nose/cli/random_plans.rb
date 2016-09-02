@@ -31,15 +31,23 @@ module NoSE
         indexes = IndexEnumerator.new(workload).indexes_for_workload
         cost_model = get_class('cost', options[:cost_model][:name]) \
                      .new(**options[:cost_model])
-        planner = Plans::QueryPlanner.new workload, indexes, cost_model
-        plans = planner.find_plans_for_query(statement).to_a
-        plans = plans.sample options[:count] unless options[:all]
-
+        plans = find_random_plans statement, workload, indexes, cost_model,
+                                  options
         results = random_plan_results workload, indexes, plans, cost_model
         output_random_plans results, options[:output], options[:format]
       end
 
       private
+
+      # Generate random plans for a givne statement
+      # @return [Array]
+      def find_random_plans(statement, workload, indexes, cost_model, options)
+        planner = Plans::QueryPlanner.new workload, indexes, cost_model
+        plans = planner.find_plans_for_query(statement).to_a
+        plans = plans.sample options[:count] unless options[:all]
+
+        plans
+      end
 
       # Build a results structure for these plans
       # @return [OpenStruct]

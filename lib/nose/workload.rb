@@ -9,7 +9,7 @@ module NoSE
   # A representation of a query workload over a given set of entities
   class Workload
     # The subdirectory workloads are loaded from
-    LOAD_PATH = 'workloads'.freeze
+    LOAD_PATH = 'workloads'
     include Loader
 
     attr_reader :model
@@ -189,7 +189,7 @@ module NoSE
     def Q(statement, weight = 1.0, group: nil, label: nil, **mixes)
       fail 'Statements require a workload' if @workload.nil?
 
-      return if weight == 0 && mixes.empty?
+      return if weight.zero? && mixes.empty?
       mixes = { default: weight } if mixes.empty?
       @workload.add_statement statement, mixes, group: group, label: label
     end

@@ -21,22 +21,34 @@ module NoSE
         # Load the data and output the header
         data = load_data csv_files, options[:total]
         labels = data.map { |datum| datum.first['label'] }
-        puts((['Group'] + labels).join "\t")
+        puts((['Group'] + labels).join("\t"))
 
+        # Output the mean for each schema
+        group_data(data).each { |group| collect_group_data group, data }
+      end
+
+      private
+
+      # Combine the results into groups
+      # @return [Array]
+      def group_data(data)
         # Make sure we collect all rows, keeping the total last
         groups = data.map { |d| d.map { |r| r['group'] } }.flatten.uniq
         groups.delete 'TOTAL'
         groups << 'TOTAL' if options[:total]
 
-        # Output the mean for each schema
-        groups.each do |group|
-          print group + "\t"
-          data.each do |datum|
-            row = datum.find { |r| r['group'] == group }
-            print((row.nil? ? '' : row['mean'].to_s) + "\t")
-          end
-          puts
+        groups
+      end
+
+      # Collect the results for a single group
+      # @return [void]
+      def collect_group_data(group, data)
+        print group + "\t"
+        data.each do |datum|
+          row = datum.find { |r| r['group'] == group }
+          print((row.nil? ? '' : row['mean'].to_s) + "\t")
         end
+        puts
       end
     end
   end

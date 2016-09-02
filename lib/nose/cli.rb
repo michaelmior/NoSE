@@ -12,7 +12,7 @@ module NoSE
     # A command-line interface to running the advisor tool
     class NoSECLI < Thor
       # The path to the configuration file in the working directory
-      CONFIG_FILE_NAME = 'nose.yml'.freeze
+      CONFIG_FILE_NAME = 'nose.yml'
 
       check_unknown_options!
 

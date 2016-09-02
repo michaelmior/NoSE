@@ -41,11 +41,11 @@ module NoSE
 
       def initialize(index, state = nil, fields = Set.new)
         super index, :insert, state
-        if fields.empty?
-          @fields = index.all_fields
-        else
-          @fields = fields.to_set & index.all_fields
-        end
+        @fields = if fields.empty?
+                    index.all_fields
+                  else
+                    fields.to_set & index.all_fields
+                  end
         @fields += index.hash_fields + index.order_fields.to_set
       end
     end

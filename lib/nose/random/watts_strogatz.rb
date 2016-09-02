@@ -2,6 +2,7 @@
 
 module NoSE
   module Random
+    # Generates a random graph using the Watts-Strogatz model
     class WattsStrogatzNetwork < Network
       def initialize(params = {})
         super params

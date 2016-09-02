@@ -43,11 +43,11 @@ module NoSE
                              ignore = Set.new)
         plans.each do |plan|
           plan.indexes.each do |index|
-            if plan.respond_to?(:statement)
-              indexes_usage[index] << plan.statement
-            else
-              indexes_usage[index] << plan.query
-            end
+            indexes_usage[index] << if plan.respond_to?(:statement)
+                                      plan.statement
+                                    else
+                                      plan.query
+                                    end
             statement_usage.add index unless ignore.include? index
           end
         end

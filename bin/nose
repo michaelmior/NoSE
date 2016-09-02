@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 # Optionally enable debug logging
 ENV['NOSE_LOG'] = 'debug' if ARGV.include?('--debug') || ARGV.include?('-d')
