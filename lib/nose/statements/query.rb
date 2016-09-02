@@ -5,7 +5,7 @@ module NoSE
   class Query < Statement
     include StatementConditions
 
-    attr_reader :select, :order, :limit
+    attr_reader :select, :order, :order_direction, :limit
 
     def initialize(params, text, group: nil, label: nil)
       super params, text, group: group, label: label
@@ -13,6 +13,11 @@ module NoSE
       populate_conditions params
       @select = params[:select]
       @order = params[:order] || []
+      @order_direction = if @order.empty?
+                           nil
+                         else
+                           params.fetch :order_direction, :asc
+                         end
 
       if join_order.first != @key_path.entities.first
         @key_path = @key_path.reverse
@@ -113,6 +118,8 @@ module NoSE
         field = field.first if field.first.is_a?(Array)
         add_field_with_prefix tree[:path], field, params
       end
+      params[:order_direction] = tree[:order][:direction].downcase.to_sym \
+        if tree[:order][:direction]
     end
     private_class_method :order_from_tree
 

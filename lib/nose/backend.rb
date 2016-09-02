@@ -267,6 +267,11 @@ module NoSE
               row[field.id]
             end
           end
+
+          # Optionally reverse the sort direction
+          results.reverse! if @step.direction == :desc
+
+          results
         end
       end
 

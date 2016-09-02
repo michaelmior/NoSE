@@ -3,14 +3,15 @@
 module NoSE
   # A representation of materialized views over fields in an entity
   class Index
-    attr_reader :hash_fields, :order_fields, :extra, :all_fields, :path,
-                :entries, :entry_size, :size, :hash_count, :per_hash_count,
-                :graph
+    attr_reader :hash_fields, :order_fields, :directions, :extra, :all_fields,
+                :path, :entries, :entry_size, :size,
+                :hash_count, :per_hash_count, :graph
 
     def initialize(hash_fields, order_fields, extra, graph, saved_key = nil)
       order_set = order_fields.to_set
       @hash_fields = hash_fields.to_set
       @order_fields = order_fields.delete_if { |e| hash_fields.include? e }
+      @directions = [:asc] * order_fields.length
       @extra = extra.to_set.delete_if do |e|
         @hash_fields.include?(e) || order_set.include?(e)
       end

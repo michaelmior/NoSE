@@ -265,6 +265,7 @@ module NoSE
     # Represent the sorted fields in filter plan steps
     class SortStepRepresenter < PlanStepRepresenter
       collection :sort_fields, decorator: FieldRepresenter
+      property :direction
     end
 
     # Represent the limit for limit plan steps
@@ -587,7 +588,8 @@ module NoSE
       # @return [Plans::SortPlanStep]
       def build_sort_step(step_hash, _state, parent, _indexes, f)
         sort_fields = step_hash['sort_fields'].map(&f)
-        Plans::SortPlanStep.new sort_fields, parent.state
+        Plans::SortPlanStep.new sort_fields, step_hash['direction'].to_sym,
+                                parent.state
       end
 
       # Rebuild a filter step

@@ -4,12 +4,13 @@ module NoSE
   module Plans
     # A query plan step performing external sort
     class SortPlanStep < PlanStep
-      attr_reader :sort_fields
+      attr_reader :sort_fields, :direction
 
-      def initialize(sort_fields, state = nil)
+      def initialize(sort_fields, direction = :asc, state = nil)
         super()
 
         @sort_fields = sort_fields
+        @direction = direction
         @state = state
       end
 
@@ -39,7 +40,8 @@ module NoSE
 
         new_state = state.dup
         new_state.order_by = []
-        new_step = SortPlanStep.new(state.order_by, new_state)
+        new_step = SortPlanStep.new(state.order_by,
+                                    state.query.order_direction, new_state)
         new_step.state.freeze
 
         new_step

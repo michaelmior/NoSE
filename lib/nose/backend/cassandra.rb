@@ -312,7 +312,11 @@ module NoSE
           #
           #         SELECT * FROM cf WHERE id=? AND col1=? ORDER by col1, col2
           return '' if @step.order_by.empty?
-          ' ORDER BY ' + @step.order_by.map(&:id).join(', ')
+
+          orders = @step.order_by.zip(@step.directions).map do |field, dir|
+            "#{field.id} #{dir.upcase}"
+          end.join(', ')
+          ' ORDER BY ' + orders
         end
 
         # Lookup values from an index selecting the given

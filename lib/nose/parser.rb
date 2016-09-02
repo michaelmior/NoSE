@@ -127,9 +127,11 @@ module NoSE
 
     rule(:limit)       { space >> str('LIMIT') >> space >> integer.as(:limit) }
     rule(:order)       {
-      space >> str('ORDER BY') >> space >> fields.as_array(:fields) }
+      space >> str('ORDER BY') >> space >> fields.as_array(:fields) >>
+      (space >> (str('ASC') | str('DESC')).as(:direction)).maybe
+    }
 
-    rule(:comment)     { str(' -- ') >> match('.').repeat }
+    rule(:comment) { str(' -- ') >> match('.').repeat }
 
     rule(:query) {
       str('SELECT') >> space >> select_fields.as_array(:select) >>

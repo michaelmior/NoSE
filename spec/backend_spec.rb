@@ -21,6 +21,23 @@ module NoSE
           { 'User_Username' => 'Bob' }
         ]
       end
+
+      it 'can sort a list of results in descending order' do
+        results = [
+          { 'User_Username' => 'Alice' },
+          { 'User_Username' => 'Bob' }
+        ]
+        step = Plans::SortPlanStep.new [user['Username']], :desc
+
+        step_class = BackendBase::SortStatementStep
+        prepared = step_class.new nil, [], {}, step, nil, nil
+        results = prepared.process nil, results
+
+        expect(results).to eq [
+          { 'User_Username' => 'Bob' },
+          { 'User_Username' => 'Alice' }
+        ]
+      end
     end
 
     describe BackendBase::FilterStatementStep do
