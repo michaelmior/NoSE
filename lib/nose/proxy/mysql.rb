@@ -22,7 +22,7 @@ module NoSE
 
         begin
           protocol.process_command(&method(:process_query))
-        rescue Mysql::ClientError::ServerGoneError
+        rescue ::Mysql::ClientError::ServerGoneError
           # Ensure the socket is closed and remove the state
           remove_connection socket
           return false
@@ -43,7 +43,7 @@ module NoSE
       # Auth the client and prepare for query processsing
       # @return [Boolean]
       def authenticate(socket)
-        protocol = Mysql::ServerProtocol.new socket
+        protocol = ::Mysql::ServerProtocol.new socket
 
         # Try to authenticate
         begin
@@ -65,9 +65,9 @@ module NoSE
           result = query_result query
           @logger.debug "Executed query with #{result.size} results"
         rescue ParseFailed => exc
-          protocol.error Mysql::ServerError::ER_PARSE_ERROR, exc.message
+          protocol.error ::Mysql::ServerError::ER_PARSE_ERROR, exc.message
         rescue Backend::PlanNotFound => exc
-          protocol.error Mysql::ServerError::ER_UNKNOWN_STMT_HANDLER,
+          protocol.error ::Mysql::ServerError::ER_UNKNOWN_STMT_HANDLER,
                          exc.message
         end
 
@@ -87,7 +87,7 @@ module NoSE
   end
 
   # Extend the client library with necessary server code
-  class Mysql
+  class ::Mysql
     # Simple class which doesn't do connection setup
     class ServerProtocol < Protocol
       def initialize(socket)
@@ -124,7 +124,7 @@ module NoSE
           write ResultPacket.serialize 0
         else
           # Return error for invalid commands
-          protocol.error Mysql::ServerError::ER_NOT_SUPPORTED_YET,
+          protocol.error ::Mysql::ServerError::ER_NOT_SUPPORTED_YET,
                          'Command not supported'
         end
       end
@@ -173,7 +173,7 @@ module NoSE
       # @return [String]
       def self.serialize
         [
-          Mysql::Protocol::VERSION,
+          ::Mysql::Protocol::VERSION,
           'nose',
           0,
           'AAAAAAAA',

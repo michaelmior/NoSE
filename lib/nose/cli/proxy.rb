@@ -19,7 +19,7 @@ module NoSE
 
         # Create a new instance of the proxy class
         proxy_class = get_class 'proxy', options
-        proxy = proxy_class.new config[:proxy], result, backend
+        proxy = proxy_class.new options[:proxy], result, backend
 
         # Start the proxy server
         trap 'INT' do
