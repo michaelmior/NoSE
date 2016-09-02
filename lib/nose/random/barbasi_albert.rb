@@ -2,7 +2,7 @@
 
 module NoSE
   module Random
-    # Generates a random graph using the Barbási-Albert model
+    # Generates a random graph using the Barbasi-Albert model
     class BarbasiAlbertNetwork < Network
       def initialize(params = {})
         super params
