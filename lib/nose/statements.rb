@@ -257,36 +257,8 @@ module NoSE
 
     # Parse either a query or an update
     def self.parse(text, model, group: nil, label: nil, support: false)
-      klass = case text.split.first
-              when 'INSERT'
-                Insert
-              when 'DELETE'
-                Delete
-              when 'UPDATE'
-                Update
-              when 'CONNECT'
-                Connect
-              when 'DISCONNECT'
-                Disconnect
-              else # SELECT
-                Query
-              end
-
-      # Set the type of the statement
-      # (but CONNECT and DISCONNECT use the same parse rule)
-      type = klass.name.split('::').last.downcase.to_sym
-      type = :connect if type == :disconnect
-
-      klass = SupportQuery if support
-
-      # If parsing fails, re-raise as our custom exception
-      begin
-        tree = CQLT.new.apply(CQLP.new.method(type).call.parse(text))
-      rescue Parslet::ParseFailed => exc
-        new_exc = ParseFailed.new exc.cause.ascii_tree
-        new_exc.set_backtrace exc.backtrace
-        raise new_exc
-      end
+      klass = statement_class text, support
+      tree = parse_tree text, klass
 
       # Ensure we have a valid path in the parse tree
       tree[:path] ||= [tree[:entity]]
@@ -294,11 +266,7 @@ module NoSE
            "FROM clause must start with #{tree[:entity]}" \
            if tree[:entity] && tree[:path].first != tree[:entity]
 
-      params = { model: model }
-      params[:entity] = model[tree[:path].first.to_s]
-      params[:key_path] = find_longest_path tree[:path], params[:entity]
-      params[:graph] = QueryGraph::Graph.from_path(params[:key_path])
-
+      params = statement_parameters tree, model
       statement = klass.parse tree, params, text, group: group, label: label
       statement.instance_variable_set :@comment, tree[:comment].to_s
 
@@ -310,6 +278,65 @@ module NoSE
 
       statement
     end
+
+    # Produce the class of the statement for the given text
+    # @return [Class, Symbol]
+    def self.statement_class(text, support)
+      return SupportQuery if support
+
+      case text.split.first
+      when 'INSERT'
+        Insert
+      when 'DELETE'
+        Delete
+      when 'UPDATE'
+        Update
+      when 'CONNECT'
+        Connect
+      when 'DISCONNECT'
+        Disconnect
+      else # SELECT
+        Query
+      end
+    end
+    private_class_method :statement_class
+
+    # Run the parser and produce the parse tree
+    # @raise [ParseFailed]
+    # @return [Hash]
+    def self.parse_tree(text, klass)
+      # Set the type of the statement
+      # (but CONNECT and DISCONNECT use the same parse rule)
+      type = klass.name.split('::').last.downcase.to_sym
+      type = :connect if type == :disconnect
+
+      # If parsing fails, re-raise as our custom exception
+      begin
+        tree = CQLT.new.apply(CQLP.new.method(type).call.parse(text))
+      rescue Parslet::ParseFailed => exc
+        new_exc = ParseFailed.new exc.cause.ascii_tree
+        new_exc.set_backtrace exc.backtrace
+        raise new_exc
+      end
+
+      tree
+    end
+    private_class_method :parse_tree
+
+    # Produce the parameter hash needed to build a new statement
+    # @return [Hash]
+    def self.statement_parameters(tree, model)
+      entity = model[tree[:path].first.to_s]
+      key_path = find_longest_path(tree[:path], entity)
+
+      {
+        model: model,
+        entity: entity,
+        key_path: key_path,
+        graph: QueryGraph::Graph.from_path(key_path)
+      }
+    end
+    private_class_method :statement_parameters
 
     # Calculate the longest path of entities traversed by the statement
     # @return [KeyPath]
