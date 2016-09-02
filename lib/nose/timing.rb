@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   # Tracks the runtime of various functions and outputs a measurement
   class Timer

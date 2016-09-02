@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   # Superclass for connect and disconnect statements
   class Connection < Statement

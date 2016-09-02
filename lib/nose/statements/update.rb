@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   # A representation of an update in the workload
   class Update < Statement

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Handler to add methods for Parslet rules
 class ParsletHandler < YARD::Handlers::Ruby::Base
   handles method_call(:rule)

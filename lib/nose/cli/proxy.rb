@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   module CLI
     # Add a command to run a proxy server capable of executing queries

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   # A representation of materialized views over fields in an entity
   class Index

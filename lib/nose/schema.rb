@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   # Simple DSL for constructing indexes
   class Schema

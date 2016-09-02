@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'logging'
 
 module NoSE
@@ -14,11 +16,11 @@ module NoSE
     def indexes_for_query(query)
       @logger.debug "Enumerating indexes for query #{query.text}"
 
-      if query.range_field.nil?
-        range = query.order
-      else
-        range = [query.range_field] + query.order
-      end
+      range = if query.range_field.nil?
+                query.order
+              else
+                [query.range_field] + query.order
+              end
 
       eq = query.eq_fields.group_by(&:parent)
       eq.default_proc = ->(*) { [] }
@@ -119,7 +121,7 @@ module NoSE
 
     # Get fields which should be included in an index for the given graph
     # @return [Array<Array>]
-    def extra_choices(graph, select, eq, range, join_order)
+    def extra_choices(graph, select, eq, range)
       choices = eq.values + range.values << select.to_a
 
       choices.each do |choice|
@@ -138,7 +140,7 @@ module NoSE
       order_choices = range_fields.prefixes.flat_map do |fields|
         fields.permutation.to_a
       end.uniq << []
-      extra_choices = extra_choices graph, select, eq, range, join_order
+      extra_choices = extra_choices graph, select, eq, range
       extra_choices = 1.upto(extra_choices.length).flat_map do |n|
         extra_choices.combination(n).map(&:flatten).map(&:uniq)
       end.uniq

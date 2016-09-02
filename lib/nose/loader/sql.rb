@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'sequel'
 
 module NoSE
@@ -25,7 +27,7 @@ module NoSE
           end
           @logger.info index.inspect if show_progress
 
-          query, fields = index_sql client, index, limit
+          query = index_sql client, index, limit
 
           result_chunk = []
           query.each do |result|
@@ -49,13 +51,14 @@ module NoSE
       end
 
       # Get all the fields selected by this index
+      # @return [Array<String>]
       def index_sql_select(index)
         fields = index.hash_fields.to_a + index.order_fields + index.extra.to_a
 
-        [fields, fields.map do |field|
+        fields.map do |field|
           "#{field.parent.name}__#{field.name}___" \
             "#{field.parent.name}_#{field.name}".to_sym
-        end]
+        end
       end
 
       # Get the list of tables along with the join condition
@@ -79,7 +82,7 @@ module NoSE
       # Construct a SQL statement to fetch the data to populate this index
       def index_sql(client, index, limit = nil)
         # Get all the necessary fields
-        fields, select = index_sql_select index
+        select = index_sql_select index
 
         # Construct the join condition
         tables, keys = index_sql_tables index
@@ -93,7 +96,7 @@ module NoSE
         query = query.limit limit unless limit.nil?
 
         @logger.debug { query.sql }
-        [query, fields]
+        query
       end
     end
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   # Query processing proxies to transparently execute queries against a backend
   module Proxy

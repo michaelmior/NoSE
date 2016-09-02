@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   # Cost models for steps of backend statement excution
   module Cost

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   # A single condition in a where clause
   class Condition

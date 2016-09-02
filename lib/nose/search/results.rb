@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   module Search
     # A container for results from a schema search

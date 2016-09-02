@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   # A representation of a query in the workload
   class Query < Statement

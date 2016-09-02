@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'descriptive_statistics/safe'
 require 'forwardable'
 

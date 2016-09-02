@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This is optional so other things can run under JRuby,
 # however this loader won't work so we need to use MRI
 begin

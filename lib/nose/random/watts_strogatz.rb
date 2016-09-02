@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   module Random
     class WattsStrogatzNetwork < Network

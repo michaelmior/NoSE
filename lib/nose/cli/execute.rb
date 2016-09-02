@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'table_print'
 
 module NoSE

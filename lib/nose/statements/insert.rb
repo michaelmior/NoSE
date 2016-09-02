@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   # A representation of an insert in the workload
   class Insert < Statement

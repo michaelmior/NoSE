@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Namespace module for the whole project
 module NoSE
 end

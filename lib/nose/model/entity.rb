@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   # A representation of an object in the conceptual data model
   class Entity

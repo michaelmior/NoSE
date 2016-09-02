@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'erb'
 require 'formatador'
 require 'parallel'
@@ -272,7 +274,7 @@ module NoSE
       # Output the results of advising as JSON
       # @return [void]
       def output_json(result, file = $stdout, enumerated = false,
-                      backend = nil)
+                      _backend = nil)
         # Temporarily remove the enumerated indexes
         if enumerated
           enumerated = result.enumerated_indexes
@@ -287,7 +289,8 @@ module NoSE
 
       # Output the results of advising as YAML
       # @return [void]
-      def output_yml(result, file = $stdout, enumerated = false, backend = nil)
+      def output_yml(result, file = $stdout, enumerated = false,
+                     _backend = nil)
         # Temporarily remove the enumerated indexes
         if enumerated
           enumerated = result.enumerated_indexes

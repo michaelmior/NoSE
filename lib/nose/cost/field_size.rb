@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   module Cost
     # A cost model which estimates the total size of data transferred

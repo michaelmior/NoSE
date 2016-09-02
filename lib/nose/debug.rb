@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # rubocop:disable Lint/HandleExceptions
 begin
   require 'binding_of_caller'

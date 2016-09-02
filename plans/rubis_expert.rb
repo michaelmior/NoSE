@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 NoSE::Plans::ExecutionPlans.new do
   Schema 'rubis_expert'
 

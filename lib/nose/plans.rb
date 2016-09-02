@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   # Statement planning and abstract models of execution steps
   module Plans

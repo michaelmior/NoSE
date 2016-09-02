@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 NoSE::Workload.new do
   Model 'rubis'
 

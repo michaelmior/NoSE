@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   module CLI
     # Add a command to recalculate costs with a new model

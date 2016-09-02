@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   module Search
     # Base class for constraints

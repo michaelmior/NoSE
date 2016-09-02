@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   module Plans
     # A simple state class to hold the cardinality for updates

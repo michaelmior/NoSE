@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   module Plans
     # Superclass for steps using indices

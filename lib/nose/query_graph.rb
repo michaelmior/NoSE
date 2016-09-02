@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'set'
 
 module NoSE
@@ -288,7 +290,7 @@ module NoSE
 
       # Produce an enumerator which yields all subgraphs of this graph
       # @return [Set<Graph>]
-      def subgraphs(include_self = true, recursive = true)
+      def subgraphs(recursive = true)
         # We have no subgraphs if there is only one node
         return [self] if @nodes.size == 1
 

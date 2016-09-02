@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   # Loaders which insert data into indexes from external sources
   module Loader

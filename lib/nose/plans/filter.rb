@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   module Plans
     # A query plan performing a filter without an index

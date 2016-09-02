@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'model/entity'
 require_relative 'model/fields'
 

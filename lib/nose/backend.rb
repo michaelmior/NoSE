@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   # Communication with backends for index creation and statement execution
   module Backend

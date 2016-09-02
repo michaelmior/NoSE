@@ -15,7 +15,7 @@ times = {
   setup_model: 0,
   solve: 0
 }
-NoSE::Timer.enable do |cls, method, time|
+NoSE::Timer.enable do |_cls, method, time|
   times[method] = time if times.key? method
 end
 
@@ -33,13 +33,13 @@ sgen = NoSE::Random::StatementGenerator.new workload.model
   path_length = 3 if i <= factor
 
   r = rand
-  if r > 0.95
-    conditions = 3
-  elsif r > 0.75
-    conditions = 2
-  else
-    conditions = 1
-  end
+  conditions = if r > 0.95
+                 3
+               elsif r > 0.75
+                 2
+               else
+                 1
+               end
   q = sgen.random_query path_length,
                         3,
                         conditions,

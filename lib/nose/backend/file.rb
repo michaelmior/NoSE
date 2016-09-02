@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module NoSE
   module Backend
     # Simple backend which persists data to a file

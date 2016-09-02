@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Insipired by the blog post below on data modeling in Cassandra
 # www.ebaytechblog.com/2012/07/16/cassandra-data-modeling-best-practices-part-1/
 
