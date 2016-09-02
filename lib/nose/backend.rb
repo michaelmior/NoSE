@@ -66,7 +66,7 @@ module NoSE
       # Prepare a query to be executed with the given plans
       # @return [PreparedQuery]
       def prepare_query(query, fields, conditions, plans = [])
-        plan = plans.empty? ? find_query_plans(query) : plans.first
+        plan = plans.empty? ? find_query_plan(query) : plans.first
 
         state = Plans::QueryState.new(query, @model) unless query.nil?
         first_step = Plans::RootPlanStep.new state
@@ -287,12 +287,14 @@ module NoSE
       private
 
       # Find plans for a given query
-      # @return [Array<Plans::QueryPlan>]
-      def find_query_plans(query)
+      # @return [Plans::QueryPlan]
+      def find_query_plan(query)
         plan = @plans.find do |possible_plan|
           possible_plan.query == query
         end unless query.nil?
         fail PlanNotFound if plan.nil?
+
+        plan
       end
 
       # Prepare all the steps for executing a given query
