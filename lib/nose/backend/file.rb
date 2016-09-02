@@ -114,7 +114,7 @@ module NoSE
           condition_list = result_conditions conditions, results
 
           # Loop through all rows to find the matching ones
-          rows = @client[@index.key]
+          rows = @client[@index.key] || []
           selected = condition_list.flat_map do |condition|
             rows.select { |row| row_matches? row, condition }
           end.compact
