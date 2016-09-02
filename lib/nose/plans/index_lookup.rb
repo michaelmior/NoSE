@@ -46,38 +46,44 @@ module NoSE
       # returning a possible application of the step
       # @return [IndexLookupPlanStep]
       def self.apply(parent, index, state)
-        # Check that this index is a valid continuation of the set of joins
-        return nil unless index.graph.entities.include?(state.joins.first) &&
-                          (index.graph.unique_edges &
-                           state.graph.unique_edges ==
-                           index.graph.unique_edges)
-
-        # We must move forward on each lookup
-        # XXX This disallows plans which look up additional attributes
-        #     for entities other than the final one
-        return nil if index.graph.size == 1 && state.graph.size > 1 &&
-                      !parent.is_a?(RootPlanStep)
-        return nil if index.identity? && state.graph.size > 1
-
-        return nil if invalid_parent_index? state, index, parent.parent_index
-
-        # We need all hash fields to perform the lookup
-        return nil unless index.hash_fields.all? do |field|
-          (parent.fields + state.given_fields).include? field
+        # Validate several conditions which identify if this index is usable
+        begin
+          check_joins index, state
+          check_forward_lookup parent, index, state
+          check_parent_index parent, index, state
+          check_all_hash_fields parent, index, state
+          check_graph_fields parent, index, state
+          check_last_fields index, state
+        rescue InvalidIndex
+          return nil
         end
 
-        # Get fields in the query relevant to this index
-        # and check that they are provided for us here
-        hash_entity = index.hash_fields.first.parent
-        graph_fields = state.fields_for_graph(index.graph, hash_entity).to_set
-        graph_fields -= parent.fields # exclude fields already fetched
-        return nil unless graph_fields.subset?(index.all_fields)
-
-        return IndexLookupPlanStep.new(index, state, parent) \
-          if last_fields?(index, state)
-
-        nil
+        IndexLookupPlanStep.new(index, state, parent)
       end
+
+      # Check that this index is a valid continuation of the set of joins
+      # @raise [InvalidIndex]
+      # @return [void]
+      def self.check_joins(index, state)
+        fail InvalidIndex \
+          unless index.graph.entities.include?(state.joins.first) &&
+                 (index.graph.unique_edges &
+                  state.graph.unique_edges ==
+                  index.graph.unique_edges)
+      end
+      private_class_method :check_joins
+
+      # Check that this index moves forward on the list of joins
+      # @raise [InvalidIndex]
+      # @return [void]
+      def self.check_forward_lookup(parent, index, state)
+        # XXX This disallows plans which look up additional attributes
+        #     for entities other than the final one
+        fail InvalidIndex if index.graph.size == 1 && state.graph.size > 1 &&
+                             !parent.is_a?(RootPlanStep)
+        fail InvalidIndex if index.identity? && state.graph.size > 1
+      end
+      private_class_method :check_forward_lookup
 
       # Check if this index can be used after the current parent
       # @return [Boolean]
@@ -104,6 +110,37 @@ module NoSE
       end
       private_class_method :invalid_parent_index?
 
+      # Check that this index is a valid continuation of the set of joins
+      # @raise [InvalidIndex]
+      # @return [void]
+      def self.check_parent_index(parent, index, state)
+        fail InvalidIndex \
+          if invalid_parent_index? state, index, parent.parent_index
+      end
+      private_class_method :check_parent_index
+
+      # Check that we have all hash fields needed to perform the lookup
+      # @raise [InvalidIndex]
+      # @return [void]
+      def self.check_all_hash_fields(parent, index, state)
+        fail InvalidIndex unless index.hash_fields.all? do |field|
+          (parent.fields + state.given_fields).include? field
+        end
+      end
+      private_class_method :check_all_hash_fields
+
+      # Get fields in the query relevant to this index
+      # and check that they are provided for us here
+      # @raise [InvalidIndex]
+      # @return [void]
+      def self.check_graph_fields(parent, index, state)
+        hash_entity = index.hash_fields.first.parent
+        graph_fields = state.fields_for_graph(index.graph, hash_entity).to_set
+        graph_fields -= parent.fields # exclude fields already fetched
+        fail InvalidIndex unless graph_fields.subset?(index.all_fields)
+      end
+      private_class_method :check_graph_fields
+
       # Check that we have the required fields to move on with the next lookup
       # @return [Boolean]
       def self.last_fields?(index, state)
@@ -122,6 +159,13 @@ module NoSE
         end
       end
       private_class_method :last_fields?
+
+      # @raise [InvalidIndex]
+      # @return [void]
+      def self.check_last_fields(index, state)
+        fail InvalidIndex unless last_fields?(index, state)
+      end
+      private_class_method :check_last_fields
 
       private
 
@@ -248,6 +292,9 @@ module NoSE
         strip_graph
         update_cardinality parent, indexed_by_id
       end
+    end
+
+    class InvalidIndex < StandardError
     end
   end
 end
