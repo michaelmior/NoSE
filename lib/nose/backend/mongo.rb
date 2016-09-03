@@ -44,7 +44,15 @@ module NoSE
 
           # Combine the key paths for all fields to create a compound index
           index_spec = Hash[keys.map do |key|
-            [index.graph.longest_path.path_for_field(key).join('.'), 1]
+            # Find the path from the hash entity to the given key
+            key_path = index.graph.path_between index.hash_fields.first.parent,
+                                                key.parent
+            key_path = key_path.path_for_field(key).join('.')
+
+            # Use _id for any primary keys
+            key_path[-1] = '_id' if key.is_a? Fields::IDField
+
+            [key_path, 1]
           end]
 
           ddl << "Add index #{index_spec} to #{id_graph.key} (#{index.key})"
