@@ -12,6 +12,7 @@ GEM
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
     blankslate (3.1.3)
+    bson (4.1.1)
     builder (3.2.2)
     byebug (9.0.5)
     cassandra-driver (3.0.3)
@@ -63,6 +64,8 @@ GEM
     method_source (0.8.2)
     mipper (0.0.7)
       ffi (~> 1.9)
+    mongo (2.2.5)
+      bson (~> 4.0)
     multi_json (1.12.1)
     multi_test (0.1.2)
     mustache (1.0.3)
@@ -159,6 +162,7 @@ DEPENDENCIES
   gruff
   logging
   mipper
+  mongo
   mysql2
   parallel
   parslet

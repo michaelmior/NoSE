@@ -58,3 +58,7 @@ end
 group :cassandra do
   gem 'cassandra-driver'
 end
+
+group :mongo do
+  gem 'mongo'
+end
