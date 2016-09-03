@@ -214,6 +214,16 @@ module NoSE
       split(entity) + target
     end
 
+    # Get the named path to reach this field through the list of keys
+    # @return [Array<String>]
+    def path_for_field(field)
+      return [field.name] if @keys.first.parent == field.parent
+
+      @keys.each_cons(2).take_while do |prev_key, _|
+        prev_key.entity != field.parent
+      end.map(&:last).map(&:name) << field.name
+    end
+
     # Find the parent of a given field
     # @Return [Entity]
     def find_field_parent(field)
