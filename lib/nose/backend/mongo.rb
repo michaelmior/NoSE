@@ -44,15 +44,7 @@ module NoSE
 
           # Combine the key paths for all fields to create a compound index
           index_spec = Hash[keys.map do |key|
-            # Find the path from the hash entity to the given key
-            key_path = index.graph.path_between index.hash_fields.first.parent,
-                                                key.parent
-            key_path = key_path.path_for_field(key).join('.')
-
-            # Use _id for any primary keys
-            key_path[-1] = '_id' if key.is_a? Fields::IDField
-
-            [key_path, 1]
+            [field_path(index, key), 1]
           end]
 
           ddl << "Add index #{index_spec} to #{id_graph.key} (#{index.key})"
@@ -65,6 +57,20 @@ module NoSE
       end
 
       private
+
+      # Find the path to a given field
+      # @return [Array<String>]
+      def field_path(index, field)
+        # Find the path from the hash entity to the given key
+        field_path = index.graph.path_between index.hash_fields.first.parent,
+                                              field.parent
+        field_path = field_path.path_for_field(field).join('.')
+
+        # Use _id for any primary keys
+        field_path[-1] = '_id' if field.is_a? Fields::IDField
+
+        field_path
+      end
 
       # Create a Mongo client from the saved config
       def client
