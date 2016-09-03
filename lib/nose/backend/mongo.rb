@@ -44,7 +44,7 @@ module NoSE
 
           # Combine the key paths for all fields to create a compound index
           index_spec = Hash[keys.map do |key|
-            [field_path(index, key), 1]
+            [field_path(index, key).join('.'), 1]
           end]
 
           ddl << "Add index #{index_spec} to #{id_graph.key} (#{index.key})"
@@ -56,6 +56,29 @@ module NoSE
         ddl
       end
 
+      # Insert a chunk of rows into an index
+      def index_insert_chunk(index, chunk)
+        # We only need to insert into indexes which are ID graphs
+        fail unless index == index.to_id_graph
+
+        chunk.map! do |row|
+          row_hash = Hash.new { |h, k| h[k] = Hash.new(&h.default_proc) }
+          index.all_fields.each do |field|
+            field_path = field_path(index, field)
+            entity_hash = field_path[0..-2].reduce(row_hash) { |h, k| h[k] }
+
+            if field_path.last == '_id'
+              entity_hash[field_path.last] = BSON::ObjectId.new
+            else
+              entity_hash[field_path.last] = row[field.id]
+            end
+          end
+
+          row_hash
+        end
+        client[index.key].insert_many chunk
+      end
+
       private
 
       # Find the path to a given field
@@ -64,7 +87,7 @@ module NoSE
         # Find the path from the hash entity to the given key
         field_path = index.graph.path_between index.hash_fields.first.parent,
                                               field.parent
-        field_path = field_path.path_for_field(field).join('.')
+        field_path = field_path.path_for_field(field)
 
         # Use _id for any primary keys
         field_path[-1] = '_id' if field.is_a? Fields::IDField
