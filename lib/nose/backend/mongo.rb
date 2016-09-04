@@ -116,7 +116,11 @@ module NoSE
               { MongoBackend.field_path(@index, c.field).join('.') => value }
             end
 
-            @client[@index.to_id_graph.key].find(*query_doc).to_a
+            order = @step.order_by.map do |field|
+              { MongoBackend.field_path(@index, field).join('.') => 1 }
+            end
+
+            @client[@index.to_id_graph.key].find(*query_doc).sort(*order).to_a
           end
 
           # Limit the size of the results in case we fetched multiple keys
