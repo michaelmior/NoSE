@@ -93,7 +93,7 @@ module NoSE
         field_path
       end
 
-      # A query step to look up data from a particular column family
+      # A query step to look up data from a particular collection
       class IndexLookupStatementStep < BackendBase::IndexLookupStatementStep
         # rubocop:disable Metrics/ParameterLists
         def initialize(client, select, conditions, step, next_step, prev_step)
