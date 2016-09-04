@@ -110,17 +110,35 @@ module NoSE
 
           new_result = condition_list.flat_map do |conditions|
             query_doc = conditions.map do |c|
-              value = c.value
-              value = BSON::ObjectId(value) if c.field.is_a? Fields::IDField
+              match = c.value
+              match = BSON::ObjectId(match) if c.field.is_a? Fields::IDField
 
-              { MongoBackend.field_path(@index, c.field).join('.') => value }
-            end
+              # For range operators, find the corresponding MongoDB operator
+              if c.operator != :'='
+                op = case c.operator
+                     when :>
+                       '$gt'
+                     when :>=
+                       '$gte'
+                     when :<
+                       '$lt'
+                     when :<=
+                       '$lte'
+                     end
+                match = { op => match }
+              end
+
+              { MongoBackend.field_path(@index, c.field).join('.') => match }
+            end.reduce(&:merge)
 
             order = @step.order_by.map do |field|
               { MongoBackend.field_path(@index, field).join('.') => 1 }
             end
 
-            @client[@index.to_id_graph.key].find(*query_doc).sort(*order).to_a
+            result = @client[@index.to_id_graph.key].find(query_doc)
+            result = result.sort(*order) unless order.empty?
+
+            result.to_a
           end
 
           # Limit the size of the results in case we fetched multiple keys
