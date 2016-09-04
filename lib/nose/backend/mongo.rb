@@ -44,7 +44,7 @@ module NoSE
 
           # Combine the key paths for all fields to create a compound index
           index_spec = Hash[keys.map do |key|
-            [field_path(index, key).join('.'), 1]
+            [self.class.field_path(index, key).join('.'), 1]
           end]
 
           ddl << "Add index #{index_spec} to #{id_graph.key} (#{index.key})"
@@ -64,7 +64,7 @@ module NoSE
         chunk.map! do |row|
           row_hash = Hash.new { |h, k| h[k] = Hash.new(&h.default_proc) }
           index.all_fields.each do |field|
-            field_path = field_path(index, field)
+            field_path = self.class.field_path(index, field)
             entity_hash = field_path[0..-2].reduce(row_hash) { |h, k| h[k] }
 
             if field_path.last == '_id'
@@ -79,11 +79,9 @@ module NoSE
         client[index.key].insert_many chunk
       end
 
-      private
-
       # Find the path to a given field
       # @return [Array<String>]
-      def field_path(index, field)
+      def self.field_path(index, field)
         # Find the path from the hash entity to the given key
         field_path = index.graph.path_between index.hash_fields.first.parent,
                                               field.parent
@@ -94,6 +92,52 @@ module NoSE
 
         field_path
       end
+
+      # A query step to look up data from a particular column family
+      class IndexLookupStatementStep < BackendBase::IndexLookupStatementStep
+        # rubocop:disable Metrics/ParameterLists
+        def initialize(client, select, conditions, step, next_step, prev_step)
+          super
+
+          @logger = Logging.logger['nose::backend::mongo::indexlookupstep']
+        end
+        # rubocop:enable Metrics/ParameterLists
+
+        # Perform a column family lookup in MongoDB
+        def process(conditions, results)
+          results = initial_results(conditions) if results.nil?
+          condition_list = result_conditions conditions, results
+
+          new_result = condition_list.flat_map do |conditions|
+            query_doc = conditions.map do |c|
+              value = c.value
+              value = BSON::ObjectId(value) if c.field.is_a? Fields::IDField
+
+              { MongoBackend.field_path(@index, c.field).join('.') => value }
+            end
+
+            @client[@index.to_id_graph.key].find(*query_doc).to_a
+          end
+
+          # Limit the size of the results in case we fetched multiple keys
+          rows_from_mongo new_result[0..(@step.limit.nil? ? -1 : @step.limit)]
+        end
+
+        private
+
+        # Convert documens returned from MongoDB into the format we understand
+        # @return [Array<Hash>]
+        def rows_from_mongo(rows)
+          rows.map! do |row|
+            Hash[@step.fields.map do |field|
+              field_path = MongoBackend.field_path(@index, field)
+              [field.id, field_path.reduce(row) { |h, p| h[p] }]
+            end]
+          end
+        end
+      end
+
+      private
 
       # Create a Mongo client from the saved config
       def client
