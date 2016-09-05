@@ -85,7 +85,7 @@ module NoSE
       # Return relevant data on the results of the ILP
       # @return [Results]
       def result
-        result = Results.new self
+        result = Results.new self, @data[:by_id_graph]
         result.enumerated_indexes = indexes
         result.indexes = selected_indexes
 

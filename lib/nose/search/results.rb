@@ -7,11 +7,12 @@ module NoSE
       attr_reader :cost_model
       attr_accessor :enumerated_indexes, :indexes, :total_size, :total_cost,
                     :workload, :update_plans, :plans,
-                    :revision, :time, :command
+                    :revision, :time, :command, :by_id_graph
 
-      def initialize(problem = nil)
+      def initialize(problem = nil, by_id_graph = false)
         @problem = problem
         return if problem.nil?
+        @by_id_graph = by_id_graph
 
         # Find the indexes the ILP says the query should use
         @query_indexes = Hash.new { |h, k| h[k] = Set.new }
@@ -104,8 +105,14 @@ module NoSE
       # Check that the indexes selected were actually enumerated
       # @return [void]
       def validate_indexes
+        # We may not have enumerated ID graphs
+        check_indexes = @indexes.dup
+        @indexes.each do |index|
+          check_indexes.delete index.to_id_graph
+        end if @by_id_graph
+
         fail InvalidResultsException unless \
-          (@indexes - @enumerated_indexes).empty?
+          (check_indexes - @enumerated_indexes).empty?
       end
 
       # Ensure we only have necessary update plans which use available indexes
