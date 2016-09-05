@@ -81,7 +81,8 @@ module NoSE
 
       # Sample a number of values from the given index
       def index_sample(index, count)
-        query = "SELECT #{index.all_fields.map(&:id).join ', '} " \
+        field_list = index.all_fields.map { |f| "\"#{f.id}\"" }
+        query = "SELECT #{field_list.join ', '} " \
                 "FROM \"#{index.key}\" LIMIT #{count}"
         rows = client.execute(query).rows
 
@@ -204,8 +205,8 @@ module NoSE
         # The CQL used to insert the fields into the index
         def insert_cql
           insert = "INSERT INTO #{@index.key} ("
-          insert += @fields.join(', ') + ') VALUES ('
-          insert += (['?'] * @fields.length).join(', ') + ')'
+          insert += @fields.map { |f| "\"#{f}\"" }.join(', ')
+          insert += ') VALUES (' + (['?'] * @fields.length).join(', ') + ')'
 
           insert
         end
@@ -220,7 +221,7 @@ module NoSE
 
           # Prepare the statement required to perform the deletion
           delete = "DELETE FROM #{index.key} WHERE "
-          delete += @index_keys.map { |key| "#{key.id} = ?" }.join ' AND '
+          delete += @index_keys.map { |key| "\"#{key.id}\" = ?" }.join ' AND '
           @prepared = client.prepare delete
         end
 
@@ -278,7 +279,7 @@ module NoSE
         # @return [String]
         def select_cql(select, conditions)
           select = expand_selected_fields select
-          cql = "SELECT #{select.map(&:id).join ', '} FROM " \
+          cql = "SELECT #{select.map { |f| "\"#{f.id}\"" }.join ', '} FROM " \
                 "\"#{@step.index.key}\" WHERE #{cql_where_clause conditions}"
           cql += cql_order_by
 
@@ -292,11 +293,11 @@ module NoSE
         # @return [String]
         def cql_where_clause(conditions)
           where = @eq_fields.map do |field|
-            "#{field.id} = ?"
+            "\"#{field.id}\" = ?"
           end.join ' AND '
           unless @range_field.nil?
             condition = conditions.values.find(&:range?)
-            where += " AND #{condition.field.id} #{condition.operator} ?"
+            where += " AND \"#{condition.field.id}\" #{condition.operator} ?"
           end
 
           where
@@ -312,7 +313,7 @@ module NoSE
           #
           #         SELECT * FROM cf WHERE id=? AND col1=? ORDER by col1, col2
           return '' if @step.order_by.empty?
-          ' ORDER BY ' + @step.order_by.map(&:id).join(', ')
+          ' ORDER BY ' + @step.order_by.map { |f| "\"#{f.id}\"" }.join(', ')
         end
 
         # Lookup values from an index selecting the given

@@ -30,9 +30,10 @@ module NoSE
 
         # Validate the expected CQL query
         client = double('client')
-        backend_query = 'SELECT User_Username, Tweet_Timestamp, Tweet_Body ' \
-                        "FROM \"#{index.key}\" WHERE User_Username = ? " \
-                        'ORDER BY Tweet_Timestamp LIMIT 10'
+        backend_query = 'SELECT "User_Username", "Tweet_Timestamp", ' \
+                        '"Tweet_Body" ' + "FROM \"#{index.key}\" " \
+                        'WHERE "User_Username" = ? ' \
+                        'ORDER BY "Tweet_Timestamp" LIMIT 10'
         expect(client).to receive(:prepare).with(backend_query) \
           .and_return(backend_query)
 
@@ -57,8 +58,8 @@ module NoSE
           'Link_LinkId' => nil,
           'Link_URL' => 'http://www.example.com/'
         }]
-        backend_insert = "INSERT INTO #{index.key} (Link_LinkId, Link_URL) " \
-                         'VALUES (?, ?)'
+        backend_insert = "INSERT INTO #{index.key} (\"Link_LinkId\", " \
+                         '"Link_URL") VALUES (?, ?)'
         expect(client).to receive(:prepare).with(backend_insert) \
           .and_return(backend_insert)
         expect(client).to receive(:execute) \
@@ -73,7 +74,7 @@ module NoSE
       it 'can delete from an index' do
         client = double('client')
         index = link.simple_index
-        backend_delete = "DELETE FROM #{index.key} WHERE Link_LinkId = ?"
+        backend_delete = "DELETE FROM #{index.key} WHERE \"Link_LinkId\" = ?"
         expect(client).to receive(:prepare).with(backend_delete) \
           .and_return(backend_delete)
         expect(client).to receive(:execute) \
