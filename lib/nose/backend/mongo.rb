@@ -104,12 +104,11 @@ module NoSE
         # Insert each row into the index
         def process(results)
           results.each do |result|
-            values = Hash[@fields.map do |key|
-              cur_field = @index.all_fields.find { |field| field.id == key }
-              value = result[key]
+            values = Hash[@index.all_fields.map do |field|
+              value = result[field.id]
 
               # If this is an ID, generate or construct an ObjectId
-              if cur_field.is_a?(Fields::IDField)
+              if field.is_a?(Fields::IDField)
                 value = if value.nil?
                           BSON::ObjectId.new
                         else
@@ -117,8 +116,9 @@ module NoSE
                         end
               end
 
-              [MongoBackend.field_path(@index, cur_field).join('.'), value]
-            end]
+              next if value.nil?
+              [MongoBackend.field_path(@index, field).join('.'), value]
+            end.compact]
 
             @client[@index.to_id_graph.key].update_one(
               { '_id' => values['_id'] },
