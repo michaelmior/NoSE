@@ -112,7 +112,11 @@ module NoSE
 
         # Start with fields specified in the settings and conditions
         # (rewrite from foreign keys to IDs if needed)
-        fields = update.settings.map(&:field)
+        fields = if update.is_a?(Connection) || update.is_a?(Delete)
+                   []
+                 else
+                   update.settings.map(&:field)
+                 end
         fields += update.conditions.each_value.map(&:field)
         fields.map! do |field|
           field.is_a?(Fields::ForeignKeyField) ? field.entity.id_field : field
