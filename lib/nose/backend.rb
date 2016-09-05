@@ -419,7 +419,7 @@ module NoSE
         return if @insert_step.nil?
 
         # Get the fields which should be used from the original statement
-        # If we deleted old entries, then we just need the primary key
+        # If we didn't delete old entries, then we just need the primary key
         # attributes of the index, otherwise we need everything
         index = @insert_step.index
         include_fields = if @delete_step.nil?
