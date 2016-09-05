@@ -77,7 +77,7 @@ module NoSE
         return if @status.nil?
         return @selected_indexes if @selected_indexes
 
-        @selected_indexes = @indexes.select do |index|
+        @selected_indexes = @index_vars.each_key.select do |index|
           @index_vars[index].value
         end.to_set
       end
