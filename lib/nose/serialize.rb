@@ -412,6 +412,7 @@ module NoSE
           builder.call [], represented: represented, fragment: plan
         end
         update_plan.instance_variable_set(:@query_plans, query_plans)
+        update_plan.send :update_support_fields
 
         update_plan
       end

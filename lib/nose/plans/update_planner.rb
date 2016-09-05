@@ -21,7 +21,8 @@ module NoSE
 
     # A plan for executing an update
     class UpdatePlan < AbstractPlan
-      attr_reader :statement, :index, :query_plans, :update_steps, :cost_model
+      attr_reader :statement, :index, :query_plans, :update_steps, :cost_model,
+                  :update_fields
 
       include Comparable
 
@@ -33,6 +34,19 @@ module NoSE
         update_steps.each { |step| step.calculate_cost cost_model }
         @update_steps = update_steps
         @cost_model = cost_model
+
+        # Update with fields specified in the settings and conditions
+        # (rewrite from foreign keys to IDs if needed)
+        @update_fields = if statement.is_a?(Connection) ||
+                            statement.is_a?(Delete)
+                           []
+                         else
+                           statement.settings.map(&:field)
+                         end
+        @update_fields += statement.conditions.each_value.map(&:field)
+        @update_fields.map! do |field|
+          field.is_a?(Fields::ForeignKeyField) ? field.entity.id_field : field
+        end
       end
 
       # The weight of this query for a given workload
@@ -95,6 +109,8 @@ module NoSE
           end
         end
 
+        update_support_fields
+
         @trees = nil
       end
 
@@ -141,6 +157,15 @@ module NoSE
       end
 
       private
+
+      # Add fields from support queries to those which should be updated
+      # @return [void]
+      def update_support_fields
+        # Add fields fetched from support queries
+        @update_fields += @query_plans.flat_map do |query_plan|
+          query_plan.query.select.to_a
+        end.compact
+      end
 
       # Ensure we only use primary keys for conditions
       # @return [Hash]

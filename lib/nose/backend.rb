@@ -110,18 +110,6 @@ module NoSE
         plans = find_update_plans(update) if plans.empty?
         fail PlanNotFound if plans.empty?
 
-        # Start with fields specified in the settings and conditions
-        # (rewrite from foreign keys to IDs if needed)
-        fields = if update.is_a?(Connection) || update.is_a?(Delete)
-                   []
-                 else
-                   update.settings.map(&:field)
-                 end
-        fields += update.conditions.each_value.map(&:field)
-        fields.map! do |field|
-          field.is_a?(Fields::ForeignKeyField) ? field.entity.id_field : field
-        end
-
         # Prepare each plan
         plans.map do |plan|
           delete = false
@@ -131,14 +119,9 @@ module NoSE
             insert = true if step.is_a?(Plans::InsertPlanStep)
           end
 
-          # Add fields fetched from support queries
-          fields = fields.dup + plan.query_plans.flat_map do |query_plan|
-            query_plan.query.select.to_a
-          end.compact
-
           steps = []
           add_delete_step(plan, steps) if delete
-          add_insert_step(plan, steps, fields) if insert
+          add_insert_step(plan, steps, plan.update_fields) if insert
 
           PreparedUpdate.new update, prepare_support_plans(plan), steps
         end

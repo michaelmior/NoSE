@@ -197,10 +197,7 @@ module NoSE
           end
         end
 
-        update_settings = plan.update_steps.last.fields.map do |field|
-          FieldSetting.new field, nil
-        end
-        prepared = backend.prepare_update nil, update_settings, [plan]
+        prepared = backend.prepare_update nil, [plan]
 
         measurement = Measurements::Measurement.new plan, weight: weight
 

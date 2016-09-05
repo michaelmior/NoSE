@@ -160,6 +160,12 @@ module NoSE
         @query_plans = []
       end
 
+      # Produce the fields updated by this plan
+      # @return [Array<Fields::Field>]
+      def update_fields
+        @update_steps.last.fields
+      end
+
       # These plans have no associated query
       # @return [nil]
       def query
