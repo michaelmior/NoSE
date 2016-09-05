@@ -480,7 +480,10 @@ module NoSE
         end]
         setting_values = Hash[settings.map { |k, v| [k, v.value] }]
 
-        if @support_plans.empty?
+        # If we have no query for IDs on the first entity, we must
+        # have the fields we need to execute the other support queries
+        if !@statement.nil? &&
+           @support_plans.first.query.entity != @statement.entity
           support = @support_plans.map do |plan|
             plan.execute settings
           end
