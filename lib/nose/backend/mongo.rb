@@ -93,6 +93,42 @@ module NoSE
         field_path
       end
 
+      # Insert data into an index on the backend
+      class InsertStatementStep < BackendBase::InsertStatementStep
+        def initialize(client, index, fields)
+          super
+
+          @fields = fields.map(&:id) & index.all_fields.map(&:id)
+        end
+
+        # Insert each row into the index
+        def process(results)
+          results.each do |result|
+            values = Hash[@fields.map do |key|
+              cur_field = @index.all_fields.find { |field| field.id == key }
+              value = result[key]
+
+              # If this is an ID, generate or construct an ObjectId
+              if cur_field.is_a?(Fields::IDField)
+                value = if value.nil?
+                          BSON::ObjectId.new
+                        else
+                          BSON::ObjectId.from_string(value)
+                        end
+              end
+
+              [MongoBackend.field_path(@index, cur_field).join('.'), value]
+            end]
+
+            @client[@index.to_id_graph.key].update_one(
+              { '_id' => values['_id'] },
+              { '$set' => values },
+              upsert: true
+            )
+          end
+        end
+      end
+
       # A query step to look up data from a particular collection
       class IndexLookupStatementStep < BackendBase::IndexLookupStatementStep
         # rubocop:disable Metrics/ParameterLists
