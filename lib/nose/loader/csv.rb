@@ -17,6 +17,8 @@ module NoSE
       # Load data for all the indexes
       def load(indexes, config, show_progress = false, limit = nil,
                skip_existing = true)
+        indexes.map!(&:to_id_graph).uniq! if @backend.by_id_graph
+
         simple_indexes = find_simple_indexes indexes, skip_existing
         simple_indexes.each do |entity, simple_index_list|
           filename = File.join config[:directory], "#{entity.name}.csv"

@@ -16,6 +16,8 @@ module NoSE
       # Load a generated set of indexes with data from MySQL
       def load(indexes, config, show_progress = false, limit = nil,
                skip_existing = true)
+        indexes.map!(&:to_id_graph).uniq! if @backend.by_id_graph
+
         # XXX Assuming backend is thread-safe
         Parallel.each(indexes, in_threads: 2) do |index|
           client = new_client config

@@ -12,6 +12,12 @@ module NoSE
         @update_plans = update_plans
       end
 
+      # By default, do not use ID graphs
+      # @return [Boolean]
+      def by_id_graph
+        false
+      end
+
       # @abstract Subclasses implement to check if an index is empty
       # @return [Boolean]
       def index_empty?(_index)

@@ -13,6 +13,12 @@ module NoSE
         @database = config[:database]
       end
 
+      # MongoDB uses ID graphs for column families
+      # @return [Boolean]
+      def by_id_graph
+        true
+      end
+
       # Create new MongoDB collections for each index
       def indexes_ddl(execute = false, skip_existing = false,
                       drop_existing = false)

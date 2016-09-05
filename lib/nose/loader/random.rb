@@ -16,7 +16,9 @@ module NoSE
       def load(indexes, config, show_progress = false, limit = nil,
                skip_existing = true)
         limit = 1 if limit.nil?
-        indexes.map(&:to_id_graph).uniq.each do |index|
+
+        indexes.map!(&:to_id_graph).uniq! if @backend.by_id_graph
+        indexes.uniq.each do |index|
           load_index index, config, show_progress, limit, skip_existing
         end
       end
