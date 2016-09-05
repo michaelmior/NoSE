@@ -214,15 +214,15 @@ module NoSE
         @indexes.each do |index|
           @index_vars[index] = MIPPeR::Variable.new 0, 1, 0, :binary, index.key
 
-          # If needed when grouping by ID path, add an extra
-          # variable for the base index based on the ID path
-          if @data[:by_id_path]
-            id_path = index.to_id_path
-            if id_path != index
-              @index_vars[id_path] = MIPPeR::Variable.new 0, 1, 0, :binary,
-                                                          id_path.key
-              name = "ID_#{id_path.key}_#{index.key}"
-              constr = MIPPeR::Constraint.new @index_vars[id_path] * 1.0 + \
+          # If needed when grouping by ID graph, add an extra
+          # variable for the base index based on the ID graph
+          if @data[:by_id_graph]
+            id_graph = index.to_id_graph
+            if id_graph != index
+              @index_vars[id_graph] = MIPPeR::Variable.new 0, 1, 0, :binary,
+                                                           id_graph.key
+              name = "ID_#{id_graph.key}_#{index.key}"
+              constr = MIPPeR::Constraint.new @index_vars[id_graph] * 1.0 + \
                                               @index_vars[index] * -1.0,
                                               :<=, 0, name
               @model << constr

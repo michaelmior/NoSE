@@ -161,8 +161,6 @@ module NoSE
       # @return [void]
       def populate_update_costs(planner, statement, indexes,
                                 update_costs, update_plans)
-        indexes = indexes.map(&:to_id_graph).uniq if @by_id_graph
-
         planner.find_plans_for_update(statement, indexes).each do |plan|
           weight = @workload.statement_weights[statement]
           update_costs[statement][plan.index] = plan.update_cost * weight
