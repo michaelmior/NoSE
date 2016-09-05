@@ -212,25 +212,6 @@ module NoSE
         @index_vars = {}
         @query_vars = {}
         @indexes.each do |index|
-          @index_vars[index] = MIPPeR::Variable.new 0, 1, 0, :binary, index.key
-
-          # If needed when grouping by ID graph, add an extra
-          # variable for the base index based on the ID graph
-          if @data[:by_id_graph]
-            id_graph = index.to_id_graph
-            if id_graph != index
-              @index_vars[id_graph] = MIPPeR::Variable.new 0, 1, 0, :binary,
-                                                           id_graph.key
-              name = "ID_#{id_graph.key}_#{index.key}"
-              constr = MIPPeR::Constraint.new @index_vars[id_graph] * 1.0 + \
-                                              @index_vars[index] * -1.0,
-                                              :<=, 0, name
-              @model << constr
-            end
-          end
-
-          @model << @index_vars[index]
-
           @query_vars[index] = {}
           @queries.each_with_index do |query, q|
             query_var = "q#{q}_#{index.key}"
@@ -238,7 +219,30 @@ module NoSE
             @model << var
             @query_vars[index][query] = var
           end
+
+          @index_vars[index] = MIPPeR::Variable.new 0, 1, 0, :binary, index.key
+
+          # If needed when grouping by ID graph, add an extra
+          # variable for the base index based on the ID graph
+          next unless @data[:by_id_graph]
+          id_graph = index.to_id_graph
+          next if id_graph == index
+
+          # Add a new variable for the ID graph if needed
+          unless @index_vars.key? id_graph
+            @index_vars[id_graph] = MIPPeR::Variable.new 0, 1, 0, :binary,
+                                                         id_graph.key
+          end
+
+          # Ensure that the ID graph of this index is present if we use it
+          name = "ID_#{id_graph.key}_#{index.key}"
+          constr = MIPPeR::Constraint.new @index_vars[id_graph] * 1.0 + \
+                                          @index_vars[index] * -1.0,
+                                          :>=, 0, name
+          @model << constr
         end
+
+        @index_vars.each_value { |var| @model << var }
       end
 
       # Prepare variables and constraints to account for the cost of sorting
