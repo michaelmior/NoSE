@@ -85,6 +85,30 @@ module NoSE
         client[index.key].insert_many chunk
       end
 
+      # Sample a number of values from the given index
+      def index_sample(index, count)
+        rows = client[index.to_id_graph.key].aggregate(
+          [
+            { '$sample' => { 'size' => count } }
+          ]
+        ).to_a
+
+        MongoBackend.rows_from_mongo rows, index
+      end
+
+      # Convert documens returned from MongoDB into the format we understand
+      # @return [Array<Hash>]
+      def self.rows_from_mongo(rows, index, fields = nil)
+        fields = index.all_fields if fields.nil?
+
+        rows.map! do |row|
+          Hash[fields.map do |field|
+            field_path = MongoBackend.field_path(index, field)
+            [field.id, field_path.reduce(row) { |h, p| h[p] }]
+          end]
+        end
+      end
+
       # Find the path to a given field
       # @return [Array<String>]
       def self.field_path(index, field)
@@ -161,7 +185,8 @@ module NoSE
           end
 
           # Limit the size of the results in case we fetched multiple keys
-          rows_from_mongo new_result[0..(@step.limit.nil? ? -1 : @step.limit)]
+          new_result = new_result[0..(@step.limit.nil? ? -1 : @step.limit)]
+          MongoBackend.rows_from_mongo new_result, @index, @step.fields
         end
 
         private
@@ -192,17 +217,6 @@ module NoSE
             '$lt'
           when :<=
             '$lte'
-          end
-        end
-
-        # Convert documens returned from MongoDB into the format we understand
-        # @return [Array<Hash>]
-        def rows_from_mongo(rows)
-          rows.map! do |row|
-            Hash[@step.fields.map do |field|
-              field_path = MongoBackend.field_path(@index, field)
-              [field.id, field_path.reduce(row) { |h, p| h[p] }]
-            end]
           end
         end
       end
