@@ -130,7 +130,13 @@ module NoSE
 
   # A query required to support an update
   class SupportQuery < Query
-    attr_reader :statement, :index
+    attr_reader :statement, :index, :entity
+
+    def initialize(entity, params, text, group: nil, label: nil)
+      super params, text, group: group, label: label
+
+      @entity = entity
+    end
 
     # Support queries must also have their statement and index checked
     def ==(other)

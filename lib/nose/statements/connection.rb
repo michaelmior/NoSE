@@ -71,7 +71,9 @@ module NoSE
           graph.entities.include? c.field.parent
         end
 
-        build_support_query index, graph, support_fields, conditions
+        split_entity = split_entity graph, index.graph, entity
+        build_support_query split_entity, index, graph, support_fields,
+                            conditions
       end.compact
     end
 

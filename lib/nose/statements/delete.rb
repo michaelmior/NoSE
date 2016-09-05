@@ -70,8 +70,8 @@ module NoSE
         unless @conditions.each_value.map(&:field).include? entity.id_field
       conditions = Hash[@conditions.map { |k, v| [k.dup, v.dup] }]
 
-      support_queries << build_support_query(index, graph, support_fields,
-                                             conditions)
+      support_queries << build_support_query(entity, index, graph,
+                                             support_fields, conditions)
       support_queries.compact + support_queries_for_entity(index, select)
     end
 

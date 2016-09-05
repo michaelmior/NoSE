@@ -86,8 +86,8 @@ module NoSE
       support_fields << entity.id_field \
         unless @conditions.each_value.map(&:field).include? entity.id_field
 
-      support_queries << build_support_query(index, graph, support_fields,
-                                             conditions)
+      support_queries << build_support_query(entity, index, graph,
+                                             support_fields, conditions)
       support_queries.compact + support_queries_for_entity(index, select)
     end
 

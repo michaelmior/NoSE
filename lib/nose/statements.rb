@@ -566,7 +566,7 @@ module NoSE
     # Build a support query to update a given index
     # and select fields with certain conditions
     # @return [SupportQuery]
-    def build_support_query(index, graph, select, conditions)
+    def build_support_query(entity, index, graph, select, conditions)
       return nil if select.empty?
 
       params = {
@@ -577,7 +577,7 @@ module NoSE
         conditions: conditions
       }
 
-      support_query = SupportQuery.new params, nil, group: @group
+      support_query = SupportQuery.new entity, params, nil, group: @group
       support_query.instance_variable_set :@statement, self
       support_query.instance_variable_set :@index, index
       support_query.instance_variable_set :@comment, (hash ^ index.hash).to_s
@@ -601,8 +601,18 @@ module NoSE
           entity.id_field.id => Condition.new(entity.id_field, :'=', nil)
         }
 
-        build_support_query index, graph, support_fields, conditions
+        split_entity = split_entity graph, index.graph, entity
+        build_support_query split_entity, index, graph, support_fields,
+                            conditions
       end.compact
+    end
+
+    # Determine which entity a subgraph was split at
+    # @return [Entity]
+    def split_entity(subgraph, graph, entity)
+      graph.keys_from_entity(entity).find do |key|
+        subgraph.entities.include? key.entity
+      end.entity
     end
   end
 
