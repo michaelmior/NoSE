@@ -506,9 +506,9 @@ module NoSE
       "#{@field.inspect} = #{value}"
     end
 
-    # Compare settings equal by their field and value
+    # Compare settings equal by their field
     def ==(other)
-      other.field == @field && other.value == @value
+      other.field == @field
     end
     alias eql? ==
 
