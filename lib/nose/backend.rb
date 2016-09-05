@@ -86,16 +86,13 @@ module NoSE
           prepare_query statement, statement.all_fields,
                         statement.conditions, plans
         elsif statement.is_a? Delete
-          prepare_update statement, [], plans
+          prepare_update statement, plans
         elsif statement.is_a? Disconnect
-          prepare_update statement, statement.conditions, plans
+          prepare_update statement, plans
         elsif statement.is_a? Connection
-          settings = statement.entity.fields.values.map do |field|
-            FieldSetting.new field, nil
-          end
-          prepare_update statement, settings, plans
+          prepare_update statement, plans
         else
-          prepare_update statement, statement.settings, plans
+          prepare_update statement, plans
         end
       end
 
@@ -108,10 +105,18 @@ module NoSE
 
       # Prepare an update for execution
       # @return [PreparedUpdate]
-      def prepare_update(update, update_settings, plans)
+      def prepare_update(update, plans)
         # Search for plans if they were not given
         plans = find_update_plans(update) if plans.empty?
         fail PlanNotFound if plans.empty?
+
+        # Start with fields specified in the settings and conditions
+        # (rewrite from foreign keys to IDs if needed)
+        fields = update.settings.map(&:field)
+        fields += update.conditions.each_value.map(&:field)
+        fields.map! do |field|
+          field.is_a?(Fields::ForeignKeyField) ? field.entity.id_field : field
+        end
 
         # Prepare each plan
         plans.map do |plan|
@@ -122,9 +127,14 @@ module NoSE
             insert = true if step.is_a?(Plans::InsertPlanStep)
           end
 
+          # Add fields fetched from support queries
+          fields = fields.dup + plan.query_plans.flat_map do |query_plan|
+            query_plan.query.select.to_a
+          end.compact
+
           steps = []
           add_delete_step(plan, steps) if delete
-          add_insert_step(plan, steps, update_settings) if insert
+          add_insert_step(plan, steps, fields) if insert
 
           PreparedUpdate.new update, prepare_support_plans(plan), steps
         end
@@ -133,7 +143,7 @@ module NoSE
       # Execute an update with the stored plans
       # @return [void]
       def update(update, plans = [])
-        prepared = prepare_update update, update.settings, plans
+        prepared = prepare_update update, plans
         prepared.each { |p| p.execute update.settings, update.conditions }
       end
 
@@ -338,13 +348,12 @@ module NoSE
 
       # Add an insert step to a prepared update plan
       # @return [void]
-      def add_insert_step(plan, steps, update_settings)
+      def add_insert_step(plan, steps, fields)
         step_class = InsertStatementStep
         subclass_step_name = step_class.name.sub \
           'NoSE::Backend::BackendBase', self.class.name
         step_class = Object.const_get subclass_step_name
-        steps << step_class.new(client, plan.index,
-                                update_settings.map(&:field))
+        steps << step_class.new(client, plan.index, fields)
       end
 
       # Prepare plans for each support query

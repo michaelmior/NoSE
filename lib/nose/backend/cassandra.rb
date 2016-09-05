@@ -169,12 +169,12 @@ module NoSE
         # Insert each row into the index
         def process(results)
           results.each do |result|
-            values = @fields.map do |key|
-              cur_field = @index.all_fields.find { |field| field.id == key }
-              value = result[key]
+            values = @index.all_fields.map do |field|
+              next unless result.key? field.id
+              value = result[field.id]
 
               # If this is an ID, generate or construct a UUID object
-              if cur_field.is_a?(Fields::IDField)
+              if field.is_a?(Fields::IDField)
                 value = if value.nil?
                           @generator.uuid
                         else

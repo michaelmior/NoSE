@@ -111,6 +111,7 @@ module NoSE
         def process(results)
           results.each do |result|
             values = Hash[@index.all_fields.map do |field|
+              next unless result.key? field.id
               value = result[field.id]
 
               # If this is an ID, generate or construct an ObjectId
@@ -121,8 +122,6 @@ module NoSE
                           BSON::ObjectId.from_string(value)
                         end
               end
-
-              next if value.nil?
               [MongoBackend.field_path(@index, field).join('.'), value]
             end.compact]
 
