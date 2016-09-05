@@ -30,6 +30,15 @@ module NoSE
     def hash
       Zlib.crc32 [@field.id, @operator].to_s
     end
+
+    # If the condition is on a foreign key, resolve
+    # it to the primary key of the related entity
+    # @return [Condition]
+    def resolve_foreign_key
+      return self unless field.is_a?(Fields::ForeignKeyField)
+
+      Condition.new @field.entity.id_field, @operator, @value
+    end
   end
 
   # Used to add a list of conditions to a {Statement}

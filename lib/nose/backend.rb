@@ -470,7 +470,14 @@ module NoSE
       # Execute all the support queries
       # @return [Array<Hash>]
       def support_results(settings)
-        # Get a hash of values used in settings
+        return [] if @support_plans.empty?
+
+        # Get a hash of values used in settings, first
+        # resolving any settings which specify foreign keys
+        settings = Hash[settings.map do |k, v|
+          new_condition = v.resolve_foreign_key
+          [new_condition.field.id, new_condition]
+        end]
         setting_values = Hash[settings.map { |k, v| [k, v.value] }]
 
         if @support_plans.empty?
