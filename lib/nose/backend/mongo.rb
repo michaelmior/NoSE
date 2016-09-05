@@ -136,6 +136,9 @@ module NoSE
           super
 
           @logger = Logging.logger['nose::backend::mongo::indexlookupstep']
+          @order = @step.order_by.map do |field|
+            { MongoBackend.field_path(@index, field).join('.') => 1 }
+          end
         end
         # rubocop:enable Metrics/ParameterLists
 
@@ -144,35 +147,10 @@ module NoSE
           results = initial_results(conditions) if results.nil?
           condition_list = result_conditions conditions, results
 
-          new_result = condition_list.flat_map do |conditions|
-            query_doc = conditions.map do |c|
-              match = c.value
-              match = BSON::ObjectId(match) if c.field.is_a? Fields::IDField
-
-              # For range operators, find the corresponding MongoDB operator
-              if c.operator != :'='
-                op = case c.operator
-                     when :>
-                       '$gt'
-                     when :>=
-                       '$gte'
-                     when :<
-                       '$lt'
-                     when :<=
-                       '$lte'
-                     end
-                match = { op => match }
-              end
-
-              { MongoBackend.field_path(@index, c.field).join('.') => match }
-            end.reduce(&:merge)
-
-            order = @step.order_by.map do |field|
-              { MongoBackend.field_path(@index, field).join('.') => 1 }
-            end
-
+          new_result = condition_list.flat_map do |result_conditions|
+            query_doc = query_doc_for_conditions result_conditions
             result = @client[@index.to_id_graph.key].find(query_doc)
-            result = result.sort(*order) unless order.empty?
+            result = result.sort(*@order) unless @order.empty?
 
             result.to_a
           end
@@ -182,6 +160,35 @@ module NoSE
         end
 
         private
+
+        # Produce the document used to issue the query to MongoDB
+        # @return [Hash]
+        def query_doc_for_conditions(conditions)
+          conditions.map do |c|
+            match = c.value
+            match = BSON::ObjectId(match) if c.field.is_a? Fields::IDField
+
+            # For range operators, find the corresponding MongoDB operator
+            match = { mongo_operator(op) => match } if c.operator != :'='
+
+            { MongoBackend.field_path(@index, c.field).join('.') => match }
+          end.reduce(&:merge)
+        end
+
+        # Produce the comparison operator used in MongoDB
+        # @return [String]
+        def mongo_operator(operator)
+          case operator
+          when :>
+            '$gt'
+          when :>=
+            '$gte'
+          when :<
+            '$lt'
+          when :<=
+            '$lte'
+          end
+        end
 
         # Convert documens returned from MongoDB into the format we understand
         # @return [Array<Hash>]
