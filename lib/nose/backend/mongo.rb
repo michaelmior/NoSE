@@ -63,6 +63,7 @@ module NoSE
       end
 
       # Insert a chunk of rows into an index
+      # @return [Array<BSON::ObjectId>]
       def index_insert_chunk(index, chunk)
         # We only need to insert into indexes which are ID graphs
         fail unless index == index.to_id_graph
@@ -82,7 +83,8 @@ module NoSE
 
           row_hash
         end
-        client[index.key].insert_many chunk
+
+        client[index.key].insert_many(chunk).inserted_ids
       end
 
       # Sample a number of values from the given index

@@ -21,10 +21,9 @@ module NoSE
       # Insert a new document for testing purposes
       # @return [BSON::ObjectId]
       def insert(index_key, values)
-        index_key = plans.schema.indexes[index_key].to_id_graph.key
-        client = backend.send :client
-        client[index_key].drop
-        client[index_key].insert_one(values).inserted_id
+        index = plans.schema.indexes[index_key].to_id_graph
+        inserted_ids = backend.index_insert_chunk index, [values]
+        inserted_ids.first
       end
 
       # Execute a query against the backend and return the results
@@ -42,7 +41,7 @@ module NoSE
       end
 
       it 'can query for inserted documents', mongo: true do
-        id = insert('items_by_id', 'Title' => 'Foo')
+        id = insert('items_by_id', 'items_Title' => 'Foo')
 
         result = query('GetItem', 'items_ItemID' => id)
         expect(result).to have(1).item
