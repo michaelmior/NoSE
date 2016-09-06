@@ -20,6 +20,12 @@ module NoSE
         true
       end
 
+      # Produce a new ObjectId
+      # @return [BSON::ObjectId]
+      def generate_id
+        BSON::ObjectId.new
+      end
+
       # Create new MongoDB collections for each index
       def indexes_ddl(execute = false, skip_existing = false,
                       drop_existing = false)
