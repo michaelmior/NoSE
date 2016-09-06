@@ -11,6 +11,7 @@ module NoSE
 
         @uri = config[:uri]
         @database = config[:database]
+        Mongo::Logger.logger.level = ::Logger::FATAL
       end
 
       # MongoDB uses ID graphs for column families
