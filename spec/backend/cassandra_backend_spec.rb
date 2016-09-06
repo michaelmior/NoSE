@@ -2,21 +2,31 @@ require 'nose/backend/cassandra'
 
 module NoSE
   module Backend
-    describe CassandraBackend do
+    shared_context 'dummy Cassandra backend' do
       include_context 'dummy_cost_model'
       include_context 'entities'
 
       let(:backend) { CassandraBackend.new workload, [index], [], [], {} }
+    end
 
-      it 'can generate DDL for a simple index' do
-        expect(backend.indexes_ddl).to match_array [
-          'CREATE COLUMNFAMILY "TweetIndex" ("User_Username" text, ' \
-          '"Tweet_Timestamp" timestamp, "User_UserId" uuid, '\
-          '"Tweet_TweetId" uuid, ' \
-          '"Tweet_Body" text, PRIMARY KEY(("User_Username"), ' \
-          '"Tweet_Timestamp", "User_UserId", "Tweet_TweetId"));'
-        ]
+    describe CassandraBackend do
+      context 'when not connected' do
+        include_context 'dummy Cassandra backend'
+
+        it 'can generate DDL for a simple index' do
+          expect(backend.indexes_ddl).to match_array [
+            'CREATE COLUMNFAMILY "TweetIndex" ("User_Username" text, ' \
+            '"Tweet_Timestamp" timestamp, "User_UserId" uuid, '\
+            '"Tweet_TweetId" uuid, ' \
+            '"Tweet_Body" text, PRIMARY KEY(("User_Username"), ' \
+            '"Tweet_Timestamp", "User_UserId", "Tweet_TweetId"));'
+          ]
+        end
       end
+    end
+
+    describe CassandraBackend::IndexLookupStatementStep do
+      include_context 'dummy Cassandra backend'
 
       it 'can lookup data for an index based on a plan' do
         # Materialize a view for the given query
@@ -50,6 +60,10 @@ module NoSE
                                   step, nil, step.parent
         prepared.process query.conditions, nil
       end
+    end
+
+    describe CassandraBackend::InsertStatementStep do
+      include_context 'dummy Cassandra backend'
 
       it 'can insert into an index' do
         client = double('client')
@@ -64,12 +78,16 @@ module NoSE
           .and_return(backend_insert)
         expect(client).to receive(:execute) \
           .with(backend_insert, arguments: [kind_of(Cassandra::Uuid),
-                'http://www.example.com/'])
+                                            'http://www.example.com/'])
 
         step_class = CassandraBackend::InsertStatementStep
         prepared = step_class.new client, index, [link['LinkId'], link['URL']]
         prepared.process values
       end
+    end
+
+    describe CassandraBackend::DeleteStatementStep do
+      include_context 'dummy Cassandra backend'
 
       it 'can delete from an index' do
         client = double('client')
