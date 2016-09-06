@@ -63,7 +63,8 @@ module NoSE
         let(:workload) { Workload.load 'rubis' }
         let(:backend) do
           dummy = double('backend')
-          expect(dummy).to receive(:index_empty?).and_return(true)
+          allow(dummy).to receive(:by_id_graph).and_return(false)
+          allow(dummy).to receive(:index_empty?).and_return(true)
 
           dummy
         end
