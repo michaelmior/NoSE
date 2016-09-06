@@ -1,4 +1,5 @@
 --color
 --format documentation
 --require spec_helper
+--tag ~mongo
 --tag ~mysql
