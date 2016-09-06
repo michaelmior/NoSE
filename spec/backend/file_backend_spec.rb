@@ -3,7 +3,7 @@ require 'nose/backend/file'
 module NoSE
   module Backend
     describe FileBackend do
-      include_context 'dummy_cost_model'
+      include_context 'dummy cost model'
       include_context 'entities'
 
       # Prepare an update to modify an index with a given

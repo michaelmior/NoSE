@@ -1,7 +1,7 @@
 module NoSE
   module Plans
     describe QueryPlanner do
-      include_context 'dummy_cost_model'
+      include_context 'dummy cost model'
       include_context 'entities'
 
       it 'can look up fields by key' do
@@ -318,7 +318,7 @@ module NoSE
     end
 
     describe UpdatePlanner do
-      include_context 'dummy_cost_model'
+      include_context 'dummy cost model'
       include_context 'entities'
 
       it 'can produce a simple plan for an update' do

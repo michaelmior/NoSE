@@ -3,7 +3,7 @@ require 'nose/backend/cassandra'
 module NoSE
   module Backend
     shared_context 'dummy Cassandra backend' do
-      include_context 'dummy_cost_model'
+      include_context 'dummy cost model'
       include_context 'entities'
 
       let(:backend) { CassandraBackend.new workload, [index], [], [], {} }

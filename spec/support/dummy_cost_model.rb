@@ -1,5 +1,5 @@
 module NoSE
-  RSpec.shared_examples 'dummy_cost_model' do
+  RSpec.shared_examples 'dummy cost model' do
     let(:cost_model) do
       # Simple cost model which just counts the number of indexes
       class DummyCost < NoSE::Cost::Cost

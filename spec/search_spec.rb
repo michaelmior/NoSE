@@ -1,7 +1,7 @@
 module NoSE
   module Search
     describe Search do
-      include_context 'dummy_cost_model'
+      include_context 'dummy cost model'
       include_context 'entities'
 
       it 'raises an exception if there is no space', solver: true do
