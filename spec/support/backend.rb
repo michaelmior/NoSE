@@ -4,6 +4,8 @@ module NoSE
 
     # Insert a new document for testing purposes
     def insert(index_key, values)
+      backend.indexes_ddl(true, true, true).to_a
+
       index = plans.schema.indexes[index_key]
       index = index.to_id_graph if backend.by_id_graph
       inserted_ids = backend.index_insert_chunk index, [values]

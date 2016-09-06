@@ -75,10 +75,8 @@ module NoSE
 
       # Check if a given index exists in the target database
       def index_exists?(index)
-        query = 'SELECT COUNT(*) FROM system.schema_columnfamilies ' \
-                "WHERE keyspace_name='#{@keyspace}' AND " \
-                "columnfamily_name='#{index.key}';"
-        !client.execute(query).first.values.first.zero?
+        client
+        @cluster.keyspace(@keyspace).has_table? index.key
       end
 
       # Check if a given index exists in the target database
@@ -150,9 +148,9 @@ module NoSE
       # Get a Cassandra client, connecting if not done already
       def client
         return @client unless @client.nil?
-        cluster = Cassandra.cluster hosts: @hosts, port: @port,
-                                    timeout: nil
-        @client = cluster.connect @keyspace
+        @cluster = Cassandra.cluster hosts: @hosts, port: @port,
+                                     timeout: nil
+        @client = @cluster.connect @keyspace
       end
 
       # Return the datatype to use in Cassandra for a given field

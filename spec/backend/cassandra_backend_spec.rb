@@ -10,6 +10,45 @@ module NoSE
     end
 
     describe CassandraBackend do
+      include_examples 'backend processing', cassandra: true do
+        let(:config) do
+          {
+            name: 'cassandra',
+            hosts: ['127.0.0.1'],
+            port: 9042,
+            keyspace: 'nose'
+          }
+        end
+
+        let(:backend) do
+          CassandraBackend.new plans.schema.model, plans.schema.indexes.values,
+                               [], [], config
+        end
+
+        before(:all) do
+          next if RSpec.configuration.exclusion_filter[:cassandra]
+          cluster = Cassandra.cluster hosts: ['127.0.0.1'], port: 9042,
+                                      timeout: nil
+
+          keyspace_definition = <<-KEYSPACE_CQL
+            CREATE KEYSPACE "nose"
+            WITH replication = {
+              'class': 'SimpleStrategy',
+              'replication_factor': 1
+            }
+          KEYSPACE_CQL
+
+          session = cluster.connect
+
+          keyspace = cluster.has_keyspace? 'nose'
+          session.execute 'DROP KEYSPACE "nose"' if keyspace
+
+          session.execute keyspace_definition
+        end
+      end
+    end
+
+    describe CassandraBackend do
       context 'when not connected' do
         include_context 'dummy Cassandra backend'
 
