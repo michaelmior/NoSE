@@ -45,19 +45,26 @@ module NoSE
       end
 
       # Insert a chunk of rows into an index
+      # @return [Array<Array<Cassandra::Uuid>>]
       def index_insert_chunk(index, chunk)
-        fields = index.all_fields
+        fields = index.all_fields.to_a
         prepared = "INSERT INTO \"#{index.key}\" (" \
                    "#{field_names fields}" \
                    ") VALUES (#{(['?'] * fields.length).join ', '})"
         prepared = client.prepare prepared
 
+        ids = []
         client.execute(client.batch do |batch|
           chunk.each do |row|
             index_row = index_row(row, fields)
+            ids << (index.hash_fields.to_a + index.order_fields).map do |field|
+              index_row[fields.index field]
+            end
             batch.add prepared, arguments: index_row
           end
         end)
+
+        ids
       end
 
       # Check if the given index is empty
@@ -98,9 +105,19 @@ module NoSE
       # @return [Array]
       def index_row(row, fields)
         fields.map do |field|
-          value = row["#{field.parent.name}_#{field.name}"]
-          value = Cassandra::Uuid.new(value.to_i) \
-            if field.is_a?(Fields::IDField)
+          value = row[field.id]
+          if field.is_a?(Fields::IDField)
+            value = case value
+                    when Numeric
+                      Cassandra::Uuid.new value.to_i
+                    when String
+                      Cassandra::Uuid.new value
+                    when nil
+                      Cassandra::Uuid::Generator.new.uuid
+                    else
+                      value
+                    end
+          end
 
           value
         end
