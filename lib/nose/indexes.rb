@@ -50,8 +50,16 @@ module NoSE
       @all_fields.find { |field| field.id == field_id }
     end
 
+    # Check if this index is an ID graph
+    # @return [Boolean]
+    def id_graph?
+      @hash_fields.all?(&:primary_key?) && @order_fields.all?(&:primary_key)
+    end
+
     # Produce an index with the same fields but keyed by entities in the graph
     def to_id_graph
+      return self if id_graph?
+
       all_ids = (@hash_fields.to_a + @order_fields + @extra.to_a)
       all_ids.map! { |f| f.parent.id_field }.uniq!
 
