@@ -72,10 +72,11 @@ module NoSE
 
     # A graph identifying entities and relationships involved in a query
     class Graph
-      attr_reader :nodes
+      attr_reader :nodes, :entities
 
       def initialize(nodes = [], *edges)
         @nodes = Set.new
+        @entities = Set.new
         nodes.each { |n| add_node n }
         @edges = {}
 
@@ -134,7 +135,7 @@ module NoSE
 
         # Start with a leaf entity which has an equality predicate
         # and the lowest overall count of all such entities
-        entities = @nodes.map(&:entity).to_set
+        entities = @entities.dup
         leaf_entities = entities.select { |e| leaf_entity?(e) }
         join_order = [leaf_entities.select do |entity|
           eq_fields.map(&:parent).include?(entity)
@@ -163,12 +164,6 @@ module NoSE
         end
 
         join_order
-      end
-
-      # Produce all entities contained in this graph
-      # @return [Set<Entity>]
-      def entities
-        @nodes.map(&:entity).to_set
       end
 
       # Find the node corresponding to a given entity in the graph
@@ -214,11 +209,13 @@ module NoSE
           if existing.nil?
             node = Node.new(node)
             @nodes.add node
+            @entities.add node.entity
           else
             node = existing
           end
-        else
-          @nodes.add node unless @nodes.include? node
+        elsif !@nodes.include? node
+          @nodes.add node
+          @entities.add node.entity
         end
 
         node
@@ -272,6 +269,7 @@ module NoSE
         end
         @edges.reject! { |_, edges| edges.empty? }
         @nodes -= nodes.to_set
+        @entities -= nodes.map(&:entity)
 
         @unique_edges = nil
       end
