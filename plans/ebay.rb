@@ -72,4 +72,12 @@ NoSE::Plans::ExecutionPlans.new do
       Insert 'items_by_id'
     end
   end
+
+  Group 'UpdateItemTitle' do
+    Plan 'UpdateItemTitle' do
+      Param items.ItemID, :==
+      Param items.Title, :==
+      Insert 'items_by_id', items.ItemID, items.Title
+    end
+  end
 end

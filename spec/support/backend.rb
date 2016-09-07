@@ -24,28 +24,47 @@ module NoSE
     # Execute an insert statement against the backend
     # @return [void]
     def insert(group, values)
+      modify group, values, {}
+    end
+
+    # Execute an update statement against the backend
+    # @return [void]
+    def update(group, settings, conditions)
+      modify group, settings, conditions
+    end
+
+    # Execute a modification statement with
+    # the given settings and conditions
+    # @return [void]
+    def modify(group, settings, conditions)
       backend.indexes_ddl(true, true, true).to_a
 
       update_plans = plans.groups[group]
 
       update_plans.each do |plan|
         # Decide which fields should be set
-        settings = values.map do |field_id, value|
+        plan_settings = settings.map do |field_id, value|
           field = plan.index.all_fields.find { |f| f.id == field_id }
           FieldSetting.new field, value
         end
 
         # Generate any missing IDs
         (plan.index.hash_fields + plan.index.order_fields).each do |field|
-          setting = settings.find { |s| s.field == field }
+          setting = plan_settings.find { |s| s.field == field }
           next unless setting.nil?
 
-          settings << FieldSetting.new(field, backend.generate_id) \
+          plan_settings << FieldSetting.new(field, backend.generate_id) \
             if field.is_a? Fields::IDField
         end
 
+        # Build the list of conditions
+        plan_conditions = Hash[conditions.map do |field_id, value|
+          field = plan.index.all_fields.find { |f| f.id == field_id }
+          [field_id, Condition.new(field, :'=', value)]
+        end]
+
         prepared = backend.prepare_update nil, [plan]
-        prepared.each { |p| p.execute settings, {} }
+        prepared.each { |p| p.execute plan_settings, plan_conditions }
       end
     end
 
@@ -77,6 +96,18 @@ module NoSE
 
       result = direct_query 'items_by_id'
       expect(result).to include 'items_Title' => 'Foo'
+    end
+
+    it 'can update entities', tag do
+      id = direct_insert 'items_by_id', 'items_Title' => 'Foo'
+      id = id.first if id.is_a? Array
+
+      update 'UpdateItemTitle',
+             { 'items_Title' => 'Bar' },
+             'items_ItemID' => id
+
+      result = direct_query 'items_by_id'
+      expect(result).to include 'items_Title' => 'Bar'
     end
   end
 end
