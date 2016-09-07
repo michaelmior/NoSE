@@ -61,6 +61,7 @@ GEM
     logging (2.1.0)
       little-plugger (~> 1.1)
       multi_json (~> 1.10)
+    memory_profiler (0.9.6)
     method_source (0.8.2)
     mipper (0.0.7)
       ffi (~> 1.9)
@@ -161,6 +162,7 @@ DEPENDENCIES
   formatador
   gruff
   logging
+  memory_profiler
   mipper
   mongo
   mysql2

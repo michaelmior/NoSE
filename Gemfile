@@ -45,10 +45,11 @@ platform :ruby do
   gem 'rbtree' # for more efficient SortedSet implementation
 
   group :development do
-    gem 'ruby-prof'
+    gem 'memory_profiler'
     gem 'pry-doc'
     gem 'pry-byebug'
     gem 'pry-stack_explorer'
+    gem 'ruby-prof'
     gem 'yard'
     gem 'yard-thor'
     gem 'ronn'
