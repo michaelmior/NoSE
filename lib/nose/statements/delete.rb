@@ -25,7 +25,7 @@ module NoSE
     def unparse
       delete = "DELETE #{entity.name} "
       delete += "FROM #{from_path @key_path}"
-      delete += where_clause
+      delete << where_clause
 
       delete
     end

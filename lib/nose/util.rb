@@ -150,7 +150,10 @@ module Subtype
     # @return [Array<String>]
     def name_array(cls)
       cls.name.sub('ID', 'Id').split('::').last.split(/(?=[A-Z]+)/) \
-         .map(&:downcase)
+         .map do |s|
+        s.downcase!
+        s.freeze
+      end
     end
   end
 end

@@ -28,8 +28,8 @@ module NoSE
     def unparse
       update = "UPDATE #{entity.name} "
       update += "FROM #{from_path @key_path} "
-      update += settings_clause
-      update += where_clause
+      update << settings_clause
+      update << where_clause
 
       update
     end

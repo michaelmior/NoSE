@@ -53,7 +53,7 @@ module NoSE
 
       # A simple string representing the field
       def id
-        "#{@parent.name}_#{@name}"
+        @id ||= "#{@parent.name}_#{@name}"
       end
 
       # Set the estimated cardinality of the field

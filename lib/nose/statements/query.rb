@@ -41,13 +41,13 @@ module NoSE
       field_namer = -> (f) { field_path f }
 
       query = 'SELECT ' + @select.map(&field_namer).join(', ')
-      query += " FROM #{from_path @graph.longest_path}"
-      query += where_clause field_namer
+      query << " FROM #{from_path @graph.longest_path}"
+      query << where_clause(field_namer)
 
-      query += ' ORDER BY ' + @order.map(&field_namer).join(', ') \
+      query << ' ORDER BY ' << @order.map(&field_namer).join(', ') \
         unless @order.empty?
-      query += " LIMIT #{@limit}" unless @limit.nil?
-      query += " -- #{@comment}" unless @comment.nil?
+      query << " LIMIT #{@limit}" unless @limit.nil?
+      query << " -- #{@comment}" unless @comment.nil?
 
       query
     end

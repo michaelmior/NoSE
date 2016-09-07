@@ -221,7 +221,7 @@ module NoSE
         def insert_cql
           insert = "INSERT INTO #{@index.key} ("
           insert += @fields.map { |f| "\"#{f}\"" }.join(', ')
-          insert += ') VALUES (' + (['?'] * @fields.length).join(', ') + ')'
+          insert << ') VALUES (' << (['?'] * @fields.length).join(', ') + ')'
 
           insert
         end
@@ -236,7 +236,7 @@ module NoSE
 
           # Prepare the statement required to perform the deletion
           delete = "DELETE FROM #{index.key} WHERE "
-          delete += @index_keys.map { |key| "\"#{key.id}\" = ?" }.join ' AND '
+          delete += @index_keys.map { |key| "\"#{key.id}\" = ?" }.join(' AND ')
           @prepared = client.prepare delete
         end
 
@@ -299,7 +299,7 @@ module NoSE
           cql += cql_order_by
 
           # Add an optional limit
-          cql += " LIMIT #{@step.limit}" unless @step.limit.nil?
+          cql << " LIMIT #{@step.limit}" unless @step.limit.nil?
 
           cql
         end
@@ -312,7 +312,7 @@ module NoSE
           end.join ' AND '
           unless @range_field.nil?
             condition = conditions.values.find(&:range?)
-            where += " AND \"#{condition.field.id}\" #{condition.operator} ?"
+            where << " AND \"#{condition.field.id}\" #{condition.operator} ?"
           end
 
           where

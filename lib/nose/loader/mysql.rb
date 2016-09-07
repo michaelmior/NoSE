@@ -129,12 +129,12 @@ module NoSE
         tables = index.graph.entities.map(&:name).join ' JOIN '
         return tables if index.graph.size == 1
 
-        tables += ' WHERE '
-        tables += index.path.each_cons(2).map do |_prev_key, key|
+        tables << ' WHERE '
+        tables << index.path.each_cons(2).map do |_prev_key, key|
           key = key.reverse if key.relationship == :many
           "#{key.parent.name}.#{key.name}=" \
             "#{key.entity.name}.#{key.entity.id_field.name}"
-        end.join ' AND '
+        end.join(' AND ')
 
         tables
       end

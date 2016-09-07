@@ -54,7 +54,7 @@ module NoSE
       insert = "INSERT INTO #{entity.name} "
       insert += settings_clause
 
-      insert += ' AND CONNECT TO ' + @conditions.values.map do |condition|
+      insert << ' AND CONNECT TO ' << @conditions.values.map do |condition|
         value = maybe_quote condition.value, condition.field
         "#{condition.field.name}(#{value})"
       end.join(', ') unless @conditions.empty?

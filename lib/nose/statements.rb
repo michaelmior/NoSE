@@ -453,7 +453,7 @@ module NoSE
     # @return [String]
     def from_path(path, prefix_path = nil, field = nil)
       if prefix_path.nil?
-        from = path.first.parent.name
+        from = path.first.parent.name.dup
       else
         # Find where the two paths intersect to get the first path component
         first_key = prefix_path.entries.find do |key|
@@ -462,18 +462,18 @@ module NoSE
               path.entities.include?(key.entity)
         end
         from = if first_key.primary_key?
-                 first_key.parent.name
+                 first_key.parent.name.dup
                else
-                 first_key.name
+                 first_key.name.dup
                end
       end
 
-      from += '.' + path.entries[1..-1].map(&:name).join('.') \
+      from << '.' << path.entries[1..-1].map(&:name).join('.') \
         if path.length > 1
 
       unless field.nil?
-        from += '.' unless from.empty?
-        from += field.name
+        from << '.' unless from.empty?
+        from << field.name
       end
 
       from

@@ -332,7 +332,7 @@ module NoSE
           fk = last_entity.foreign_keys.values.find do |key|
             key.entity == entity
           end
-          field_path += '.' + fk.name
+          field_path += '.' << fk.name
           last_entity = entity
         end
 
