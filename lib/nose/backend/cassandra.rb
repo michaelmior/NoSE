@@ -184,8 +184,8 @@ module NoSE
         # Insert each row into the index
         def process(results)
           results.each do |result|
-            values = @index.all_fields.map do |field|
-              next unless result.key? field.id
+            fields = @index.all_fields.select { |field| result.key? field.id }
+            values = fields.map do |field|
               value = result[field.id]
 
               # If this is an ID, generate or construct a UUID object

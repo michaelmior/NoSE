@@ -83,7 +83,8 @@ module NoSE
     end
 
     it 'can query for inserted entities', tag do
-      id = direct_insert 'items_by_id', 'items_Title' => 'Foo'
+      id = direct_insert 'items_by_id', 'items_Title' => 'Foo',
+                                        'items_Desc'  => 'A thing'
       id = id.first if id.is_a? Array
 
       result = query 'GetItem', 'items_ItemID' => id
@@ -92,14 +93,15 @@ module NoSE
     end
 
     it 'can insert new entities', tag do
-      insert 'AddItem', 'items_Title' => 'Foo'
+      insert 'AddItem', 'items_Title' => 'Foo', 'items_Desc' => 'A thing'
 
       result = direct_query 'items_by_id'
       expect(result).to include 'items_Title' => 'Foo'
     end
 
     it 'can update entities', tag do
-      id = direct_insert 'items_by_id', 'items_Title' => 'Foo'
+      id = direct_insert 'items_by_id', 'items_Title' => 'Foo',
+                                        'items_Desc'  => 'A thing'
       id = id.first if id.is_a? Array
 
       update 'UpdateItemTitle',
