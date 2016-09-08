@@ -14,6 +14,9 @@ module NoSE
       @select = params[:select]
       @order = params[:order] || []
 
+      fail InvalidStatementException, 'can\'t order by IDs' \
+        if @order.any? { |f| f.is_a? Fields::IDField }
+
       if join_order.first != @key_path.entities.first
         @key_path = @key_path.reverse
       end

@@ -422,6 +422,15 @@ module NoSE
                                           tweet['Retweets']]
     end
 
+    it 'does not allow ordering by ID' do
+      query = 'SELECT Tweet.TweetId FROM Tweet.User ' \
+              'WHERE User.UserId = ? ORDER BY Tweet.TweetId'
+
+      expect do
+        Statement.parse query, workload.model
+      end.to raise_error InvalidStatementException
+    end
+
     context 'when checking if something is included in the path' do
       let(:path) { KeyPath.new [user['UserId'], user['Tweets']] }
 

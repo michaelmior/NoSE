@@ -289,7 +289,7 @@ module NoSE
       it 'does not use limits for a single entity result set' do
         query = Statement.parse 'SELECT User.* FROM User ' \
                                 'WHERE User.UserId = ? ' \
-                                'ORDER BY User.UserId LIMIT 10', workload.model
+                                'ORDER BY User.Username LIMIT 10', workload.model
         workload.add_statement query
 
         indexes = IndexEnumerator.new(workload).indexes_for_workload
