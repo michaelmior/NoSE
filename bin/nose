@@ -19,8 +19,8 @@ end
 NoSE::CLI::NoSECLI.start ARGV
 
 # Stop profiling and output results
-unless ENV['NOSE_PROFILE'].nil?
+unless ENV['NOSE_PROFILE'].to_i == 0
   result = RubyProf.stop
   printer = RubyProf::CallTreePrinter.new(result)
-  printer.print(File.open(ENV['NOSE_PROFILE'], 'w'))
+  printer.print
 end
