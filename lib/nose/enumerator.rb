@@ -151,7 +151,7 @@ module NoSE
 
       # Generate all possible indices based on the field choices
       choices = eq_choices.product(extra_choices)
-      choices.map do |index, extra|
+      indexes = choices.map! do |index, extra|
         indexes = []
 
         order_choices.each do |order|
@@ -176,7 +176,10 @@ module NoSE
         end
 
         indexes
-      end.inject([], &:+).flatten
+      end.inject([], &:+)
+      indexes.flatten!
+
+      indexes
     end
 
     # Generate a new index and ignore if invalid

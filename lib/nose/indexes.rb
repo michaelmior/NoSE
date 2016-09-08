@@ -14,7 +14,7 @@ module NoSE
       @extra = extra.to_set.delete_if do |e|
         @hash_fields.include?(e) || order_set.include?(e)
       end
-      @all_fields = Set.new.merge(@hash_fields).merge(order_set).merge(@extra)
+      @all_fields = Set.new(@hash_fields).merge(order_set).merge(@extra)
 
       validate_hash_fields
 
@@ -93,11 +93,11 @@ module NoSE
     # @return [String]
     def hash_str
       @hash_str ||= [
-        @hash_fields.map(&:id).sort,
+        @hash_fields.map(&:id).sort!,
         @order_fields.map(&:id),
-        @extra.map(&:id).sort,
+        @extra.map(&:id).sort!,
         @graph.unique_edges.map(&:canonical_params).sort!
-      ].to_s
+      ].to_s.freeze
     end
 
     def hash
@@ -159,8 +159,9 @@ module NoSE
     # @return [void]
     def validate_graph_keys
       fail InvalidIndexException, 'missing graph entity keys' \
-        unless @graph.entities.map(&:id_field).to_set.subset? \
-          (@hash_fields + @order_fields).to_set
+        unless @graph.entities.map(&:id_field).all? do |field|
+          @hash_fields.include?(field) || @order_fields.include?(field)
+        end
     end
 
     # Precalculate the size of the index

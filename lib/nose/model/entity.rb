@@ -43,7 +43,7 @@ module NoSE
     # Get the key fields for the entity
     # @return [Fields::IDField>]
     def id_field
-      fields.values.find(&:primary_key?)
+      fields.each_value.find(&:primary_key?)
     end
 
     # Adds a {Fields::Field} to the entity

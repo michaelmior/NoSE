@@ -172,7 +172,7 @@ module NoSE
             end
 
             unless @range_field.nil?
-              operator = conditions.values.find(&:range?).operator
+              operator = conditions.each_value.find(&:range?).operator
               result_condition << Condition.new(@range_field, operator,
                                                 result[@range_field.id])
             end
@@ -230,7 +230,7 @@ module NoSE
 
           # XXX: This assumes that the range filter step is the same as
           #      the one in the query, which is always true for now
-          range = @step.range && conditions.values.find(&:range?)
+          range = @step.range && conditions.each_value.find(&:range?)
 
           results.select! { |row| include_row?(row, eq_conditions, range) }
 

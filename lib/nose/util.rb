@@ -135,10 +135,10 @@ module Subtype
       end.reverse
 
       if name_case == :snake
-        name = self_name.join '_'
+        name = self_name.join('_').freeze
       elsif name_case == :camel
         name = self_name.map { |part| part[0].upcase + part[1..-1] }.join ''
-        name.sub! 'Id', 'ID'
+        name.sub!('Id', 'ID').freeze
       end
 
       name
@@ -149,10 +149,10 @@ module Subtype
     # Convert camel case class names to an array
     # @return [Array<String>]
     def name_array(cls)
-      cls.name.sub('ID', 'Id').split('::').last.split(/(?=[A-Z]+)/) \
-         .map do |s|
-        s.downcase!
-        s.freeze
+      frozen_names = cls.name.freeze.split('::').map(&:freeze)
+      frozen_names.last.sub('ID', 'Id').split(/(?=[A-Z]+)/).map(&:freeze) \
+                  .map! do |s|
+        s.downcase.freeze
       end
     end
   end

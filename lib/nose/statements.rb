@@ -113,9 +113,9 @@ module NoSE
       fail InvalidKeyPathException, 'first key must be an ID' \
         unless keys.empty? || keys.first.instance_of?(Fields::IDField)
 
-      keys_match = keys.each_cons(2).map do |prev_key, key|
+      keys_match = keys.each_cons(2).all? do |prev_key, key|
         key.parent == prev_key.entity
-      end.all?
+      end
       fail InvalidKeyPathException, 'keys must match along the path' \
         unless keys_match
 
