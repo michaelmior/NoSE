@@ -65,11 +65,6 @@ module NoSE
         expect(json['plans']).to have(1).item
       end
 
-      it 'can create indexes from a schema' do
-        expect(backend).to receive(:indexes_ddl).and_return([])
-        run_simple 'nose create ebay'
-      end
-
       context 'after producing search output', solver: true do
         before(:each) do
           run_simple 'nose search ebay --format=json'
