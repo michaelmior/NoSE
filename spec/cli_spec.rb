@@ -4,29 +4,7 @@ require 'yaml'
 module NoSE
   module CLI
     describe NoSECLI do
-      include_context 'dummy cost model'
-
-      let(:backend) { instance_double(Backend::BackendBase) }
-      let(:loader) { instance_double(Loader::LoaderBase) }
-
-      before(:each) do
-        allow(CLI::NoSECLI).to receive(:new) \
-          .and_wrap_original do |method, *args, &block|
-          cli = method.call(*args, &block)
-
-          cli.instance_variable_set :@backend, backend
-
-          loader_class = class_double(Loader::LoaderBase)
-          allow(loader_class).to receive(:new).and_return(loader)
-          cli.instance_variable_set :@loader_class, loader_class
-
-          cost_class = class_double(Cost::Cost)
-          allow(cost_class).to receive(:new).and_return(cost_model)
-          cli.instance_variable_set :@cost_class, cost_class
-
-          cli
-        end
-      end
+      include_context 'CLI setup'
 
       it 'can output help text' do
         run_simple 'nose help'
@@ -88,11 +66,6 @@ module NoSE
       it 'can create indexes from a schema' do
         expect(backend).to receive(:indexes_ddl).and_return([])
         run_simple 'nose create ebay'
-      end
-
-      it 'can load data for indexes in a schema' do
-        expect(loader).to receive(:load)
-        run_simple 'nose load ebay'
       end
 
       context 'after producing search output', solver: true do
