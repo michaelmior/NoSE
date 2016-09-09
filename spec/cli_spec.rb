@@ -4,6 +4,30 @@ require 'yaml'
 module NoSE
   module CLI
     describe NoSECLI do
+      include_context 'dummy cost model'
+
+      let(:backend) { instance_double(Backend::BackendBase) }
+      let(:loader) { instance_double(Loader::LoaderBase) }
+
+      before(:each) do
+        allow(CLI::NoSECLI).to receive(:new) \
+          .and_wrap_original do |method, *args, &block|
+          cli = method.call(*args, &block)
+
+          cli.instance_variable_set :@backend, backend
+
+          loader_class = class_double(Loader::LoaderBase)
+          allow(loader_class).to receive(:new).and_return(loader)
+          cli.instance_variable_set :@loader_class, loader_class
+
+          cost_class = class_double(Cost::Cost)
+          allow(cost_class).to receive(:new).and_return(cost_model)
+          cli.instance_variable_set :@cost_class, cost_class
+
+          cli
+        end
+      end
+
       it 'can output help text' do
         run_simple 'nose help'
         expect(last_command_stopped).to have_output_on_stdout(/^Commands:/)
@@ -61,6 +85,16 @@ module NoSE
         expect(json['plans']).to have(1).item
       end
 
+      it 'can create indexes from a schema' do
+        expect(backend).to receive(:indexes_ddl).and_return([])
+        run_simple 'nose create ebay'
+      end
+
+      it 'can load data for indexes in a schema' do
+        expect(loader).to receive(:load)
+        run_simple 'nose load ebay'
+      end
+
       context 'after producing search output', solver: true do
         before(:each) do
           run_simple 'nose search ebay --format=json'
@@ -72,11 +106,6 @@ module NoSE
 
           FileUtils.mkdir_p '/tmp'
           File.write '/tmp/x.json', json
-
-          FileUtils.mkdir_p File.dirname(NoSECLI::TEST_CONFIG_FILE_NAME)
-          File.open(NoSECLI::TEST_CONFIG_FILE_NAME, 'w') do |config_file|
-            config_file.write({ backend: { name: 'file' } }.to_yaml)
-          end
         end
 
         it 'can convert to latex' do
@@ -103,13 +132,16 @@ module NoSE
           expect(TOPLEVEL_BINDING.local_variable_get(:model)).to \
             be_a Model
           expect(TOPLEVEL_BINDING.local_variable_get(:backend)).to \
-            be_a Backend::FileBackend
+            eq(backend)
           expect(TOPLEVEL_BINDING.local_variable_get(:indexes).first).to \
             be_a Index
         end
 
         it 'can recalculate costs' do
-          run_simple 'nose recost /tmp/x.json entity_count'
+          expect(cost_model).to receive(:index_lookup_cost) \
+            .at_least(:once).and_return(10)
+
+          run_simple 'nose recost /tmp/x.json dummy'
           json = JSON.parse last_command_stopped.stdout
           expect(json['plans'].last['cost']).to eq(10)
         end

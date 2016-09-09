@@ -25,6 +25,17 @@ module NoSE
       def self.basename
         'nose'
       end
+
+      # Override to allow mocking of produced classes
+      no_commands do
+        def get_backend(*_args)
+          @backend
+        end
+
+        def get_class(name, _options)
+          instance_variable_get "@#{name}_class".to_sym
+        end
+      end
     end
 
     # Runner for use with tests
