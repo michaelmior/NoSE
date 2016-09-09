@@ -15,12 +15,16 @@ end
 RSpec::Core::RakeTask.new(:spec)
 YARD::Rake::YardocTask.new(:doc)
 
-task :console do
-  require 'irb'
-  require 'irb/completion'
+task :completions do
   require_relative './lib/nose'
-  ARGV.clear
-  IRB.start
+  require_relative './lib/nose/cli'
+
+  commands = NoSE::CLI::NoSECLI.all_commands.to_a.sort_by(&:first)
+
+  tmpl = File.read File.join(File.dirname(__FILE__),
+                             'templates/completions.erb')
+  ns = OpenStruct.new commands: commands
+  puts ERB.new(tmpl, nil, '>').result(ns.instance_eval { binding })
 end
 
 task :man do
