@@ -5,13 +5,21 @@ module NoSE
   module Loader
     # Superclass for all data loaders
     class LoaderBase
-      def initialize(workload, backend)
+      def initialize(workload = nil, backend = nil)
         @workload = workload
         @backend = backend
       end
 
-      # @abstract Subclasses should load data for the given list of indexes
       # :nocov:
+      # @abstract Subclasses should produce a workload
+      # @return [void]
+      def workload(_config)
+        fail NotImplementedError
+      end
+      # :nocov:
+
+      # :nocov:
+      # @abstract Subclasses should load data for the given list of indexes
       # @return [void]
       def load(_indexes, _config, _show_progress = false, _limit = nil,
                _skip_existing = true)

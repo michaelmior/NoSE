@@ -21,6 +21,13 @@ module NoSE
       WorkloadDSL.new(self).instance_eval(&block) if block_given?
     end
 
+    # Compare all entities
+    # @return [Boolean]
+    def ==(other)
+      other.is_a?(Model) && @entities = other.entities
+    end
+    alias eql? ==
+
     # Retrieve an entity by name
     # @return [Entity]
     def [](name)

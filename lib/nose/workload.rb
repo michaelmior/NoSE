@@ -18,12 +18,19 @@ module NoSE
     def initialize(model = nil, &block)
       @statement_weights = { default: {} }
       @model = model || Model.new
-      @entities = {}
       @mix = :default
 
       # Apply the DSL
       WorkloadDSL.new(self).instance_eval(&block) if block_given?
     end
+
+    # Compare models and statements
+    # @return [Boolean]
+    def ==(other)
+      other.is_a?(Workload) && @model == other.model &&
+        statement_weights == other.statement_weights
+    end
+    alias eql? ==
 
     # Add a new {Entity} or {Statement} to the workload
     # @return [self] the current workload to allow chaining

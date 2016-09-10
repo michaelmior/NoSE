@@ -65,6 +65,26 @@ module NoSE
         expect(json['plans']).to have(1).item
       end
 
+      it 'can generate workloads from a loader' do
+        workload = Workload.load 'ebay'
+        expect(loader).to receive(:workload).and_return(workload)
+
+        dir = File.expand_path('tmp/aruba/workloads', Dir.pwd)
+        FakeFS.activate!
+
+        FileUtils.mkdir_p dir
+
+        run 'nose genworkload test'
+
+        workload_file = "#{dir}/test.rb"
+        workload_rb = File.read workload_file
+
+        FakeFS.deactivate!
+
+        generated = binding.eval workload_rb, workload_file
+        expect(generated).to eq(workload)
+      end
+
       context 'after producing search output', solver: true do
         before(:each) do
           run_simple 'nose search ebay --format=json'
