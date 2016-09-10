@@ -25,25 +25,29 @@ module NoSE
         schema = Schema.load schema_name
         indexes = schema.indexes.values
 
-        # Build the query plans
+        # Build the statement plans
         cost_model = get_class_from_config options, 'cost', :cost_model
         planner = Plans::QueryPlanner.new workload, indexes, cost_model
         trees = workload.queries.map { |q| planner.find_plans_for_query q }
         plans = trees.map(&:min)
 
-        # Build the update plans
-        planner = Plans::UpdatePlanner.new workload.model, trees, cost_model
-        update_plans = []
-        workload.statements.each do |statement|
-          next if statement.is_a? Query
-
-          planner.find_plans_for_update(statement, indexes).each do |plan|
-            plan.select_query_plans(indexes)
-            update_plans << plan
-          end
-        end
+        update_plans = build_update_plans workload.statements, indexes,
+                                          workload.model, trees, cost_model
 
         # Construct a result set
+        results = plan_schema_results workload, indexes, plans, update_plans,
+                                      cost_model
+
+        # Output the results in the specified format
+        send(('output_' + options[:format]).to_sym, results)
+      end
+
+      private
+
+      # Construct a result set
+      # @return [OpenStruct]
+      def plan_schema_results(workload, indexes, plans, update_plans,
+                              cost_model)
         results = OpenStruct.new
         results.workload = workload
         results.indexes = indexes
@@ -55,8 +59,24 @@ module NoSE
         results.total_size = results.indexes.sum_by(&:size)
         results.total_cost = plans.sum_by { |plan| plan.cost * plan.weight }
 
-        # Output the results in the specified format
-        send(('output_' + options[:format]).to_sym, results)
+        results
+      end
+
+      # Produce all update plans for the schema
+      # @return [Array<Plans::UpdatePlan>]
+      def build_update_plans(statements, indexes, model, trees, cost_model)
+        planner = Plans::UpdatePlanner.new model, trees, cost_model
+        update_plans = []
+        statements.each do |statement|
+          next if statement.is_a? Query
+
+          planner.find_plans_for_update(statement, indexes).each do |plan|
+            plan.select_query_plans(indexes)
+            update_plans << plan
+          end
+        end
+
+        update_plans
       end
     end
   end
