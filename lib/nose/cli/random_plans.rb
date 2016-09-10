@@ -4,7 +4,7 @@ module NoSE
   module CLI
     # Add a command to generate a graphic of the schema from a workload
     class NoSECLI < Thor
-      desc 'random_plans WORKLOAD TAG',
+      desc 'random-plans WORKLOAD TAG',
            'output random plans for the statement with TAG in WORKLOAD'
 
       long_desc <<-LONGDESC
