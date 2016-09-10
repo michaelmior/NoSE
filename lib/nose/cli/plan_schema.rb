@@ -25,17 +25,13 @@ module NoSE
         schema = Schema.load schema_name
         indexes = schema.indexes.values
 
-        # Output the indexes
-        header = "Indexes\n" + '━' * 50
-        output_indexes_txt header, indexes, $stdout
-
-        # Output the query plans
+        # Build the query plans
         cost_model = get_class_from_config options, 'cost', :cost_model
         planner = Plans::QueryPlanner.new workload, indexes, cost_model
         trees = workload.queries.map { |q| planner.find_plans_for_query q }
         plans = trees.map(&:min)
 
-        # Output the update plans
+        # Build the update plans
         planner = Plans::UpdatePlanner.new workload.model, trees, cost_model
         update_plans = []
         workload.statements.each do |statement|
