@@ -24,9 +24,10 @@ module NoSE
       def self.apply(problem)
         problem.indexes.each do |index|
           problem.queries.each_with_index do |query, q|
+            name = "q#{q}_#{index.key}_avail" if ENV['NOSE_LOG'] == 'debug'
             constr = MIPPeR::Constraint.new problem.query_vars[index][query] +
                                             problem.index_vars[index] * -1,
-                                            :<=, 0, "q#{q}_#{index.key}_avail"
+                                            :<=, 0, name
             problem.model << constr
           end
         end
@@ -55,7 +56,8 @@ module NoSE
       # Add the discovered constraints to the problem
       def self.add_query_constraints(query, q, constraints, problem)
         constraints.each do |entities, constraint|
-          name = "q#{q}_#{entities.map(&:name).join '_'}"
+          name = "q#{q}_#{entities.map(&:name).join '_'}" \
+              if ENV['NOSE_LOG'] == 'debug'
 
           # If this is a support query, then we might not need a plan
           if query.is_a? SupportQuery
@@ -126,8 +128,9 @@ module NoSE
           next if parent_index.nil?
 
           parent_var = problem.query_vars[parent_index][query]
+          name = "q#{q}_#{index.key}_parent" if ENV['NOSE_LOG'] == 'debug'
           constr = MIPPeR::Constraint.new index_var * 1.0 + parent_var * -1.0,
-                                          :<=, 0, "q#{q}_#{index.key}_parent"
+                                          :<=, 0, name
           problem.model << constr
         end
 

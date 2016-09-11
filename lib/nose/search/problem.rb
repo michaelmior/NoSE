@@ -193,6 +193,7 @@ module NoSE
               end
 
         # Add the objective function as a variable
+        var_name = nil unless ENV['NOSE_LOG'] == 'debug'
         @obj_var = MIPPeR::Variable.new 0, Float::INFINITY, 1.0,
                                         :continuous, var_name
         @model << @obj_var
@@ -214,13 +215,14 @@ module NoSE
         @indexes.each do |index|
           @query_vars[index] = {}
           @queries.each_with_index do |query, q|
-            query_var = "q#{q}_#{index.key}"
+            query_var = "q#{q}_#{index.key}" if ENV['NOSE_LOG'] == 'debug'
             var = MIPPeR::Variable.new 0, 1, 0, :binary, query_var
             @model << var
             @query_vars[index][query] = var
           end
 
-          @index_vars[index] = MIPPeR::Variable.new 0, 1, 0, :binary, index.key
+          var_name = index.key if ENV['NOSE_LOG'] == 'debug'
+          @index_vars[index] = MIPPeR::Variable.new 0, 1, 0, :binary, var_name
 
           # If needed when grouping by ID graph, add an extra
           # variable for the base index based on the ID graph
@@ -230,12 +232,14 @@ module NoSE
 
           # Add a new variable for the ID graph if needed
           unless @index_vars.key? id_graph
+            var_name = index.key if ENV['NOSE_LOG'] == 'debug'
             @index_vars[id_graph] = MIPPeR::Variable.new 0, 1, 0, :binary,
-                                                         id_graph.key
+                                                         var_name
           end
 
           # Ensure that the ID graph of this index is present if we use it
-          name = "ID_#{id_graph.key}_#{index.key}"
+          name = "ID_#{id_graph.key}_#{index.key}" \
+            if ENV['NOSE_LOG'] == 'debug'
           constr = MIPPeR::Constraint.new @index_vars[id_graph] * 1.0 + \
                                           @index_vars[index] * -1.0,
                                           :>=, 0, name
@@ -260,10 +264,13 @@ module NoSE
 
             @sort_costs[query][index] ||= sort_step.cost
             q = @queries.index query
-            sort_var = MIPPeR::Variable.new 0, 1, 0, :binary, "s#{q}"
+
+            name = "s#{q}" if ENV['NOSE_LOG'] == 'debug'
+            sort_var = MIPPeR::Variable.new 0, 1, 0, :binary, name
             @sort_vars[query][index] ||= sort_var
             @model << sort_var
-            name = "q#{q}_#{index.key}_sort"
+
+            name = "q#{q}_#{index.key}_sort" if ENV['NOSE_LOG'] == 'debug'
             constr = MIPPeR::Constraint.new @sort_vars[query][index] * 1.0 +
                                             @query_vars[index][query] * -1.0,
                                             :>=, 0, name
