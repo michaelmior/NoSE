@@ -1,6 +1,10 @@
 FROM ubuntu:16.04
 MAINTAINER Michael Mior <mmior@uwaterloo.ca>
 
+LABEL org.label-schema.url="https://michael.mior.ca/projects/NoSE/" \
+      org.label-schema.vcs-url="https://github.com/michaelmior/NoSE" \
+      org.label-schema.schema-version="1.0"
+
 RUN apt-get update -qq && \
     apt-get install -qq \
       build-essential \
