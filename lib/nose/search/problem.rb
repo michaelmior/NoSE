@@ -29,12 +29,11 @@ module NoSE
                   :index_vars, :query_vars, :indexes, :data,
                   :objective_type, :objective_value
 
-      def initialize(queries, updates, indexes, data,
-                     objective = Objective::COST)
+      def initialize(queries, updates, data, objective = Objective::COST)
         @queries = queries
         @updates = updates
-        @indexes = indexes
         @data = data
+        @indexes = @data[:costs].flat_map { |_, ic| ic.keys }.uniq
         @logger = Logging.logger['nose::search::problem']
         @status = nil
         @objective_type = objective

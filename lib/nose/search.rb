@@ -121,8 +121,7 @@ module NoSE
       # @return [Results]
       def solve_mipper(queries, indexes, data)
         # Construct and solve the ILP
-        problem = Problem.new queries, @workload.updates, indexes, data,
-                              @objective
+        problem = Problem.new queries, @workload.updates, data, @objective
         problem.solve
 
         # We won't get here if there's no valdi solution

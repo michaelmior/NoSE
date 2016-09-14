@@ -68,6 +68,7 @@ module NoSE
                         else
                           problem.index_vars[query.index]
                         end
+            next if index_var.nil?
 
             constr = MIPPeR::Constraint.new constraint + index_var * -1.0,
                                             :==, 0, name
