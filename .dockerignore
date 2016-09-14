@@ -1,5 +1,5 @@
 .bundle
-.codeclimate.yml
+.scrutinizer.yml
 .editorconfig
 .git
 .rspec
@@ -7,11 +7,9 @@
 .simplecov
 .travis.yml
 .yardopts
-man.erb
-nose.yml.example
-spec
-subman.erb
-tmp
+doc/
+spec/
+tmp/
 yard_extensions.rb
 CONTRIBUTING.md
 LICENSE.md
