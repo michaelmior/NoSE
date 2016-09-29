@@ -278,6 +278,12 @@ NoSE::Plans::ExecutionPlans.new do
   Group 'StoreBid', bidding: 3.74,
                     write_medium: 3.74 * 10,
                     write_heavy: 3.74 * 100 do
+    Plan 'CheckMaxBid' do
+      Select items.nb_of_bids, items.max_bid
+      Param  items.id, :==
+      Lookup 'items', [items.id, :==]
+    end
+
     Plan 'AddBid' do
       Support do
         Plan 'GetMaxBid' do
