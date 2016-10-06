@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    addressable (2.4.0)
     ansi-to-html (0.0.3)
     aruba (0.14.2)
       childprocess (~> 0.5.6)
@@ -58,6 +59,8 @@ GEM
     ione (1.2.3)
     json (2.0.2)
     json (2.0.2-java)
+    json-schema (2.7.0)
+      addressable (>= 2.4)
     little-plugger (1.1.4)
     logging (2.1.0)
       little-plugger (~> 1.1)
@@ -162,6 +165,7 @@ DEPENDENCIES
   faker
   formatador
   gruff
+  json-schema
   logging
   memory_profiler
   mipper

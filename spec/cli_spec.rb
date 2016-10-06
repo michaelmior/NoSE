@@ -1,4 +1,5 @@
 require 'graphviz'
+require 'json-schema'
 require 'yaml'
 
 module NoSE
@@ -21,7 +22,14 @@ module NoSE
       context 'when running a search' do
         it 'can search with no limits', solver: true do
           run_simple 'nose search ebay --format=json'
-          expect { JSON.parse last_command_stopped.stdout }.to_not raise_error
+
+          output = nil
+          expect do
+            output = JSON.parse last_command_stopped.stdout
+          end.to_not raise_error
+
+          schema = JSON.parse File.read('spec/support/nose-schema.json')
+          expect(JSON::Validator.validate(schema, output)).to be true
         end
 
         it 'can search with a limit', solver: true do

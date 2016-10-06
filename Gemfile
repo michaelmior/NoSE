@@ -29,10 +29,11 @@ end
 
 group :test do
   gem 'aruba', require: false
-  gem 'scrutinizer-ocular', require: false
   gem 'fakefs', require: 'fakefs/safe'
+  gem 'json-schema'
   gem 'rspec'
   gem 'rspec-collection_matchers'
+  gem 'scrutinizer-ocular', require: false
   gem 'simplecov', require: false
 end
 

@@ -1,0 +1,408 @@
+{
+  "id": "https://michael.mior.ca/projects/NoSE/schema#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Result",
+  "description": "A result from running the NoSE design tool",
+
+  "definitions": {
+    "cost_model": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+
+      "required": ["name"]
+    },
+
+    "field_ref": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "parent": {
+          "type": "string"
+        }
+      },
+
+      "required": ["name", "parent"],
+      "additionalProperties": false
+    },
+
+    "index_ref": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+
+      "required": ["key"],
+      "additionalProperties": false
+    },
+
+    "entity": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "size": {
+                "type": "number"
+              },
+              "cardinality": {
+                "type": "integer"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["id", "foreign_key", "date", "float", "integer", "string"]
+              }
+            },
+            "required": ["name", "type"]
+          }
+        },
+
+        "count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+
+      "required": ["name"]
+    },
+
+    "index": {
+      "id": "index",
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "hash_fields": {
+          "type": "array",
+          "items": { "$ref": "https://michael.mior.ca/projects/NoSE/schema#/definitions/field_ref" }
+        },
+        "order_fields": {
+          "type": "array",
+          "items": { "$ref": "https://michael.mior.ca/projects/NoSE/schema#/definitions/field_ref" }
+        },
+        "extra": {
+          "type": "array",
+          "items": { "$ref": "https://michael.mior.ca/projects/NoSE/schema#/definitions/field_ref" }
+        },
+        "graph": {
+          "type": "object",
+          "properties": {
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "edges": {
+              "type": "array",
+              "items": { "$ref": "https://michael.mior.ca/projects/NoSE/schema#/definitions/field_ref" }
+            }
+          }
+        },
+
+        "entries": {
+          "type": "integer",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "entry_size": {
+          "type": "integer",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "hash_count": {
+          "type": "integer",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "per_hash_count": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        }
+      },
+
+      "required": ["key", "hash_fields", "order_fields", "extra", "graph"]
+    },
+
+    "query_plan_step": {
+      "type": "object",
+      "properties": {
+        "cost": {
+          "type": "number",
+          "minimum": 0
+        },
+        "cardinality": {
+          "type": "number",
+          "minimum": 0
+        },
+        "hash_cardinality": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+
+    "query_plan": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "number",
+          "minimum": 0
+        },
+
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+
+        "steps": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              { "$ref": "#/definitions/query_plan_step" },
+              {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": ["index_lookup"]
+                      },
+                      "index": { "$ref": "#/definitions/index_ref" },
+                      "eq_filter": {
+                        "type": "array",
+                        "items": { "$ref": "#/definitions/field_ref" }
+                      },
+                      "order_by": {
+                        "type": "array",
+                        "items": { "$ref": "#/definitions/field_ref" }
+                      }
+                    },
+
+                    "required": ["type", "cost", "cardinality", "hash_cardinality", "index"]
+                  },
+
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": ["filter"]
+                      },
+                      "eq": {
+                        "type": "array",
+                        "items": { "$ref": "#/definitions/field_ref" }
+                      },
+                      "range": {
+                        "$ref": "#/definitions/field_ref"
+                      }
+                    },
+
+                    "required": ["type", "cost", "cardinality", "hash_cardinality"]
+                  },
+
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": ["limit"]
+                      },
+                      "limit": {
+                        "type": "integer",
+                        "minimum": 1
+                      }
+                    },
+
+                    "required": ["type", "cost", "cardinality", "hash_cardinality", "limit"]
+                  },
+
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": ["sort"]
+                      },
+                      "sort_fields": {
+                        "type": "array",
+                        "items": { "$ref": "#/definitions/field_ref" }
+                      }
+                    },
+
+                    "required": ["type", "cost", "cardinality", "hash_cardinality", "sort_fields"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+
+      "required": ["query"]
+    },
+
+    "update_plan": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "statement": {
+          "type": "string"
+        },
+
+        "cost": {
+          "type": "number",
+          "minimum": 0
+        },
+        "update_cost": {
+          "type": "number",
+          "minimum": 0
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+
+        "query_plans": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/query_plan" }
+        },
+
+        "update_steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["update", "delete", "insert"]
+              },
+              "index": { "$ref": "#/definitions/index_ref" },
+              "fields": {
+                "type": "array",
+                "items": { "$ref": "#/definitions/field_ref" }
+              },
+              "cardinality": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          },
+
+          "required": ["type"]
+        },
+
+        "cost_model": {
+          "$ref": "#/definitions/cost_model"
+        }
+      }
+    }
+  },
+
+  "type": "object",
+  "properties": {
+    "workload": {
+      "type": "object",
+      "properties": {
+        "statements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+
+        "mix": {
+          "type": "string"
+        },
+
+        "weights": {
+        },
+
+        "entities": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/entity" }
+        }
+      }
+    },
+
+    "indexes": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/index" }
+    },
+
+    "enumerated_indexes": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/index" }
+    },
+
+    "cost_model": {
+      "$ref": "#/definitions/cost_model"
+    },
+
+    "plans": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/query_plan" }
+    },
+    "update_plans": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/update_plan" }
+    },
+
+    "total_size": {
+      "type": "number",
+      "minimum": 0
+    },
+    "total_cost": {
+      "type": "number",
+      "minimum": 0
+    },
+    "revision": {
+      "description": "The revision of the NoSE code used to generate these results",
+      "type": "string"
+    },
+    "time": {
+    },
+    "command": {
+      "description": "The full command line used to run NoSE",
+      "type": "string"
+    }
+  }
+}
