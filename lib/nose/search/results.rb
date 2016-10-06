@@ -24,6 +24,22 @@ module NoSE
         end
       end
 
+      # Provide access to the underlying model in the workload
+      # @return [Model]
+      def model
+        @workload.nil? ? @model : @workload.model
+      end
+
+      # Assign the model to the workload if it exists, otherwise store it
+      # @return [void]
+      def model=(model)
+        if @workload.nil?
+          @model = model
+        else
+          @workload.instance_variable_set :@model, model
+        end
+      end
+
       # After setting the cost model, recalculate the cost
       # @return [void]
       def cost_model=(new_cost_model)

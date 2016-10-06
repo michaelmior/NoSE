@@ -54,6 +54,7 @@ module NoSE
       def random_plan_results(workload, indexes, plans, cost_model)
         results = OpenStruct.new
         results.workload = workload
+        results.model = workload.model
         results.enumerated_indexes = indexes
         results.indexes = plans.map(&:indexes).flatten(1).to_set
         results.plans = plans

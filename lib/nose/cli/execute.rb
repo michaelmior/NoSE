@@ -43,6 +43,7 @@ module NoSE
         result.workload = Workload.new plans.schema.model
         result.workload.mix = options[:mix].to_sym \
           unless options[:mix] == 'default' && result.workload.mix != :default
+        result.model = result.workload.model
         result.indexes = plans.schema.indexes.values
         backend = get_backend(options, result)
 

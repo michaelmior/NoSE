@@ -50,6 +50,7 @@ module NoSE
                               cost_model)
         results = OpenStruct.new
         results.workload = workload
+        results.model = workload.model
         results.indexes = indexes
         results.enumerated_indexes = []
         results.plans = plans

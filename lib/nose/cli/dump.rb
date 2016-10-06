@@ -28,6 +28,7 @@ module NoSE
         results = OpenStruct.new
         results.workload = Workload.new plans.schema.model
         results.workload.mix = plans.mix
+        results.model = results.workload.model
         results.indexes = plans.schema.indexes.values
         results.enumerated_indexes = []
 

@@ -352,13 +352,19 @@
         "mix": {
           "type": "string"
         },
-
         "weights": {
-        },
+        }
+      }
+    },
 
-        "entities": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/entity" }
+    "properties": {
+      "model": {
+        "type": "object",
+        "properties": {
+          "entities": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/entity" }
+          }
         }
       }
     },

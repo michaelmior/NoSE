@@ -418,7 +418,7 @@ module NoSE
       end
     end
 
-    # Represent entities and statements in a workload
+    # Represent statements in a workload
     class WorkloadRepresenter < Representable::Decorator
       include Representable::Hash
       include Representable::JSON
@@ -445,11 +445,19 @@ module NoSE
         weights
       end
       property :weights, exec_context: :decorator
+    end
 
-      # A simple array of the entities in the workload
+    # Represent entities in a model
+    class ModelRepresenter < Representable::Decorator
+      include Representable::Hash
+      include Representable::JSON
+      include Representable::YAML
+      include Representable::Uncached
+
+      # A simple array of the entities in the model
       # @return [Array<Entity>]
       def entities
-        represented.model.entities.values
+        represented.entities.values
       end
       collection :entities, decorator: EntityRepresenter,
                             exec_context: :decorator
@@ -459,10 +467,9 @@ module NoSE
     class WorkloadBuilder
       include Uber::Callable
 
-      def call(_, input:, fragment:, **)
+      def call(_, input:, fragment:, represented:, **)
         workload = input.represented
-        entity_map = add_entities workload, fragment['entities']
-        add_reverse_foreign_keys entity_map, fragment['entities']
+        workload.instance_variable_set :@model, represented.model
 
         # Add all statements to the workload
         statement_weights = Hash.new { |h, k| h[k] = {} }
@@ -478,13 +485,26 @@ module NoSE
         end
 
         workload.mix = fragment['mix'].to_sym unless fragment['mix'].nil?
+
         workload
+      end
+    end
+
+    class ModelBuilder
+      include Uber::Callable
+
+      def call(_, input:, fragment:, **)
+        model = input.represented
+        entity_map = add_entities model, fragment['entities']
+        add_reverse_foreign_keys entity_map, fragment['entities']
+
+        model
       end
 
       private
 
-      # Reconstruct entities and add them to the given workload
-      def add_entities(workload, entity_fragment)
+      # Reconstruct entities and add them to the given model
+      def add_entities(model, entity_fragment)
         # Recreate all the entities
         entity_map = {}
         entity_fragment.each do |entity_hash|
@@ -495,7 +515,7 @@ module NoSE
         entities = EntityRepresenter.represent([])
         entities = entities.from_hash entity_fragment,
                                       user_options: { entity_map: entity_map }
-        entities.each { |entity| workload << entity }
+        entities.each { |entity| model.add_entity entity }
 
         entity_map
       end
@@ -653,6 +673,9 @@ module NoSE
       delegate :revision= => :represented
       delegate :command= => :represented
 
+      property :model, decorator: ModelRepresenter,
+                       class: Model,
+                       deserialize: ModelBuilder.new
       property :workload, decorator: WorkloadRepresenter,
                           class: Workload,
                           deserialize: WorkloadBuilder.new
