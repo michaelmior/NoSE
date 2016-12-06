@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'pickup'
   s.add_dependency 'pry'
   s.add_dependency 'rake'
-  s.add_dependency 'representable'
+  s.add_dependency 'representable', '3.0.0'
   s.add_dependency 'ruby-graphviz'
   s.add_dependency 'ruby-mysql' # for the proxy because it's pure Ruby
   s.add_dependency 'sequel'
