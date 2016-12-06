@@ -19,7 +19,14 @@ gem 'sequel'
 gem 'smarter_csv'
 gem 'thor', require: false
 
+# Required for Cassandra backend
+gem 'cassandra-driver'
+
+# Required for MongoDB backend
+gem 'mongo'
+
 platform :ruby do
+  gem 'rbtree' # for more efficient SortedSet implementation
   gem 'mysql2' # this is used for the loader for performance
 end
 
@@ -38,8 +45,6 @@ group :development do
 end
 
 platform :ruby do
-  gem 'rbtree' # for more efficient SortedSet implementation
-
   group :development do
     gem 'memory_profiler'
     gem 'pry-doc'
@@ -49,12 +54,4 @@ platform :ruby do
     gem 'yard'
     gem 'ronn'
   end
-end
-
-group :cassandra do
-  gem 'cassandra-driver'
-end
-
-group :mongo do
-  gem 'mongo'
 end
