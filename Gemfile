@@ -2,11 +2,8 @@
 
 source 'https://rubygems.org'
 
-gem 'ansi-to-html'
-gem 'descriptive_statistics', require: false
 gem 'faker'
 gem 'formatador'
-gem 'gruff'
 gem 'logging'
 gem 'mipper'
 gem 'parallel'
@@ -20,7 +17,6 @@ gem 'ruby-graphviz'
 gem 'ruby-mysql' # this is used for the proxy because it's pure Ruby
 gem 'sequel'
 gem 'smarter_csv'
-gem 'table_print'
 gem 'thor', require: false
 
 platform :ruby do
@@ -28,7 +24,6 @@ platform :ruby do
 end
 
 group :test do
-  gem 'aruba', require: false
   gem 'fakefs', require: 'fakefs/safe'
   gem 'json-schema'
   gem 'rspec'
@@ -52,7 +47,6 @@ platform :ruby do
     gem 'pry-stack_explorer'
     gem 'ruby-prof'
     gem 'yard'
-    gem 'yard-thor'
     gem 'ronn'
   end
 end

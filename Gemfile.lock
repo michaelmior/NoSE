@@ -2,7 +2,6 @@ GEM
   remote: https://rubygems.org/
   specs:
     addressable (2.4.0)
-    ansi-to-html (0.0.3)
     aruba (0.14.2)
       childprocess (~> 0.5.6)
       contracts (~> 0.9)
@@ -39,7 +38,6 @@ GEM
     debug_inspector (0.0.2)
     declarative (0.0.8)
       uber (>= 0.0.15)
-    descriptive_statistics (2.5.1)
     diff-lcs (1.2.5)
     docile (1.1.5)
     fakefs (0.9.3)
@@ -49,10 +47,6 @@ GEM
     ffi (1.9.14-java)
     formatador (0.2.5)
     gherkin (4.0.0)
-    gruff (0.7.0)
-      rmagick (~> 2.13, >= 2.13.4)
-    gruff (0.7.0-java)
-      rmagick4j (~> 0.3, >= 0.3.9)
     hpricot (0.8.6)
     i18n (0.7.0)
     interception (0.5)
@@ -102,8 +96,6 @@ GEM
     representable (3.0.0)
       declarative (~> 0.0.5)
       uber (~> 0.0.15)
-    rmagick (2.16.0)
-    rmagick4j (0.4.0-java)
     ronn (0.7.3)
       hpricot (>= 0.8.2)
       mustache (>= 0.7.0)
@@ -136,28 +128,21 @@ GEM
     simplecov-html (0.10.0)
     slop (3.6.0)
     smarter_csv (1.1.0)
-    table_print (1.5.6)
     thor (0.19.1)
     uber (0.0.15)
     yard (0.9.5)
-    yard-thor (0.0.1)
-      thor
-      yard
 
 PLATFORMS
   java
   ruby
 
 DEPENDENCIES
-  ansi-to-html
   aruba
   binding_of_caller
   cassandra-driver
-  descriptive_statistics
   fakefs
   faker
   formatador
-  gruff
   json-schema
   logging
   memory_profiler
@@ -186,10 +171,8 @@ DEPENDENCIES
   sequel
   simplecov
   smarter_csv
-  table_print
   thor
   yard
-  yard-thor
 
 BUNDLED WITH
    1.11.2
