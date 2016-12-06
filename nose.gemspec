@@ -3,7 +3,6 @@ Gem::Specification.new do |s|
   s.version     = '0.1.0pre'
   s.license     = 'GPL-3.0'
   s.summary     = 'Schema design for NoSQL applications'
-  s.description = 'Much longer explanation of the example!'
   s.author      = 'Michael Mior'
   s.email       = 'mmior@uwaterloo.ca'
   s.files       = Dir['lib/**/*'] + Dir['templates/*']
@@ -21,7 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'rake'
   s.add_dependency 'representable'
   s.add_dependency 'ruby-graphviz'
-  s.add_dependency 'ruby-mysql' # this is used for the proxy because it's pure Ruby
+  s.add_dependency 'ruby-mysql' # for the proxy because it's pure Ruby
   s.add_dependency 'sequel'
   s.add_dependency 'smarter_csv'
 
