@@ -38,6 +38,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'pry-stack_explorer'
   s.add_development_dependency 'ronn'
   s.add_development_dependency 'rspec'
+  s.add_development_dependency 'rspec-core'
   s.add_development_dependency 'rspec-collection_matchers'
   s.add_development_dependency 'ruby-prof'
   s.add_development_dependency 'scrutinizer-ocular'
