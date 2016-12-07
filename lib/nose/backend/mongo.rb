@@ -88,6 +88,7 @@ module NoSE
             end
           end
 
+          row_hash.default_proc = nil
           row_hash
         end
 
