@@ -91,7 +91,7 @@ module NoSE
           row_hash
         end
 
-        client[index.key].insert_many(chunk).inserted_ids
+        client[index.key].insert_many(chunk, ordered: false).inserted_ids
       end
 
       # Sample a number of values from the given index
