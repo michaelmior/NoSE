@@ -13,7 +13,7 @@ before_install:
   - mysql -uroot -e 'create database nose;'
   - mysql -uroot -Dnose < spec/support/data/mysql.sql
   - sudo rm -rf /var/lib/cassandra/*
-  - wget http://www.us.apache.org/dist/cassandra/3.7/apache-cassandra-3.7-bin.tar.gz && tar -xvzf apache-cassandra-3.7-bin.tar.gz && sudo sh apache-cassandra-3.7/bin/cassandra -R && sleep 15
+  - wget https://archive.apache.org/dist/cassandra/3.7/apache-cassandra-3.7-bin.tar.gz && tar -xvzf apache-cassandra-3.7-bin.tar.gz && sudo sh apache-cassandra-3.7/bin/cassandra -R && sleep 15
 bundler_args: --without=development
 rvm:
   - 2.3.1
