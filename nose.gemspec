@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'nose'
-  s.version     = '0.1.0pre1'
+  s.version     = '0.1.0pre2'
   s.license     = 'GPL-3.0'
   s.summary     = 'Schema design for NoSQL applications'
   s.author      = 'Michael Mior'
@@ -10,7 +10,8 @@ Gem::Specification.new do |s|
                   Dir['models/*'] +
                   Dir['workloads/*'] +
                   Dir['plans/*'] +
-                  Dir['schemas/*']
+                  Dir['schemas/*'] +
+                  Dir['data/**/*']
   s.homepage    = 'https://michael.mior.ca/projects/NoSE/'
 
   s.add_dependency 'faker', '~> 1.6.6', '>= 1.6.0'
