@@ -8,46 +8,46 @@ Gem::Specification.new do |s|
   s.files       = Dir['lib/**/*'] + Dir['templates/*']
   s.homepage    = 'https://michael.mior.ca/projects/NoSE/'
 
-  s.add_dependency 'faker'
-  s.add_dependency 'formatador'
-  s.add_dependency 'logging'
-  s.add_dependency 'mipper'
-  s.add_dependency 'parallel'
-  s.add_dependency 'parslet'
-  s.add_dependency 'pg'
-  s.add_dependency 'pickup'
-  s.add_dependency 'pry'
-  s.add_dependency 'rake'
-  s.add_dependency 'representable', '3.0.0'
-  s.add_dependency 'ruby-graphviz'
-  s.add_dependency 'ruby-mysql' # for the proxy because it's pure Ruby
-  s.add_dependency 'sequel'
-  s.add_dependency 'smarter_csv'
+  s.add_dependency 'faker', '~> 1.6.6', '>= 1.6.0'
+  s.add_dependency 'formatador', '~> 0.2.5'
+  s.add_dependency 'logging', '~> 2.1.0', '>= 2.1.0'
+  s.add_dependency 'mipper', '~> 0.0.9'
+  s.add_dependency 'parallel', '~> 1.10.0', '>= 1.10.0'
+  s.add_dependency 'parslet', '~> 1.7.1', '>= 1.7.0'
+  s.add_dependency 'pg', '~> 0.19.0'
+  s.add_dependency 'pickup', '~> 0.0.11'
+  s.add_dependency 'pry', '~> 0.10.4'
+  s.add_dependency 'rake', '~> 12.0.0', '>= 12.0.0'
+  s.add_dependency 'representable', '~> 3.0.0', '>= 3.0.0'
+  s.add_dependency 'ruby-graphviz', '~> 1.2.2', '>= 1.2.0'
+  s.add_dependency 'ruby-mysql', '~> 2.9.14', '>= 2.9.0' # for the proxy because it's pure Ruby
+  s.add_dependency 'sequel', '~> 4.41.0', '>= 4.41.0'
+  s.add_dependency 'smarter_csv', '~> 1.1.1', '>= 1.1.0'
 
   # Required for Cassandra backend
-  s.add_dependency 'cassandra-driver'
+  s.add_dependency 'cassandra-driver', '~> 3.1.0', '>= 3.1.0'
 
   # Required for MongoDB backend
-  s.add_dependency 'mongo'
+  s.add_dependency 'mongo', '~> 2.4.0', '>= 2.4.0'
 
-  s.add_development_dependency 'fakefs'
-  s.add_development_dependency 'json-schema'
-  s.add_development_dependency 'memory_profiler'
-  s.add_development_dependency 'pry-byebug'
-  s.add_development_dependency 'pry-doc'
-  s.add_development_dependency 'pry-stack_explorer'
-  s.add_development_dependency 'ronn'
-  s.add_development_dependency 'rspec'
-  s.add_development_dependency 'rspec-core'
-  s.add_development_dependency 'rspec-collection_matchers'
-  s.add_development_dependency 'ruby-prof'
-  s.add_development_dependency 'scrutinizer-ocular'
-  s.add_development_dependency 'simplecov'
-  s.add_development_dependency 'yard'
+  s.add_development_dependency 'fakefs', '~> 0.10.0'
+  s.add_development_dependency 'json-schema', '~> 2.7.0', '>= 2.7.0'
+  s.add_development_dependency 'memory_profiler', '~> 0.9.7'
+  s.add_development_dependency 'pry-byebug', '~> 3.4.2', '>= 3.4.0'
+  s.add_development_dependency 'pry-doc', '~> 0.9.0'
+  s.add_development_dependency 'pry-stack_explorer', '~> 0.4.9.2'
+  s.add_development_dependency 'ronn', '~> 0.7.3'
+  s.add_development_dependency 'rspec', '~> 3.5.0', '>= 3.5.0'
+  s.add_development_dependency 'rspec-core', '~> 3.5.4', '>= 3.5.0'
+  s.add_development_dependency 'rspec-collection_matchers', '~> 1.1.2', '>= 1.1.0'
+  s.add_development_dependency 'ruby-prof', '~> 0.16.2'
+  s.add_development_dependency 'scrutinizer-ocular', '~> 1.0.1', '>= 1.0.0'
+  s.add_development_dependency 'simplecov', '~> 0.12.0'
+  s.add_development_dependency 'yard', '~> 0.9.4'
 
   # Below for MRI only (TODO JRuby gemspec)
-  s.add_dependency 'rbtree' # for more efficient SortedSet implementation
-  s.add_dependency 'mysql2' # this is used for the loader for performance
-  s.add_development_dependency 'pry-rescue'
-  s.add_development_dependency 'binding_of_caller'
+  s.add_dependency 'rbtree', '~> 0.4.2' # for more efficient SortedSet implementation
+  s.add_dependency 'mysql2', '~> 0.4.5' # this is used for the loader for performance
+  s.add_development_dependency 'pry-rescue', '~> 1.4.4', '>= 1.4.0'
+  s.add_development_dependency 'binding_of_caller', '~> 0.7.2'
 end
