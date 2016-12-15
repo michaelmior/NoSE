@@ -24,6 +24,7 @@ matrix:
   allow_failures:
     - rvm: jruby-9.0.5.0
 script:
+  - sed -i '/^--tag/d' .rspec
   - bundle exec rspec
 addons:
   apt:
