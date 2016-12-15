@@ -5,7 +5,12 @@ Gem::Specification.new do |s|
   s.summary     = 'Schema design for NoSQL applications'
   s.author      = 'Michael Mior'
   s.email       = 'mmior@uwaterloo.ca'
-  s.files       = Dir['lib/**/*'] + Dir['templates/*']
+  s.files       = Dir['lib/**/*'] +
+                  Dir['templates/*'] +
+                  Dir['models/*'] +
+                  Dir['workloads/*'] +
+                  Dir['plans/*'] +
+                  Dir['schemas/*']
   s.homepage    = 'https://michael.mior.ca/projects/NoSE/'
 
   s.add_dependency 'faker', '~> 1.6.6', '>= 1.6.0'
