@@ -23,7 +23,7 @@ module NoSE
   # Serialization of workloads and statement execution plans
   module Serialize
     # Validate a string of JSON based on the schema
-    def self.validate_json(json)
+    def validate_json(json)
       schema_file = File.join File.dirname(__FILE__), '..', '..',
                               'data', 'nose', 'nose-schema.json'
       schema = JSON.parse File.read(schema_file)
@@ -31,6 +31,7 @@ module NoSE
       data = JSON.parse json
       JSON::Validator.validate(schema, data)
     end
+    module_function :validate_json
 
     # Construct a field from a parsed hash
     class FieldBuilder
