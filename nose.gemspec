@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'nose'
-  s.version     = '0.1.0pre2'
+  s.version     = '0.1.0pre3'
   s.license     = 'GPL-3.0'
   s.summary     = 'Schema design for NoSQL applications'
   s.author      = 'Michael Mior'
@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'faker', '~> 1.6.6', '>= 1.6.0'
   s.add_dependency 'formatador', '~> 0.2.5'
+  s.add_dependency 'json-schema', '~> 2.7.0', '>= 2.7.0'
   s.add_dependency 'logging', '~> 2.1.0', '>= 2.1.0'
   s.add_dependency 'mipper', '~> 0.0.9'
   s.add_dependency 'parallel', '~> 1.10.0', '>= 1.10.0'
@@ -37,7 +38,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'mongo', '~> 2.4.0', '>= 2.4.0'
 
   s.add_development_dependency 'fakefs', '~> 0.10.0'
-  s.add_development_dependency 'json-schema', '~> 2.7.0', '>= 2.7.0'
   s.add_development_dependency 'memory_profiler', '~> 0.9.7'
   s.add_development_dependency 'pry-byebug', '~> 3.4.2', '>= 3.4.0'
   s.add_development_dependency 'pry-doc', '~> 0.9.0'

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'json-schema'
 require 'representable'
 require 'representable/json'
 require 'representable/yaml'
@@ -21,6 +22,16 @@ end
 module NoSE
   # Serialization of workloads and statement execution plans
   module Serialize
+    # Validate a string of JSON based on the schema
+    def self.validate_json(json)
+      schema_file = File.join File.dirname(__FILE__), '..', '..',
+                              'data', 'nose', 'nose-schema.json'
+      schema = JSON.parse File.read(schema_file)
+
+      data = JSON.parse json
+      JSON::Validator.validate(schema, data)
+    end
+
     # Construct a field from a parsed hash
     class FieldBuilder
       include Uber::Callable
