@@ -276,10 +276,14 @@ module NoSE
       # by the LOAD_PATH class constant
       # @return [Object] an instance of the class which included this module
       def load(name)
-        path = const_get(:LOAD_PATH)
-        filename = File.expand_path "../../../#{path}/#{name}.rb", __FILE__
-        source_code = File.read(filename)
+        if File.exist? name
+          filename = name
+        else
+          path = const_get(:LOAD_PATH)
+          filename = File.expand_path "../../../#{path}/#{name}.rb", __FILE__
+        end
 
+        source_code = File.read(filename)
         instance = binding.eval source_code, filename
         instance.instance_variable_set :@source_code, source_code
         instance
