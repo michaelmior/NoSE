@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'nose'
-  s.version     = '0.1.0pre4'
+  s.version     = '0.1.0pre5'
   s.license     = 'GPL-3.0'
   s.summary     = 'Schema design for NoSQL applications'
   s.author      = 'Michael Mior'
