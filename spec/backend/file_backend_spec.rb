@@ -65,6 +65,10 @@ module NoSE
                         'ORDER BY Tweet.Timestamp LIMIT 10', workload.model
       end
 
+      it 'is a type of backend' do
+        expect(FileBackend.subtype_name).to eq 'file'
+      end
+
       it 'uses index descriptions for ddl' do
         expect(backend.indexes_ddl).to match_array [
           index.inspect

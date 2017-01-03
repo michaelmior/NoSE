@@ -4,7 +4,10 @@ module NoSE
   # Communication with backends for index creation and statement execution
   module Backend
     # Superclass of all database backends
-    class BackendBase
+    class Backend
+      include Listing
+      include Supertype
+
       def initialize(model, indexes, plans, update_plans, _config)
         @model = model
         @indexes = indexes
@@ -308,7 +311,7 @@ module NoSE
 
           # Check if the subclass has overridden this step
           subclass_step_name = step_class.name.sub \
-            'NoSE::Backend::BackendBase', self.class.name
+            'NoSE::Backend::Backend', self.class.name
           step_class = Object.const_get subclass_step_name
           step_class.new client, fields, conditions,
                          step, next_step, prev_step
@@ -328,7 +331,7 @@ module NoSE
       def add_delete_step(plan, steps)
         step_class = DeleteStatementStep
         subclass_step_name = step_class.name.sub \
-          'NoSE::Backend::BackendBase', self.class.name
+          'NoSE::Backend::Backend', self.class.name
         step_class = Object.const_get subclass_step_name
         steps << step_class.new(client, plan.index)
       end
@@ -338,7 +341,7 @@ module NoSE
       def add_insert_step(plan, steps, fields)
         step_class = InsertStatementStep
         subclass_step_name = step_class.name.sub \
-          'NoSE::Backend::BackendBase', self.class.name
+          'NoSE::Backend::Backend', self.class.name
         step_class = Object.const_get subclass_step_name
         steps << step_class.new(client, plan.index, fields)
       end
@@ -369,7 +372,7 @@ module NoSE
         results = nil
 
         @steps.each do |step|
-          if step.is_a?(BackendBase::IndexLookupStatementStep)
+          if step.is_a?(Backend::IndexLookupStatementStep)
             field_ids = step.index.all_fields.map(&:id)
             field_conds = conditions.select { |key| field_ids.include? key }
           else
@@ -400,10 +403,10 @@ module NoSE
         @statement = statement
         @support_plans = support_plans
         @delete_step = steps.find do |step|
-          step.is_a? BackendBase::DeleteStatementStep
+          step.is_a? Backend::DeleteStatementStep
         end
         @insert_step = steps.find do |step|
-          step.is_a? BackendBase::InsertStatementStep
+          step.is_a? Backend::InsertStatementStep
         end
       end
 

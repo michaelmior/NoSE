@@ -5,6 +5,7 @@ module NoSE
   module Cost
     # Cost model for a backend database
     class Cost
+      include Listing
       include Supertype
 
       def initialize(**options)

@@ -292,6 +292,29 @@ module NoSE
   end
 end
 
+# Allow tracking of subclasses for plugin purposes
+module Listing
+  def self.included(base)
+    base.extend ClassMethods
+    base.class_variable_set :@@registry, {}
+  end
+
+  # Add a class method to track new subclasses
+  module ClassMethods
+    # Track this new subclass for later
+    # @return [void]
+    def inherited(subclass)
+      class_variable_get(:@@registry)[subclass.name] = subclass
+    end
+
+    # List all of the encountered subclasses
+    # @return [Hash<String, Class>]
+    def subclasses
+      class_variable_get(:@@registry)
+    end
+  end
+end
+
 # Extend Time to allow conversion to DateTime instances
 class Time
   # Convert to a DateTime instance

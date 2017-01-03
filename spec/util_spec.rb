@@ -151,3 +151,22 @@ describe Cardinality do
     expect(cardinality).to eq(20)
   end
 end
+
+describe Listing do
+  let(:superclass) do
+    class Super
+      include Listing
+    end
+  end
+
+  let(:subclass) do
+    class Sub < Super
+    end
+
+    Sub
+  end
+
+  it 'allows tracking of subclasses' do
+    expect(superclass.subclasses).to eq({"Sub" => subclass})
+  end
+end

@@ -18,7 +18,7 @@ module NoSE
       end
 
       it 'can load data into a backend' do
-        backend = instance_spy Backend::BackendBase
+        backend = instance_spy Backend::Backend
         allow(backend).to receive(:by_id_graph).and_return(false)
 
         index = Index.new [user['City']], [user['UserId']],

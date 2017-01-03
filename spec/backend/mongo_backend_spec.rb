@@ -17,6 +17,10 @@ module NoSE
                            [], [], config
         end
       end
+
+      it 'is a type of backend' do
+        expect(MongoBackend.subtype_name).to eq 'mongo'
+      end
     end
   end
 end

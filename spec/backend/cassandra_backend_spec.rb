@@ -46,6 +46,10 @@ module NoSE
           session.execute keyspace_definition
         end
       end
+
+      it 'is a type of backend' do
+        expect(CassandraBackend.subtype_name).to eq 'cassandra'
+      end
     end
 
     describe CassandraBackend do

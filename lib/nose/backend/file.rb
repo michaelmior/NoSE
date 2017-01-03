@@ -3,7 +3,9 @@
 module NoSE
   module Backend
     # Simple backend which persists data to a file
-    class FileBackend < BackendBase
+    class FileBackend < Backend
+      include Subtype
+
       def initialize(model, indexes, plans, update_plans, config)
         super
 
@@ -104,7 +106,7 @@ module NoSE
       end
 
       # Look up data on an index in the backend
-      class IndexLookupStatementStep < BackendBase::IndexLookupStatementStep
+      class IndexLookupStatementStep < Backend::IndexLookupStatementStep
         include RowMatcher
 
         # Filter all the rows in the specified index to those requested
@@ -128,7 +130,7 @@ module NoSE
       end
 
       # Insert data into an index on the backend
-      class InsertStatementStep < BackendBase::InsertStatementStep
+      class InsertStatementStep < Backend::InsertStatementStep
         # Add new rows to the index
         def process(results)
           key_ids = (@index.hash_fields + @index.order_fields).map(&:id).to_set
@@ -163,7 +165,7 @@ module NoSE
       end
 
       # Delete data from an index on the backend
-      class DeleteStatementStep < BackendBase::DeleteStatementStep
+      class DeleteStatementStep < Backend::DeleteStatementStep
         include RowMatcher
 
         # Remove rows matching the results from the dataset

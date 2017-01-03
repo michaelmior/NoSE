@@ -1,8 +1,6 @@
-require 'nose/backend/cassandra'
-
 module NoSE
   module Backend
-    describe BackendBase::SortStatementStep do
+    describe Backend::SortStatementStep do
       include_context 'entities'
 
       it 'can sort a list of results' do
@@ -12,7 +10,7 @@ module NoSE
         ]
         step = Plans::SortPlanStep.new [user['Username']]
 
-        step_class = BackendBase::SortStatementStep
+        step_class = Backend::SortStatementStep
         prepared = step_class.new nil, [], {}, step, nil, nil
         results = prepared.process nil, results
 
@@ -23,7 +21,7 @@ module NoSE
       end
     end
 
-    describe BackendBase::FilterStatementStep do
+    describe Backend::FilterStatementStep do
       include_context 'entities'
 
       it 'can filter results by an equality predicate' do
@@ -35,7 +33,7 @@ module NoSE
         query = Statement.parse 'SELECT User.* FROM User ' \
                                 'WHERE User.Username = "Bob"', workload.model
 
-        step_class = BackendBase::FilterStatementStep
+        step_class = Backend::FilterStatementStep
         prepared = step_class.new nil, [], {}, step, nil, nil
         results = prepared.process query.conditions, results
 
@@ -54,7 +52,7 @@ module NoSE
                                 'User.Username < "B" AND ' \
                                 'User.City = "New York"', workload.model
 
-        step_class = BackendBase::FilterStatementStep
+        step_class = Backend::FilterStatementStep
         prepared = step_class.new nil, [], {}, step, nil, nil
         results = prepared.process query.conditions, results
 
@@ -64,7 +62,7 @@ module NoSE
       end
     end
 
-    describe BackendBase::FilterStatementStep do
+    describe Backend::FilterStatementStep do
       include_context 'entities'
 
       it 'can limit results' do
@@ -73,7 +71,7 @@ module NoSE
           { 'User_Username' => 'Bob' }
         ]
         step = Plans::LimitPlanStep.new 1
-        step_class = BackendBase::LimitStatementStep
+        step_class = Backend::LimitStatementStep
         prepared = step_class.new nil, [], {}, step, nil, nil
         results = prepared.process({}, results)
 

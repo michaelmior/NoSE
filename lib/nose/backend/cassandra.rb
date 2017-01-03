@@ -6,7 +6,9 @@ require 'zlib'
 module NoSE
   module Backend
     # A backend which communicates with Cassandra via CQL
-    class CassandraBackend < BackendBase
+    class CassandraBackend < Backend
+      include Subtype
+
       def initialize(model, indexes, plans, update_plans, config)
         super
 
@@ -172,7 +174,7 @@ module NoSE
       end
 
       # Insert data into an index on the backend
-      class InsertStatementStep < BackendBase::InsertStatementStep
+      class InsertStatementStep < Backend::InsertStatementStep
         def initialize(client, index, fields)
           super
 
@@ -228,7 +230,7 @@ module NoSE
       end
 
       # Delete data from an index on the backend
-      class DeleteStatementStep < BackendBase::DeleteStatementStep
+      class DeleteStatementStep < Backend::DeleteStatementStep
         def initialize(client, index)
           super
 
@@ -266,7 +268,7 @@ module NoSE
       end
 
       # A query step to look up data from a particular column family
-      class IndexLookupStatementStep < BackendBase::IndexLookupStatementStep
+      class IndexLookupStatementStep < Backend::IndexLookupStatementStep
         # rubocop:disable Metrics/ParameterLists
         def initialize(client, select, conditions, step, next_step, prev_step)
           super
