@@ -29,7 +29,7 @@ module NoSE
       it 'serializes an index to a key' do
         index = Index.new [user['Username']], [user['UserId']], [],
                           QueryGraph::Graph.from_path([user.id_field]),
-                          'IndexKey'
+                          saved_key: 'IndexKey'
         hash = IndexRepresenter.represent(index).to_hash
         expect(hash).to eq('key' => 'IndexKey')
       end

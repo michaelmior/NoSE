@@ -133,7 +133,7 @@ module NoSE
       index = Index.new [tweet['TweetId']], [], [tweet['Timestamp']],
                         QueryGraph::Graph.from_path(
                           [tweet.id_field]
-                        ), workload.model
+                        )
       expect(update.support_queries index).to be_empty
     end
 
@@ -145,7 +145,7 @@ module NoSE
                         [user['City']],
                         QueryGraph::Graph.from_path(
                           [tweet.id_field, tweet['User']]
-                        ), workload.model
+                        )
       query = update.support_queries(index).first
       expect(query.unparse).to start_with \
         'SELECT Tweet.Timestamp, Tweet.TweetId ' \
@@ -160,7 +160,7 @@ module NoSE
       index = Index.new [user['Username'], user['UserId']], [],
                         [user['City']], QueryGraph::Graph.from_path(
                           [user.id_field]
-                        ), workload.model
+                        )
       expect(update.support_queries(index).first.unparse).to start_with \
         'SELECT User.Username FROM User WHERE User.UserId = ?'
     end

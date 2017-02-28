@@ -31,13 +31,13 @@ module NoSE
         Index.new [user['UserId']], [tweet['TweetId']],
                   [tweet['Timestamp']],
                   QueryGraph::Graph.from_path([user.id_field, user['Tweets']]),
-                  'TweetsByUser'
+                  saved_key: 'TweetsByUser'
       end
 
       let(:users_by_name) do
         Index.new [user['Username']], [user['UserId']], [],
                   QueryGraph::Graph.from_path([user.id_field]),
-                  'UsersByName'
+                  saved_key: 'UsersByName'
       end
 
       let(:index_data) do

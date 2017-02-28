@@ -39,7 +39,8 @@ module NoSE
       dsl = IndexDSL.new(self)
       dsl.instance_eval(&block) if block_given?
       index = Index.new dsl.hash_fields, dsl.order_fields, dsl.extra,
-                        QueryGraph::Graph.from_path(dsl.path_keys), key
+                        QueryGraph::Graph.from_path(dsl.path_keys),
+                        saved_key: key
       @indexes[index.key] = index
     end
 

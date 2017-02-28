@@ -7,7 +7,8 @@ module NoSE
                 :entries, :entry_size, :size, :hash_count, :per_hash_count,
                 :graph
 
-    def initialize(hash_fields, order_fields, extra, graph, saved_key = nil)
+    def initialize(hash_fields, order_fields, extra, graph,
+                   saved_key: nil)
       order_set = order_fields.to_set
       @hash_fields = hash_fields.to_set
       @order_fields = order_fields.delete_if { |e| hash_fields.include? e }
@@ -189,7 +190,7 @@ module NoSE
     # @return [Index]
     def simple_index
       Index.new [id_field], [], fields.values - [id_field],
-                QueryGraph::Graph.from_path([id_field]), name
+                QueryGraph::Graph.from_path([id_field]), saved_key: name
     end
   end
 

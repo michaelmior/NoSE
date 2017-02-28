@@ -49,7 +49,7 @@ module NoSE
                 [tweet['Timestamp'], user['UserId'], tweet['TweetId']],
                 [tweet['Body']],
                 QueryGraph::Graph.from_path([user.id_field, user['Tweets']]),
-                'TweetIndex'
+                saved_key: 'TweetIndex'
     end
 
     let(:users) do
