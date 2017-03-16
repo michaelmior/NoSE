@@ -7,8 +7,8 @@ before_install:
   - curl -L https://packagecloud.io/michaelmior/coinor/gpgkey | sudo apt-key add -
   - echo "deb https://packagecloud.io/michaelmior/coinor/ubuntu/ precise main" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update -qq
-  - sudo apt-get install -y graphviz
-  - sudo apt-get install -y coinor-libcbc-dev coinor-libcbc3 coinor-libcoinutils-dev coinor-libcoinutils3v5 coinor-libosi-dev coinor-libosi1 coinor-libclp-dev coinor-libclp1 coinor-libcgl-dev coinor-libcgl1 libstdc++6
+  - sudo apt-get install -qq graphviz
+  - sudo apt-get install -qq coinor-libcbc-dev coinor-libcbc3 coinor-libcoinutils-dev coinor-libcoinutils3v5 coinor-libosi-dev coinor-libosi1 coinor-libclp-dev coinor-libclp1 coinor-libcgl-dev coinor-libcgl1 libstdc++6
   - gem install bundler
   - mysql -uroot -e 'create database nose;'
   - mysql -uroot -Dnose < spec/support/data/mysql.sql
