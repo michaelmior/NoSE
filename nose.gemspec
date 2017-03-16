@@ -14,21 +14,21 @@ Gem::Specification.new do |s|
                   Dir['data/**/*']
   s.homepage    = 'https://michael.mior.ca/projects/NoSE/'
 
-  s.add_dependency 'faker', '~> 1.6.6', '>= 1.6.0'
+  s.add_dependency 'faker', '~> 1.7.3', '>= 1.7.0'
   s.add_dependency 'formatador', '~> 0.2.5'
-  s.add_dependency 'json-schema', '~> 2.7.0', '>= 2.7.0'
-  s.add_dependency 'logging', '~> 2.1.0', '>= 2.1.0'
+  s.add_dependency 'json-schema', '~> 2.8.0', '>= 2.8.0'
+  s.add_dependency 'logging', '~> 2.2.0', '>= 2.2.0'
   s.add_dependency 'mipper', '~> 0.0.9'
-  s.add_dependency 'parallel', '~> 1.10.0', '>= 1.10.0'
+  s.add_dependency 'parallel', '~> 1.11.1', '>= 1.11.0'
   s.add_dependency 'parslet', '~> 1.7.1', '>= 1.7.0'
-  s.add_dependency 'pg', '~> 0.19.0'
+  s.add_dependency 'pg', '~> 0.20.0'
   s.add_dependency 'pickup', '~> 0.0.11'
   s.add_dependency 'pry', '~> 0.10.4'
   s.add_dependency 'rake', '~> 12.0.0', '>= 12.0.0'
   s.add_dependency 'representable', '~> 3.0.0', '>= 3.0.0'
   s.add_dependency 'ruby-graphviz', '~> 1.2.2', '>= 1.2.0'
   s.add_dependency 'ruby-mysql', '~> 2.9.14', '>= 2.9.0' # for the proxy because it's pure Ruby
-  s.add_dependency 'sequel', '~> 4.41.0', '>= 4.41.0'
+  s.add_dependency 'sequel', '~> 4.44.0', '>= 4.44.0'
   s.add_dependency 'smarter_csv', '~> 1.1.1', '>= 1.1.0'
 
   # Required for Cassandra backend
@@ -40,7 +40,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'fakefs', '~> 0.10.0'
   s.add_development_dependency 'memory_profiler', '~> 0.9.7'
   s.add_development_dependency 'pry-byebug', '~> 3.4.2', '>= 3.4.0'
-  s.add_development_dependency 'pry-doc', '~> 0.9.0'
+  s.add_development_dependency 'pry-doc', '~> 0.10.0'
   s.add_development_dependency 'pry-stack_explorer', '~> 0.4.9.2'
   s.add_development_dependency 'ronn', '~> 0.7.3'
   s.add_development_dependency 'rspec', '~> 3.5.0', '>= 3.5.0'
@@ -48,7 +48,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec-collection_matchers', '~> 1.1.2', '>= 1.1.0'
   s.add_development_dependency 'ruby-prof', '~> 0.16.2'
   s.add_development_dependency 'scrutinizer-ocular', '~> 1.0.1', '>= 1.0.0'
-  s.add_development_dependency 'simplecov', '~> 0.12.0'
+  s.add_development_dependency 'simplecov', '~> 0.14.0'
   s.add_development_dependency 'yard', '~> 0.9.4'
 
   # Below for MRI only (TODO JRuby gemspec)
