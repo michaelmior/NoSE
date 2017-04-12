@@ -4,6 +4,7 @@
 [![Dependency Status](https://gemnasium.com/michaelmior/NoSE.svg)](https://gemnasium.com/michaelmior/NoSE)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/michaelmior/NoSE/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/michaelmior/NoSE/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/michaelmior/NoSE/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/michaelmior/NoSE/?branch=master)
+[![Docker Build Status](https://img.shields.io/docker/build/michaelmior/nose.svg)]()
 
 This is a work in progress tool to provide automated physical schema design for NoSQL data stores.
 NoSE is licensed under the [GPLv3 license](LICENSE.md).
