@@ -114,7 +114,7 @@ module NoSE
 
         Index.new f.call(fragment['hash_fields']),
                   f.call(fragment['order_fields']),
-                  f.call(fragment['extra']), graph, fragment['key']
+                  f.call(fragment['extra']), graph, saved_key: fragment['key']
       end
     end
 
