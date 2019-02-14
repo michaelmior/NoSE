@@ -32,7 +32,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'smarter_csv', '~> 1.1.1', '>= 1.1.0'
 
   # Required for Cassandra backend
-  s.add_dependency 'cassandra-driver', '~> 3.1.0', '>= 3.1.0'
+  s.add_dependency 'cassandra-driver', '~> 3.2.3', '>= 3.1.0'
 
   # Required for MongoDB backend
   s.add_dependency 'mongo', '~> 2.4.0', '>= 2.4.0'
