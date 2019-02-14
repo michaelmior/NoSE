@@ -37,7 +37,7 @@ Gem::Specification.new do |s|
   # Required for MongoDB backend
   s.add_dependency 'mongo', '~> 2.7.0', '>= 2.4.0'
 
-  s.add_development_dependency 'fakefs', '~> 0.11.0'
+  s.add_development_dependency 'fakefs', '~> 0.19.1'
   s.add_development_dependency 'memory_profiler', '~> 0.9.7'
   s.add_development_dependency 'pry-byebug', '~> 3.4.2', '>= 3.4.0'
   s.add_development_dependency 'pry-doc', '~> 0.10.0'
