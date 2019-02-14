@@ -1,7 +1,7 @@
 # NoSQL Schema Evaluator (NoSE)
 
 [![Build Status](https://travis-ci.org/michaelmior/NoSE.svg?branch=master)](https://travis-ci.org/michaelmior/NoSE)
-[![Dependency Status](https://gemnasium.com/michaelmior/NoSE.svg)](https://gemnasium.com/michaelmior/NoSE)
+[![Depfu](https://badges.depfu.com/badges/69de42ee3415b077a040beadc8941f1e/overview.svg)](https://depfu.com/github/michaelmior/NoSE?project_id=6964)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/michaelmior/NoSE/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/michaelmior/NoSE/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/michaelmior/NoSE/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/michaelmior/NoSE/?branch=master)
 [![Docker Build Status](https://img.shields.io/docker/build/michaelmior/nose.svg)]()
