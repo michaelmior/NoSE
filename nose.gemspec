@@ -43,7 +43,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'pry-doc', '~> 1.0.0'
   s.add_development_dependency 'pry-stack_explorer', '~> 0.4.9.2'
   s.add_development_dependency 'ronn', '~> 0.7.3'
-  s.add_development_dependency 'rspec', '~> 3.5.0', '>= 3.5.0'
+  s.add_development_dependency 'rspec', '~> 3.8.0', '>= 3.5.0'
   s.add_development_dependency 'rspec-core', '~> 3.5.4', '>= 3.5.0'
   s.add_development_dependency 'rspec-collection_matchers', '~> 1.1.2', '>= 1.1.0'
   s.add_development_dependency 'ruby-prof', '~> 0.16.2'
