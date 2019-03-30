@@ -19,7 +19,9 @@ Instructions can be found in the [nose-cli](https://github.com/michaelmior/nose-
 
 ## Publications
 
-Mior, M.J.; Kenneth Salem; Ashraf Aboulnaga; Rui Liu, [NoSE: Schema Design for NoSQL Applications](https://www.researchgate.net/publication/296485511_NoSE_Schema_Design_for_NoSQL_Applications), in Data Engineering (ICDE), 2016 IEEE 32nd International Conference on, 16-20 May 2016 (to appear)
+Mior, M.J.; Kenneth Salem; Ashraf Aboulnaga; Rui Liu, [NoSE: Schema Design for NoSQL Applications](https://www.researchgate.net/publication/296485511_NoSE_Schema_Design_for_NoSQL_Applications), in Data Engineering (ICDE), July 2017.
+
+Mior, M.J.; Kenneth Salem; Ashraf Aboulnaga; Rui Liu, [NoSE: Schema Design for NoSQL Applications](https://www.researchgate.net/publication/318126769_NoSE_Schema_Design_for_NoSQL_Applications), Transactions on Knowledge and Data Engineering, 16-20 May 2016.
 
 ![ACM DL Author-ize service](http://dl.acm.org/images/oa.gif) Michael J. Mior. 2014. [Automated schema design for NoSQL databases](http://dl.acm.org/authorize?N71145). In Proceedings of the 2014 SIGMOD PhD symposium (SIGMOD'14 PhD Symposium). ACM, New York, NY, USA, 41-45.
 
