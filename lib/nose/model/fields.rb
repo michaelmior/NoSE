@@ -203,7 +203,7 @@ module NoSE
       # A random string of the correct length
       # @return [String]
       def random_value
-        Faker::Lorem.characters(@size)
+        Faker::Lorem.characters(number: @size)
       end
     end
 
@@ -237,7 +237,7 @@ module NoSE
         next_year = DateTime.now.next_year
         next_year = next_year.new_offset(Rational(0, 24))
 
-        Faker::Time.between prev_year, next_year
+        Faker::Time.between_dates from: prev_year, to: next_year
       end
     end
 
