@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'pg', '~> 0.20.0'
   s.add_dependency 'pickup', '~> 0.0.11'
   s.add_dependency 'pry', '~> 0.12.2'
-  s.add_dependency 'rake', '~> 12.3.2', '>= 12.0.0'
+  s.add_dependency 'rake', '~> 13.0.0', '>= 12.0.0'
   s.add_dependency 'representable', '~> 3.0.0', '>= 3.0.0'
   s.add_dependency 'ruby-graphviz', '~> 1.2.2', '>= 1.2.0'
   s.add_dependency 'ruby-mysql', '~> 2.9.14', '>= 2.9.0' # for the proxy because it's pure Ruby
