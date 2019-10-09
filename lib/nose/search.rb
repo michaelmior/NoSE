@@ -88,7 +88,6 @@ module NoSE
 
         result.workload = @workload
         result.plans_from_trees trees
-        result.cost_model = @cost_model
 
         # Select the relevant update plans
         update_plans = update_plans.values.flatten(1).select do |plan|
@@ -99,6 +98,7 @@ module NoSE
         end
         result.update_plans = update_plans
 
+        result.cost_model = @cost_model
         result.validate
 
         result
