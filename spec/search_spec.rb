@@ -72,16 +72,16 @@ module NoSE
         ]
       end
 
-      it 'total cost increases when new update is added' do
+      it 'increases the total cost when an update is added' do
         query = Statement.parse 'SELECT User.UserId FROM User WHERE ' \
-                         'User.City = ? ORDER BY User.Username', workload.model
+                                     'User.City = ? ORDER BY User.Username', workload.model
 
         workload.add_statement query
         indexes = IndexEnumerator.new(workload).indexes_for_workload.to_a
         result = Search.new(workload, cost_model).search_overlap indexes
 
         workload.add_statement 'UPDATE User SET Username = ? ' \
-                                    'WHERE User.UserId = ?', 0.98
+                               'WHERE User.UserId = ?', 0.98
 
         indexes_with_update = IndexEnumerator.new(workload).indexes_for_workload.to_a
         result_with_update = Search.new(workload, cost_model).search_overlap indexes_with_update
