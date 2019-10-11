@@ -1,0 +1,29 @@
+# YAML 1.2
+---
+version: 1.0.3
+authors:
+  -
+    affiliation: "University of Waterloo"
+    family-names: Mior
+    given-names: "Michael Joseph"
+    orcid: "https://orcid.org/0000-0002-4057-8726"
+  -
+    affiliation: "University of Waterloo"
+    family-names: Salem
+    given-names: Kenneth
+  -
+    affiliation: "Qatar Computing Research Institute"
+    family-names: Aboulnaga
+    given-names: Ashraf
+  -
+    affiliation: "HP Vertica"
+    family-names: Liu
+    given-names: Rui
+cff-version: "1.0.3"
+date-released: 2016-09-11
+doi: "10.5281/zenodo.2578159"
+license: "GPL-3.0-only"
+message: "If you use this software, please cite it using these metadata."
+repository-code: "https://github.com/michaelmior/NoSE"
+title: "NoSE: Automated schema design for NoSQL applications"
+...
