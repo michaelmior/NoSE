@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'parslet', '~> 2.0.0', '>= 1.8.0'
   s.add_dependency 'pickup', '~> 0.0.11'
   s.add_dependency 'pry', '~> 0.12.2'
-  s.add_dependency 'rake', '~> 12.3.2', '>= 12.0.0'
+  s.add_dependency 'rake', '~> 13.0.1', '>= 12.0.0'
   s.add_dependency 'representable', '~> 3.0.0', '>= 3.0.0'
   s.add_dependency 'ruby-graphviz', '~> 1.2.2', '>= 1.2.0'
   s.add_dependency 'sequel', '~> 5.28.0', '>= 4.46.0'
