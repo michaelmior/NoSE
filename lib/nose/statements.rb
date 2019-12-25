@@ -49,8 +49,8 @@ module NoSE
     def populate_conditions(params)
       @conditions = params[:conditions]
       @eq_fields = conditions.each_value.reject(&:range?).map(&:field).to_set
-      @range_field = conditions.each_value.select(&:range?)
-      @range_field = @range_field.map{|f| f.field} unless @range_field.nil?
+      @range_fields = conditions.each_value.select(&:range?)
+      @range_fields = @range_fields.map{|f| f.field} unless @range_fields.nil?
     end
 
     def self.included(base)
@@ -274,7 +274,7 @@ module NoSE
   # A CQL statement and its associated data
   class Statement
     attr_reader :entity, :key_path, :label, :graph,
-                :group, :text, :eq_fields, :range_field, :comment
+                :group, :text, :eq_fields, :range_fields, :comment
 
     # Parse either a query or an update
     def self.parse(text, model, group: nil, label: nil, support: false)

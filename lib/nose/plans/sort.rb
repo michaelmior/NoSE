@@ -33,7 +33,7 @@ module NoSE
       # @return [SortPlanStep]
       def self.apply(parent, state)
         fetched_all_ids = state.fields.none? { |f| f.is_a? Fields::IDField }
-        resolved_predicates = state.eq.empty? && state.range.nil?
+        resolved_predicates = state.eq.empty? && state.ranges.nil?
         can_order = !(state.order_by.to_set & parent.fields).empty?
         return nil unless fetched_all_ids && resolved_predicates && can_order
 

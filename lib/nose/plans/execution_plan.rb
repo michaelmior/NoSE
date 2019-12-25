@@ -208,17 +208,17 @@ module NoSE
 
         step = Plans::IndexLookupPlanStep.new index
         eq_fields = Set.new
-        range_field = nil
+        range_fields = nil
         conditions.each do |field, operator|
           if operator == :==
             eq_fields.add field
           else
-            range_field = field
+            range_fields = field
           end
         end
 
         step.instance_variable_set :@eq_filter, eq_fields
-        step.instance_variable_set :@range_filter, range_field
+        step.instance_variable_set :@range_filter, range_fields
 
         # XXX No ordering supported for now
         step.instance_variable_set :@order_by, []
@@ -236,7 +236,7 @@ module NoSE
         cardinality = index.per_hash_count * state.hash_cardinality
         state.cardinality = Cardinality.filter cardinality,
                                                eq_fields - index.hash_fields,
-                                               range_field
+                                               range_fields
 
         step.state = state
 

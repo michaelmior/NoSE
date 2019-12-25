@@ -98,10 +98,12 @@ module NoSE
         # Check if a row matches the given condition on the range predicate
         # @return [Boolean]
         def row_matches_range?(row, conditions)
-          return true if @range_field.nil?
+          return true if @range_fields.nil?
 
-          range_cond = conditions.find { |c| c.field == @range_field }
-          row[@range_field.id].send range_cond.operator, range_cond.value
+          range_cond = conditions.find { |c| c.field == @range_fields }
+          @range_fields.each do |range_field|
+            row[range_field.id].send range_cond.operator, range_cond.value
+          end
         end
       end
 

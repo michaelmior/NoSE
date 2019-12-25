@@ -154,7 +154,7 @@ module NoSE
           @next_step = next_step
 
           @eq_fields = step.eq_filter
-          @range_field = step.range_filter
+          @range_fields = step.range_filter
         end
 
         protected
@@ -174,10 +174,10 @@ module NoSE
               Condition.new field, :'=', result[field.id]
             end
 
-            unless @range_field.empty?
+            unless @range_fields.empty?
               operator = conditions.each_value.find(&:range?).operator
-              result_condition << Condition.new(@range_field, operator,
-                                                result[@range_field.id])
+              result_condition << Condition.new(@range_fields, operator,
+                                                result[@range_fields.id])
             end
 
             result_condition
@@ -233,9 +233,9 @@ module NoSE
 
           # XXX: This assumes that the range filter step is the same as
           #      the one in the query, which is always true for now
-          range = @step.range && conditions.each_value.find(&:range?)
+          ranges = @step.ranges && conditions.each_value.find(&:range?)
 
-          results.select! { |row| include_row?(row, eq_conditions, range) }
+          results.select! { |row| include_row?(row, eq_conditions, ranges) }
 
           results
         end

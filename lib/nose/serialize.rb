@@ -271,7 +271,7 @@ module NoSE
     # Represent the filtered fields in filter plan steps
     class FilterStepRepresenter < PlanStepRepresenter
       collection :eq, decorator: FieldRepresenter
-      property :range, decorator: FieldRepresenter
+      property :ranges, decorator: FieldRepresenter
     end
 
     # Represent the sorted fields in filter plan steps

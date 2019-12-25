@@ -16,10 +16,10 @@ module NoSE
     def indexes_for_query(query)
       @logger.debug "Enumerating indexes for query #{query.text}"
 
-      range = if query.range_field.nil?
+      range = if query.range_fields.nil?
                 query.order
               else
-                ([query.range_field] + query.order).flatten(1)
+                ([query.range_fields] + query.order).flatten(1)
               end
 
       eq = query.eq_fields.group_by(&:parent)

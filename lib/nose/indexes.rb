@@ -227,8 +227,8 @@ module NoSE
       order_fields = @eq_fields.select do |field|
         field.parent != hash_entity
       end + @order
-      if @range_field && !@order.include?(@range_field)
-        order_fields += @range_field
+      if @range_fields && !@order.include?(@range_fields)
+        order_fields += @range_fields
       end
 
       # Ensure we include IDs of the final entity

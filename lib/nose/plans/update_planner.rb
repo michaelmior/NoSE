@@ -224,7 +224,7 @@ module NoSE
             else
               cardinality = Cardinality.filter index.entries,
                                                statement.eq_fields,
-                                               statement.range_field
+                                               statement.range_fields
             end
           else
             # Get the cardinality of the last step to use for the update state

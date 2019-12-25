@@ -7,7 +7,7 @@ module NoSE
   module Plans
     # Ongoing state of a query throughout the execution plan
     class QueryState
-      attr_accessor :fields, :eq, :range, :order_by, :graph,
+      attr_accessor :fields, :eq, :ranges, :order_by, :graph,
                     :joins, :cardinality, :hash_cardinality, :given_fields
       attr_reader :query, :model
 
@@ -16,7 +16,7 @@ module NoSE
         @model = model
         @fields = query.select
         @eq = query.eq_fields.dup
-        @range = query.range_field
+        @ranges = query.range_fields
         @graph = query.graph
         @joins = query.materialize_view.graph.join_order(@eq)
         @order_by = query.order.dup
@@ -33,7 +33,7 @@ module NoSE
       # All the fields referenced anywhere in the query
       def all_fields
         all_fields = @fields + @eq
-        all_fields << @range unless @range.nil?
+        all_fields << @ranges unless @ranges.nil?
         all_fields
       end
 
@@ -42,7 +42,7 @@ module NoSE
         @query.text +
           "\n  fields: " + @fields.map(&:to_color).to_a.to_color +
           "\n      eq: " + @eq.map(&:to_color).to_a.to_color +
-          "\n   range: " + (@range.nil? ? '(nil)' : @range.name) +
+          "\n   range: " + (@ranges.to_a.empty? ? '(empty)' : @ranges.map(&:name).to_color) +
           "\n   order: " + @order_by.map(&:to_color).to_a.to_color +
           "\n    graph: " + @graph.inspect
       end
@@ -51,7 +51,7 @@ module NoSE
       # Check if the query has been fully answered
       # @return [Boolean]
       def answered?(check_limit: true)
-        done = @fields.empty? && @eq.empty? && @range.nil? &&
+        done = @fields.empty? && @eq.empty? && @ranges.nil? &&
                @order_by.empty? && @joins.empty? && @graph.empty?
 
         # Check if the limit has been applied
@@ -66,7 +66,7 @@ module NoSE
       # @return [Array<Field>]
       def fields_for_graph(graph, include_entity, select: false)
         graph_fields = @eq + @order_by
-        graph_fields += @range unless @range.nil?
+        graph_fields += @ranges unless @ranges.nil?
 
         # If necessary, include ALL the fields which should be selected,
         # otherwise we can exclude fields from leaf entity sets since
