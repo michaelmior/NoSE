@@ -312,7 +312,7 @@ module NoSE
           where = @eq_fields.map do |field|
             "\"#{field.id}\" = ?"
           end.join ' AND '
-          unless @range_fields.empty?
+          unless @range_fields.to_a.empty?
             condition = conditions.each_value.find(&:range?)
             where << " AND \"#{condition.field.id}\" #{condition.operator} ?"
           end
