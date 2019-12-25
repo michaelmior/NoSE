@@ -174,7 +174,7 @@ module NoSE
               Condition.new field, :'=', result[field.id]
             end
 
-            unless @range_field.nil?
+            unless @range_field.empty?
               operator = conditions.each_value.find(&:range?).operator
               result_condition << Condition.new(@range_field, operator,
                                                 result[@range_field.id])

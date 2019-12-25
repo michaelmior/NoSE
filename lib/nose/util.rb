@@ -168,7 +168,7 @@ class Cardinality
   # Update the cardinality based on filtering implicit to the index
   # @return [Fixnum]
   def self.filter(cardinality, eq_filter, range_filter)
-    filtered = (range_filter.nil? ? 1.0 : 0.1) * cardinality
+    filtered = (range_filter.to_a.empty? ? 1.0 : 0.1) * cardinality
     filtered *= eq_filter.map do |field|
       1.0 / field.cardinality
     end.inject(1.0, &:*)

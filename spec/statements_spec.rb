@@ -1,7 +1,7 @@
 module NoSE
   shared_examples 'a statement' do
     it 'tracks the range field' do
-      expect(statement.range_field).to eq tweet['Timestamp']
+      expect(statement.range_field.first).to eq tweet['Timestamp']
     end
 
     it 'tracks fields used in equality predicates' do

@@ -173,8 +173,10 @@ module NoSE
 
         tree = planner.find_plans_for_query(query)
         expect(tree).to have(1).plan
+
+        # Filter step possibly has multiple field to filter
         expect(tree.first.last).to eq FilterPlanStep.new([],
-                                                         tweet['Timestamp'])
+                                                         [tweet['Timestamp']])
       end
 
       context 'when updating cardinality' do

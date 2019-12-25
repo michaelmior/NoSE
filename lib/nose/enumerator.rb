@@ -19,7 +19,7 @@ module NoSE
       range = if query.range_field.nil?
                 query.order
               else
-                [query.range_field] + query.order
+                ([query.range_field] + query.order).flatten(1)
               end
 
       eq = query.eq_fields.group_by(&:parent)

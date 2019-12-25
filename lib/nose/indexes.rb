@@ -228,7 +228,7 @@ module NoSE
         field.parent != hash_entity
       end + @order
       if @range_field && !@order.include?(@range_field)
-        order_fields << @range_field
+        order_fields += @range_field
       end
 
       # Ensure we include IDs of the final entity

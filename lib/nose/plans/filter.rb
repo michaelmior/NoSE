@@ -25,7 +25,7 @@ module NoSE
       end
 
       def hash
-        [@eq.map(&:id), @range.nil? ? nil : @range.id].hash
+        [@eq.map(&:id), @range.nil? ? nil : @range.map(&:id)].hash
       end
 
       # :nocov:
@@ -54,9 +54,9 @@ module NoSE
       def self.filter_fields(parent, state)
         eq_filter = state.eq.select { |field| parent.fields.include? field }
         filter_fields = eq_filter.dup
-        if state.range && parent.fields.include?(state.range)
+        if state.range && parent.fields >= Set.new(state.range)
           range_filter = state.range
-          filter_fields << range_filter
+          filter_fields += range_filter
         else
           range_filter = nil
         end

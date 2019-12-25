@@ -146,7 +146,7 @@ describe Cardinality do
 
   it 'uses a static estimate for range filters' do
     cardinality = Cardinality.filter tweet.count, [tweet['Body']],
-                                     tweet['Timestamp']
+                                     [tweet['Timestamp']]
 
     expect(cardinality).to eq(20)
   end

@@ -175,7 +175,7 @@ module NoSE
       # @return [Array<Fields::Field>]
       def range_order_prefix
         order_prefix = (@state.eq - @index.hash_fields) & @index.order_fields
-        order_prefix << @state.range unless @state.range.nil?
+        order_prefix += @state.range unless @state.range.nil?
         order_prefix = order_prefix.zip(@index.order_fields)
         order_prefix.take_while { |x, y| x == y }.map(&:first)
       end
@@ -279,7 +279,7 @@ module NoSE
 
         # Find fields which are filtered by the index
         @eq_filter = @index.hash_fields + (@state.eq & order_prefix)
-        if order_prefix.include?(@state.range)
+        if order_prefix and order_prefix >= Set.new(@state.range)
           @range_filter = @state.range
           @state.range = nil
         else

@@ -66,7 +66,7 @@ module NoSE
       # @return [Array<Field>]
       def fields_for_graph(graph, include_entity, select: false)
         graph_fields = @eq + @order_by
-        graph_fields << @range unless @range.nil?
+        graph_fields += @range unless @range.nil?
 
         # If necessary, include ALL the fields which should be selected,
         # otherwise we can exclude fields from leaf entity sets since
