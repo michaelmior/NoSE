@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'mipper', '~> 0.1.0'
   s.add_dependency 'parallel', '~> 1.18.0', '>= 1.11.0'
   s.add_dependency 'parslet', '~> 1.8.0', '>= 1.8.0'
-  s.add_dependency 'pg', '~> 0.20.0'
+  s.add_dependency 'pg', '~> 1.2.0'
   s.add_dependency 'pickup', '~> 0.0.11'
   s.add_dependency 'pry', '~> 0.12.2'
   s.add_dependency 'rake', '~> 12.3.2', '>= 12.0.0'
