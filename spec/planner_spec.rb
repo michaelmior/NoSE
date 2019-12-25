@@ -179,6 +179,19 @@ module NoSE
                                                          [tweet['Timestamp']])
       end
 
+      it 'can deal with multi range conditions' do
+        query = Statement.parse 'SELECT Tweet.Body FROM Tweet WHERE ' \
+                                'Tweet.TweetId = ? AND Tweet.Timestamp > ? AND Tweet.Retweets > ?',
+                                workload.model
+        index = query.materialize_view
+        planner = QueryPlanner.new workload.model, [index], cost_model
+        tree = planner.find_plans_for_query query
+
+        expect(index.order_fields.size).to eq 2
+        expect(tree).to have(1).plan
+        expect(tree.first.last).to eq IndexLookupPlanStep.new(index)
+      end
+
       context 'when updating cardinality' do
         before(:each) do
           simple_query = Statement.parse 'SELECT Tweet.Body FROM ' \
