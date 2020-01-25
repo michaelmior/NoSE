@@ -46,7 +46,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec', '~> 3.8.0', '>= 3.8.0'
   s.add_development_dependency 'rspec-core', '~> 3.8.0', '>= 3.8.0'
   s.add_development_dependency 'rspec-collection_matchers', '~> 1.2.0', '>= 1.1.0'
-  s.add_development_dependency 'ruby-prof', '~> 0.18.0'
+  s.add_development_dependency 'ruby-prof', '~> 1.2.0'
   s.add_development_dependency 'scrutinizer-ocular', '~> 1.0.1', '>= 1.0.0'
   s.add_development_dependency 'simplecov', '~> 0.17.0'
   s.add_development_dependency 'yard', '~> 0.9.4'
