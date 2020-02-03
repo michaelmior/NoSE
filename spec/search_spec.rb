@@ -89,6 +89,16 @@ module NoSE
         # total cost should be increased due to additional update statement
         expect(result.total_cost).to be < result_with_update.total_cost
       end
+
+      it 'is able to deal with multiple equal predicate' do
+        workload.add_statement(Statement.parse 'SELECT User.* FROM User ' \
+                                                     'WHERE User.UserId = ? AND User.City = ?', workload.model)
+
+        indexes = IndexEnumerator.new(workload).indexes_for_workload.to_a
+        expect do
+          Search.new(workload, cost_model).search_overlap indexes
+        end.not_to raise_error
+      end
     end
   end
 end
