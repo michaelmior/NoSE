@@ -275,9 +275,15 @@ module NoSE
 
         # Filter the total number of rows by filtering on non-hash fields
         cardinality = @index.per_hash_count * @state.hash_cardinality
+
+        # if index.order_fields has any field of @state.eq,
+        # the query should be executed with those fields as equality predicates for better performance.
+        # Since cardinality based on hash_fields is already considered in @index.per_hash_count,
+        # index.hash_fields are ignored.
+        eq_fields = @eq_filter + (@index.order_fields.to_set & @state.eq.to_set) - @index.hash_fields
+
         @state.cardinality = Cardinality.filter cardinality,
-                                                @eq_filter -
-                                                @index.hash_fields,
+                                                eq_fields,
                                                 @range_filter
 
         # Check if we can apply the limit from the query
