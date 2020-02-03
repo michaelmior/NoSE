@@ -109,6 +109,10 @@ module NoSE
         return true unless (index.graph.size == 1 &&
                            parent_index.graph != index.graph) ||
                            index.hash_fields == parent_ids
+
+        return true if is_useless_parent?(state, index,parent_index)
+
+        false
       end
       private_class_method :invalid_parent_index?
 
@@ -120,6 +124,36 @@ module NoSE
           if invalid_parent_index? state, index, parent.parent_index
       end
       private_class_method :check_parent_index
+
+      # If one column family used as materialized view and second step of query plan,
+      # costs of each column family differs because of the cost of second step changes according to the cardinality of the first step.
+      # Validation process fails because of two different cost of the same column family.
+      # This happens when one query has equality condition of id field and non-id field.
+      def self.is_useless_parent?(state,index,parent_index)
+
+        #SELECT * FROM entity WHERE A = ? AND B = ?
+        # parent: [A][B]->[C,D]
+        # index:  [B][A]->[C,D,E]
+        return true if index.extra >= parent_index.extra and \
+                          state.query.eq_fields >= (parent_index.hash_fields + parent_index.order_fields.to_set) and \
+                          parent_index.hash_fields == index.order_fields.to_set and \
+                          parent_index.order_fields.to_set == index.hash_fields
+
+        #SELECT * FROM entity WHERE A = ? AND B = ?
+        # parent: [A][B]->[C,D]
+        # index:  [A,B][F]->[C,D,E]
+        return true if index.hash_fields >= state.query.eq_fields and \
+                       index.all_fields >= parent_index.all_fields
+
+        #SELECT E FROM entity WHERE A = ? AND B = ?
+        # parent: [A,B][]->[C,D]
+        # index:  [A][B]->[E]
+        return true if state.query.eq_fields >= index.hash_fields and \
+                      (index.hash_fields + index.order_fields.to_set) >= state.query.eq_fields and \
+                      index.all_fields >= state.fields
+
+        false
+      end
 
       # Check that we have all hash fields needed to perform the lookup
       # @raise [InvalidIndex]
