@@ -29,7 +29,7 @@ module NoSE
     end
 
     describe WattsStrogatzNetwork do
-      let(:network) { BarbasiAlbertNetwork.new }
+      let(:network) { WattsStrogatzNetwork.new }
       it_behaves_like 'a network'
     end
 
