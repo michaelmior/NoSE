@@ -7,17 +7,23 @@ begin
   require 'mipper/gurobi'
   MODEL_CLASS = MIPPeR::GurbiModel
 rescue LoadError
-  require 'mipper/cbc'
-  MODEL_CLASS = MIPPeR::CbcModel
-rescue LoadError
-  require 'mipper/glpk'
-  MODEL_CLASS = MIPPeR::GLPKModel
-rescue LoadError
-  require 'mipper/lp_solve'
-  MODEL_CLASS = MIPPeR::LPSolveModel
-rescue LoadError
-  # We can't use most search functionality, but it won't explode
-  nil
+  begin
+    require 'mipper/cbc'
+    MODEL_CLASS = MIPPeR::CbcModel
+  rescue LoadError
+    begin
+      require 'mipper/glpk'
+      MODEL_CLASS = MIPPeR::GLPKModel
+    rescue LoadError
+      begin
+        require 'mipper/lp_solve'
+        MODEL_CLASS = MIPPeR::LPSolveModel
+      rescue LoadError
+        # We can't use most search functionality, but it won't explode
+        nil
+      end
+    end
+  end
 end
 
 module NoSE
