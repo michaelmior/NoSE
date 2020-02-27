@@ -58,5 +58,27 @@ module NoSE
         expect(plan.cost).to eq index.all_fields.sum_by(&:size)
       end
     end
+
+    describe CassandraCost do
+      include_context 'entities'
+
+      it 'is a type of cost' do
+        expect(CassandraCost.subtype_name).to eq 'cassandra'
+      end
+
+      it 'measures the size of the selected data' do
+        index = tweet.simple_index
+        cost_model = CassandraCost.new :index_cost => 1,
+                                       :partition_cost => 10,
+                                       :row_cost => 100
+        planner = Plans::QueryPlanner.new workload.model, [index], cost_model
+        plan = planner.min_plan \
+          Statement.parse 'SELECT Tweet.* FROM Tweet ' \
+                          'WHERE Tweet.TweetId = ?', workload.model
+
+        # Single index, singl partition, single row
+        expect(plan.cost).to eq 111
+      end
+    end
   end
 end
