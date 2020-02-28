@@ -36,12 +36,14 @@ services:
 jobs:
   include:
   - stage: deploy
+    script: skip
     rvm: 2.7.0
-    provider: pages
-    skip_cleanup: true
-    github_token: $GITHUB_TOKEN
-    keep_history: true
-    local_dir: doc
-    on:
-      branch: master
-before_deploy: rake doc
+    deploy: &pages
+    - provider: pages
+      skip_cleanup: true
+      github_token: $GITHUB_TOKEN
+      keep_history: true
+      local_dir: doc
+      on:
+        branch: master
+before_deploy: bundle exec rake doc
