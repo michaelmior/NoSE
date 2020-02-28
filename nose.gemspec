@@ -47,6 +47,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'scrutinizer-ocular', '~> 1.0.1', '>= 1.0.0'
   s.add_development_dependency 'simplecov', '~> 0.17.0'
   s.add_development_dependency 'yard', '~> 0.9.4'
+  s.add_development_dependency 'yard-thor', '~> 0.0.1'
 
   # Below for MRI only (TODO JRuby gemspec)
   s.add_dependency 'rbtree', '~> 0.4.2' # for more efficient SortedSet implementation
