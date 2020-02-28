@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: NoSE::Random::StatementGenerator
+  
+    &mdash; Documentation by YARD 0.9.24
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "NoSE::Random::StatementGenerator";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (S)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../NoSE.html" title="NoSE (module)">NoSE</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Random.html" title="NoSE::Random (module)">Random</a></span></span>
+     &raquo; 
+    <span class="title">StatementGenerator</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: NoSE::Random::StatementGenerator
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></span>
+      
+        <ul class="fullTree">
+          <li><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></li>
+          
+            <li class="next">NoSE::Random::StatementGenerator</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/nose/random.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>Generates random queries over entities in a given model</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#condition_field_name-instance_method" title="#condition_field_name (instance method)">#<strong>condition_field_name</strong>(field, path)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Get the name to be used in the query for a condition field.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(model)  &#x21d2; StatementGenerator </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>A new instance of StatementGenerator.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#random_connection-instance_method" title="#random_connection (instance method)">#<strong>random_connection</strong>(entity)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Generate a random connection for an Insert.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#random_delete-instance_method" title="#random_delete (instance method)">#<strong>random_delete</strong>  &#x21d2; Delete </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Generate a new random deletion of entities in the model.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#random_graph-instance_method" title="#random_graph (instance method)">#<strong>random_graph</strong>(max_nodes)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Produce a random query graph over the entity graph.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#random_insert-instance_method" title="#random_insert (instance method)">#<strong>random_insert</strong>(connect = true)  &#x21d2; Insert </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Generate a new random insertion to entities in the model.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#random_path-instance_method" title="#random_path (instance method)">#<strong>random_path</strong>(max_length)  &#x21d2; KeyPath </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Return a random path through the entity graph.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#random_query-instance_method" title="#random_query (instance method)">#<strong>random_query</strong>(path_length = 3, selected_fields = 2, condition_count = 2, order = false)  &#x21d2; Query </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Generate a new random query from entities in the model.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#random_select-instance_method" title="#random_select (instance method)">#<strong>random_select</strong>(path, selected_fields)  &#x21d2; Set&lt;Fields::Field&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Get random fields to select for a Query.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#random_settings-instance_method" title="#random_settings (instance method)">#<strong>random_settings</strong>(path, updated_fields)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Get random settings for an update.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#random_statement-instance_method" title="#random_statement (instance method)">#<strong>random_statement</strong>(weights = { query: 80, insert: 10, update: 5,                                        delete: 5 })  &#x21d2; Statement </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Produce a random statement according to a given set of weights.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#random_update-instance_method" title="#random_update (instance method)">#<strong>random_update</strong>(path_length = 1, updated_fields = 2, condition_count = 1)  &#x21d2; Update </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Generate a new random update of entities in the model.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#random_where_clause-instance_method" title="#random_where_clause (instance method)">#<strong>random_where_clause</strong>(path, count = 2)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Produce a random where clause using fields along a given path.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#random_where_conditions-instance_method" title="#random_where_conditions (instance method)">#<strong>random_where_conditions</strong>(path, count, exclude = Set.new)  &#x21d2; Array&lt;Fields::Field&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Produce a random set of fields for a where clause.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(model)  &#x21d2; <tt><span class='object_link'><a href="" title="NoSE::Random::StatementGenerator (class)">StatementGenerator</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns a new instance of StatementGenerator.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+126
+127
+128</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/random.rb', line 126</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_model'>model</span><span class='rparen'>)</span>
+  <span class='ivar'>@model</span> <span class='op'>=</span> <span class='id identifier rubyid_model'>model</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="condition_field_name-instance_method">
+  
+    #<strong>condition_field_name</strong>(field, path)  &#x21d2; <tt>String</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Get the name to be used in the query for a condition field</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/random.rb', line 327</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_condition_field_name'>condition_field_name</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='comma'>,</span> <span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_field_path'>field_path</span> <span class='op'>=</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
+  <span class='id identifier rubyid_path_end'>path_end</span> <span class='op'>=</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_index'>index</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_parent'>parent</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_last_entity'>last_entity</span> <span class='op'>=</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span>
+  <span class='id identifier rubyid_path'>path</span><span class='lbracket'>[</span><span class='int'>1</span><span class='op'>..</span><span class='id identifier rubyid_path_end'>path_end</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_entity'>entity</span><span class='op'>|</span>
+    <span class='id identifier rubyid_fk'>fk</span> <span class='op'>=</span> <span class='id identifier rubyid_last_entity'>last_entity</span><span class='period'>.</span><span class='id identifier rubyid_foreign_keys'>foreign_keys</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_key'>key</span><span class='op'>|</span>
+      <span class='id identifier rubyid_key'>key</span><span class='period'>.</span><span class='id identifier rubyid_entity'>entity</span> <span class='op'>==</span> <span class='id identifier rubyid_entity'>entity</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_field_path'>field_path</span> <span class='op'>+=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>.</span><span class='tstring_end'>&#39;</span></span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_fk'>fk</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
+    <span class='id identifier rubyid_last_entity'>last_entity</span> <span class='op'>=</span> <span class='id identifier rubyid_entity'>entity</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_field_path'>field_path</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="random_connection-instance_method">
+  
+    #<strong>random_connection</strong>(entity)  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Generate a random connection for an Insert</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+146
+147
+148
+149
+150
+151</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/random.rb', line 146</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_random_connection'>random_connection</span><span class='lparen'>(</span><span class='id identifier rubyid_entity'>entity</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_connections'>connections</span> <span class='op'>=</span> <span class='id identifier rubyid_entity'>entity</span><span class='period'>.</span><span class='id identifier rubyid_foreign_keys'>foreign_keys</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span><span class='lparen'>(</span><span class='int'>2</span><span class='rparen'>)</span>
+  <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>AND CONNECT TO </span><span class='tstring_end'>&#39;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_connections'>connections</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_connection'>connection</span><span class='op'>|</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_connection'>connection</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>(?)</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>, </span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="random_delete-instance_method">
+  
+    #<strong>random_delete</strong>  &#x21d2; <tt><span class='object_link'><a href="../Delete.html" title="NoSE::Delete (class)">Delete</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Generate a new random deletion of entities in the model</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Delete.html" title="NoSE::Delete (class)">Delete</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+181
+182
+183
+184
+185
+186
+187
+188
+189</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/random.rb', line 181</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_random_delete'>random_delete</span>
+  <span class='id identifier rubyid_path'>path</span> <span class='op'>=</span> <span class='id identifier rubyid_random_path'>random_path</span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_from'>from</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_parent'>parent</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span> <span class='op'>+</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_entries'>entries</span><span class='lbracket'>[</span><span class='int'>1</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:name</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_delete'>delete</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>DELETE </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_from'>from</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='embexpr_end'>}</span><span class='tstring_content'> FROM </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_from'>from</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>.</span><span class='tstring_end'>&#39;</span></span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+           <span class='id identifier rubyid_random_where_clause'>random_where_clause</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='int'>1</span><span class='rparen'>)</span>
+
+  <span class='const'><span class='object_link'><a href="../Statement.html" title="NoSE::Statement (class)">Statement</a></span></span><span class='period'>.</span><span class='id identifier rubyid_parse'><span class='object_link'><a href="../Statement.html#parse-class_method" title="NoSE::Statement.parse (method)">parse</a></span></span> <span class='id identifier rubyid_delete'>delete</span><span class='comma'>,</span> <span class='ivar'>@model</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="random_graph-instance_method">
+  
+    #<strong>random_graph</strong>(max_nodes)  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Produce a random query graph over the entity graph</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/random.rb', line 274</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_random_graph'>random_graph</span><span class='lparen'>(</span><span class='id identifier rubyid_max_nodes'>max_nodes</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_graph'>graph</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../QueryGraph.html" title="NoSE::QueryGraph (module)">QueryGraph</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../QueryGraph/Graph.html" title="NoSE::QueryGraph::Graph (class)">Graph</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../QueryGraph/Graph.html#initialize-instance_method" title="NoSE::QueryGraph::Graph#initialize (method)">new</a></span></span>
+  <span class='id identifier rubyid_last_node'>last_node</span> <span class='op'>=</span> <span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_add_node'>add_node</span> <span class='ivar'>@model</span><span class='period'>.</span><span class='id identifier rubyid_entities'>entities</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span>
+  <span class='kw'>while</span> <span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_max_nodes'>max_nodes</span>    <span class='comment'># Get the possible foreign keys to use
+</span>
+    <span class='id identifier rubyid_keys'>keys</span> <span class='op'>=</span> <span class='id identifier rubyid_last_node'>last_node</span><span class='period'>.</span><span class='id identifier rubyid_entity'>entity</span><span class='period'>.</span><span class='id identifier rubyid_foreign_keys'>foreign_keys</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span>
+    <span class='id identifier rubyid_keys'>keys</span><span class='period'>.</span><span class='id identifier rubyid_reject!'>reject!</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_key'>key</span><span class='op'>|</span> <span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_nodes'>nodes</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:entity</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span> <span class='id identifier rubyid_key'>key</span><span class='period'>.</span><span class='id identifier rubyid_entity'>entity</span> <span class='rbrace'>}</span>
+    <span class='kw'>break</span> <span class='kw'>if</span> <span class='id identifier rubyid_keys'>keys</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+
+    <span class='comment'># Pick a random foreign key to traverse
+</span>    <span class='id identifier rubyid_next_key'>next_key</span> <span class='op'>=</span> <span class='id identifier rubyid_keys'>keys</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span>
+    <span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_add_edge'>add_edge</span> <span class='id identifier rubyid_last_node'>last_node</span><span class='comma'>,</span> <span class='id identifier rubyid_next_key'>next_key</span><span class='period'>.</span><span class='id identifier rubyid_entity'>entity</span><span class='comma'>,</span> <span class='id identifier rubyid_next_key'>next_key</span>
+
+    <span class='comment'># Select a new node to start from, making sure we pick one
+</span>    <span class='comment'># that still has valid outgoing edges
+</span>    <span class='id identifier rubyid_last_node'>last_node</span> <span class='op'>=</span> <span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_nodes'>nodes</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_node'>node</span><span class='op'>|</span>
+      <span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_entity'>entity</span><span class='period'>.</span><span class='id identifier rubyid_foreign_keys'>foreign_keys</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:entity</span><span class='rparen'>)</span> <span class='op'>-</span>
+       <span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_nodes'>nodes</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:entity</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span>
+    <span class='kw'>break</span> <span class='kw'>if</span> <span class='id identifier rubyid_last_node'>last_node</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_graph'>graph</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="random_insert-instance_method">
+  
+    #<strong>random_insert</strong>(connect = true)  &#x21d2; <tt><span class='object_link'><a href="../Insert.html" title="NoSE::Insert (class)">Insert</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Generate a new random insertion to entities in the model</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Insert.html" title="NoSE::Insert (class)">Insert</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/random.rb', line 132</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_random_insert'>random_insert</span><span class='lparen'>(</span><span class='id identifier rubyid_connect'>connect</span> <span class='op'>=</span> <span class='kw'>true</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_entity'>entity</span> <span class='op'>=</span> <span class='ivar'>@model</span><span class='period'>.</span><span class='id identifier rubyid_entities'>entities</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span>
+  <span class='id identifier rubyid_settings'>settings</span> <span class='op'>=</span> <span class='id identifier rubyid_entity'>entity</span><span class='period'>.</span><span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_field'>field</span><span class='op'>|</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>=?</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>, </span><span class='tstring_end'>&#39;</span></span>
+  <span class='id identifier rubyid_insert'>insert</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>INSERT INTO </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_entity'>entity</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> SET </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_settings'>settings</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span>
+
+  <span class='comment'># Optionally add connections to other entities
+</span>  <span class='id identifier rubyid_insert'>insert</span> <span class='op'>+=</span> <span class='id identifier rubyid_random_connection'>random_connection</span><span class='lparen'>(</span><span class='id identifier rubyid_entity'>entity</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_connect'>connect</span>
+
+  <span class='const'><span class='object_link'><a href="../Statement.html" title="NoSE::Statement (class)">Statement</a></span></span><span class='period'>.</span><span class='id identifier rubyid_parse'><span class='object_link'><a href="../Statement.html#parse-class_method" title="NoSE::Statement.parse (method)">parse</a></span></span> <span class='id identifier rubyid_insert'>insert</span><span class='comma'>,</span> <span class='ivar'>@model</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="random_path-instance_method">
+  
+    #<strong>random_path</strong>(max_length)  &#x21d2; <tt><span class='object_link'><a href="../KeyPath.html" title="NoSE::KeyPath (class)">KeyPath</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Return a random path through the entity graph</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../KeyPath.html" title="NoSE::KeyPath (class)">KeyPath</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/random.rb', line 251</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_random_path'>random_path</span><span class='lparen'>(</span><span class='id identifier rubyid_max_length'>max_length</span><span class='rparen'>)</span>
+  <span class='comment'># Pick the start of path weighted based on
+</span>  <span class='comment'># the number of deges from each entity
+</span>  <span class='id identifier rubyid_pick'>pick</span> <span class='op'>=</span> <span class='const'>Pickup</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='lbracket'>[</span><span class='ivar'>@model</span><span class='period'>.</span><span class='id identifier rubyid_entities'>entities</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_entity'>entity</span><span class='op'>|</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_entity'>entity</span><span class='comma'>,</span> <span class='id identifier rubyid_entity'>entity</span><span class='period'>.</span><span class='id identifier rubyid_foreign_keys'>foreign_keys</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span><span class='rbracket'>]</span>
+  <span class='kw'>end</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_path'>path</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_pick'>pick</span><span class='period'>.</span><span class='id identifier rubyid_pick'>pick</span><span class='period'>.</span><span class='id identifier rubyid_id_field'>id_field</span><span class='rbracket'>]</span>
+
+  <span class='kw'>while</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_max_length'>max_length</span>    <span class='comment'># Find a list of keys to entities we have not seen before
+</span>
+    <span class='id identifier rubyid_last_entity'>last_entity</span> <span class='op'>=</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_entity'>entity</span>
+    <span class='id identifier rubyid_keys'>keys</span> <span class='op'>=</span> <span class='id identifier rubyid_last_entity'>last_entity</span><span class='period'>.</span><span class='id identifier rubyid_foreign_keys'>foreign_keys</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span>
+    <span class='id identifier rubyid_keys'>keys</span><span class='period'>.</span><span class='id identifier rubyid_reject!'>reject!</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_key'>key</span><span class='op'>|</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:entity</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span> <span class='id identifier rubyid_key'>key</span><span class='period'>.</span><span class='id identifier rubyid_entity'>entity</span> <span class='rbrace'>}</span>
+    <span class='kw'>break</span> <span class='kw'>if</span> <span class='id identifier rubyid_keys'>keys</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+
+    <span class='comment'># Add a random new key to the path
+</span>    <span class='id identifier rubyid_path'>path</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_keys'>keys</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span>
+  <span class='kw'>end</span>
+
+  <span class='const'><span class='object_link'><a href="../KeyPath.html" title="NoSE::KeyPath (class)">KeyPath</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../KeyPath.html#initialize-instance_method" title="NoSE::KeyPath#initialize (method)">new</a></span></span> <span class='id identifier rubyid_path'>path</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="random_query-instance_method">
+  
+    #<strong>random_query</strong>(path_length = 3, selected_fields = 2, condition_count = 2, order = false)  &#x21d2; <tt><span class='object_link'><a href="../Query.html" title="NoSE::Query (class)">Query</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Generate a new random query from entities in the model</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query.html" title="NoSE::Query (class)">Query</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/random.rb', line 193</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_random_query'>random_query</span><span class='lparen'>(</span><span class='id identifier rubyid_path_length'>path_length</span> <span class='op'>=</span> <span class='int'>3</span><span class='comma'>,</span> <span class='id identifier rubyid_selected_fields'>selected_fields</span> <span class='op'>=</span> <span class='int'>2</span><span class='comma'>,</span>
+                 <span class='id identifier rubyid_condition_count'>condition_count</span> <span class='op'>=</span> <span class='int'>2</span><span class='comma'>,</span> <span class='id identifier rubyid_order'>order</span> <span class='op'>=</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_path'>path</span> <span class='op'>=</span> <span class='id identifier rubyid_random_path'>random_path</span> <span class='id identifier rubyid_path_length'>path_length</span>
+  <span class='id identifier rubyid_graph'>graph</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../QueryGraph.html" title="NoSE::QueryGraph (module)">QueryGraph</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../QueryGraph/Graph.html" title="NoSE::QueryGraph::Graph (class)">Graph</a></span></span><span class='period'>.</span><span class='id identifier rubyid_from_path'><span class='object_link'><a href="../QueryGraph/Graph.html#from_path-class_method" title="NoSE::QueryGraph::Graph.from_path (method)">from_path</a></span></span> <span class='id identifier rubyid_path'>path</span>
+
+  <span class='id identifier rubyid_conditions'>conditions</span> <span class='op'>=</span> <span class='lbracket'>[</span>
+    <span class='const'><span class='object_link'><a href="../Condition.html" title="NoSE::Condition (class)">Condition</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Condition.html#initialize-instance_method" title="NoSE::Condition#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_entities'>entities</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span><span class='comma'>,</span> <span class='symbol'>:&#39;=&#39;</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='rbracket'>]</span>
+  <span class='id identifier rubyid_condition_count'>condition_count</span> <span class='op'>-=</span> <span class='int'>1</span>
+
+  <span class='id identifier rubyid_new_fields'>new_fields</span> <span class='op'>=</span> <span class='id identifier rubyid_random_where_conditions'>random_where_conditions</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='id identifier rubyid_condition_count'>condition_count</span><span class='comma'>,</span>
+                                       <span class='id identifier rubyid_conditions'>conditions</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:field</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_set'>to_set</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_conditions'>conditions</span> <span class='op'>+=</span> <span class='id identifier rubyid_new_fields'>new_fields</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_field'>field</span><span class='op'>|</span>
+    <span class='const'><span class='object_link'><a href="../Condition.html" title="NoSE::Condition (class)">Condition</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Condition.html#initialize-instance_method" title="NoSE::Condition#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='comma'>,</span> <span class='symbol'>:&#39;&gt;&#39;</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_conditions'>conditions</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='lbracket'>[</span><span class='id identifier rubyid_conditions'>conditions</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_condition'>condition</span><span class='op'>|</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_condition'>condition</span><span class='period'>.</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='id identifier rubyid_condition'>condition</span><span class='rbracket'>]</span>
+  <span class='kw'>end</span><span class='rbracket'>]</span>
+
+  <span class='id identifier rubyid_params'>params</span> <span class='op'>=</span> <span class='lbrace'>{</span>
+    <span class='label'>select:</span> <span class='id identifier rubyid_random_select'>random_select</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='id identifier rubyid_selected_fields'>selected_fields</span><span class='rparen'>)</span><span class='comma'>,</span>
+    <span class='label'>model:</span> <span class='ivar'>@model</span><span class='comma'>,</span>
+    <span class='label'>graph:</span> <span class='id identifier rubyid_graph'>graph</span><span class='comma'>,</span>
+    <span class='label'>key_path:</span> <span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_longest_path'>longest_path</span><span class='comma'>,</span>
+    <span class='label'>entity:</span> <span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_longest_path'>longest_path</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_parent'>parent</span><span class='comma'>,</span>
+    <span class='label'>conditions:</span> <span class='id identifier rubyid_conditions'>conditions</span><span class='comma'>,</span>
+    <span class='label'>order:</span> <span class='id identifier rubyid_order'>order</span> <span class='op'>?</span> <span class='lbracket'>[</span><span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_entities'>entities</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span><span class='period'>.</span><span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span><span class='rbracket'>]</span> <span class='op'>:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='rbrace'>}</span>
+
+  <span class='id identifier rubyid_query'>query</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Query.html" title="NoSE::Query (class)">Query</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Query.html#initialize-instance_method" title="NoSE::Query#initialize (method)">new</a></span></span> <span class='id identifier rubyid_params'>params</span><span class='comma'>,</span> <span class='kw'>nil</span>
+  <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_hash'>hash</span>
+
+  <span class='id identifier rubyid_query'>query</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="random_select-instance_method">
+  
+    #<strong>random_select</strong>(path, selected_fields)  &#x21d2; <tt>Set&lt;<span class='object_link'><a href="../Fields/Field.html" title="NoSE::Fields::Field (class)">Fields::Field</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Get random fields to select for a Query</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Set&lt;<span class='object_link'><a href="../Fields/Field.html" title="NoSE::Fields::Field (class)">Fields::Field</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+231
+232
+233
+234
+235
+236
+237
+238</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/random.rb', line 231</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_random_select'>random_select</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='id identifier rubyid_selected_fields'>selected_fields</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_fields'>fields</span> <span class='op'>=</span> <span class='const'>Set</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+  <span class='kw'>while</span> <span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_selected_fields'>selected_fields</span>
+    <span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_add'>add</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_entities'>entities</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span><span class='period'>.</span><span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_fields'>fields</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="random_settings-instance_method">
+  
+    #<strong>random_settings</strong>(path, updated_fields)  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Get random settings for an update</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+169
+170
+171
+172
+173
+174
+175
+176
+177</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/random.rb', line 169</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_random_settings'>random_settings</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='id identifier rubyid_updated_fields'>updated_fields</span><span class='rparen'>)</span>
+  <span class='comment'># Don&#39;t update key fields
+</span>  <span class='id identifier rubyid_update_fields'>update_fields</span> <span class='op'>=</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_entities'>entities</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span>
+  <span class='id identifier rubyid_update_fields'>update_fields</span><span class='period'>.</span><span class='id identifier rubyid_reject!'>reject!</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_field'>field</span><span class='op'>|</span> <span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span> <span class='const'><span class='object_link'><a href="../Fields.html" title="NoSE::Fields (module)">Fields</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Fields/IDField.html" title="NoSE::Fields::IDField (class)">IDField</a></span></span> <span class='rbrace'>}</span>
+
+  <span class='id identifier rubyid_update_fields'>update_fields</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span><span class='lparen'>(</span><span class='id identifier rubyid_updated_fields'>updated_fields</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_field'>field</span><span class='op'>|</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>=?</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>, </span><span class='tstring_end'>&#39;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="random_statement-instance_method">
+  
+    #<strong>random_statement</strong>(weights = { query: 80, insert: 10, update: 5,
+                                       delete: 5 })  &#x21d2; <tt><span class='object_link'><a href="../Statement.html" title="NoSE::Statement (class)">Statement</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Produce a random statement according to a given set of weights</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Statement.html" title="NoSE::Statement (class)">Statement</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+242
+243
+244
+245
+246
+247</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/random.rb', line 242</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_random_statement'>random_statement</span><span class='lparen'>(</span><span class='id identifier rubyid_weights'>weights</span> <span class='op'>=</span> <span class='lbrace'>{</span> <span class='label'>query:</span> <span class='int'>80</span><span class='comma'>,</span> <span class='label'>insert:</span> <span class='int'>10</span><span class='comma'>,</span> <span class='label'>update:</span> <span class='int'>5</span><span class='comma'>,</span>
+                                 <span class='label'>delete:</span> <span class='int'>5</span> <span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_pick'>pick</span> <span class='op'>=</span> <span class='const'>Pickup</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_weights'>weights</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_type'>type</span> <span class='op'>=</span> <span class='id identifier rubyid_pick'>pick</span><span class='period'>.</span><span class='id identifier rubyid_pick'>pick</span>
+  <span class='id identifier rubyid_send'>send</span><span class='lparen'>(</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>random_</span><span class='tstring_end'>&#39;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="random_update-instance_method">
+  
+    #<strong>random_update</strong>(path_length = 1, updated_fields = 2, condition_count = 1)  &#x21d2; <tt><span class='object_link'><a href="../Update.html" title="NoSE::Update (class)">Update</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Generate a new random update of entities in the model</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Update.html" title="NoSE::Update (class)">Update</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/random.rb', line 155</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_random_update'>random_update</span><span class='lparen'>(</span><span class='id identifier rubyid_path_length'>path_length</span> <span class='op'>=</span> <span class='int'>1</span><span class='comma'>,</span> <span class='id identifier rubyid_updated_fields'>updated_fields</span> <span class='op'>=</span> <span class='int'>2</span><span class='comma'>,</span>
+                  <span class='id identifier rubyid_condition_count'>condition_count</span> <span class='op'>=</span> <span class='int'>1</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_path'>path</span> <span class='op'>=</span> <span class='id identifier rubyid_random_path'>random_path</span><span class='lparen'>(</span><span class='id identifier rubyid_path_length'>path_length</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_settings'>settings</span> <span class='op'>=</span> <span class='id identifier rubyid_random_settings'>random_settings</span> <span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='id identifier rubyid_updated_fields'>updated_fields</span>
+  <span class='id identifier rubyid_from'>from</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_parent'>parent</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span> <span class='op'>+</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_entries'>entries</span><span class='lbracket'>[</span><span class='int'>1</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:name</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_update'>update</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>UPDATE </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_from'>from</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='embexpr_end'>}</span><span class='tstring_content'> FROM </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_from'>from</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>.</span><span class='tstring_end'>&#39;</span></span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span> \
+           <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>SET </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_settings'>settings</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+           <span class='id identifier rubyid_random_where_clause'>random_where_clause</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='id identifier rubyid_condition_count'>condition_count</span><span class='rparen'>)</span>
+
+  <span class='const'><span class='object_link'><a href="../Statement.html" title="NoSE::Statement (class)">Statement</a></span></span><span class='period'>.</span><span class='id identifier rubyid_parse'><span class='object_link'><a href="../Statement.html#parse-class_method" title="NoSE::Statement.parse (method)">parse</a></span></span> <span class='id identifier rubyid_update'>update</span><span class='comma'>,</span> <span class='ivar'>@model</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="random_where_clause-instance_method">
+  
+    #<strong>random_where_clause</strong>(path, count = 2)  &#x21d2; <tt>String</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Produce a random where clause using fields along a given path</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/random.rb', line 303</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_random_where_clause'>random_where_clause</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span> <span class='op'>=</span> <span class='int'>2</span><span class='rparen'>)</span>
+  <span class='comment'># Ensure we have at least one condition at the beginning of the path
+</span>  <span class='id identifier rubyid_conditions'>conditions</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_entities'>entities</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_conditions'>conditions</span> <span class='op'>+=</span> <span class='id identifier rubyid_random_where_conditions'>random_where_conditions</span> <span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span> <span class='op'>-</span> <span class='int'>1</span>
+
+  <span class='kw'>return</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_conditions'>conditions</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>WHERE </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_conditions'>conditions</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_field'>field</span><span class='op'>|</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_find_field_parent'>find_field_parent</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>.</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> = ?</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'> AND </span><span class='tstring_end'>&#39;</span></span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="random_where_conditions-instance_method">
+  
+    #<strong>random_where_conditions</strong>(path, count, exclude = Set.new)  &#x21d2; <tt><span class='object_link'><a href="../../Array.html" title="Array (class)">Array</a></span>&lt;<span class='object_link'><a href="../Fields/Field.html" title="NoSE::Fields::Field (class)">Fields::Field</a></span>&gt;</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Produce a random set of fields for a where clause</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../Array.html" title="Array (class)">Array</a></span>&lt;<span class='object_link'><a href="../Fields/Field.html" title="NoSE::Fields::Field (class)">Fields::Field</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+316
+317
+318
+319
+320
+321
+322
+323</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/random.rb', line 316</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_random_where_conditions'>random_where_conditions</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span><span class='comma'>,</span> <span class='id identifier rubyid_exclude'>exclude</span> <span class='op'>=</span> <span class='const'>Set</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span>
+  <span class='int'>1</span><span class='period'>.</span><span class='id identifier rubyid_upto'>upto</span><span class='lparen'>(</span><span class='id identifier rubyid_count'>count</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_field'>field</span> <span class='op'>=</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_entities'>entities</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span><span class='period'>.</span><span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span>
+    <span class='kw'>next</span> <span class='kw'>nil</span> <span class='kw'>if</span> <span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>**</span><span class='tstring_end'>&#39;</span></span> <span class='op'>||</span> <span class='id identifier rubyid_exclude'>exclude</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='rparen'>)</span>
+
+    <span class='id identifier rubyid_field'>field</span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_compact'>compact</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Fri Feb 28 13:56:15 2020 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.24 (ruby-2.7.0).
+</div>
+
+    </div>
+  </body>
+</html>

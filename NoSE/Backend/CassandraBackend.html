@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: NoSE::Backend::CassandraBackend
+  
+    &mdash; Documentation by YARD 0.9.24
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "NoSE::Backend::CassandraBackend";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (C)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../NoSE.html" title="NoSE (module)">NoSE</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Backend.html" title="NoSE::Backend (module)">Backend</a></span></span>
+     &raquo; 
+    <span class="title">CassandraBackend</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: NoSE::Backend::CassandraBackend
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="Backend.html" title="NoSE::Backend::Backend (class)">Backend</a></span></span>
+      
+        <ul class="fullTree">
+          <li><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></li>
+          
+            <li class="next"><span class='object_link'><a href="Backend.html" title="NoSE::Backend::Backend (class)">Backend</a></span></li>
+          
+            <li class="next">NoSE::Backend::CassandraBackend</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  <dl>
+      <dt>Includes:</dt>
+      <dd><span class='object_link'><a href="../../Subtype.html" title="Subtype (module)">Subtype</a></span></dd>
+  </dl>
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/nose/backend/cassandra.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>A backend which communicates with Cassandra via CQL</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="CassandraBackend/DeleteStatementStep.html" title="NoSE::Backend::CassandraBackend::DeleteStatementStep (class)">DeleteStatementStep</a></span>, <span class='object_link'><a href="CassandraBackend/IndexLookupStatementStep.html" title="NoSE::Backend::CassandraBackend::IndexLookupStatementStep (class)">IndexLookupStatementStep</a></span>, <span class='object_link'><a href="CassandraBackend/InsertStatementStep.html" title="NoSE::Backend::CassandraBackend::InsertStatementStep (class)">InsertStatementStep</a></span>
+    
+  
+</p>
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#cassandra_type-instance_method" title="#cassandra_type (instance method)">#<strong>cassandra_type</strong>(field_class)  &#x21d2; Symbol </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Return the datatype to use in Cassandra for a given field.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#client-instance_method" title="#client (instance method)">#<strong>client</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Get a Cassandra client, connecting if not done already.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#drop_index-instance_method" title="#drop_index (instance method)">#<strong>drop_index</strong>(index)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Check if a given index exists in the target database.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#field_names-instance_method" title="#field_names (instance method)">#<strong>field_names</strong>(fields, types = false)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Get a comma-separated list of field names with optional types.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#generate_id-instance_method" title="#generate_id (instance method)">#<strong>generate_id</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Generate a random UUID.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#index_cql-instance_method" title="#index_cql (instance method)">#<strong>index_cql</strong>(index)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Produce the CQL to create the definition for a given index.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#index_empty%3F-instance_method" title="#index_empty? (instance method)">#<strong>index_empty?</strong>(index)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Check if the given index is empty.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#index_exists%3F-instance_method" title="#index_exists? (instance method)">#<strong>index_exists?</strong>(index)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Check if a given index exists in the target database.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#index_insert_chunk-instance_method" title="#index_insert_chunk (instance method)">#<strong>index_insert_chunk</strong>(index, chunk)  &#x21d2; Array&lt;Array&lt;Cassandra::Uuid&gt;&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Insert a chunk of rows into an index.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#index_row-instance_method" title="#index_row (instance method)">#<strong>index_row</strong>(row, fields)  &#x21d2; Array </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Produce an array of fields in the correct order for a CQL insert.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#index_sample-instance_method" title="#index_sample (instance method)">#<strong>index_sample</strong>(index, count)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Sample a number of values from the given index.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#indexes_ddl-instance_method" title="#indexes_ddl (instance method)">#<strong>indexes_ddl</strong>(execute = false, skip_existing = false, drop_existing = false)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Produce the DDL necessary for column families for the given indexes and optionally execute them against the server.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(model, indexes, plans, update_plans, config)  &#x21d2; CassandraBackend </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>A new instance of CassandraBackend.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="../../Subtype.html" title="Subtype (module)">Subtype</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../../Subtype.html#included-class_method" title="Subtype.included (method)">included</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="Backend.html" title="NoSE::Backend::Backend (class)">Backend</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Backend.html#add_delete_step-instance_method" title="NoSE::Backend::Backend#add_delete_step (method)">#add_delete_step</a></span>, <span class='object_link'><a href="Backend.html#add_insert_step-instance_method" title="NoSE::Backend::Backend#add_insert_step (method)">#add_insert_step</a></span>, <span class='object_link'><a href="Backend.html#by_id_graph-instance_method" title="NoSE::Backend::Backend#by_id_graph (method)">#by_id_graph</a></span>, <span class='object_link'><a href="Backend.html#find_query_plan-instance_method" title="NoSE::Backend::Backend#find_query_plan (method)">#find_query_plan</a></span>, <span class='object_link'><a href="Backend.html#find_update_plans-instance_method" title="NoSE::Backend::Backend#find_update_plans (method)">#find_update_plans</a></span>, <span class='object_link'><a href="Backend.html#indexes_sample-instance_method" title="NoSE::Backend::Backend#indexes_sample (method)">#indexes_sample</a></span>, <span class='object_link'><a href="Backend.html#prepare-instance_method" title="NoSE::Backend::Backend#prepare (method)">#prepare</a></span>, <span class='object_link'><a href="Backend.html#prepare_query-instance_method" title="NoSE::Backend::Backend#prepare_query (method)">#prepare_query</a></span>, <span class='object_link'><a href="Backend.html#prepare_query_steps-instance_method" title="NoSE::Backend::Backend#prepare_query_steps (method)">#prepare_query_steps</a></span>, <span class='object_link'><a href="Backend.html#prepare_support_plans-instance_method" title="NoSE::Backend::Backend#prepare_support_plans (method)">#prepare_support_plans</a></span>, <span class='object_link'><a href="Backend.html#prepare_update-instance_method" title="NoSE::Backend::Backend#prepare_update (method)">#prepare_update</a></span>, <span class='object_link'><a href="Backend.html#query-instance_method" title="NoSE::Backend::Backend#query (method)">#query</a></span>, <span class='object_link'><a href="Backend.html#update-instance_method" title="NoSE::Backend::Backend#update (method)">#update</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="../../Supertype.html" title="Supertype (module)">Supertype</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../../Supertype.html#included-class_method" title="Supertype.included (method)">included</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="../../Listing.html" title="Listing (module)">Listing</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../../Listing.html#included-class_method" title="Listing.included (method)">included</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(model, indexes, plans, update_plans, config)  &#x21d2; <tt><span class='object_link'><a href="" title="NoSE::Backend::CassandraBackend (class)">CassandraBackend</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns a new instance of CassandraBackend.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+12
+13
+14
+15
+16
+17
+18
+19</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 12</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_model'>model</span><span class='comma'>,</span> <span class='id identifier rubyid_indexes'>indexes</span><span class='comma'>,</span> <span class='id identifier rubyid_plans'>plans</span><span class='comma'>,</span> <span class='id identifier rubyid_update_plans'>update_plans</span><span class='comma'>,</span> <span class='id identifier rubyid_config'>config</span><span class='rparen'>)</span>
+  <span class='kw'>super</span>
+
+  <span class='ivar'>@hosts</span> <span class='op'>=</span> <span class='id identifier rubyid_config'>config</span><span class='lbracket'>[</span><span class='symbol'>:hosts</span><span class='rbracket'>]</span>
+  <span class='ivar'>@port</span> <span class='op'>=</span> <span class='id identifier rubyid_config'>config</span><span class='lbracket'>[</span><span class='symbol'>:port</span><span class='rbracket'>]</span>
+  <span class='ivar'>@keyspace</span> <span class='op'>=</span> <span class='id identifier rubyid_config'>config</span><span class='lbracket'>[</span><span class='symbol'>:keyspace</span><span class='rbracket'>]</span>
+  <span class='ivar'>@generator</span> <span class='op'>=</span> <span class='const'>Cassandra</span><span class='op'>::</span><span class='const'>Uuid</span><span class='op'>::</span><span class='const'>Generator</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="cassandra_type-instance_method">
+  
+    #<strong>cassandra_type</strong>(field_class)  &#x21d2; <tt>Symbol</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Return the datatype to use in Cassandra for a given field</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 160</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_cassandra_type'>cassandra_type</span><span class='lparen'>(</span><span class='id identifier rubyid_field_class'>field_class</span><span class='rparen'>)</span>
+  <span class='kw'>case</span> <span class='lbracket'>[</span><span class='id identifier rubyid_field_class'>field_class</span><span class='rbracket'>]</span>
+  <span class='kw'>when</span> <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../Fields.html" title="NoSE::Fields (module)">Fields</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Fields/IntegerField.html" title="NoSE::Fields::IntegerField (class)">IntegerField</a></span></span><span class='rbracket'>]</span>
+    <span class='symbol'>:int</span>
+  <span class='kw'>when</span> <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../Fields.html" title="NoSE::Fields (module)">Fields</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Fields/FloatField.html" title="NoSE::Fields::FloatField (class)">FloatField</a></span></span><span class='rbracket'>]</span>
+    <span class='symbol'>:float</span>
+  <span class='kw'>when</span> <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../Fields.html" title="NoSE::Fields (module)">Fields</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Fields/StringField.html" title="NoSE::Fields::StringField (class)">StringField</a></span></span><span class='rbracket'>]</span>
+    <span class='symbol'>:text</span>
+  <span class='kw'>when</span> <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../Fields.html" title="NoSE::Fields (module)">Fields</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Fields/DateField.html" title="NoSE::Fields::DateField (class)">DateField</a></span></span><span class='rbracket'>]</span>
+    <span class='symbol'>:timestamp</span>
+  <span class='kw'>when</span> <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../Fields.html" title="NoSE::Fields (module)">Fields</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Fields/IDField.html" title="NoSE::Fields::IDField (class)">IDField</a></span></span><span class='rbracket'>]</span><span class='comma'>,</span>
+       <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="../Fields.html" title="NoSE::Fields (module)">Fields</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Fields/ForeignKeyField.html" title="NoSE::Fields::ForeignKeyField (class)">ForeignKeyField</a></span></span><span class='rbracket'>]</span>
+    <span class='symbol'>:uuid</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="client-instance_method">
+  
+    #<strong>client</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Get a Cassandra client, connecting if not done already</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+151
+152
+153
+154
+155
+156</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 151</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_client'>client</span>
+  <span class='kw'>return</span> <span class='ivar'>@client</span> <span class='kw'>unless</span> <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+  <span class='ivar'>@cluster</span> <span class='op'>=</span> <span class='const'>Cassandra</span><span class='period'>.</span><span class='id identifier rubyid_cluster'>cluster</span> <span class='label'>hosts:</span> <span class='ivar'>@hosts</span><span class='comma'>,</span> <span class='label'>port:</span> <span class='ivar'>@port</span><span class='comma'>,</span>
+                               <span class='label'>timeout:</span> <span class='kw'>nil</span>
+  <span class='ivar'>@client</span> <span class='op'>=</span> <span class='ivar'>@cluster</span><span class='period'>.</span><span class='id identifier rubyid_connect'>connect</span> <span class='ivar'>@keyspace</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="drop_index-instance_method">
+  
+    #<strong>drop_index</strong>(index)  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Check if a given index exists in the target database</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+85
+86
+87</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 85</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_drop_index'>drop_index</span><span class='lparen'>(</span><span class='id identifier rubyid_index'>index</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_client'>client</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>DROP TABLE \&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_key'>key</span><span class='embexpr_end'>}</span><span class='tstring_content'>\&quot;</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="field_names-instance_method">
+  
+    #<strong>field_names</strong>(fields, types = false)  &#x21d2; <tt>String</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Get a comma-separated list of field names with optional types</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+142
+143
+144
+145
+146
+147
+148</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 142</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_field_names'>field_names</span><span class='lparen'>(</span><span class='id identifier rubyid_fields'>fields</span><span class='comma'>,</span> <span class='id identifier rubyid_types'>types</span> <span class='op'>=</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_field'>field</span><span class='op'>|</span>
+    <span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='embexpr_end'>}</span><span class='tstring_content'>\&quot;</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_name'>name</span> <span class='op'>+=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'> </span><span class='tstring_end'>&#39;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_cassandra_type'>cassandra_type</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='kw'>if</span> <span class='id identifier rubyid_types'>types</span>
+    <span class='id identifier rubyid_name'>name</span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>, </span><span class='tstring_end'>&#39;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="generate_id-instance_method">
+  
+    #<strong>generate_id</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Generate a random UUID</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+22
+23
+24</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 22</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_generate_id'>generate_id</span>
+  <span class='ivar'>@generator</span><span class='period'>.</span><span class='id identifier rubyid_uuid'>uuid</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="index_cql-instance_method">
+  
+    #<strong>index_cql</strong>(index)  &#x21d2; <tt>String</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Produce the CQL to create the definition for a given index</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 128</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_index_cql'>index_cql</span><span class='lparen'>(</span><span class='id identifier rubyid_index'>index</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_ddl'>ddl</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>CREATE COLUMNFAMILY \&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_key'>key</span><span class='embexpr_end'>}</span><span class='tstring_content'>\&quot; (</span><span class='tstring_end'>&quot;</span></span> \
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_names'>field_names</span> <span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_all_fields'>all_fields</span><span class='comma'>,</span> <span class='kw'>true</span><span class='embexpr_end'>}</span><span class='tstring_content'>, </span><span class='tstring_end'>&quot;</span></span> \
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>PRIMARY KEY((</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_names'>field_names</span> <span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_hash_fields'>hash_fields</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+
+  <span class='id identifier rubyid_cluster_key'>cluster_key</span> <span class='op'>=</span> <span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_order_fields'>order_fields</span>
+  <span class='id identifier rubyid_ddl'>ddl</span> <span class='op'>+=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>, </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_names'>field_names</span> <span class='id identifier rubyid_cluster_key'>cluster_key</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_cluster_key'>cluster_key</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+  <span class='id identifier rubyid_ddl'>ddl</span> <span class='op'>+=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>));</span><span class='tstring_end'>&#39;</span></span>
+
+  <span class='id identifier rubyid_ddl'>ddl</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="index_empty?-instance_method">
+  
+    #<strong>index_empty?</strong>(index)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Check if the given index is empty</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+73
+74
+75
+76</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 73</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_index_empty?'>index_empty?</span><span class='lparen'>(</span><span class='id identifier rubyid_index'>index</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_query'>query</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>SELECT COUNT(*) FROM \&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_key'>key</span><span class='embexpr_end'>}</span><span class='tstring_content'>\&quot; LIMIT 1</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_client'>client</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_zero?'>zero?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="index_exists?-instance_method">
+  
+    #<strong>index_exists?</strong>(index)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Check if a given index exists in the target database</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+79
+80
+81
+82</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 79</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_index_exists?'>index_exists?</span><span class='lparen'>(</span><span class='id identifier rubyid_index'>index</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_client'>client</span>
+  <span class='ivar'>@cluster</span><span class='period'>.</span><span class='id identifier rubyid_keyspace'>keyspace</span><span class='lparen'>(</span><span class='ivar'>@keyspace</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_has_table?'>has_table?</span> <span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_key'>key</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="index_insert_chunk-instance_method">
+  
+    #<strong>index_insert_chunk</strong>(index, chunk)  &#x21d2; <tt><span class='object_link'><a href="../../Array.html" title="Array (class)">Array</a></span>&lt;<span class='object_link'><a href="../../Array.html" title="Array (class)">Array</a></span>&lt;Cassandra::Uuid&gt;&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Insert a chunk of rows into an index</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../Array.html" title="Array (class)">Array</a></span>&lt;<span class='object_link'><a href="../../Array.html" title="Array (class)">Array</a></span>&lt;Cassandra::Uuid&gt;&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 51</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_index_insert_chunk'>index_insert_chunk</span><span class='lparen'>(</span><span class='id identifier rubyid_index'>index</span><span class='comma'>,</span> <span class='id identifier rubyid_chunk'>chunk</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_fields'>fields</span> <span class='op'>=</span> <span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_all_fields'>all_fields</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span>
+  <span class='id identifier rubyid_prepared'>prepared</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>INSERT INTO \&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_key'>key</span><span class='embexpr_end'>}</span><span class='tstring_content'>\&quot; (</span><span class='tstring_end'>&quot;</span></span> \
+             <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_names'>field_names</span> <span class='id identifier rubyid_fields'>fields</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> \
+             <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>) VALUES (</span><span class='embexpr_beg'>#{</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>?</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>*</span> <span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>, </span><span class='tstring_end'>&#39;</span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_prepared'>prepared</span> <span class='op'>=</span> <span class='id identifier rubyid_client'>client</span><span class='period'>.</span><span class='id identifier rubyid_prepare'>prepare</span> <span class='id identifier rubyid_prepared'>prepared</span>
+
+  <span class='id identifier rubyid_ids'>ids</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_client'>client</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='id identifier rubyid_client'>client</span><span class='period'>.</span><span class='id identifier rubyid_batch'>batch</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_batch'>batch</span><span class='op'>|</span>
+    <span class='id identifier rubyid_chunk'>chunk</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_row'>row</span><span class='op'>|</span>
+      <span class='id identifier rubyid_index_row'>index_row</span> <span class='op'>=</span> <span class='id identifier rubyid_index_row'>index_row</span><span class='lparen'>(</span><span class='id identifier rubyid_row'>row</span><span class='comma'>,</span> <span class='id identifier rubyid_fields'>fields</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_ids'>ids</span> <span class='op'>&lt;&lt;</span> <span class='lparen'>(</span><span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_hash_fields'>hash_fields</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span> <span class='op'>+</span> <span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_order_fields'>order_fields</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_field'>field</span><span class='op'>|</span>
+        <span class='id identifier rubyid_index_row'>index_row</span><span class='lbracket'>[</span><span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_index'>index</span> <span class='id identifier rubyid_field'>field</span><span class='rbracket'>]</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_batch'>batch</span><span class='period'>.</span><span class='id identifier rubyid_add'>add</span> <span class='id identifier rubyid_prepared'>prepared</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='id identifier rubyid_index_row'>index_row</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_ids'>ids</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="index_row-instance_method">
+  
+    #<strong>index_row</strong>(row, fields)  &#x21d2; <tt><span class='object_link'><a href="../../Array.html" title="Array (class)">Array</a></span></tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Produce an array of fields in the correct order for a CQL insert</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../Array.html" title="Array (class)">Array</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 106</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_index_row'>index_row</span><span class='lparen'>(</span><span class='id identifier rubyid_row'>row</span><span class='comma'>,</span> <span class='id identifier rubyid_fields'>fields</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_fields'>fields</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_field'>field</span><span class='op'>|</span>
+    <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_row'>row</span><span class='lbracket'>[</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='rbracket'>]</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../Fields.html" title="NoSE::Fields (module)">Fields</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Fields/IDField.html" title="NoSE::Fields::IDField (class)">IDField</a></span></span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='kw'>case</span> <span class='id identifier rubyid_value'>value</span>
+              <span class='kw'>when</span> <span class='const'>Numeric</span>
+                <span class='const'>Cassandra</span><span class='op'>::</span><span class='const'>Uuid</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span>
+              <span class='kw'>when</span> <span class='const'>String</span>
+                <span class='const'>Cassandra</span><span class='op'>::</span><span class='const'>Uuid</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='id identifier rubyid_value'>value</span>
+              <span class='kw'>when</span> <span class='kw'>nil</span>
+                <span class='const'>Cassandra</span><span class='op'>::</span><span class='const'>Uuid</span><span class='op'>::</span><span class='const'>Generator</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='period'>.</span><span class='id identifier rubyid_uuid'>uuid</span>
+              <span class='kw'>else</span>
+                <span class='id identifier rubyid_value'>value</span>
+              <span class='kw'>end</span>
+    <span class='kw'>end</span>
+
+    <span class='id identifier rubyid_value'>value</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="index_sample-instance_method">
+  
+    #<strong>index_sample</strong>(index, count)  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Sample a number of values from the given index</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 90</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_index_sample'>index_sample</span><span class='lparen'>(</span><span class='id identifier rubyid_index'>index</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_field_list'>field_list</span> <span class='op'>=</span> <span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_all_fields'>all_fields</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='embexpr_end'>}</span><span class='tstring_content'>\&quot;</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_query'>query</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>SELECT </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field_list'>field_list</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>, </span><span class='tstring_end'>&#39;</span></span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span> \
+          <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>FROM \&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_key'>key</span><span class='embexpr_end'>}</span><span class='tstring_content'>\&quot; LIMIT </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_count'>count</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_rows'>rows</span> <span class='op'>=</span> <span class='id identifier rubyid_client'>client</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_rows'>rows</span>
+
+  <span class='comment'># XXX Ignore null values for now
+</span>  <span class='comment'># fail if rows.any? { |row| row.values.any?(&amp;:nil?) }
+</span>
+  <span class='id identifier rubyid_rows'>rows</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="indexes_ddl-instance_method">
+  
+    #<strong>indexes_ddl</strong>(execute = false, skip_existing = false, drop_existing = false)  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Produce the DDL necessary for column families for the given indexes and optionally execute them against the server</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 28</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_indexes_ddl'>indexes_ddl</span><span class='lparen'>(</span><span class='id identifier rubyid_execute'>execute</span> <span class='op'>=</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='id identifier rubyid_skip_existing'>skip_existing</span> <span class='op'>=</span> <span class='kw'>false</span><span class='comma'>,</span>
+                <span class='id identifier rubyid_drop_existing'>drop_existing</span> <span class='op'>=</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='const'>Enumerator</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_enum'>enum</span><span class='op'>|</span>
+    <span class='ivar'>@indexes</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+      <span class='id identifier rubyid_ddl'>ddl</span> <span class='op'>=</span> <span class='id identifier rubyid_index_cql'>index_cql</span> <span class='id identifier rubyid_index'>index</span>
+      <span class='id identifier rubyid_enum'>enum</span><span class='period'>.</span><span class='id identifier rubyid_yield'>yield</span> <span class='id identifier rubyid_ddl'>ddl</span>
+
+      <span class='kw'>begin</span>
+        <span class='id identifier rubyid_drop_index'>drop_index</span><span class='lparen'>(</span><span class='id identifier rubyid_index'>index</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_drop_existing'>drop_existing</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_index_exists?'>index_exists?</span><span class='lparen'>(</span><span class='id identifier rubyid_index'>index</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_client'>client</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='id identifier rubyid_ddl'>ddl</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_execute'>execute</span>
+      <span class='kw'>rescue</span> <span class='const'>Cassandra</span><span class='op'>::</span><span class='const'>Errors</span><span class='op'>::</span><span class='const'>AlreadyExistsError</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_exc'>exc</span>
+        <span class='kw'>next</span> <span class='kw'>if</span> <span class='id identifier rubyid_skip_existing'>skip_existing</span>
+
+        <span class='id identifier rubyid_new_exc'>new_exc</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="IndexAlreadyExists.html" title="NoSE::Backend::IndexAlreadyExists (class)">IndexAlreadyExists</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='id identifier rubyid_exc'>exc</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span>
+        <span class='id identifier rubyid_new_exc'>new_exc</span><span class='period'>.</span><span class='id identifier rubyid_set_backtrace'>set_backtrace</span> <span class='id identifier rubyid_exc'>exc</span><span class='period'>.</span><span class='id identifier rubyid_backtrace'>backtrace</span>
+        <span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_new_exc'>new_exc</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Fri Feb 28 13:56:17 2020 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.24 (ruby-2.7.0).
+</div>
+
+    </div>
+  </body>
+</html>

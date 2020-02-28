@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: NoSE::Backend::CassandraBackend::IndexLookupStatementStep
+  
+    &mdash; Documentation by YARD 0.9.24
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "NoSE::Backend::CassandraBackend::IndexLookupStatementStep";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (I)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../NoSE.html" title="NoSE (module)">NoSE</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Backend.html" title="NoSE::Backend (module)">Backend</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../CassandraBackend.html" title="NoSE::Backend::CassandraBackend (class)">CassandraBackend</a></span></span>
+     &raquo; 
+    <span class="title">IndexLookupStatementStep</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: NoSE::Backend::CassandraBackend::IndexLookupStatementStep
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="../Backend/IndexLookupStatementStep.html" title="NoSE::Backend::Backend::IndexLookupStatementStep (class)">Backend::IndexLookupStatementStep</a></span></span>
+      
+        <ul class="fullTree">
+          <li><span class='object_link'><a href="../../../Object.html" title="Object (class)">Object</a></span></li>
+          
+            <li class="next"><span class='object_link'><a href="../Backend/StatementStep.html" title="NoSE::Backend::Backend::StatementStep (class)">Backend::StatementStep</a></span></li>
+          
+            <li class="next"><span class='object_link'><a href="../Backend/IndexLookupStatementStep.html" title="NoSE::Backend::Backend::IndexLookupStatementStep (class)">Backend::IndexLookupStatementStep</a></span></li>
+          
+            <li class="next">NoSE::Backend::CassandraBackend::IndexLookupStatementStep</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/nose/backend/cassandra.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>A query step to look up data from a particular column family</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+
+
+  <h2>Instance Attribute Summary</h2>
+  
+  <h3 class="inherited">Attributes inherited from <span class='object_link'><a href="../Backend/StatementStep.html" title="NoSE::Backend::Backend::StatementStep (class)">Backend::StatementStep</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Backend/StatementStep.html#index-instance_method" title="NoSE::Backend::Backend::StatementStep#index (method)">#index</a></span></p>
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#cql_order_by-instance_method" title="#cql_order_by (instance method)">#<strong>cql_order_by</strong>  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Produce the CQL ORDER BY clause for this step.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#cql_where_clause-instance_method" title="#cql_where_clause (instance method)">#<strong>cql_where_clause</strong>(conditions)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Produce a CQL where clause using the given conditions.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#fetch_all_queries-instance_method" title="#fetch_all_queries (instance method)">#<strong>fetch_all_queries</strong>(condition_list, results)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Lookup values from an index selecting the given fields and filtering on the given conditions.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#fetch_query_pages-instance_method" title="#fetch_query_pages (instance method)">#<strong>fetch_query_pages</strong>(values, new_result, result)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Get the necessary pages of results for a given list of values.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(client, select, conditions, step, next_step, prev_step)  &#x21d2; IndexLookupStatementStep </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>rubocop:disable Metrics/ParameterLists.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#lookup_values-instance_method" title="#lookup_values (instance method)">#<strong>lookup_values</strong>(condition_set)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Produce the values used for lookup on a given set of conditions.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#process-instance_method" title="#process (instance method)">#<strong>process</strong>(conditions, results)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Perform a column family lookup in Cassandra.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#select_cql-instance_method" title="#select_cql (instance method)">#<strong>select_cql</strong>(select, conditions)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Produce the select CQL statement for a provided set of fields.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="../../../Supertype.html" title="Supertype (module)">Supertype</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../../../Supertype.html#included-class_method" title="Supertype.included (method)">included</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(client, select, conditions, step, next_step, prev_step)  &#x21d2; <tt><span class='object_link'><a href="" title="NoSE::Backend::CassandraBackend::IndexLookupStatementStep (class)">IndexLookupStatementStep</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>rubocop:disable Metrics/ParameterLists</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+273
+274
+275
+276
+277
+278
+279
+280</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 273</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_client'>client</span><span class='comma'>,</span> <span class='id identifier rubyid_select'>select</span><span class='comma'>,</span> <span class='id identifier rubyid_conditions'>conditions</span><span class='comma'>,</span> <span class='id identifier rubyid_step'>step</span><span class='comma'>,</span> <span class='id identifier rubyid_next_step'>next_step</span><span class='comma'>,</span> <span class='id identifier rubyid_prev_step'>prev_step</span><span class='rparen'>)</span>
+  <span class='kw'>super</span>
+
+  <span class='ivar'>@logger</span> <span class='op'>=</span> <span class='const'>Logging</span><span class='period'>.</span><span class='id identifier rubyid_logger'>logger</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>nose::backend::cassandra::indexlookupstep</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span>
+
+  <span class='comment'># TODO: Check if we can apply the next filter via ALLOW FILTERING
+</span>  <span class='ivar'>@prepared</span> <span class='op'>=</span> <span class='id identifier rubyid_client'>client</span><span class='period'>.</span><span class='id identifier rubyid_prepare'>prepare</span> <span class='id identifier rubyid_select_cql'>select_cql</span><span class='lparen'>(</span><span class='id identifier rubyid_select'>select</span><span class='comma'>,</span> <span class='id identifier rubyid_conditions'>conditions</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="cql_order_by-instance_method">
+  
+    #<strong>cql_order_by</strong>  &#x21d2; <tt>String</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Produce the CQL ORDER BY clause for this step</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 325</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_cql_order_by'>cql_order_by</span>  <span class='comment'># TODO: CQL3 requires all clustered columns before the one actually
+</span>  <span class='comment'>#       ordered on also be specified
+</span>  <span class='comment'>#
+</span>  <span class='comment'>#       Example:
+</span>  <span class='comment'>#
+</span>  <span class='comment'>#         SELECT * FROM cf WHERE id=? AND col1=? ORDER by col1, col2
+</span>
+  <span class='kw'>return</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>if</span> <span class='ivar'>@step</span><span class='period'>.</span><span class='id identifier rubyid_order_by'>order_by</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+  <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'> ORDER BY </span><span class='tstring_end'>&#39;</span></span> <span class='op'>+</span> <span class='ivar'>@step</span><span class='period'>.</span><span class='id identifier rubyid_order_by'>order_by</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='embexpr_end'>}</span><span class='tstring_content'>\&quot;</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>, </span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="cql_where_clause-instance_method">
+  
+    #<strong>cql_where_clause</strong>(conditions)  &#x21d2; <tt>String</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Produce a CQL where clause using the given conditions</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 311</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_cql_where_clause'>cql_where_clause</span><span class='lparen'>(</span><span class='id identifier rubyid_conditions'>conditions</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_where'>where</span> <span class='op'>=</span> <span class='ivar'>@eq_fields</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_field'>field</span><span class='op'>|</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='embexpr_end'>}</span><span class='tstring_content'>\&quot; = ?</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'> AND </span><span class='tstring_end'>&#39;</span></span>
+  <span class='kw'>unless</span> <span class='ivar'>@range_field</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='id identifier rubyid_condition'>condition</span> <span class='op'>=</span> <span class='id identifier rubyid_conditions'>conditions</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:range?</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_where'>where</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> AND \&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_condition'>condition</span><span class='period'>.</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='embexpr_end'>}</span><span class='tstring_content'>\&quot; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_condition'>condition</span><span class='period'>.</span><span class='id identifier rubyid_operator'>operator</span><span class='embexpr_end'>}</span><span class='tstring_content'> ?</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_where'>where</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="fetch_all_queries-instance_method">
+  
+    #<strong>fetch_all_queries</strong>(condition_list, results)  &#x21d2; <tt><span class='object_link'><a href="../../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Lookup values from an index selecting the given fields and filtering on the given conditions</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 338</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_fetch_all_queries'>fetch_all_queries</span><span class='lparen'>(</span><span class='id identifier rubyid_condition_list'>condition_list</span><span class='comma'>,</span> <span class='id identifier rubyid_results'>results</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_new_result'>new_result</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_debug'>debug</span> <span class='lbrace'>{</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>  </span><span class='embexpr_beg'>#{</span><span class='ivar'>@prepared</span><span class='period'>.</span><span class='id identifier rubyid_cql'>cql</span><span class='embexpr_end'>}</span><span class='tstring_content'> * </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_condition_list'>condition_list</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span>
+
+  <span class='comment'># TODO: Chain enumerables of results instead
+</span>  <span class='comment'># Limit the total number of queries as well as the query limit
+</span>  <span class='id identifier rubyid_condition_list'>condition_list</span><span class='period'>.</span><span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span><span class='id identifier rubyid_results'>results</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_condition_set'>condition_set</span><span class='comma'>,</span> <span class='id identifier rubyid_result'>result</span><span class='op'>|</span>
+    <span class='comment'># Loop over all pages to fetch results
+</span>    <span class='id identifier rubyid_values'>values</span> <span class='op'>=</span> <span class='id identifier rubyid_lookup_values'>lookup_values</span> <span class='id identifier rubyid_condition_set'>condition_set</span>
+    <span class='id identifier rubyid_fetch_query_pages'>fetch_query_pages</span> <span class='id identifier rubyid_values'>values</span><span class='comma'>,</span> <span class='id identifier rubyid_new_result'>new_result</span><span class='comma'>,</span> <span class='id identifier rubyid_result'>result</span>
+
+    <span class='comment'># Don&#39;t continue with further queries
+</span>    <span class='kw'>break</span> <span class='kw'>if</span> <span class='op'>!</span><span class='ivar'>@step</span><span class='period'>.</span><span class='id identifier rubyid_limit'>limit</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_new_result'>new_result</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&gt;=</span> <span class='ivar'>@step</span><span class='period'>.</span><span class='id identifier rubyid_limit'>limit</span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_debug'>debug</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Total result size = </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_new_result'>new_result</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+
+  <span class='id identifier rubyid_new_result'>new_result</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="fetch_query_pages-instance_method">
+  
+    #<strong>fetch_query_pages</strong>(values, new_result, result)  &#x21d2; <tt><span class='object_link'><a href="../../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Get the necessary pages of results for a given list of values</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 358</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_fetch_query_pages'>fetch_query_pages</span><span class='lparen'>(</span><span class='id identifier rubyid_values'>values</span><span class='comma'>,</span> <span class='id identifier rubyid_new_result'>new_result</span><span class='comma'>,</span> <span class='id identifier rubyid_result'>result</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_new_results'>new_results</span> <span class='op'>=</span> <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='ivar'>@prepared</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='id identifier rubyid_values'>values</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span>
+    <span class='comment'># Add the previous results to each row
+</span>    <span class='id identifier rubyid_rows'>rows</span> <span class='op'>=</span> <span class='id identifier rubyid_new_results'>new_results</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_row'>row</span><span class='op'>|</span> <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span> <span class='id identifier rubyid_row'>row</span> <span class='rbrace'>}</span>
+
+    <span class='comment'># XXX Ignore null values in results for now
+</span>    <span class='comment'># fail if rows.any? { |row| row.values.any?(&amp;:nil?) }
+</span>
+    <span class='id identifier rubyid_new_result'>new_result</span><span class='period'>.</span><span class='id identifier rubyid_concat'>concat</span> <span class='id identifier rubyid_rows'>rows</span>
+    <span class='kw'>break</span> <span class='kw'>if</span> <span class='id identifier rubyid_new_results'>new_results</span><span class='period'>.</span><span class='id identifier rubyid_last_page?'>last_page?</span> <span class='op'>||</span>
+             <span class='lparen'>(</span><span class='op'>!</span><span class='ivar'>@step</span><span class='period'>.</span><span class='id identifier rubyid_limit'>limit</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&gt;=</span> <span class='ivar'>@step</span><span class='period'>.</span><span class='id identifier rubyid_limit'>limit</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_new_results'>new_results</span> <span class='op'>=</span> <span class='id identifier rubyid_new_results'>new_results</span><span class='period'>.</span><span class='id identifier rubyid_next_page'>next_page</span>
+    <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_debug'>debug</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Fetched </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span><span class='embexpr_end'>}</span><span class='tstring_content'> results</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="lookup_values-instance_method">
+  
+    #<strong>lookup_values</strong>(condition_set)  &#x21d2; <tt><span class='object_link'><a href="../../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Produce the values used for lookup on a given set of conditions</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 376</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_lookup_values'>lookup_values</span><span class='lparen'>(</span><span class='id identifier rubyid_condition_set'>condition_set</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_condition_set'>condition_set</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_condition'>condition</span><span class='op'>|</span>
+    <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_condition'>condition</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>||</span>
+            <span class='id identifier rubyid_conditions'>conditions</span><span class='lbracket'>[</span><span class='id identifier rubyid_condition'>condition</span><span class='period'>.</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+    <span class='id identifier rubyid_fail'>fail</span> <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+    <span class='kw'>if</span> <span class='id identifier rubyid_condition'>condition</span><span class='period'>.</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../Fields.html" title="NoSE::Fields (module)">Fields</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Fields/IDField.html" title="NoSE::Fields::IDField (class)">IDField</a></span></span><span class='rparen'>)</span>
+      <span class='const'>Cassandra</span><span class='op'>::</span><span class='const'>Uuid</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_value'>value</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="process-instance_method">
+  
+    #<strong>process</strong>(conditions, results)  &#x21d2; <tt><span class='object_link'><a href="../../../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Perform a column family lookup in Cassandra</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+284
+285
+286
+287
+288
+289
+290
+291</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 284</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_process'>process</span><span class='lparen'>(</span><span class='id identifier rubyid_conditions'>conditions</span><span class='comma'>,</span> <span class='id identifier rubyid_results'>results</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_results'>results</span> <span class='op'>=</span> <span class='id identifier rubyid_initial_results'>initial_results</span><span class='lparen'>(</span><span class='id identifier rubyid_conditions'>conditions</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_results'>results</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+  <span class='id identifier rubyid_condition_list'>condition_list</span> <span class='op'>=</span> <span class='id identifier rubyid_result_conditions'>result_conditions</span> <span class='id identifier rubyid_conditions'>conditions</span><span class='comma'>,</span> <span class='id identifier rubyid_results'>results</span>
+  <span class='id identifier rubyid_new_result'>new_result</span> <span class='op'>=</span> <span class='id identifier rubyid_fetch_all_queries'>fetch_all_queries</span> <span class='id identifier rubyid_condition_list'>condition_list</span><span class='comma'>,</span> <span class='id identifier rubyid_results'>results</span>
+
+  <span class='comment'># Limit the size of the results in case we fetched multiple keys
+</span>  <span class='id identifier rubyid_new_result'>new_result</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='lparen'>(</span><span class='ivar'>@step</span><span class='period'>.</span><span class='id identifier rubyid_limit'>limit</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>?</span> <span class='op'>-</span><span class='int'>1</span> <span class='op'>:</span> <span class='ivar'>@step</span><span class='period'>.</span><span class='id identifier rubyid_limit'>limit</span><span class='rparen'>)</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="select_cql-instance_method">
+  
+    #<strong>select_cql</strong>(select, conditions)  &#x21d2; <tt>String</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Produce the select CQL statement for a provided set of fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 297</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_select_cql'>select_cql</span><span class='lparen'>(</span><span class='id identifier rubyid_select'>select</span><span class='comma'>,</span> <span class='id identifier rubyid_conditions'>conditions</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_select'>select</span> <span class='op'>=</span> <span class='id identifier rubyid_expand_selected_fields'>expand_selected_fields</span> <span class='id identifier rubyid_select'>select</span>
+  <span class='id identifier rubyid_cql'>cql</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>SELECT </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_select'>select</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='embexpr_end'>}</span><span class='tstring_content'>\&quot;</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>, </span><span class='tstring_end'>&#39;</span></span><span class='embexpr_end'>}</span><span class='tstring_content'> FROM </span><span class='tstring_end'>&quot;</span></span> \
+        <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@step</span><span class='period'>.</span><span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_key'>key</span><span class='embexpr_end'>}</span><span class='tstring_content'>\&quot; WHERE </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_cql_where_clause'>cql_where_clause</span> <span class='id identifier rubyid_conditions'>conditions</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_cql'>cql</span> <span class='op'>+=</span> <span class='id identifier rubyid_cql_order_by'>cql_order_by</span>
+
+  <span class='comment'># Add an optional limit
+</span>  <span class='id identifier rubyid_cql'>cql</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> LIMIT </span><span class='embexpr_beg'>#{</span><span class='ivar'>@step</span><span class='period'>.</span><span class='id identifier rubyid_limit'>limit</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='ivar'>@step</span><span class='period'>.</span><span class='id identifier rubyid_limit'>limit</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+  <span class='id identifier rubyid_cql'>cql</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Fri Feb 28 13:56:17 2020 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.24 (ruby-2.7.0).
+</div>
+
+    </div>
+  </body>
+</html>

@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: NoSE::Plans::QueryPlanner
+  
+    &mdash; Documentation by YARD 0.9.24
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "NoSE::Plans::QueryPlanner";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (Q)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../NoSE.html" title="NoSE (module)">NoSE</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Plans.html" title="NoSE::Plans (module)">Plans</a></span></span>
+     &raquo; 
+    <span class="title">QueryPlanner</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: NoSE::Plans::QueryPlanner
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></span>
+      
+        <ul class="fullTree">
+          <li><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></li>
+          
+            <li class="next">NoSE::Plans::QueryPlanner</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/nose/plans/query_planner.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>A query planner which can construct a tree of query plans</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#find_nonindexed_steps-instance_method" title="#find_nonindexed_steps (instance method)">#<strong>find_nonindexed_steps</strong>(parent, state)  &#x21d2; Array&lt;PlanStep&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Find all possible plan steps not using indexes.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#find_plans_for_query-instance_method" title="#find_plans_for_query (instance method)">#<strong>find_plans_for_query</strong>(query)  &#x21d2; QueryPlanTree </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Find a tree of plans for the given query.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#find_plans_for_step-instance_method" title="#find_plans_for_step (instance method)">#<strong>find_plans_for_step</strong>(step, indexes_by_joins, prune: true)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Find possible query plans for a query starting at the given step.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#find_steps_for_state-instance_method" title="#find_steps_for_state (instance method)">#<strong>find_steps_for_state</strong>(parent, state, indexes_by_joins)  &#x21d2; Array&lt;PlanStep&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Get a list of possible next steps for a query in the given state.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#indexes_for_query-instance_method" title="#indexes_for_query (instance method)">#<strong>indexes_for_query</strong>(query, joins)  &#x21d2; Hash </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Produce indexes possibly useful for this query grouped by the first entity they join on.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(model, indexes, cost_model)  &#x21d2; QueryPlanner </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>A new instance of QueryPlanner.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#min_plan-instance_method" title="#min_plan (instance method)">#<strong>min_plan</strong>(query)  &#x21d2; QueryPlan </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Get the minimum cost plan for executing this query.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#prune_plan-instance_method" title="#prune_plan (instance method)">#<strong>prune_plan</strong>(prune_step)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Remove plans ending with this step in the tree @<a href="Boolean">return</a> true if pruning resulted in an empty tree.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(model, indexes, cost_model)  &#x21d2; <tt><span class='object_link'><a href="" title="NoSE::Plans::QueryPlanner (class)">QueryPlanner</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns a new instance of QueryPlanner.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+226
+227
+228
+229
+230
+231
+232</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/plans/query_planner.rb', line 226</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_model'>model</span><span class='comma'>,</span> <span class='id identifier rubyid_indexes'>indexes</span><span class='comma'>,</span> <span class='id identifier rubyid_cost_model'>cost_model</span><span class='rparen'>)</span>
+  <span class='ivar'>@logger</span> <span class='op'>=</span> <span class='const'>Logging</span><span class='period'>.</span><span class='id identifier rubyid_logger'>logger</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>nose::query_planner</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span>
+
+  <span class='ivar'>@model</span> <span class='op'>=</span> <span class='id identifier rubyid_model'>model</span>
+  <span class='ivar'>@indexes</span> <span class='op'>=</span> <span class='id identifier rubyid_indexes'>indexes</span>
+  <span class='ivar'>@cost_model</span> <span class='op'>=</span> <span class='id identifier rubyid_cost_model'>cost_model</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="find_nonindexed_steps-instance_method">
+  
+    #<strong>find_nonindexed_steps</strong>(parent, state)  &#x21d2; <tt><span class='object_link'><a href="../../Array.html" title="Array (class)">Array</a></span>&lt;<span class='object_link'><a href="PlanStep.html" title="NoSE::Plans::PlanStep (class)">PlanStep</a></span>&gt;</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Find all possible plan steps not using indexes</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../Array.html" title="Array (class)">Array</a></span>&lt;<span class='object_link'><a href="PlanStep.html" title="NoSE::Plans::PlanStep (class)">PlanStep</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/plans/query_planner.rb', line 328</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_find_nonindexed_steps'>find_nonindexed_steps</span><span class='lparen'>(</span><span class='id identifier rubyid_parent'>parent</span><span class='comma'>,</span> <span class='id identifier rubyid_state'>state</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_steps'>steps</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_steps'>steps</span> <span class='kw'>if</span> <span class='id identifier rubyid_parent'>parent</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span> <span class='const'><span class='object_link'><a href="RootPlanStep.html" title="NoSE::Plans::RootPlanStep (class)">RootPlanStep</a></span></span>
+
+  <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="SortPlanStep.html" title="NoSE::Plans::SortPlanStep (class)">SortPlanStep</a></span></span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="FilterPlanStep.html" title="NoSE::Plans::FilterPlanStep (class)">FilterPlanStep</a></span></span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="LimitPlanStep.html" title="NoSE::Plans::LimitPlanStep (class)">LimitPlanStep</a></span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> \
+    <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_step'>step</span><span class='op'>|</span> <span class='id identifier rubyid_steps'>steps</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='id identifier rubyid_step'>step</span><span class='period'>.</span><span class='id identifier rubyid_apply'>apply</span><span class='lparen'>(</span><span class='id identifier rubyid_parent'>parent</span><span class='comma'>,</span> <span class='id identifier rubyid_state'>state</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_steps'>steps</span><span class='period'>.</span><span class='id identifier rubyid_flatten!'>flatten!</span>
+  <span class='id identifier rubyid_steps'>steps</span><span class='period'>.</span><span class='id identifier rubyid_compact!'>compact!</span>
+
+  <span class='id identifier rubyid_steps'>steps</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="find_plans_for_query-instance_method">
+  
+    #<strong>find_plans_for_query</strong>(query)  &#x21d2; <tt><span class='object_link'><a href="QueryPlanTree.html" title="NoSE::Plans::QueryPlanTree (class)">QueryPlanTree</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Find a tree of plans for the given query</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="QueryPlanTree.html" title="NoSE::Plans::QueryPlanTree (class)">QueryPlanTree</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="NoPlanException.html" title="NoSE::Plans::NoPlanException (class)">NoPlanException</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/plans/query_planner.rb', line 237</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_find_plans_for_query'>find_plans_for_query</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_state'>state</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="QueryState.html" title="NoSE::Plans::QueryState (class)">QueryState</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="QueryState.html#initialize-instance_method" title="NoSE::Plans::QueryState#initialize (method)">new</a></span></span> <span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='ivar'>@model</span>
+  <span class='id identifier rubyid_state'>state</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span>
+  <span class='id identifier rubyid_tree'>tree</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="QueryPlanTree.html" title="NoSE::Plans::QueryPlanTree (class)">QueryPlanTree</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="QueryPlanTree.html#initialize-instance_method" title="NoSE::Plans::QueryPlanTree#initialize (method)">new</a></span></span> <span class='id identifier rubyid_state'>state</span><span class='comma'>,</span> <span class='ivar'>@cost_model</span>
+
+  <span class='id identifier rubyid_indexes_by_joins'>indexes_by_joins</span> <span class='op'>=</span> <span class='id identifier rubyid_indexes_for_query'>indexes_for_query</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_state'>state</span><span class='period'>.</span><span class='id identifier rubyid_joins'>joins</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_find_plans_for_step'>find_plans_for_step</span> <span class='id identifier rubyid_tree'>tree</span><span class='period'>.</span><span class='id identifier rubyid_root'>root</span><span class='comma'>,</span> <span class='id identifier rubyid_indexes_by_joins'>indexes_by_joins</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_tree'>tree</span><span class='period'>.</span><span class='id identifier rubyid_root'>root</span><span class='period'>.</span><span class='id identifier rubyid_children'>children</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='id identifier rubyid_tree'>tree</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="QueryPlanTree.html" title="NoSE::Plans::QueryPlanTree (class)">QueryPlanTree</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="QueryPlanTree.html#initialize-instance_method" title="NoSE::Plans::QueryPlanTree#initialize (method)">new</a></span></span> <span class='id identifier rubyid_state'>state</span><span class='comma'>,</span> <span class='ivar'>@cost_model</span>
+    <span class='id identifier rubyid_find_plans_for_step'>find_plans_for_step</span> <span class='id identifier rubyid_tree'>tree</span><span class='period'>.</span><span class='id identifier rubyid_root'>root</span><span class='comma'>,</span> <span class='id identifier rubyid_indexes_by_joins'>indexes_by_joins</span><span class='comma'>,</span> <span class='label'>prune:</span> <span class='kw'>false</span>
+    <span class='id identifier rubyid_fail'>fail</span> <span class='const'><span class='object_link'><a href="NoPlanException.html" title="NoSE::Plans::NoPlanException (class)">NoPlanException</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_tree'>tree</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_debug'>debug</span> <span class='lbrace'>{</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Plans for </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_tree'>tree</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span>
+
+  <span class='id identifier rubyid_tree'>tree</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="find_plans_for_step-instance_method">
+  
+    #<strong>find_plans_for_step</strong>(step, indexes_by_joins, prune: true)  &#x21d2; <tt>void</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+<p>Find possible query plans for a query starting at the given step</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/plans/query_planner.rb', line 303</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_find_plans_for_step'>find_plans_for_step</span><span class='lparen'>(</span><span class='id identifier rubyid_step'>step</span><span class='comma'>,</span> <span class='id identifier rubyid_indexes_by_joins'>indexes_by_joins</span><span class='comma'>,</span> <span class='label'>prune:</span> <span class='kw'>true</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>if</span> <span class='id identifier rubyid_step'>step</span><span class='period'>.</span><span class='id identifier rubyid_state'>state</span><span class='period'>.</span><span class='id identifier rubyid_answered?'>answered?</span>
+
+  <span class='id identifier rubyid_steps'>steps</span> <span class='op'>=</span> <span class='id identifier rubyid_find_steps_for_state'>find_steps_for_state</span> <span class='id identifier rubyid_step'>step</span><span class='comma'>,</span> <span class='id identifier rubyid_step'>step</span><span class='period'>.</span><span class='id identifier rubyid_state'>state</span><span class='comma'>,</span> <span class='id identifier rubyid_indexes_by_joins'>indexes_by_joins</span>
+
+  <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_steps'>steps</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='id identifier rubyid_step'>step</span><span class='period'>.</span><span class='id identifier rubyid_children'>children</span> <span class='op'>=</span> <span class='id identifier rubyid_steps'>steps</span>
+    <span class='id identifier rubyid_steps'>steps</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_new_step'>new_step</span><span class='op'>|</span> <span class='id identifier rubyid_new_step'>new_step</span><span class='period'>.</span><span class='id identifier rubyid_calculate_cost'>calculate_cost</span> <span class='ivar'>@cost_model</span> <span class='rbrace'>}</span>
+    <span class='id identifier rubyid_steps'>steps</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_child_step'>child_step</span><span class='op'>|</span>
+      <span class='id identifier rubyid_find_plans_for_step'>find_plans_for_step</span> <span class='id identifier rubyid_child_step'>child_step</span><span class='comma'>,</span> <span class='id identifier rubyid_indexes_by_joins'>indexes_by_joins</span>
+
+      <span class='comment'># Remove this step if finding a plan from here failed
+</span>      <span class='kw'>if</span> <span class='id identifier rubyid_child_step'>child_step</span><span class='period'>.</span><span class='id identifier rubyid_children'>children</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_child_step'>child_step</span><span class='period'>.</span><span class='id identifier rubyid_state'>state</span><span class='period'>.</span><span class='id identifier rubyid_answered?'>answered?</span>
+        <span class='id identifier rubyid_step'>step</span><span class='period'>.</span><span class='id identifier rubyid_children'>children</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span> <span class='id identifier rubyid_child_step'>child_step</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_prune'>prune</span>
+    <span class='kw'>return</span> <span class='kw'>if</span> <span class='id identifier rubyid_step'>step</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="RootPlanStep.html" title="NoSE::Plans::RootPlanStep (class)">RootPlanStep</a></span></span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_prune_plan'>prune_plan</span><span class='lparen'>(</span><span class='id identifier rubyid_step'>step</span><span class='period'>.</span><span class='id identifier rubyid_parent'>parent</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_step'>step</span><span class='period'>.</span><span class='id identifier rubyid_children'>children</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="PrunedPlanStep.html" title="NoSE::Plans::PrunedPlanStep (class)">PrunedPlanStep</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="PlanStep.html#initialize-instance_method" title="NoSE::Plans::PlanStep#initialize (method)">new</a></span></span><span class='rbracket'>]</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="find_steps_for_state-instance_method">
+  
+    #<strong>find_steps_for_state</strong>(parent, state, indexes_by_joins)  &#x21d2; <tt><span class='object_link'><a href="../../Array.html" title="Array (class)">Array</a></span>&lt;<span class='object_link'><a href="PlanStep.html" title="NoSE::Plans::PlanStep (class)">PlanStep</a></span>&gt;</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Get a list of possible next steps for a query in the given state</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../Array.html" title="Array (class)">Array</a></span>&lt;<span class='object_link'><a href="PlanStep.html" title="NoSE::Plans::PlanStep (class)">PlanStep</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/plans/query_planner.rb', line 342</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_find_steps_for_state'>find_steps_for_state</span><span class='lparen'>(</span><span class='id identifier rubyid_parent'>parent</span><span class='comma'>,</span> <span class='id identifier rubyid_state'>state</span><span class='comma'>,</span> <span class='id identifier rubyid_indexes_by_joins'>indexes_by_joins</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_steps'>steps</span> <span class='op'>=</span> <span class='id identifier rubyid_find_nonindexed_steps'>find_nonindexed_steps</span> <span class='id identifier rubyid_parent'>parent</span><span class='comma'>,</span> <span class='id identifier rubyid_state'>state</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_steps'>steps</span> <span class='kw'>unless</span> <span class='id identifier rubyid_steps'>steps</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+
+  <span class='comment'># Don&#39;t allow indices to be used multiple times
+</span>  <span class='id identifier rubyid_indexes'>indexes</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_indexes_by_joins'>indexes_by_joins</span><span class='lbracket'>[</span><span class='id identifier rubyid_state'>state</span><span class='period'>.</span><span class='id identifier rubyid_joins'>joins</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='const'>Set</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_set'>to_set</span>
+  <span class='id identifier rubyid_used_indexes'>used_indexes</span> <span class='op'>=</span> <span class='id identifier rubyid_parent'>parent</span><span class='period'>.</span><span class='id identifier rubyid_parent_steps'>parent_steps</span><span class='period'>.</span><span class='id identifier rubyid_indexes'>indexes</span><span class='period'>.</span><span class='id identifier rubyid_to_set'>to_set</span>
+  <span class='lparen'>(</span><span class='id identifier rubyid_indexes'>indexes</span> <span class='op'>-</span> <span class='id identifier rubyid_used_indexes'>used_indexes</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+    <span class='id identifier rubyid_new_step'>new_step</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="IndexLookupPlanStep.html" title="NoSE::Plans::IndexLookupPlanStep (class)">IndexLookupPlanStep</a></span></span><span class='period'>.</span><span class='id identifier rubyid_apply'><span class='object_link'><a href="IndexLookupPlanStep.html#apply-class_method" title="NoSE::Plans::IndexLookupPlanStep.apply (method)">apply</a></span></span> <span class='id identifier rubyid_parent'>parent</span><span class='comma'>,</span> <span class='id identifier rubyid_index'>index</span><span class='comma'>,</span> <span class='id identifier rubyid_state'>state</span>
+    <span class='kw'>next</span> <span class='kw'>if</span> <span class='id identifier rubyid_new_step'>new_step</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+    <span class='id identifier rubyid_new_step'>new_step</span><span class='period'>.</span><span class='id identifier rubyid_add_fields_from_index'>add_fields_from_index</span> <span class='id identifier rubyid_index'>index</span>
+    <span class='id identifier rubyid_steps'>steps</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='id identifier rubyid_new_step'>new_step</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_steps'>steps</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="indexes_for_query-instance_method">
+  
+    #<strong>indexes_for_query</strong>(query, joins)  &#x21d2; <tt>Hash</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Produce indexes possibly useful for this query grouped by the first entity they join on</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/plans/query_planner.rb', line 267</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_indexes_for_query'>indexes_for_query</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_joins'>joins</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_indexes_by_joins'>indexes_by_joins</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_k'>k</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='const'>Set</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='rbrace'>}</span>
+  <span class='ivar'>@indexes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+    <span class='comment'># Limit indices to those which cross the query path
+</span>    <span class='kw'>next</span> <span class='kw'>unless</span> <span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_entities'>entities</span><span class='period'>.</span><span class='id identifier rubyid_to_set'>to_set</span><span class='period'>.</span><span class='id identifier rubyid_subset?'>subset?</span> \
+      <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_entities'>entities</span><span class='period'>.</span><span class='id identifier rubyid_to_set'>to_set</span>
+
+    <span class='id identifier rubyid_first_entity'>first_entity</span> <span class='op'>=</span> <span class='id identifier rubyid_joins'>joins</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_entity'>entity</span><span class='op'>|</span>
+      <span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_entities'>entities</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_entity'>entity</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_indexes_by_joins'>indexes_by_joins</span><span class='lbracket'>[</span><span class='id identifier rubyid_first_entity'>first_entity</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_add'>add</span> <span class='id identifier rubyid_index'>index</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_indexes_by_joins'>indexes_by_joins</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="min_plan-instance_method">
+  
+    #<strong>min_plan</strong>(query)  &#x21d2; <tt><span class='object_link'><a href="QueryPlan.html" title="NoSE::Plans::QueryPlan (class)">QueryPlan</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Get the minimum cost plan for executing this query</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="QueryPlan.html" title="NoSE::Plans::QueryPlan (class)">QueryPlan</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+258
+259
+260</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/plans/query_planner.rb', line 258</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_min_plan'>min_plan</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_find_plans_for_query'>find_plans_for_query</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_min'>min</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="prune_plan-instance_method">
+  
+    #<strong>prune_plan</strong>(prune_step)  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Remove plans ending with this step in the tree @<a href="Boolean">return</a> true if pruning resulted in an empty tree</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/plans/query_planner.rb', line 285</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_prune_plan'>prune_plan</span><span class='lparen'>(</span><span class='id identifier rubyid_prune_step'>prune_step</span><span class='rparen'>)</span>
+  <span class='comment'># Walk up the tree and remove the branch for the failed plan
+</span>  <span class='kw'>while</span> <span class='id identifier rubyid_prune_step'>prune_step</span><span class='period'>.</span><span class='id identifier rubyid_children'>children</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&lt;=</span> <span class='int'>1</span> <span class='op'>&amp;&amp;</span>
+        <span class='op'>!</span><span class='id identifier rubyid_prune_step'>prune_step</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="RootPlanStep.html" title="NoSE::Plans::RootPlanStep (class)">RootPlanStep</a></span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_prune_step'>prune_step</span> <span class='op'>=</span> <span class='id identifier rubyid_prune_step'>prune_step</span><span class='period'>.</span><span class='id identifier rubyid_parent'>parent</span>
+    <span class='id identifier rubyid_prev_step'>prev_step</span> <span class='op'>=</span> <span class='id identifier rubyid_prune_step'>prune_step</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># If we reached the root, we have no plan
+</span>  <span class='kw'>return</span> <span class='kw'>true</span> <span class='kw'>if</span> <span class='id identifier rubyid_prune_step'>prune_step</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span> <span class='const'><span class='object_link'><a href="RootPlanStep.html" title="NoSE::Plans::RootPlanStep (class)">RootPlanStep</a></span></span>
+
+  <span class='id identifier rubyid_prune_step'>prune_step</span><span class='period'>.</span><span class='id identifier rubyid_children'>children</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span> <span class='id identifier rubyid_prev_step'>prev_step</span>
+
+  <span class='kw'>false</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Fri Feb 28 13:56:18 2020 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.24 (ruby-2.7.0).
+</div>
+
+    </div>
+  </body>
+</html>

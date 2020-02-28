@@ -1,0 +1,2402 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: NoSE::Search::Problem
+  
+    &mdash; Documentation by YARD 0.9.24
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "NoSE::Search::Problem";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (P)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../NoSE.html" title="NoSE (module)">NoSE</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Search.html" title="NoSE::Search (module)">Search</a></span></span>
+     &raquo; 
+    <span class="title">Problem</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: NoSE::Search::Problem
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></span>
+      
+        <ul class="fullTree">
+          <li><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></li>
+          
+            <li class="next">NoSE::Search::Problem</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/nose/search/problem.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>A representation of a search problem as an ILP</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#data-instance_method" title="#data (instance method)">#<strong>data</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute data.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#index_vars-instance_method" title="#index_vars (instance method)">#<strong>index_vars</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute index_vars.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#indexes-instance_method" title="#indexes (instance method)">#<strong>indexes</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute indexes.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#model-instance_method" title="#model (instance method)">#<strong>model</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute model.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#objective_type-instance_method" title="#objective_type (instance method)">#<strong>objective_type</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute objective_type.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#objective_value-instance_method" title="#objective_value (instance method)">#<strong>objective_value</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute objective_value.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#queries-instance_method" title="#queries (instance method)">#<strong>queries</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute queries.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#query_vars-instance_method" title="#query_vars (instance method)">#<strong>query_vars</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute query_vars.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#status-instance_method" title="#status (instance method)">#<strong>status</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute status.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#updates-instance_method" title="#updates (instance method)">#<strong>updates</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute updates.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#add_constraints-instance_method" title="#add_constraints (instance method)">#<strong>add_constraints</strong>  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Add all necessary constraints to the model.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#add_update_costs-instance_method" title="#add_update_costs (instance method)">#<strong>add_update_costs</strong>(min_cost)  &#x21d2; MIPPeR::LinExpr </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Deal with updates which do not require support queries.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#add_variables-instance_method" title="#add_variables (instance method)">#<strong>add_variables</strong>  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Initialize query and index variables.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#define_objective-instance_method" title="#define_objective (instance method)">#<strong>define_objective</strong>(var_name = &#39;objective&#39;)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Set the value of the objective function (workload cost).</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(queries, updates, data, objective = Objective::COST)  &#x21d2; Problem </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>A new instance of Problem.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#log_model-instance_method" title="#log_model (instance method)">#<strong>log_model</strong>(type)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Write a model to a temporary file and log the file name.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#prepare_sort_costs-instance_method" title="#prepare_sort_costs (instance method)">#<strong>prepare_sort_costs</strong>  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Prepare variables and constraints to account for the cost of sorting.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#result-instance_method" title="#result (instance method)">#<strong>result</strong>  &#x21d2; Results </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Return relevant data on the results of the ILP.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#selected_indexes-instance_method" title="#selected_indexes (instance method)">#<strong>selected_indexes</strong>  &#x21d2; Set&lt;Index&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Return the selected indices.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#setup_model-instance_method" title="#setup_model (instance method)">#<strong>setup_model</strong>  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Build the ILP by creating all the variables and constraints.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#solve-instance_method" title="#solve (instance method)">#<strong>solve</strong>(previous_type = nil)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Run the solver and make the selected indexes available.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#solve_next-instance_method" title="#solve_next (instance method)">#<strong>solve_next</strong>(objective_type)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Pin the current objective value and set a new objective.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#total_cost-instance_method" title="#total_cost (instance method)">#<strong>total_cost</strong>  &#x21d2; MIPPeR::LinExpr </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Get the cost of all queries in the workload.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#total_indexes-instance_method" title="#total_indexes (instance method)">#<strong>total_indexes</strong>  &#x21d2; MIPPeR::LinExpr </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>The total number of indexes.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="private ">
+  <span class="summary_signature">
+    
+      <a href="#total_query_cost-instance_method" title="#total_query_cost (instance method)">#<strong>total_query_cost</strong>(cost, query_var, sort_cost, sort_var)  &#x21d2; MIPPeR::LinExpr </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title private">private</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Get the total cost of the query for the objective function.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#total_size-instance_method" title="#total_size (instance method)">#<strong>total_size</strong>  &#x21d2; MIPPeR::LinExpr </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Get the size of all indexes in the workload.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(queries, updates, data, objective = Objective::COST)  &#x21d2; <tt><span class='object_link'><a href="" title="NoSE::Search::Problem (class)">Problem</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns a new instance of Problem.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 49</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_queries'>queries</span><span class='comma'>,</span> <span class='id identifier rubyid_updates'>updates</span><span class='comma'>,</span> <span class='id identifier rubyid_data'>data</span><span class='comma'>,</span> <span class='id identifier rubyid_objective'>objective</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Objective.html" title="NoSE::Search::Objective (module)">Objective</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Objective.html#COST-constant" title="NoSE::Search::Objective::COST (constant)">COST</a></span></span><span class='rparen'>)</span>
+  <span class='ivar'>@queries</span> <span class='op'>=</span> <span class='id identifier rubyid_queries'>queries</span>
+  <span class='ivar'>@updates</span> <span class='op'>=</span> <span class='id identifier rubyid_updates'>updates</span>
+  <span class='ivar'>@data</span> <span class='op'>=</span> <span class='id identifier rubyid_data'>data</span>
+  <span class='ivar'>@indexes</span> <span class='op'>=</span> <span class='ivar'>@data</span><span class='lbracket'>[</span><span class='symbol'>:costs</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_flat_map'>flat_map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid__'>_</span><span class='comma'>,</span> <span class='id identifier rubyid_ic'>ic</span><span class='op'>|</span> <span class='id identifier rubyid_ic'>ic</span><span class='period'>.</span><span class='id identifier rubyid_keys'>keys</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_uniq'>uniq</span>
+  <span class='ivar'>@logger</span> <span class='op'>=</span> <span class='const'>Logging</span><span class='period'>.</span><span class='id identifier rubyid_logger'>logger</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>nose::search::problem</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span>
+  <span class='ivar'>@status</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@objective_type</span> <span class='op'>=</span> <span class='id identifier rubyid_objective'>objective</span>
+
+  <span class='id identifier rubyid_setup_model'>setup_model</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="data-instance_method">
+  
+    #<strong>data</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute data.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 45</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_data'>data</span>
+  <span class='ivar'>@data</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="index_vars-instance_method">
+  
+    #<strong>index_vars</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute index_vars.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 45</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_index_vars'>index_vars</span>
+  <span class='ivar'>@index_vars</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="indexes-instance_method">
+  
+    #<strong>indexes</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute indexes.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 45</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_indexes'>indexes</span>
+  <span class='ivar'>@indexes</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="model-instance_method">
+  
+    #<strong>model</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute model.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 45</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_model'>model</span>
+  <span class='ivar'>@model</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="objective_type-instance_method">
+  
+    #<strong>objective_type</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute objective_type.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 45</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_objective_type'>objective_type</span>
+  <span class='ivar'>@objective_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="objective_value-instance_method">
+  
+    #<strong>objective_value</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute objective_value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 45</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_objective_value'>objective_value</span>
+  <span class='ivar'>@objective_value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="queries-instance_method">
+  
+    #<strong>queries</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute queries.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 45</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_queries'>queries</span>
+  <span class='ivar'>@queries</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="query_vars-instance_method">
+  
+    #<strong>query_vars</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute query_vars.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 45</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_query_vars'>query_vars</span>
+  <span class='ivar'>@query_vars</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="status-instance_method">
+  
+    #<strong>status</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute status.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 45</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_status'>status</span>
+  <span class='ivar'>@status</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="updates-instance_method">
+  
+    #<strong>updates</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute updates.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 45</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_updates'>updates</span>
+  <span class='ivar'>@updates</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="add_constraints-instance_method">
+  
+    #<strong>add_constraints</strong>  &#x21d2; <tt>void</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+<p>Add all necessary constraints to the model</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 300</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_add_constraints'>add_constraints</span>
+  <span class='lbracket'>[</span>
+    <span class='const'><span class='object_link'><a href="IndexPresenceConstraints.html" title="NoSE::Search::IndexPresenceConstraints (class)">IndexPresenceConstraints</a></span></span><span class='comma'>,</span>
+    <span class='const'><span class='object_link'><a href="SpaceConstraint.html" title="NoSE::Search::SpaceConstraint (class)">SpaceConstraint</a></span></span><span class='comma'>,</span>
+    <span class='const'><span class='object_link'><a href="CompletePlanConstraints.html" title="NoSE::Search::CompletePlanConstraints (class)">CompletePlanConstraints</a></span></span>
+  <span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_constraint'>constraint</span><span class='op'>|</span> <span class='id identifier rubyid_constraint'>constraint</span><span class='period'>.</span><span class='id identifier rubyid_apply'>apply</span> <span class='kw'>self</span> <span class='rbrace'>}</span>
+
+  <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_debug'>debug</span> <span class='kw'>do</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Added </span><span class='embexpr_beg'>#{</span><span class='ivar'>@model</span><span class='period'>.</span><span class='id identifier rubyid_constraints'>constraints</span><span class='period'>.</span><span class='id identifier rubyid_count'>count</span><span class='embexpr_end'>}</span><span class='tstring_content'> constraints to model</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="add_update_costs-instance_method">
+  
+    #<strong>add_update_costs</strong>(min_cost)  &#x21d2; <tt>MIPPeR::LinExpr</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Deal with updates which do not require support queries</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>MIPPeR::LinExpr</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 314</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_add_update_costs'>add_update_costs</span><span class='lparen'>(</span><span class='id identifier rubyid_min_cost'>min_cost</span><span class='rparen'>)</span>
+  <span class='ivar'>@updates</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_update'>update</span><span class='op'>|</span>
+    <span class='ivar'>@indexes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+      <span class='id identifier rubyid_index'>index</span> <span class='op'>=</span> <span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_to_id_graph'>to_id_graph</span> <span class='kw'>if</span> <span class='id identifier rubyid_data'>data</span><span class='lbracket'>[</span><span class='symbol'>:by_id_graph</span><span class='rbracket'>]</span>
+      <span class='kw'>next</span> <span class='kw'>unless</span> <span class='id identifier rubyid_update'>update</span><span class='period'>.</span><span class='id identifier rubyid_modifies_index?'>modifies_index?</span><span class='lparen'>(</span><span class='id identifier rubyid_index'>index</span><span class='rparen'>)</span>
+
+      <span class='id identifier rubyid_min_cost'>min_cost</span><span class='period'>.</span><span class='id identifier rubyid_add'>add</span> <span class='ivar'>@index_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span> <span class='op'>*</span>
+                   <span class='ivar'>@data</span><span class='lbracket'>[</span><span class='symbol'>:update_costs</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_update'>update</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_min_cost'>min_cost</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="add_variables-instance_method">
+  
+    #<strong>add_variables</strong>  &#x21d2; <tt>void</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+<p>Initialize query and index variables</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 228</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_add_variables'>add_variables</span>
+  <span class='ivar'>@index_vars</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@query_vars</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@indexes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+    <span class='ivar'>@query_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+    <span class='ivar'>@queries</span><span class='period'>.</span><span class='id identifier rubyid_each_with_index'>each_with_index</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_q'>q</span><span class='op'>|</span>
+      <span class='id identifier rubyid_query_var'>query_var</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>q</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_q'>q</span><span class='embexpr_end'>}</span><span class='tstring_content'>_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_key'>key</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>NOSE_LOG</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>debug</span><span class='tstring_end'>&#39;</span></span>
+      <span class='id identifier rubyid_var'>var</span> <span class='op'>=</span> <span class='const'>MIPPeR</span><span class='op'>::</span><span class='const'>Variable</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='int'>0</span><span class='comma'>,</span> <span class='int'>1</span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='symbol'>:binary</span><span class='comma'>,</span> <span class='id identifier rubyid_query_var'>query_var</span>
+      <span class='ivar'>@model</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_var'>var</span>
+      <span class='ivar'>@query_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_query'>query</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_var'>var</span>
+    <span class='kw'>end</span>
+
+    <span class='id identifier rubyid_var_name'>var_name</span> <span class='op'>=</span> <span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_key'>key</span> <span class='kw'>if</span> <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>NOSE_LOG</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>debug</span><span class='tstring_end'>&#39;</span></span>
+    <span class='ivar'>@index_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='const'>MIPPeR</span><span class='op'>::</span><span class='const'>Variable</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='int'>0</span><span class='comma'>,</span> <span class='int'>1</span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='symbol'>:binary</span><span class='comma'>,</span> <span class='id identifier rubyid_var_name'>var_name</span>
+
+    <span class='comment'># If needed when grouping by ID graph, add an extra
+</span>    <span class='comment'># variable for the base index based on the ID graph
+</span>    <span class='kw'>next</span> <span class='kw'>unless</span> <span class='ivar'>@data</span><span class='lbracket'>[</span><span class='symbol'>:by_id_graph</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_id_graph'>id_graph</span> <span class='op'>=</span> <span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_to_id_graph'>to_id_graph</span>
+    <span class='kw'>next</span> <span class='kw'>if</span> <span class='id identifier rubyid_id_graph'>id_graph</span> <span class='op'>==</span> <span class='id identifier rubyid_index'>index</span>
+
+    <span class='comment'># Add a new variable for the ID graph if needed
+</span>    <span class='kw'>unless</span> <span class='ivar'>@index_vars</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span> <span class='id identifier rubyid_id_graph'>id_graph</span>
+      <span class='id identifier rubyid_var_name'>var_name</span> <span class='op'>=</span> <span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_key'>key</span> <span class='kw'>if</span> <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>NOSE_LOG</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>debug</span><span class='tstring_end'>&#39;</span></span>
+      <span class='ivar'>@index_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_id_graph'>id_graph</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='const'>MIPPeR</span><span class='op'>::</span><span class='const'>Variable</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='int'>0</span><span class='comma'>,</span> <span class='int'>1</span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='symbol'>:binary</span><span class='comma'>,</span>
+                                                   <span class='id identifier rubyid_var_name'>var_name</span>
+    <span class='kw'>end</span>
+
+    <span class='comment'># Ensure that the ID graph of this index is present if we use it
+</span>    <span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ID_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_id_graph'>id_graph</span><span class='period'>.</span><span class='id identifier rubyid_key'>key</span><span class='embexpr_end'>}</span><span class='tstring_content'>_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_key'>key</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> \
+      <span class='kw'>if</span> <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>NOSE_LOG</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>debug</span><span class='tstring_end'>&#39;</span></span>
+    <span class='id identifier rubyid_constr'>constr</span> <span class='op'>=</span> <span class='const'>MIPPeR</span><span class='op'>::</span><span class='const'>Constraint</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='ivar'>@index_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_id_graph'>id_graph</span><span class='rbracket'>]</span> <span class='op'>*</span> <span class='float'>1.0</span> <span class='op'>+</span> \
+                                    <span class='ivar'>@index_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span> <span class='op'>*</span> <span class='op'>-</span><span class='float'>1.0</span><span class='comma'>,</span>
+                                    <span class='symbol'>:&gt;=</span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='id identifier rubyid_name'>name</span>
+    <span class='ivar'>@model</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_constr'>constr</span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@index_vars</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_var'>var</span><span class='op'>|</span> <span class='ivar'>@model</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_var'>var</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="define_objective-instance_method">
+  
+    #<strong>define_objective</strong>(var_name = &#39;objective&#39;)  &#x21d2; <tt>void</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+<p>Set the value of the objective function (workload cost)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 201</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_define_objective'>define_objective</span><span class='lparen'>(</span><span class='id identifier rubyid_var_name'>var_name</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>objective</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_obj'>obj</span> <span class='op'>=</span> <span class='kw'>case</span> <span class='ivar'>@objective_type</span>
+        <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="Objective.html" title="NoSE::Search::Objective (module)">Objective</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Objective.html#COST-constant" title="NoSE::Search::Objective::COST (constant)">COST</a></span></span>
+          <span class='id identifier rubyid_total_cost'>total_cost</span>
+        <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="Objective.html" title="NoSE::Search::Objective (module)">Objective</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Objective.html#SPACE-constant" title="NoSE::Search::Objective::SPACE (constant)">SPACE</a></span></span>
+          <span class='id identifier rubyid_total_size'>total_size</span>
+        <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="Objective.html" title="NoSE::Search::Objective (module)">Objective</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Objective.html#INDEXES-constant" title="NoSE::Search::Objective::INDEXES (constant)">INDEXES</a></span></span>
+          <span class='id identifier rubyid_total_indexes'>total_indexes</span>
+        <span class='kw'>end</span>
+
+  <span class='comment'># Add the objective function as a variable
+</span>  <span class='id identifier rubyid_var_name'>var_name</span> <span class='op'>=</span> <span class='kw'>nil</span> <span class='kw'>unless</span> <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>NOSE_LOG</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>debug</span><span class='tstring_end'>&#39;</span></span>
+  <span class='ivar'>@obj_var</span> <span class='op'>=</span> <span class='const'>MIPPeR</span><span class='op'>::</span><span class='const'>Variable</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='int'>0</span><span class='comma'>,</span> <span class='const'>Float</span><span class='op'>::</span><span class='const'>INFINITY</span><span class='comma'>,</span> <span class='float'>1.0</span><span class='comma'>,</span>
+                                  <span class='symbol'>:continuous</span><span class='comma'>,</span> <span class='id identifier rubyid_var_name'>var_name</span>
+  <span class='ivar'>@model</span> <span class='op'>&lt;&lt;</span> <span class='ivar'>@obj_var</span>
+  <span class='ivar'>@model</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span>
+
+  <span class='ivar'>@model</span> <span class='op'>&lt;&lt;</span> <span class='const'>MIPPeR</span><span class='op'>::</span><span class='const'>Constraint</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span> <span class='op'>+</span> <span class='ivar'>@obj_var</span> <span class='op'>*</span> <span class='op'>-</span><span class='float'>1.0</span><span class='comma'>,</span> <span class='symbol'>:==</span><span class='comma'>,</span> <span class='float'>0.0</span><span class='rparen'>)</span>
+
+  <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_debug'>debug</span> <span class='lbrace'>{</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Objective function is </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span>
+
+  <span class='ivar'>@objective</span> <span class='op'>=</span> <span class='id identifier rubyid_obj'>obj</span>
+  <span class='ivar'>@model</span><span class='period'>.</span><span class='id identifier rubyid_sense'>sense</span> <span class='op'>=</span> <span class='symbol'>:min</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="log_model-instance_method">
+  
+    #<strong>log_model</strong>(type)  &#x21d2; <tt>void</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+<p>Write a model to a temporary file and log the file name</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+171
+172
+173
+174
+175
+176
+177
+178</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 171</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_log_model'>log_model</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+  <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_debug'>debug</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_tmpfile'>tmpfile</span> <span class='op'>=</span> <span class='const'>Tempfile</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>model</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>.mps</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span>
+    <span class='const'>ObjectSpace</span><span class='period'>.</span><span class='id identifier rubyid_undefine_finalizer'>undefine_finalizer</span> <span class='id identifier rubyid_tmpfile'>tmpfile</span>
+    <span class='ivar'>@model</span><span class='period'>.</span><span class='id identifier rubyid_write_mps'>write_mps</span> <span class='id identifier rubyid_tmpfile'>tmpfile</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_type'>type</span><span class='embexpr_end'>}</span><span class='tstring_content'> written to </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_tmpfile'>tmpfile</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="prepare_sort_costs-instance_method">
+  
+    #<strong>prepare_sort_costs</strong>  &#x21d2; <tt>void</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+<p>Prepare variables and constraints to account for the cost of sorting</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 270</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_prepare_sort_costs'>prepare_sort_costs</span>
+  <span class='ivar'>@sort_costs</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@sort_vars</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@data</span><span class='lbracket'>[</span><span class='symbol'>:costs</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_index_costs'>index_costs</span><span class='op'>|</span>
+    <span class='ivar'>@sort_costs</span><span class='lbracket'>[</span><span class='id identifier rubyid_query'>query</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+    <span class='ivar'>@sort_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_query'>query</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+
+    <span class='id identifier rubyid_index_costs'>index_costs</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='comma'>,</span> <span class='lparen'>(</span><span class='id identifier rubyid_steps'>steps</span><span class='comma'>,</span> <span class='id identifier rubyid__'>_</span><span class='rparen'>)</span><span class='op'>|</span>
+      <span class='id identifier rubyid_sort_step'>sort_step</span> <span class='op'>=</span> <span class='id identifier rubyid_steps'>steps</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_s'>s</span><span class='op'>|</span> <span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../Plans.html" title="NoSE::Plans (module)">Plans</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Plans/SortPlanStep.html" title="NoSE::Plans::SortPlanStep (class)">SortPlanStep</a></span></span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+      <span class='kw'>next</span> <span class='kw'>if</span> <span class='id identifier rubyid_sort_step'>sort_step</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+      <span class='ivar'>@sort_costs</span><span class='lbracket'>[</span><span class='id identifier rubyid_query'>query</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='id identifier rubyid_sort_step'>sort_step</span><span class='period'>.</span><span class='id identifier rubyid_cost'>cost</span>
+      <span class='id identifier rubyid_q'>q</span> <span class='op'>=</span> <span class='ivar'>@queries</span><span class='period'>.</span><span class='id identifier rubyid_index'>index</span> <span class='id identifier rubyid_query'>query</span>
+
+      <span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>s</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_q'>q</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>NOSE_LOG</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>debug</span><span class='tstring_end'>&#39;</span></span>
+      <span class='id identifier rubyid_sort_var'>sort_var</span> <span class='op'>=</span> <span class='const'>MIPPeR</span><span class='op'>::</span><span class='const'>Variable</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='int'>0</span><span class='comma'>,</span> <span class='int'>1</span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='symbol'>:binary</span><span class='comma'>,</span> <span class='id identifier rubyid_name'>name</span>
+      <span class='ivar'>@sort_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_query'>query</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='id identifier rubyid_sort_var'>sort_var</span>
+      <span class='ivar'>@model</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_sort_var'>sort_var</span>
+
+      <span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>q</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_q'>q</span><span class='embexpr_end'>}</span><span class='tstring_content'>_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_key'>key</span><span class='embexpr_end'>}</span><span class='tstring_content'>_sort</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='const'>ENV</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>NOSE_LOG</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>debug</span><span class='tstring_end'>&#39;</span></span>
+      <span class='id identifier rubyid_constr'>constr</span> <span class='op'>=</span> <span class='const'>MIPPeR</span><span class='op'>::</span><span class='const'>Constraint</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='ivar'>@sort_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_query'>query</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span> <span class='op'>*</span> <span class='float'>1.0</span> <span class='op'>+</span>
+                                      <span class='ivar'>@query_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_query'>query</span><span class='rbracket'>]</span> <span class='op'>*</span> <span class='op'>-</span><span class='float'>1.0</span><span class='comma'>,</span>
+                                      <span class='symbol'>:&gt;=</span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='id identifier rubyid_name'>name</span>
+      <span class='ivar'>@model</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_constr'>constr</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="result-instance_method">
+  
+    #<strong>result</strong>  &#x21d2; <tt><span class='object_link'><a href="Results.html" title="NoSE::Search::Results (class)">Results</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Return relevant data on the results of the ILP</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Results.html" title="NoSE::Search::Results (class)">Results</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 103</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_result'>result</span>
+  <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Results.html" title="NoSE::Search::Results (class)">Results</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Results.html#initialize-instance_method" title="NoSE::Search::Results#initialize (method)">new</a></span></span> <span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@data</span><span class='lbracket'>[</span><span class='symbol'>:by_id_graph</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_enumerated_indexes'>enumerated_indexes</span> <span class='op'>=</span> <span class='id identifier rubyid_indexes'>indexes</span>
+  <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_indexes'>indexes</span> <span class='op'>=</span> <span class='id identifier rubyid_selected_indexes'>selected_indexes</span>
+
+  <span class='comment'># TODO: Update for indexes grouped by ID path
+</span>  <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_total_size'>total_size</span> <span class='op'>=</span> <span class='id identifier rubyid_selected_indexes'>selected_indexes</span><span class='period'>.</span><span class='id identifier rubyid_sum_by'>sum_by</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:size</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_total_cost'>total_cost</span> <span class='op'>=</span> <span class='ivar'>@objective_value</span>
+
+  <span class='id identifier rubyid_result'>result</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="selected_indexes-instance_method">
+  
+    #<strong>selected_indexes</strong>  &#x21d2; <tt>Set&lt;<span class='object_link'><a href="../Index.html" title="NoSE::Index (class)">Index</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Return the selected indices</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Set&lt;<span class='object_link'><a href="../Index.html" title="NoSE::Index (class)">Index</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+92
+93
+94
+95
+96
+97
+98
+99</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 92</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_selected_indexes'>selected_indexes</span>
+  <span class='kw'>return</span> <span class='kw'>if</span> <span class='ivar'>@status</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+  <span class='kw'>return</span> <span class='ivar'>@selected_indexes</span> <span class='kw'>if</span> <span class='ivar'>@selected_indexes</span>
+
+  <span class='ivar'>@selected_indexes</span> <span class='op'>=</span> <span class='ivar'>@index_vars</span><span class='period'>.</span><span class='id identifier rubyid_each_key'>each_key</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+    <span class='ivar'>@index_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_to_set'>to_set</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="setup_model-instance_method">
+  
+    #<strong>setup_model</strong>  &#x21d2; <tt>void</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+<p>Build the ILP by creating all the variables and constraints</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 182</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_setup_model'>setup_model</span>  <span class='comment'># Set up solver environment
+</span>
+  <span class='ivar'>@model</span> <span class='op'>=</span> <span class='const'>MODEL_CLASS</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+
+  <span class='id identifier rubyid_add_variables'>add_variables</span>
+  <span class='id identifier rubyid_prepare_sort_costs'>prepare_sort_costs</span>
+  <span class='ivar'>@model</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span>
+
+  <span class='id identifier rubyid_add_constraints'>add_constraints</span>
+  <span class='id identifier rubyid_define_objective'>define_objective</span>
+  <span class='ivar'>@model</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span>
+
+  <span class='id identifier rubyid_log_model'>log_model</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Model</span><span class='tstring_end'>&#39;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="solve-instance_method">
+  
+    #<strong>solve</strong>(previous_type = nil)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+<p>Run the solver and make the selected indexes available</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 63</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_solve'>solve</span><span class='lparen'>(</span><span class='id identifier rubyid_previous_type'>previous_type</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>unless</span> <span class='ivar'>@status</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+  <span class='comment'># Run the optimization
+</span>  <span class='ivar'>@model</span><span class='period'>.</span><span class='id identifier rubyid_optimize'>optimize</span>
+  <span class='ivar'>@status</span> <span class='op'>=</span> <span class='id identifier rubyid_model'>model</span><span class='period'>.</span><span class='id identifier rubyid_status'>status</span>
+  <span class='id identifier rubyid_fail'>fail</span> <span class='const'><span class='object_link'><a href="NoSolutionException.html" title="NoSE::Search::NoSolutionException (class)">NoSolutionException</a></span></span><span class='comma'>,</span> <span class='ivar'>@status</span> <span class='kw'>if</span> <span class='ivar'>@status</span> <span class='op'>!=</span> <span class='symbol'>:optimized</span>
+
+  <span class='comment'># Store the objective value
+</span>  <span class='ivar'>@objective_value</span> <span class='op'>=</span> <span class='ivar'>@obj_var</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+
+  <span class='kw'>if</span> <span class='ivar'>@objective_type</span> <span class='op'>!=</span> <span class='const'><span class='object_link'><a href="Objective.html" title="NoSE::Search::Objective (module)">Objective</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Objective.html#INDEXES-constant" title="NoSE::Search::Objective::INDEXES (constant)">INDEXES</a></span></span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_previous_type'>previous_type</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='id identifier rubyid_solve_next'>solve_next</span> <span class='const'><span class='object_link'><a href="Objective.html" title="NoSE::Search::Objective (module)">Objective</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Objective.html#INDEXES-constant" title="NoSE::Search::Objective::INDEXES (constant)">INDEXES</a></span></span>
+    <span class='kw'>return</span>
+  <span class='kw'>elsif</span> <span class='op'>!</span><span class='id identifier rubyid_previous_type'>previous_type</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_previous_type'>previous_type</span> <span class='op'>!=</span> <span class='const'><span class='object_link'><a href="Objective.html" title="NoSE::Search::Objective (module)">Objective</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Objective.html#SPACE-constant" title="NoSE::Search::Objective::SPACE (constant)">SPACE</a></span></span>
+    <span class='id identifier rubyid_solve_next'>solve_next</span> <span class='const'><span class='object_link'><a href="Objective.html" title="NoSE::Search::Objective (module)">Objective</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Objective.html#SPACE-constant" title="NoSE::Search::Objective::SPACE (constant)">SPACE</a></span></span>
+    <span class='kw'>return</span>
+  <span class='kw'>elsif</span> <span class='ivar'>@objective_value</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='ivar'>@objective_value</span> <span class='op'>=</span> <span class='ivar'>@model</span><span class='period'>.</span><span class='id identifier rubyid_objective_value'>objective_value</span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_debug'>debug</span> <span class='kw'>do</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Final objective value is </span><span class='embexpr_beg'>#{</span><span class='ivar'>@objective</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> \
+      <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> = </span><span class='embexpr_beg'>#{</span><span class='ivar'>@objective_value</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="solve_next-instance_method">
+  
+    #<strong>solve_next</strong>(objective_type)  &#x21d2; <tt>void</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+<p>Pin the current objective value and set a new objective</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 153</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_solve_next'>solve_next</span><span class='lparen'>(</span><span class='id identifier rubyid_objective_type'>objective_type</span><span class='rparen'>)</span>
+  <span class='ivar'>@obj_var</span><span class='period'>.</span><span class='id identifier rubyid_lower_bound'>lower_bound</span> <span class='op'>=</span> <span class='ivar'>@objective_value</span>
+  <span class='ivar'>@obj_var</span><span class='period'>.</span><span class='id identifier rubyid_upper_bound'>upper_bound</span> <span class='op'>=</span> <span class='ivar'>@objective_value</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_objective_type'>objective_type</span> <span class='op'>==</span> <span class='const'><span class='object_link'><a href="Objective.html" title="NoSE::Search::Objective (module)">Objective</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Objective.html#INDEXES-constant" title="NoSE::Search::Objective::INDEXES (constant)">INDEXES</a></span></span>
+    <span class='ivar'>@objective_type</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Objective.html" title="NoSE::Search::Objective (module)">Objective</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Objective.html#INDEXES-constant" title="NoSE::Search::Objective::INDEXES (constant)">INDEXES</a></span></span>
+    <span class='id identifier rubyid_define_objective'>define_objective</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>objective_indexes</span><span class='tstring_end'>&#39;</span></span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_objective_type'>objective_type</span> <span class='op'>==</span> <span class='const'><span class='object_link'><a href="Objective.html" title="NoSE::Search::Objective (module)">Objective</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Objective.html#SPACE-constant" title="NoSE::Search::Objective::SPACE (constant)">SPACE</a></span></span>
+    <span class='ivar'>@objective_type</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Objective.html" title="NoSE::Search::Objective (module)">Objective</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Objective.html#SPACE-constant" title="NoSE::Search::Objective::SPACE (constant)">SPACE</a></span></span>
+    <span class='id identifier rubyid_define_objective'>define_objective</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>objective_space</span><span class='tstring_end'>&#39;</span></span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@status</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='id identifier rubyid_solve'>solve</span> <span class='id identifier rubyid_objective_type'>objective_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="total_cost-instance_method">
+  
+    #<strong>total_cost</strong>  &#x21d2; <tt>MIPPeR::LinExpr</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Get the cost of all queries in the workload</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>MIPPeR::LinExpr</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 126</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_total_cost'>total_cost</span>
+  <span class='id identifier rubyid_cost'>cost</span> <span class='op'>=</span> <span class='ivar'>@queries</span><span class='period'>.</span><span class='id identifier rubyid_reduce'>reduce</span><span class='lparen'>(</span><span class='const'>MIPPeR</span><span class='op'>::</span><span class='const'>LinExpr</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_expr'>expr</span><span class='comma'>,</span> <span class='id identifier rubyid_query'>query</span><span class='op'>|</span>
+    <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_add'>add</span><span class='lparen'>(</span><span class='ivar'>@indexes</span><span class='period'>.</span><span class='id identifier rubyid_reduce'>reduce</span><span class='lparen'>(</span><span class='const'>MIPPeR</span><span class='op'>::</span><span class='const'>LinExpr</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_subexpr'>subexpr</span><span class='comma'>,</span> <span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+      <span class='id identifier rubyid_subexpr'>subexpr</span><span class='period'>.</span><span class='id identifier rubyid_add'>add</span> <span class='id identifier rubyid_total_query_cost'>total_query_cost</span><span class='lparen'>(</span><span class='ivar'>@data</span><span class='lbracket'>[</span><span class='symbol'>:costs</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_query'>query</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                   <span class='ivar'>@query_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_query'>query</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                   <span class='ivar'>@sort_costs</span><span class='lbracket'>[</span><span class='id identifier rubyid_query'>query</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                   <span class='ivar'>@sort_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_query'>query</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+    <span class='kw'>end</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_cost'>cost</span> <span class='op'>=</span> <span class='id identifier rubyid_add_update_costs'>add_update_costs</span> <span class='id identifier rubyid_cost'>cost</span>
+  <span class='id identifier rubyid_cost'>cost</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="total_indexes-instance_method">
+  
+    #<strong>total_indexes</strong>  &#x21d2; <tt>MIPPeR::LinExpr</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>The total number of indexes</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>MIPPeR::LinExpr</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+142
+143
+144
+145
+146
+147</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 142</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_total_indexes'>total_indexes</span>
+  <span class='id identifier rubyid_total'>total</span> <span class='op'>=</span> <span class='const'>MIPPeR</span><span class='op'>::</span><span class='const'>LinExpr</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+  <span class='ivar'>@index_vars</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_var'>var</span><span class='op'>|</span> <span class='id identifier rubyid_total'>total</span> <span class='op'>+=</span> <span class='id identifier rubyid_var'>var</span> <span class='op'>*</span> <span class='float'>1.0</span> <span class='rbrace'>}</span>
+
+  <span class='id identifier rubyid_total'>total</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="total_query_cost-instance_method">
+  
+    #<strong>total_query_cost</strong>(cost, query_var, sort_cost, sort_var)  &#x21d2; <tt>MIPPeR::LinExpr</tt>  <span class="extras">(private)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Get the total cost of the query for the objective function</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>MIPPeR::LinExpr</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+330
+331
+332
+333
+334
+335
+336
+337
+338</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 330</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_total_query_cost'>total_query_cost</span><span class='lparen'>(</span><span class='id identifier rubyid_cost'>cost</span><span class='comma'>,</span> <span class='id identifier rubyid_query_var'>query_var</span><span class='comma'>,</span> <span class='id identifier rubyid_sort_cost'>sort_cost</span><span class='comma'>,</span> <span class='id identifier rubyid_sort_var'>sort_var</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='const'>MIPPeR</span><span class='op'>::</span><span class='const'>LinExpr</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>if</span> <span class='id identifier rubyid_cost'>cost</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+  <span class='id identifier rubyid_query_cost'>query_cost</span> <span class='op'>=</span> <span class='id identifier rubyid_cost'>cost</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span> <span class='op'>*</span> <span class='float'>1.0</span>
+
+  <span class='id identifier rubyid_cost_expr'>cost_expr</span> <span class='op'>=</span> <span class='id identifier rubyid_query_var'>query_var</span> <span class='op'>*</span> <span class='id identifier rubyid_query_cost'>query_cost</span>
+  <span class='id identifier rubyid_cost_expr'>cost_expr</span> <span class='op'>+=</span> <span class='id identifier rubyid_sort_var'>sort_var</span> <span class='op'>*</span> <span class='id identifier rubyid_sort_cost'>sort_cost</span> <span class='kw'>unless</span> <span class='id identifier rubyid_sort_cost'>sort_cost</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+  <span class='id identifier rubyid_cost_expr'>cost_expr</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="total_size-instance_method">
+  
+    #<strong>total_size</strong>  &#x21d2; <tt>MIPPeR::LinExpr</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Get the size of all indexes in the workload</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>MIPPeR::LinExpr</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+117
+118
+119
+120
+121
+122</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 117</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_total_size'>total_size</span>  <span class='comment'># TODO: Update for indexes grouped by ID path
+</span>
+  <span class='ivar'>@indexes</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+    <span class='ivar'>@index_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span> <span class='op'>*</span> <span class='lparen'>(</span><span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>*</span> <span class='float'>1.0</span><span class='rparen'>)</span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_reduce'>reduce</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:+</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Fri Feb 28 13:56:17 2020 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.24 (ruby-2.7.0).
+</div>
+
+    </div>
+  </body>
+</html>
