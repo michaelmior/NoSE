@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'rake', '~> 13.0.1', '>= 12.0.0'
   s.add_dependency 'representable', '~> 3.0.0', '>= 3.0.0'
   s.add_dependency 'ruby-graphviz', '~> 1.2.2', '>= 1.2.0'
-  s.add_dependency 'sequel', '~> 5.28.0', '>= 4.46.0'
+  s.add_dependency 'sequel', '~> 5.32.0', '>= 4.46.0'
   s.add_dependency 'smarter_csv', '~> 1.2.6', '>= 1.1.0'
 
   # Required for Cassandra backend
