@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
                   Dir['data/**/*']
   s.homepage    = 'https://michael.mior.ca/projects/NoSE/'
 
-  s.add_dependency 'faker', '~> 2.11.0', '>= 1.7.0'
+  s.add_dependency 'faker', '~> 2.13.0', '>= 1.7.0'
   s.add_dependency 'formatador', '~> 0.2.5'
   s.add_dependency 'json-schema', '~> 2.8.0', '>= 2.8.0'
   s.add_dependency 'logging', '~> 2.2.0', '>= 2.2.0'
