@@ -6,7 +6,7 @@
 <title>
   Class: NoSE::Plans::IndexLookupPlanStep
   
-    &mdash; Documentation by YARD 0.9.24
+    &mdash; Documentation by YARD 0.9.25
   
 </title>
 
@@ -1807,11 +1807,11 @@
     <td>
       <pre class="code"><span class="info file"># File 'lib/nose/plans/index_lookup.rb', line 185</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_resolve_order'>resolve_order</span>  <span class='comment'># We can&#39;t resolve ordering if we&#39;re doing an ID lookup
+<span class='kw'>def</span> <span class='id identifier rubyid_resolve_order'>resolve_order</span>
+  <span class='comment'># We can&#39;t resolve ordering if we&#39;re doing an ID lookup
 </span>  <span class='comment'># since only one record exists per row (if it&#39;s the same entity)
 </span>  <span class='comment'># We also need to have the fields used in order
-</span>
-  <span class='id identifier rubyid_first_join'>first_join</span> <span class='op'>=</span> <span class='ivar'>@state</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_join_order'>join_order</span><span class='period'>.</span><span class='id identifier rubyid_detect'>detect</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_entity'>entity</span><span class='op'>|</span>
+</span>  <span class='id identifier rubyid_first_join'>first_join</span> <span class='op'>=</span> <span class='ivar'>@state</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_join_order'>join_order</span><span class='period'>.</span><span class='id identifier rubyid_detect'>detect</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_entity'>entity</span><span class='op'>|</span>
     <span class='ivar'>@index</span><span class='period'>.</span><span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_entities'>entities</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span> <span class='id identifier rubyid_entity'>entity</span>
   <span class='kw'>end</span>
   <span class='id identifier rubyid_indexed_by_id'>indexed_by_id</span> <span class='op'>=</span> <span class='ivar'>@index</span><span class='period'>.</span><span class='id identifier rubyid_hash_fields'>hash_fields</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_first_join'>first_join</span><span class='period'>.</span><span class='id identifier rubyid_id_field'>id_field</span><span class='rparen'>)</span>
@@ -2158,9 +2158,9 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Feb 28 14:07:45 2020 by
+  Generated on Thu Jul 16 00:01:59 2020 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.24 (ruby-2.7.0).
+  0.9.25 (ruby-2.7.0).
 </div>
 
     </div>

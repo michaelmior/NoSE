@@ -6,7 +6,7 @@
 <title>
   Class: NoSE::Search::Problem
   
-    &mdash; Documentation by YARD 0.9.24
+    &mdash; Documentation by YARD 0.9.25
   
 </title>
 
@@ -1956,9 +1956,9 @@
     <td>
       <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 182</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_setup_model'>setup_model</span>  <span class='comment'># Set up solver environment
-</span>
-  <span class='ivar'>@model</span> <span class='op'>=</span> <span class='const'>MODEL_CLASS</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_setup_model'>setup_model</span>
+  <span class='comment'># Set up solver environment
+</span>  <span class='ivar'>@model</span> <span class='op'>=</span> <span class='const'>MODEL_CLASS</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
 
   <span class='id identifier rubyid_add_variables'>add_variables</span>
   <span class='id identifier rubyid_prepare_sort_costs'>prepare_sort_costs</span>
@@ -2376,9 +2376,9 @@
     <td>
       <pre class="code"><span class="info file"># File 'lib/nose/search/problem.rb', line 117</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_total_size'>total_size</span>  <span class='comment'># TODO: Update for indexes grouped by ID path
-</span>
-  <span class='ivar'>@indexes</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_total_size'>total_size</span>
+  <span class='comment'># TODO: Update for indexes grouped by ID path
+</span>  <span class='ivar'>@indexes</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
     <span class='ivar'>@index_vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span> <span class='op'>*</span> <span class='lparen'>(</span><span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>*</span> <span class='float'>1.0</span><span class='rparen'>)</span>
   <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_reduce'>reduce</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:+</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
@@ -2392,9 +2392,9 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Feb 28 14:07:44 2020 by
+  Generated on Thu Jul 16 00:01:58 2020 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.24 (ruby-2.7.0).
+  0.9.25 (ruby-2.7.0).
 </div>
 
     </div>

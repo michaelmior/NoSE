@@ -6,7 +6,7 @@
 <title>
   Class: NoSE::Plans::UpdatePlan
   
-    &mdash; Documentation by YARD 0.9.24
+    &mdash; Documentation by YARD 0.9.25
   
 </title>
 
@@ -1716,9 +1716,9 @@
     <td>
       <pre class="code"><span class="info file"># File 'lib/nose/plans/update_planner.rb', line 163</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_update_support_fields'>update_support_fields</span>  <span class='comment'># Add fields fetched from support queries
-</span>
-  <span class='ivar'>@update_fields</span> <span class='op'>+=</span> <span class='ivar'>@query_plans</span><span class='period'>.</span><span class='id identifier rubyid_flat_map'>flat_map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_query_plan'>query_plan</span><span class='op'>|</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_update_support_fields'>update_support_fields</span>
+  <span class='comment'># Add fields fetched from support queries
+</span>  <span class='ivar'>@update_fields</span> <span class='op'>+=</span> <span class='ivar'>@query_plans</span><span class='period'>.</span><span class='id identifier rubyid_flat_map'>flat_map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_query_plan'>query_plan</span><span class='op'>|</span>
     <span class='id identifier rubyid_query_plan'>query_plan</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span>
   <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_compact'>compact</span>
 <span class='kw'>end</span></pre>
@@ -1790,9 +1790,9 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Feb 28 14:07:45 2020 by
+  Generated on Thu Jul 16 00:02:00 2020 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.24 (ruby-2.7.0).
+  0.9.25 (ruby-2.7.0).
 </div>
 
     </div>

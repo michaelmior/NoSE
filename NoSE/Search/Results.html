@@ -6,7 +6,7 @@
 <title>
   Class: NoSE::Search::Results
   
-    &mdash; Documentation by YARD 0.9.24
+    &mdash; Documentation by YARD 0.9.25
   
 </title>
 
@@ -1786,9 +1786,9 @@
     <td>
       <pre class="code"><span class="info file"># File 'lib/nose/search/results.rb', line 123</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_validate_indexes'>validate_indexes</span>  <span class='comment'># We may not have enumerated ID graphs
-</span>
-  <span class='id identifier rubyid_check_indexes'>check_indexes</span> <span class='op'>=</span> <span class='ivar'>@indexes</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_validate_indexes'>validate_indexes</span>
+  <span class='comment'># We may not have enumerated ID graphs
+</span>  <span class='id identifier rubyid_check_indexes'>check_indexes</span> <span class='op'>=</span> <span class='ivar'>@indexes</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span>
   <span class='ivar'>@indexes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
     <span class='id identifier rubyid_check_indexes'>check_indexes</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span> <span class='id identifier rubyid_index'>index</span><span class='period'>.</span><span class='id identifier rubyid_to_id_graph'>to_id_graph</span>
   <span class='kw'>end</span> <span class='kw'>if</span> <span class='ivar'>@by_id_graph</span>
@@ -2073,9 +2073,9 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Feb 28 14:07:44 2020 by
+  Generated on Thu Jul 16 00:01:58 2020 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.24 (ruby-2.7.0).
+  0.9.25 (ruby-2.7.0).
 </div>
 
     </div>

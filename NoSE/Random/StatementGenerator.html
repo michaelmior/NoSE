@@ -6,7 +6,7 @@
 <title>
   Class: NoSE::Random::StatementGenerator
   
-    &mdash; Documentation by YARD 0.9.24
+    &mdash; Documentation by YARD 0.9.25
   
 </title>
 
@@ -763,9 +763,9 @@
 <span class='kw'>def</span> <span class='id identifier rubyid_random_graph'>random_graph</span><span class='lparen'>(</span><span class='id identifier rubyid_max_nodes'>max_nodes</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_graph'>graph</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../QueryGraph.html" title="NoSE::QueryGraph (module)">QueryGraph</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../QueryGraph/Graph.html" title="NoSE::QueryGraph::Graph (class)">Graph</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../QueryGraph/Graph.html#initialize-instance_method" title="NoSE::QueryGraph::Graph#initialize (method)">new</a></span></span>
   <span class='id identifier rubyid_last_node'>last_node</span> <span class='op'>=</span> <span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_add_node'>add_node</span> <span class='ivar'>@model</span><span class='period'>.</span><span class='id identifier rubyid_entities'>entities</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_sample'>sample</span>
-  <span class='kw'>while</span> <span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_max_nodes'>max_nodes</span>    <span class='comment'># Get the possible foreign keys to use
-</span>
-    <span class='id identifier rubyid_keys'>keys</span> <span class='op'>=</span> <span class='id identifier rubyid_last_node'>last_node</span><span class='period'>.</span><span class='id identifier rubyid_entity'>entity</span><span class='period'>.</span><span class='id identifier rubyid_foreign_keys'>foreign_keys</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span>
+  <span class='kw'>while</span> <span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_max_nodes'>max_nodes</span>
+    <span class='comment'># Get the possible foreign keys to use
+</span>    <span class='id identifier rubyid_keys'>keys</span> <span class='op'>=</span> <span class='id identifier rubyid_last_node'>last_node</span><span class='period'>.</span><span class='id identifier rubyid_entity'>entity</span><span class='period'>.</span><span class='id identifier rubyid_foreign_keys'>foreign_keys</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span>
     <span class='id identifier rubyid_keys'>keys</span><span class='period'>.</span><span class='id identifier rubyid_reject!'>reject!</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_key'>key</span><span class='op'>|</span> <span class='id identifier rubyid_graph'>graph</span><span class='period'>.</span><span class='id identifier rubyid_nodes'>nodes</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:entity</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span> <span class='id identifier rubyid_key'>key</span><span class='period'>.</span><span class='id identifier rubyid_entity'>entity</span> <span class='rbrace'>}</span>
     <span class='kw'>break</span> <span class='kw'>if</span> <span class='id identifier rubyid_keys'>keys</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
 
@@ -933,9 +933,9 @@
   <span class='kw'>end</span><span class='rbracket'>]</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_path'>path</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_pick'>pick</span><span class='period'>.</span><span class='id identifier rubyid_pick'>pick</span><span class='period'>.</span><span class='id identifier rubyid_id_field'>id_field</span><span class='rbracket'>]</span>
 
-  <span class='kw'>while</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_max_length'>max_length</span>    <span class='comment'># Find a list of keys to entities we have not seen before
-</span>
-    <span class='id identifier rubyid_last_entity'>last_entity</span> <span class='op'>=</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_entity'>entity</span>
+  <span class='kw'>while</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_max_length'>max_length</span>
+    <span class='comment'># Find a list of keys to entities we have not seen before
+</span>    <span class='id identifier rubyid_last_entity'>last_entity</span> <span class='op'>=</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_entity'>entity</span>
     <span class='id identifier rubyid_keys'>keys</span> <span class='op'>=</span> <span class='id identifier rubyid_last_entity'>last_entity</span><span class='period'>.</span><span class='id identifier rubyid_foreign_keys'>foreign_keys</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span>
     <span class='id identifier rubyid_keys'>keys</span><span class='period'>.</span><span class='id identifier rubyid_reject!'>reject!</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_key'>key</span><span class='op'>|</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:entity</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span> <span class='id identifier rubyid_key'>key</span><span class='period'>.</span><span class='id identifier rubyid_entity'>entity</span> <span class='rbrace'>}</span>
     <span class='kw'>break</span> <span class='kw'>if</span> <span class='id identifier rubyid_keys'>keys</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
@@ -1467,9 +1467,9 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Feb 28 14:07:42 2020 by
+  Generated on Thu Jul 16 00:01:56 2020 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.24 (ruby-2.7.0).
+  0.9.25 (ruby-2.7.0).
 </div>
 
     </div>

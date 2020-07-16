@@ -6,7 +6,7 @@
 <title>
   Class: NoSE::Backend::CassandraBackend::InsertStatementStep
   
-    &mdash; Documentation by YARD 0.9.24
+    &mdash; Documentation by YARD 0.9.25
   
 </title>
 
@@ -427,12 +427,12 @@
 
     <span class='kw'>begin</span>
       <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='ivar'>@prepared</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='id identifier rubyid_values'>values</span><span class='rparen'>)</span>
-    <span class='kw'>rescue</span> <span class='const'>Cassandra</span><span class='op'>::</span><span class='const'>Errors</span><span class='op'>::</span><span class='const'>InvalidError</span>      <span class='comment'># We hit a value which does not actually need to be
+    <span class='kw'>rescue</span> <span class='const'>Cassandra</span><span class='op'>::</span><span class='const'>Errors</span><span class='op'>::</span><span class='const'>InvalidError</span>
+      <span class='comment'># We hit a value which does not actually need to be
 </span>      <span class='comment'># inserted based on the data since some foreign
 </span>      <span class='comment'># key in the graph corresponding to this column
 </span>      <span class='comment'># family does not exist
-</span>
-      <span class='kw'>nil</span>
+</span>      <span class='kw'>nil</span>
     <span class='kw'>end</span>
   <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
@@ -446,9 +446,9 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Feb 28 14:07:44 2020 by
+  Generated on Thu Jul 16 00:01:59 2020 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.24 (ruby-2.7.0).
+  0.9.25 (ruby-2.7.0).
 </div>
 
     </div>

@@ -6,7 +6,7 @@
 <title>
   Class: NoSE::Backend::CassandraBackend::IndexLookupStatementStep
   
-    &mdash; Documentation by YARD 0.9.24
+    &mdash; Documentation by YARD 0.9.25
   
 </title>
 
@@ -468,14 +468,14 @@
     <td>
       <pre class="code"><span class="info file"># File 'lib/nose/backend/cassandra.rb', line 325</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_cql_order_by'>cql_order_by</span>  <span class='comment'># TODO: CQL3 requires all clustered columns before the one actually
+<span class='kw'>def</span> <span class='id identifier rubyid_cql_order_by'>cql_order_by</span>
+  <span class='comment'># TODO: CQL3 requires all clustered columns before the one actually
 </span>  <span class='comment'>#       ordered on also be specified
 </span>  <span class='comment'>#
 </span>  <span class='comment'>#       Example:
 </span>  <span class='comment'>#
 </span>  <span class='comment'>#         SELECT * FROM cf WHERE id=? AND col1=? ORDER by col1, col2
-</span>
-  <span class='kw'>return</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>if</span> <span class='ivar'>@step</span><span class='period'>.</span><span class='id identifier rubyid_order_by'>order_by</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+</span>  <span class='kw'>return</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>if</span> <span class='ivar'>@step</span><span class='period'>.</span><span class='id identifier rubyid_order_by'>order_by</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
   <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'> ORDER BY </span><span class='tstring_end'>&#39;</span></span> <span class='op'>+</span> <span class='ivar'>@step</span><span class='period'>.</span><span class='id identifier rubyid_order_by'>order_by</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='embexpr_end'>}</span><span class='tstring_content'>\&quot;</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>, </span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -878,9 +878,9 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Feb 28 14:07:45 2020 by
+  Generated on Thu Jul 16 00:01:59 2020 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.24 (ruby-2.7.0).
+  0.9.25 (ruby-2.7.0).
 </div>
 
     </div>

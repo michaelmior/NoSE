@@ -6,7 +6,7 @@
 <title>
   Class: CaptureSource
   
-    &mdash; Documentation by YARD 0.9.24
+    &mdash; Documentation by YARD 0.9.25
   
 </title>
 
@@ -206,9 +206,9 @@
 <span class='kw'>def</span> <span class='id identifier rubyid_apply'>apply</span><span class='lparen'>(</span><span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='id identifier rubyid_consume_all'>consume_all</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_before'>before</span> <span class='op'>=</span> <span class='id identifier rubyid_source'>source</span><span class='period'>.</span><span class='id identifier rubyid_instance_variable_get'>instance_variable_get</span><span class='lparen'>(</span><span class='symbol'>:@str</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_rest'>rest</span>
   <span class='id identifier rubyid_success'>success</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='kw'>super</span><span class='lparen'>(</span><span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='id identifier rubyid_consume_all'>consume_all</span><span class='rparen'>)</span>
-  <span class='kw'>if</span> <span class='id identifier rubyid_success'>success</span>    <span class='comment'># Save the portion of the source string
-</span>
-    <span class='id identifier rubyid_after'>after</span> <span class='op'>=</span> <span class='id identifier rubyid_source'>source</span><span class='period'>.</span><span class='id identifier rubyid_instance_variable_get'>instance_variable_get</span><span class='lparen'>(</span><span class='symbol'>:@str</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_rest'>rest</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_success'>success</span>
+    <span class='comment'># Save the portion of the source string
+</span>    <span class='id identifier rubyid_after'>after</span> <span class='op'>=</span> <span class='id identifier rubyid_source'>source</span><span class='period'>.</span><span class='id identifier rubyid_instance_variable_get'>instance_variable_get</span><span class='lparen'>(</span><span class='symbol'>:@str</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_rest'>rest</span>
     <span class='id identifier rubyid_source_str'>source_str</span> <span class='op'>=</span> <span class='id identifier rubyid_before'>before</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='lparen'>(</span><span class='id identifier rubyid_before'>before</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>-</span> <span class='id identifier rubyid_after'>after</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>-</span> <span class='int'>1</span><span class='rparen'>)</span><span class='rbracket'>]</span>
     <span class='id identifier rubyid_value'>value</span><span class='lbracket'>[</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='op'>+</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>_source</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_source_str'>source_str</span>
   <span class='kw'>end</span>
@@ -225,9 +225,9 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Feb 28 14:07:42 2020 by
+  Generated on Thu Jul 16 00:01:56 2020 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.24 (ruby-2.7.0).
+  0.9.25 (ruby-2.7.0).
 </div>
 
     </div>

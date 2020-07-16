@@ -6,7 +6,7 @@
 <title>
   Class: NoSE::Plans::QueryPlanTree
   
-    &mdash; Documentation by YARD 0.9.24
+    &mdash; Documentation by YARD 0.9.25
   
 </title>
 
@@ -546,10 +546,10 @@
 
   <span class='kw'>until</span> <span class='id identifier rubyid_nodes'>nodes</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
     <span class='id identifier rubyid_node'>node</span> <span class='op'>=</span> <span class='id identifier rubyid_nodes'>nodes</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>
-    <span class='kw'>if</span> <span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_children'>children</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>      <span class='comment'># This is just an extra check to make absolutely
+    <span class='kw'>if</span> <span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_children'>children</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+      <span class='comment'># This is just an extra check to make absolutely
 </span>      <span class='comment'># sure we never consider invalid statement plans
-</span>
-      <span class='id identifier rubyid_fail'>fail</span> <span class='kw'>unless</span> <span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_state'>state</span><span class='period'>.</span><span class='id identifier rubyid_answered?'>answered?</span>
+</span>      <span class='id identifier rubyid_fail'>fail</span> <span class='kw'>unless</span> <span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_state'>state</span><span class='period'>.</span><span class='id identifier rubyid_answered?'>answered?</span>
 
       <span class='kw'>yield</span> <span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_parent_steps'>parent_steps</span> <span class='ivar'>@cost_model</span>
     <span class='kw'>else</span>
@@ -779,9 +779,9 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Feb 28 14:07:45 2020 by
+  Generated on Thu Jul 16 00:01:59 2020 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.24 (ruby-2.7.0).
+  0.9.25 (ruby-2.7.0).
 </div>
 
     </div>
