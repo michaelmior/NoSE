@@ -150,7 +150,7 @@ module Subtype
     # Convert camel case class names to an array
     # @return [Array<String>]
     def name_array(cls)
-      frozen_name = cls.name
+      frozen_name = cls.name.dup
       frozen_name.gsub!(/^.*::/, '')
       frozen_name.gsub!('ID', 'Id')
       frozen_name.freeze
