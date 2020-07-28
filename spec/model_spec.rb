@@ -144,7 +144,7 @@ module NoSE
         end
 
         HasOne 'foo',    'bars',
-               'Bar'  => 'Foo'
+               {'Bar'  => 'Foo'}
       end
     end
 

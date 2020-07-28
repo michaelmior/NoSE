@@ -25,13 +25,13 @@ module NoSE
         end) * 1000
 
         HasOne 'User',    'Tweets',
-               'Tweet' => 'User'
+               {'Tweet' => 'User'}
 
         HasOne 'Favourite',    'Favourited',
-               'User' =>       'Tweet'
+               {'User' =>       'Tweet'}
 
         HasOne 'Link',    'Tweets',
-               'Tweet' => 'Link'
+               {'Tweet' => 'Link'}
       end
     end
     # rubocop:enable Lint/Void

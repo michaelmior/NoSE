@@ -104,8 +104,20 @@ module NoSE
         method_name = child_class.name.sub(method_regex, '\1')
         EntityDSL.send :define_method, method_name,
                        (proc do |*args|
-                         send(:instance_variable_get, :@entity).send \
-                           :<<, child_class.new(*args)
+                         entity = send :instance_variable_get, :@entity
+
+                         # XXX This is necessary since passing a hash of
+                         #     keyword arguments as the last argument is
+                         #     now deprecated
+                         if args.last.is_a? Hash
+                           hash_args = args.last
+                           args.pop
+                         else
+                           hash_args = {}
+                         end
+
+                         field = child_class.new(*args, **hash_args)
+                         entity.send :<<, field
                        end)
       end
       private_class_method :add_field_method
