@@ -26,7 +26,7 @@ NoSE::Model.new do
   end) * 10_000
 
   HasOne 'user',    'likes',
-         'likes' => 'users'
+         {'likes' => 'users'}
   HasOne 'item',    'likes',
-         'likes' => 'items'
+         {'likes' => 'items'}
 end

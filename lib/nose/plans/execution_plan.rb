@@ -173,7 +173,7 @@ module NoSE
       end
 
       # The estimated cost of executing this plan
-      # @return [Fixnum]
+      # @return [Integer]
       def cost
         costs = @steps.map(&:cost) + @update_steps.map(&:cost)
         costs += @query_plans.map(&:steps).flatten.map(&:cost)

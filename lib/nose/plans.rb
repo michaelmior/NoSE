@@ -72,7 +72,7 @@ module NoSE
       end
 
       # Calculate the cost of executing this step in the plan
-      # @return [Fixnum]
+      # @return [Integer]
       def calculate_cost(cost_model)
         @cost = cost_model.method((subtype_name + '_cost').to_sym).call self
       end

@@ -64,34 +64,34 @@ NoSE::Model.new do
   end) * 40_000
 
   HasOne 'region',       'users',
-         'users'      => 'regions'
+         {'users'      => 'regions'}
 
   HasOne 'seller',       'items_sold',
-         'items'      => 'users'
+         {'items'      => 'users'}
 
   HasOne 'category',     'items',
-         'items'      => 'categories'
+         {'items'      => 'categories'}
 
   HasOne 'user',         'bids',
-         'bids'       => 'users'
+         {'bids'       => 'users'}
 
   HasOne 'item',         'bids',
-         'bids'       => 'items'
+         {'bids'       => 'items'}
 
   HasOne 'from_user',    'comments_sent',
-         'comments'   => 'users'
+         {'comments'   => 'users'}
 
   HasOne 'to_user',      'comments_received',
-         'comments'   => 'users'
+         {'comments'   => 'users'}
 
   HasOne 'item',         'comments',
-         'comments'   => 'items'
+         {'comments'   => 'items'}
 
   HasOne 'buyer',        'bought_now',
-         'buynow'     => 'users'
+         {'buynow'     => 'users'}
 
   HasOne 'item',         'bought_now',
-         'buynow'     => 'items'
+         {'buynow'     => 'items'}
 end
 
 # rubocop:enable all

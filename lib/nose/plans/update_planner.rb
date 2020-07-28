@@ -50,7 +50,7 @@ module NoSE
       end
 
       # The weight of this query for a given workload
-      # @return [Fixnum]
+      # @return [Integer]
       def weight
         return 1 if @workload.nil?
 
@@ -145,13 +145,13 @@ module NoSE
       end
 
       # The cost of performing the update on this index
-      # @return [Fixnum]
+      # @return [Integer]
       def update_cost
         @update_steps.sum_by(&:cost)
       end
 
       # The cost is the sum of all the query costs plus the update costs
-      # @return [Fixnum]
+      # @return [Integer]
       def cost
         @query_plans.sum_by(&:cost) + update_cost
       end

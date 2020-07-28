@@ -35,7 +35,7 @@ module NoSE
     alias eql? ==
 
     # The hash is based on the name of the entity and its fields
-    # @return [Fixnum]
+    # @return [Integer]
     def hash
       @hash ||= @name.hash
     end

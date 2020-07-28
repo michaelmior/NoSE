@@ -34,11 +34,11 @@ NoSE::Model.new do
   end) * 5_000
 
   HasOne 'player',    'sessions',
-         'Session' => 'Player'
+         {'Session' => 'Player'}
 
   HasOne 'server',    'sessions',
-         'Session' => 'Server'
+         {'Session' => 'Server'}
 
   HasOne 'session',       'states',
-         'PlayerState' => 'Session'
+         {'PlayerState' => 'Session'}
 end

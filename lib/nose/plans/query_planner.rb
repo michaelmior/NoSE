@@ -171,7 +171,7 @@ module NoSE
       end
 
       # The weight of this query for a given workload
-      # @return [Fixnum]
+      # @return [Integer]
       def weight
         return 1 if @workload.nil?
 

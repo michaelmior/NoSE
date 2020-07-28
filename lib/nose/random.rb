@@ -353,7 +353,7 @@ module NoSE
     end
 
     # Return the next valid random number
-    # @return [Fixnum]
+    # @return [Integer]
     def rand
       if @valid
         @valid = false
@@ -367,7 +367,7 @@ module NoSE
     end
 
     # Return a random number for the given distribution
-    # @return [Array<Fixnum>]
+    # @return [Array<Integer>]
     def self.gaussian(mean, stddev)
       theta = 2 * Math::PI * rand
       rho = Math.sqrt(-2 * Math.log(1 - rand))

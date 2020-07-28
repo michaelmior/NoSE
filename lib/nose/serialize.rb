@@ -251,7 +251,7 @@ module NoSE
       property :cardinality, exec_context: :decorator
 
       # The estimated hash cardinality at this step in the plan
-      # @return [Fixnum]
+      # @return [Integer]
       def hash_cardinality
         state = represented.instance_variable_get(:@state)
         state.hash_cardinality if state.is_a?(Plans::QueryState)
@@ -326,7 +326,7 @@ module NoSE
       property :type, exec_context: :decorator
 
       # The estimated cardinality of entities being updated
-      # @return [Fixnum]
+      # @return [Integer]
       def cardinality
         state = represented.instance_variable_get(:@state)
         state.cardinality unless state.nil?

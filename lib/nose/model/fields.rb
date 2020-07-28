@@ -34,7 +34,7 @@ module NoSE
       alias eql? ==
 
       # Hash by entity and name
-      # @return [Fixnum]
+      # @return [Integer]
       def hash
         @hash ||= id.hash
       end
@@ -122,13 +122,13 @@ module NoSE
       end
 
       # Parse an Integer from the provided parameter
-      # @return [Fixnum]
+      # @return [Integer]
       def self.value_from_string(string)
         string.to_i
       end
 
       # Random numbers up to the given size
-      # @return [Fixnum]
+      # @return [Integer]
       def random_value
         rand(@cardinality)
       end
@@ -167,8 +167,7 @@ module NoSE
 
     # Field holding a float
     class FloatField < Field
-      # Any Fixnum is a valid float
-      TYPE = Fixnum
+      TYPE = Float
 
       def initialize(name, **options)
         super(name, 8, **options)
@@ -284,7 +283,7 @@ module NoSE
 
       # The number of entities associated with the foreign key,
       # or a manually set cardinality
-      # @return [Fixnum]
+      # @return [Integer]
       def cardinality
         @entity.count || super
       end
