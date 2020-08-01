@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'parslet', '~> 1.8.0', '>= 1.8.0'
   s.add_dependency 'pg', '~> 0.20.0'
   s.add_dependency 'pickup', '~> 0.0.11'
-  s.add_dependency 'pry', '~> 0.12.2'
+  s.add_dependency 'pry', '~> 0.13.1'
   s.add_dependency 'rake', '~> 12.3.2', '>= 12.0.0'
   s.add_dependency 'representable', '~> 3.0.0', '>= 3.0.0'
   s.add_dependency 'ruby-graphviz', '~> 1.2.2', '>= 1.2.0'
@@ -39,9 +39,9 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'fakefs', '~> 1.2.2'
   s.add_development_dependency 'memory_profiler', '~> 0.9.7'
-  s.add_development_dependency 'pry-byebug', '~> 3.7.0', '>= 3.4.0'
-  s.add_development_dependency 'pry-doc', '~> 1.0.0'
-  s.add_development_dependency 'pry-stack_explorer', '~> 0.4.9.2'
+  s.add_development_dependency 'pry-byebug', '~> 3.9.0'
+  s.add_development_dependency 'pry-doc', '~> 1.1.0'
+  s.add_development_dependency 'pry-stack_explorer', '~> 0.4.11'
   s.add_development_dependency 'ronn', '~> 0.7.3'
   s.add_development_dependency 'rspec', '~> 3.9.0'
   s.add_development_dependency 'rspec-core', '~> 3.9.0'
@@ -54,6 +54,6 @@ Gem::Specification.new do |s|
   # Below for MRI only (TODO JRuby gemspec)
   s.add_dependency 'rbtree', '~> 0.4.2' # for more efficient SortedSet implementation
   s.add_dependency 'mysql2', '~> 0.5.2' # this is used for the loader for performance
-  s.add_development_dependency 'pry-rescue', '~> 1.5.0', '>= 1.4.0'
+  s.add_development_dependency 'pry-rescue', '~> 1.5.1'
   s.add_development_dependency 'binding_of_caller', '~> 0.8.0'
 end
