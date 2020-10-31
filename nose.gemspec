@@ -44,7 +44,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'pry-stack_explorer', '~> 0.4.11'
   s.add_development_dependency 'ronn', '~> 0.7.3'
   s.add_development_dependency 'rspec', '~> 3.9.0'
-  s.add_development_dependency 'rspec-core', '~> 3.9.0'
+  s.add_development_dependency 'rspec-core', '~> 3.10.0'
   s.add_development_dependency 'rspec-collection_matchers', '~> 1.2.0', '>= 1.1.0'
   s.add_development_dependency 'ruby-prof', '~> 0.18.0'
   s.add_development_dependency 'scrutinizer-ocular', '~> 1.0.1', '>= 1.0.0'
