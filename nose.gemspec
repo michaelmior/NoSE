@@ -47,7 +47,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec', '~> 3.10.0'
   s.add_development_dependency 'rspec-core', '~> 3.10.0'
   s.add_development_dependency 'rspec-collection_matchers', '~> 1.2.0', '>= 1.1.0'
-  s.add_development_dependency 'ruby-prof', '~> 0.18.0'
+  s.add_development_dependency 'ruby-prof', '~> 1.4.2'
   s.add_development_dependency 'simplecov', '~> 0.19.0'
   s.add_development_dependency 'yard', '~> 0.9.4'
 
