@@ -5,9 +5,11 @@
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
-require 'simplecov' unless RUBY_PLATFORM == 'java'
-require 'scrutinizer/ocular'
-Scrutinizer::Ocular.watch!
+require 'simplecov'
+SimpleCov.start
+
+require 'codecov'
+SimpleCov.formatter = SimpleCov::Formatter::Codecov
 
 require 'rspec/collection_matchers'
 require 'fakefs/safe'
