@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'json-schema', '~> 2.8.0', '>= 2.8.0'
   s.add_dependency 'logging', '~> 2.2.0', '>= 2.2.0'
   s.add_dependency 'mipper', '~> 0.1.0'
-  s.add_dependency 'parallel', '~> 1.17.0', '>= 1.11.0'
+  s.add_dependency 'parallel', '~> 1.20.1', '>= 1.11.0'
   s.add_dependency 'parslet', '~> 1.8.0', '>= 1.8.0'
   s.add_dependency 'pg', '~> 0.20.0'
   s.add_dependency 'pickup', '~> 0.0.11'
