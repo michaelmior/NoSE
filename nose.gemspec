@@ -37,6 +37,7 @@ Gem::Specification.new do |s|
   # Required for MongoDB backend
   s.add_dependency 'mongo', '~> 2.13.0', '>= 2.4.0'
 
+  s.add_development_dependency 'codecov', '~> 0.4.3'
   s.add_development_dependency 'fakefs', '~> 1.2.2'
   s.add_development_dependency 'memory_profiler', '~> 0.9.7'
   s.add_development_dependency 'pry-byebug', '~> 3.9.0'
@@ -47,7 +48,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec-core', '~> 3.9.0'
   s.add_development_dependency 'rspec-collection_matchers', '~> 1.2.0', '>= 1.1.0'
   s.add_development_dependency 'ruby-prof', '~> 0.18.0'
-  s.add_development_dependency 'scrutinizer-ocular', '~> 1.0.1', '>= 1.0.0'
   s.add_development_dependency 'simplecov', '~> 0.19.0'
   s.add_development_dependency 'yard', '~> 0.9.4'
 
