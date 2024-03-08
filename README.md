@@ -1,6 +1,6 @@
 # NoSQL Schema Evaluator (NoSE)
 
-[![Build Status](https://travis-ci.org/michaelmior/NoSE.svg?branch=master)](https://travis-ci.org/michaelmior/NoSE)
+[![CI](https://github.com/michaelmior/NoSE/actions/workflows/ci.yml/badge.svg)](https://github.com/michaelmior/NoSE/actions/workflows/ci.yml)
 [![Depfu](https://badges.depfu.com/badges/69de42ee3415b077a040beadc8941f1e/overview.svg)](https://depfu.com/github/michaelmior/NoSE?project_id=6964)
 [![codecov](https://codecov.io/gh/michaelmior/NoSE/branch/main/graph/badge.svg?token=knALGf3kHn)](https://codecov.io/gh/michaelmior/NoSE)
 [![Docker Build Status](https://img.shields.io/docker/build/michaelmior/nose.svg)]()

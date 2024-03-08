@@ -32,8 +32,8 @@ Gemfile.lock
 ## Configuration files
 *.yml
 !.scrutinizer.yml
-!.travis.yml
 !.rubocop.yml
+!.github/**
 
 ## Log files
 gurobi.log

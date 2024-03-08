@@ -1,0 +1,63 @@
+
+name: CI
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby-version: ['2.5.3', '2.6.1']
+    services:
+      mysql:
+        image: mysql:5.6
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 1
+          MYSQL_DATABASE: nose
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      mongo:
+        image: mongo:5
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd=mongo
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      cassandra:
+        image: cassandra:3
+        ports:
+          - 9042:9042
+        options: >-
+          --health-cmd="cqlsh --debug"
+          --health-start-period=30s
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+    - name: Install required packages
+      run: sudo apt update && sudo apt-get install coinor-cbc coinor-libcbc-dev
+    - uses: actions/checkout@v4
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby-version }}
+        bundler-cache: true
+    - name: Populate MySQL
+      run: mysql -h 127.0.0.1 -uroot -Dnose < spec/support/data/mysql.sql
+    - name: Test
+      run: |
+        sed -i '/^--tag/d' .rspec
+        bundle exec rspec
