@@ -39,7 +39,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'codecov', '~> 0.4.3'
   s.add_development_dependency 'fakefs', '~> 1.3.2'
   s.add_development_dependency 'memory_profiler', '~> 1.0.0'
-  s.add_development_dependency 'pry-byebug', '~> 3.9.0'
+  s.add_development_dependency 'pry-byebug', '~> 3.10.1'
   s.add_development_dependency 'pry-doc', '~> 1.1.0'
   s.add_development_dependency 'pry-stack_explorer', '~> 0.4.11'
   s.add_development_dependency 'ronn', '~> 0.7.3'
