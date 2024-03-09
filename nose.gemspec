@@ -53,6 +53,6 @@ Gem::Specification.new do |s|
   # Below for MRI only (TODO JRuby gemspec)
   s.add_dependency 'rbtree', '~> 0.4.2' # for more efficient SortedSet implementation
   s.add_dependency 'mysql2', '~> 0.5.2' # this is used for the loader for performance
-  s.add_development_dependency 'pry-rescue', '~> 1.5.1'
+  s.add_development_dependency 'pry-rescue', '~> 1.6.0'
   s.add_development_dependency 'binding_of_caller', '~> 0.8.0'
 end
