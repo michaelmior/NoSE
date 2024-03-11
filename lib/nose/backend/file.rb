@@ -24,7 +24,9 @@ module NoSE
       # Save data when the object is destroyed
       def self.finalize(index_data, file)
         proc do
-          Marshal.dump(index_data, File.open(file, 'w'))
+          if !file.nil?
+            Marshal.dump(index_data, File.open(file, 'w'))
+          end
         end
       end
 

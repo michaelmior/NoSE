@@ -83,8 +83,8 @@ module NoSE
 
         # Validate the expected CQL query
         client = double('client')
-        backend_query = 'SELECT "User_Username", "Tweet_Timestamp", ' \
-                        '"Tweet_Body" ' + "FROM \"#{index.key}\" " \
+        backend_query = 'SELECT "Tweet_Body", "User_Username", ' \
+                        '"Tweet_Timestamp" ' + "FROM \"#{index.key}\" " \
                         'WHERE "User_Username" = ? ' \
                         'ORDER BY "Tweet_Timestamp" LIMIT 10'
         expect(client).to receive(:prepare).with(backend_query) \
@@ -95,8 +95,10 @@ module NoSE
         def results.last_page?
           true
         end
-        expect(client).to receive(:execute) \
-          .with(backend_query, arguments: ['Bob']).and_return(results)
+        expect(client).to receive(:execute) do |query, values|
+          expect(query).to eq backend_query
+          expect(values[:arguments][0]).to eq 'Bob'
+        end.and_return(results)
 
         step_class = CassandraBackend::IndexLookupStatementStep
         prepared = step_class.new client, query.all_fields, query.conditions,
@@ -119,9 +121,11 @@ module NoSE
                          '"Link_URL") VALUES (?, ?)'
         expect(client).to receive(:prepare).with(backend_insert) \
           .and_return(backend_insert)
-        expect(client).to receive(:execute) \
-          .with(backend_insert, arguments: [kind_of(Cassandra::Uuid),
-                                            'http://www.example.com/'])
+        expect(client).to receive(:execute) do |query, values|
+          expect(query).to eq backend_insert
+          expect(values[:arguments][0]).to be_a Cassandra::Uuid
+          expect(values[:arguments][1]).to eq 'http://www.example.com/'
+        end
 
         step_class = CassandraBackend::InsertStatementStep
         prepared = step_class.new client, index, [link['LinkId'], link['URL']]
@@ -138,8 +142,10 @@ module NoSE
         backend_delete = "DELETE FROM #{index.key} WHERE \"Link_LinkId\" = ?"
         expect(client).to receive(:prepare).with(backend_delete) \
           .and_return(backend_delete)
-        expect(client).to receive(:execute) \
-          .with(backend_delete, arguments: [kind_of(Cassandra::Uuid)])
+        expect(client).to receive(:execute) do |query, values|
+          expect(query).to eq backend_delete
+          expect(values[:arguments][0]).to be_a Cassandra::Uuid
+        end
 
         step_class = CassandraBackend::DeleteStatementStep
         prepared = step_class.new client, index

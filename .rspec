@@ -1,6 +1,5 @@
 --color
 --format documentation
 --require spec_helper
---tag ~cassandra
 --tag ~mongo
 --tag ~mysql

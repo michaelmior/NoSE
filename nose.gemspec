@@ -29,15 +29,15 @@ Gem::Specification.new do |s|
   s.add_dependency 'ruby-mysql', '~> 2.9.14', '>= 2.9.0' # for the proxy because it's pure Ruby
   s.add_dependency 'sequel', '~> 5.41.0', '>= 4.46.0'
   s.add_dependency 'smarter_csv', '1.10.2'
+  s.add_dependency 'sorted_set', '~> 1.0', '>= 1.0.3'
 
   # Required for Cassandra backend
-  s.add_dependency 'cassandra-driver', '~> 3.2.3', '>= 3.1.0'
+  s.add_dependency 'cassandra-driver', '~> 3.2.5', '>= 3.1.0'
 
   # Required for MongoDB backend
   s.add_dependency 'mongo', '>= 2.14', '< 2.20'
 
-  s.add_development_dependency 'codecov', '~> 0.4.3'
-  s.add_development_dependency 'fakefs', '~> 1.3.2'
+  s.add_development_dependency 'fakefs', '~> 2.5.0'
   s.add_development_dependency 'memory_profiler', '~> 1.0.0'
   s.add_development_dependency 'pry-byebug', '~> 3.9.0'
   s.add_development_dependency 'pry-doc', '~> 1.1.0'
@@ -47,7 +47,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec-core', '~> 3.10.0'
   s.add_development_dependency 'rspec-collection_matchers', '~> 1.2.0', '>= 1.1.0'
   s.add_development_dependency 'ruby-prof', '~> 1.4.2'
-  s.add_development_dependency 'simplecov', '~> 0.21.2'
+  s.add_development_dependency 'simplecov', '~> 0.22.0'
+  s.add_development_dependency 'simplecov-cobertura', '~> 2.1'
   s.add_development_dependency 'yard', '~> 0.9.4'
 
   # Below for MRI only (TODO JRuby gemspec)

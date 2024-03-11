@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'sorted_set'
 require 'cassandra'
 require 'zlib'
 
