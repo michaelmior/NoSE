@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'ruby-graphviz', '~> 1.2.2', '>= 1.2.0'
   s.add_dependency 'ruby-mysql', '~> 2.9.14', '>= 2.9.0' # for the proxy because it's pure Ruby
   s.add_dependency 'sequel', '>= 5.41', '< 5.80'
-  s.add_dependency 'smarter_csv', '1.10.2'
+  s.add_dependency 'smarter_csv', '1.11.2'
   s.add_dependency 'sorted_set', '~> 1.0', '>= 1.0.3'
 
   # Required for Cassandra backend
