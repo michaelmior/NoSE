@@ -36,7 +36,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'cassandra-driver', '~> 3.2.5', '>= 3.1.0'
 
   # Required for MongoDB backend
-  s.add_dependency 'mongo', '>= 2.14', '< 2.21'
+  s.add_dependency 'mongo', '>= 2.14', '< 2.23'
 
   s.add_development_dependency 'fakefs', '~> 2.5.0'
   s.add_development_dependency 'memory_profiler', '~> 1.0.0'
