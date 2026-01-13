@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://michael.mior.ca/projects/NoSE/'
 
   s.add_dependency 'base64', '~> 0.3.0'
-  s.add_dependency 'faker', '~> 2.16.0', '>= 1.7.0'
+  s.add_dependency 'faker', '>= 2.16', '< 3.6'
   s.add_dependency 'formatador', '~> 0.2.5'
   s.add_dependency 'json-schema', '~> 2.8.0', '>= 2.8.0'
   s.add_dependency 'logging', '>= 2.2', '< 2.4'
