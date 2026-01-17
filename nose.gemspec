@@ -39,7 +39,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'mongo', '>= 2.14', '< 2.23'
 
   s.add_development_dependency 'fakefs', '~> 2.5.0'
-  s.add_development_dependency 'memory_profiler', '~> 1.0.0'
+  s.add_development_dependency 'memory_profiler', '~> 1.1.0'
   s.add_development_dependency 'pry-byebug', '~> 3.9.0'
   s.add_development_dependency 'pry-doc', '~> 1.6.0'
   s.add_development_dependency 'pry-stack_explorer', '~> 0.5.1'
