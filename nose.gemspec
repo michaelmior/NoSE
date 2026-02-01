@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'faker', '>= 2.16', '< 3.6'
   s.add_dependency 'formatador', '~> 0.2.5'
   s.add_dependency 'json-schema', '~> 2.8.0', '>= 2.8.0'
-  s.add_dependency 'logging', '>= 2.2', '< 2.4'
+  s.add_dependency 'logging', '>= 2.2', '< 2.5'
   s.add_dependency 'mipper', '~> 0.1.0'
   s.add_dependency 'parallel', '>= 1.20.1', '< 1.28.0'
   s.add_dependency 'parslet', '>= 1.8', '< 2.1'
